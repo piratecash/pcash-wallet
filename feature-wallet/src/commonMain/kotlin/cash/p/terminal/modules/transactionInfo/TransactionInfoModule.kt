@@ -14,6 +14,8 @@ import cash.p.terminal.modules.transactions.poison_status.PoisonStatus
 import cash.p.terminal.modules.transactions.TransactionItem
 import cash.p.terminal.modules.transactions.TransactionStatus
 import cash.p.terminal.network.changenow.domain.entity.TransactionStatusEnum
+import cash.p.terminal.modules.swapprogress.SupportContact
+import cash.p.terminal.modules.swapprogress.SwapProgressSummary
 import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.ui_compose.ColoredValue
 import cash.p.terminal.wallet.IWalletManager
@@ -67,6 +69,9 @@ data class TransactionInfoItem(
     val swapTransactionId: String? = null,
     val swapTransactionStatus: TransactionStatusEnum? = null,
     val swapDuration: SwapDuration? = null,
+    val swapDate: Long? = null,
+    val swapProgress: SwapProgressSummary? = null,
+    val swapSupportContacts: List<SupportContact> = emptyList(),
     val poisonStatus: PoisonStatus = PoisonStatus.BLOCKCHAIN,
     val offlineStatus: ColoredValue? = null,
     // Record equality identifies the transaction, not changes to its status or details.
@@ -96,6 +101,7 @@ fun Scope.transactionInfoViewModel(transactionItem: TransactionItem): Transactio
         currencyManager = get(),
         updateSwapProviderTransactionsStatusUseCase = get(),
         swapProviderTransactionsStorage = get(),
+        unstoppableRepository = get(),
         dispatcherProvider = get(),
         transactionStatusUrl = transactionItem.transactionStatusUrl,
         offlineStatus = transactionItem.offlineStatus,
@@ -107,6 +113,7 @@ fun Scope.transactionInfoViewModel(transactionItem: TransactionItem): Transactio
         evmKitWrapper = (adapter as? EvmTransactionsAdapter)?.evmKitWrapper,
         platformOperationSupport = get(),
         unstoppableProviderTitles = get(),
+        walletUid = transactionItem.walletUid,
     )
 
     return TransactionInfoViewModel(

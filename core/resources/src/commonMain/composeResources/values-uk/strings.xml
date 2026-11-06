@@ -422,6 +422,12 @@
     <string name="scan_qr_camera_initialization_failed">Камера недоступна. Будь ласка, спробуйте ще раз або скористайтеся іншим пристроєм.</string>
     <string name="qr_scanner_title_address">Адреса %1$s</string>
     <string name="qr_scanner_title_smart_scan">РОЗУМНЕ СКАНУВАННЯ</string>
+    <string name="qr_scanner_open_image">Відкрити зображення</string>
+    <string name="qr_scanner_select_camera">Камера</string>
+    <string name="qr_scanner_no_camera">Камеру не знайдено або доступ заборонено</string>
+    <string name="qr_scanner_no_camera_hint_macos">Дозвольте доступ до камери в Системних налаштуваннях → Конфіденційність і безпека → Камера, потім спробуйте ще раз.</string>
+    <string name="qr_scanner_no_camera_hint_windows">Дозвольте доступ до камери в Параметрах → Конфіденційність і захист → Камера, потім спробуйте ще раз.</string>
+    <string name="qr_scanner_no_camera_hint_linux">Переконайтеся, що камера підключена (/dev/video*) і ваш користувач входить до групи video, потім спробуйте ще раз.</string>
     <string name="choose_from_photos">Вибрати з фото</string>
     <string name="image_decode_failed">Не вдалося зчитати QR-код із вибраного зображення</string>
     <string name="Send_Error_UnsupportedAddress">TimeLock працює тільки при надсиланні на платіжні адреси, що починаються з 1... (також відомих як BIP44 адреси)</string>
@@ -2396,6 +2402,22 @@
     <string name="desktop_change_password_corrupted">Файл ключа пошкоджено: після блокування застосунку ви не зможете увійти. Збережіть резервну копію кожної фрази відновлення.</string>
     <string name="desktop_change_password_success">Пароль змінено</string>
     <string name="desktop_security_lock_now">Заблокувати зараз</string>
+    <string name="swap_progress_title">Хід обміну</string>
+    <string name="swap_progress_step_of">Крок %1$d з %2$d</string>
+    <string name="swap_progress_step_header">%1$d крок · %2$s</string>
+    <string name="swap_progress_leg_send">Надсилання %1$s</string>
+    <string name="swap_progress_leg_receive">Отримання %1$s</string>
+    <string name="swap_progress_leg_swap">Обмін %1$s на %2$s</string>
+    <string name="swap_progress_leg_transfer">Переказ %1$s</string>
+    <string name="swap_progress_action_required_aml">Провайдер призупинив обмін для AML-перевірки.</string>
+    <string name="swap_progress_action_required_frozen">Провайдер заморозив обмін.</string>
+    <string name="swap_progress_action_required_overdue">Депозит надійшов після закінчення терміну котирування.</string>
+    <string name="swap_progress_action_required_default">Обмін призупинено, потрібна ваша дія.</string>
+    <string name="swap_progress_contact_support">Зверніться до підтримки провайдера нижче.</string>
+    <string name="swap_support_telegram">Підтримка %1$s · Telegram</string>
+    <string name="swap_support_email">Підтримка %1$s · Email</string>
+    <string name="swap_support_email_deposit_tx">Транзакція депозиту: %1$s</string>
+    <string name="swap_support_email_deposit_address">Адреса депозиту: %1$s</string>
 
     <!-- Shamir backup restore -->
     <string name="import_wallet_shamir">Shamir Backup</string>

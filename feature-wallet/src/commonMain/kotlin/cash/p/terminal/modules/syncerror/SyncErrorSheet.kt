@@ -89,10 +89,7 @@ private fun SyncErrorScreen(
 ) {
     val viewModel = koinViewModel<SyncErrorViewModel> { parametersOf(wallet) }
 
-    val hudMessenger = rememberHudMessenger()
-    val clipboardManager = LocalClipboardManager.current
-    val sendMail = rememberMailComposer()
-    val emailCopiedText = stringResource(Res.string.Hud_Text_EmailAddressCopied)
+    val sendSupportMail = rememberSupportMailAction()
 
     val errorDescription = annotatedStringResource(
         syncErrorDescriptionRes(
@@ -131,10 +128,7 @@ private fun SyncErrorScreen(
         onReport = {
             navigation.navigateUpSafely()
 
-            if (!sendMail(viewModel.reportEmail, viewModel.buildReportBody(error))) {
-                clipboardManager.setText(AnnotatedString(viewModel.reportEmail))
-                hudMessenger.showSuccess(emailCopiedText)
-            }
+            sendSupportMail(viewModel.reportEmail, viewModel.buildReportBody(error))
         }
     )
 }
@@ -195,3 +189,18 @@ internal fun SyncErrorContent(
 /** Opens a mail draft of the report; `false` when there is no mail app to open it. */
 @Composable
 internal expect fun rememberMailComposer(): (email: String, body: String) -> Boolean
+
+/** Opens a mail draft; without a mail app copies the address and confirms it with a HUD. */
+@Composable
+internal fun rememberSupportMailAction(): (email: String, body: String) -> Unit {
+    val sendMail = rememberMailComposer()
+    val hudMessenger = rememberHudMessenger()
+    val clipboardManager = LocalClipboardManager.current
+    val emailCopiedText = stringResource(Res.string.Hud_Text_EmailAddressCopied)
+    return { email, body ->
+        if (!sendMail(email, body)) {
+            clipboardManager.setText(AnnotatedString(email))
+            hudMessenger.showSuccess(emailCopiedText)
+        }
+    }
+}

@@ -46,7 +46,6 @@ class AppPagesImpl(
     override fun backupLocal(account: Account): HSPage = BackupLocalPage(account)
     override fun markdown(url: String): HSPage = MarkdownPage(MarkdownPage.Input(url, true))
 
-    override val isQrScannerAvailable = true
     override fun hardwareWallet(input: ManageAccountsModule.Input?): HSPage = HardwareWalletPage(input)
     override fun resetToFactory(account: Account): HSPage =
         ResetToFactorySettingsPage(ResetToFactorySettingsPage.Input(account))

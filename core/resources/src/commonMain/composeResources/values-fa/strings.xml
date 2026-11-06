@@ -438,6 +438,12 @@
     <string name="scan_qr_camera_initialization_failed">دوربین در دسترس نیست. لطفاً دوباره امتحان کنید یا از دستگاه دیگری استفاده کنید.</string>
     <string name="qr_scanner_title_address">آدرس %1$s</string>
     <string name="qr_scanner_title_smart_scan">اسکن هوشمند</string>
+    <string name="qr_scanner_open_image">باز کردن تصویر</string>
+    <string name="qr_scanner_select_camera">دوربین</string>
+    <string name="qr_scanner_no_camera">دوربین پیدا نشد یا دسترسی رد شد</string>
+    <string name="qr_scanner_no_camera_hint_macos">دسترسی دوربین را در تنظیمات سیستم → حریم خصوصی و امنیت → دوربین فعال کنید و دوباره تلاش کنید.</string>
+    <string name="qr_scanner_no_camera_hint_windows">دسترسی دوربین را در تنظیمات → حریم خصوصی و امنیت → دوربین فعال کنید و دوباره تلاش کنید.</string>
+    <string name="qr_scanner_no_camera_hint_linux">اطمینان حاصل کنید دوربینی متصل است (/dev/video*) و کاربر شما در گروه video قرار دارد، سپس دوباره تلاش کنید.</string>
     <string name="choose_from_photos">انتخاب از عکس‌ها</string>
     <string name="image_decode_failed">خواندن کد QR از تصویر انتخاب‌شده امکان‌پذیر نبود</string>
     <string name="Send_Error_UnsupportedAddress">Time locking works only when sending to payment addresses starting with 1... (aka BIP44 addresses)</string>
@@ -2253,6 +2259,22 @@
     <string name="desktop_change_password_corrupted">فایل کلید آسیب دیده است: پس از قفل شدن برنامه نمی‌توانید وارد شوید. از هر عبارت بازیابی یک نسخه پشتیبان ذخیره کنید.</string>
     <string name="desktop_change_password_success">رمز عبور تغییر یافت</string>
     <string name="desktop_security_lock_now">اکنون قفل کن</string>
+    <string name="swap_progress_title">پیشرفت سواپ</string>
+    <string name="swap_progress_step_of">مرحله %1$d از %2$d</string>
+    <string name="swap_progress_step_header">مرحله %1$d · %2$s</string>
+    <string name="swap_progress_leg_send">در حال ارسال %1$s</string>
+    <string name="swap_progress_leg_receive">در حال دریافت %1$s</string>
+    <string name="swap_progress_leg_swap">در حال سواپ %1$s به %2$s</string>
+    <string name="swap_progress_leg_transfer">انتقال %1$s</string>
+    <string name="swap_progress_action_required_aml">ارائه‌دهنده سواپ را برای بررسی AML متوقف کرده است.</string>
+    <string name="swap_progress_action_required_frozen">ارائه‌دهنده سواپ را مسدود کرده است.</string>
+    <string name="swap_progress_action_required_overdue">واریز پس از انقضای قیمت‌گذاری انجام شد.</string>
+    <string name="swap_progress_action_required_default">سواپ متوقف شده و نیاز به اقدام شما دارد.</string>
+    <string name="swap_progress_contact_support">در ادامه با پشتیبانی ارائه‌دهنده تماس بگیرید.</string>
+    <string name="swap_support_telegram">پشتیبانی %1$s · تلگرام</string>
+    <string name="swap_support_email">پشتیبانی %1$s · ایمیل</string>
+    <string name="swap_support_email_deposit_tx">تراکنش واریز: %1$s</string>
+    <string name="swap_support_email_deposit_address">آدرس واریز: %1$s</string>
 
     <!-- Shamir backup restore -->
     <string name="import_wallet_shamir">پشتیبان Shamir</string>

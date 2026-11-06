@@ -27,13 +27,18 @@ import cash.p.terminal.modules.paycore.PayCoreAssetResolver
 import cash.p.terminal.modules.transactions.FilterTransactionType
 import cash.p.terminal.modules.transactions.TransactionStatus
 import cash.p.terminal.modules.transactions.toUniversalStatus
+import cash.p.terminal.modules.swapprogress.progressSummary
+import cash.p.terminal.modules.swapprogress.supportContacts
 import cash.p.terminal.network.changenow.domain.entity.toStatus
+import cash.p.terminal.network.swaprepository.SwapProvider
+import cash.p.terminal.network.unstoppable.domain.repository.UnstoppableRepository
 import cash.p.terminal.ui_compose.ColoredValue
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.transaction.TransactionSource
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.entities.CurrencyValue
 import io.horizontalsystems.core.DispatcherProvider
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -54,6 +59,7 @@ class TransactionInfoService(
     private val currencyManager: CurrencyManager,
     private val updateSwapProviderTransactionsStatusUseCase: UpdateSwapProviderTransactionsStatusUseCase,
     private val swapProviderTransactionsStorage: SwapProviderTransactionsStorage,
+    private val unstoppableRepository: UnstoppableRepository,
     private val dispatcherProvider: DispatcherProvider,
     private val userSwapTransactionId: String? = null,
     transactionStatusUrl: Pair<String, String>? = null,
@@ -336,6 +342,8 @@ class TransactionInfoService(
             }
         }
 
+        launchUnstoppableSwapProgress()
+
         adapter?.let { adapter ->
             launch {
                 adapter.getTransactionRecordsFlow(null, FilterTransactionType.All, null)
@@ -391,6 +399,24 @@ class TransactionInfoService(
         fetchAmlStatus()
     }
 
+    private fun CoroutineScope.launchUnstoppableSwapProgress() {
+        val item = transactionInfoItem
+        val uuid = item.swapTransactionId?.takeIf { item.swapProvider == SwapProvider.UNSTOPPABLE } ?: return
+        launch {
+            unstoppableRepository.observeTrack(uuid).collect { track ->
+                updateItem { it.copy(swapProgress = track?.progressSummary()) }
+            }
+        }
+        launch {
+            val contacts = unstoppableRepository.supportContacts(item.swapSubProviderId)
+            updateItem { it.copy(swapSupportContacts = contacts) }
+        }
+    }
+
+    private suspend fun updateItem(transform: (TransactionInfoItem) -> TransactionInfoItem) {
+        mutex.withLock { transactionInfoItem = transform(transactionInfoItem) }
+    }
+
     private fun findMatchingRealTransaction(
         pending: PendingTransactionRecord,
         allRecords: List<TransactionRecord>
@@ -444,6 +470,7 @@ class TransactionInfoService(
                 swapTransactionId = swapTransaction.transactionId,
                 swapTransactionStatus = swapStatus,
                 swapDuration = swapTransaction.swapDuration(),
+                swapDate = swapTransaction.date,
                 externalStatus = swapStatus.toUniversalStatus(),
             )
         }

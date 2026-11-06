@@ -146,8 +146,7 @@ fun AddressScreen(
                     initial = uiState.address,
                     hint = stringResource(Res.string.Contacts_AddressHint),
                     state = uiState.addressState,
-                    qrScannerEnabled = true,
-                    navigation = navigation,
+                    qrScannerNavigation = navigation,
                     qrScannerTitle = stringResource(Res.string.qr_scanner_title_address)
                         .format(uiState.blockchain.name),
                 ) {

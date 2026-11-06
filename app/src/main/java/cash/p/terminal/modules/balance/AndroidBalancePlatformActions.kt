@@ -19,6 +19,8 @@ class AndroidBalancePlatformActions(
 
     override val appLocked: StateFlow<Boolean> = pinComponent.isLockedFlow
 
+    override val connectionsSupported = true
+
     override fun openConnectionLink(
         text: String,
         scope: CoroutineScope,
