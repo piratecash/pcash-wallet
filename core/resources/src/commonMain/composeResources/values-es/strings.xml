@@ -603,6 +603,7 @@
     <string name="Swap_Price">Precio</string>
     <string name="Swap_AvailableBalance">Saldo disponible</string>
     <string name="swap_insufficient_fee_balance">El saldo actual de %1$s es inferior al monto requerido para procesar esta transacción, incluida la comisión.</string>
+    <string name="insufficient_balance_required_available">No hay suficiente %1$s. Esta transacción requiere al menos %2$s incluyendo las comisiones de red; disponible %3$s.</string>
     <string name="fee_warning_low_balance">El saldo es menor de lo necesario. Podrías pagar hasta %1$s en comisiones.</string>
     <string name="swap_balance_for_fees">Saldo para comisiones</string>
     <string name="fee">Comisión</string>

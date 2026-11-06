@@ -31,6 +31,7 @@ import cash.p.terminal.modules.send.SendPage.ProceedActionData
 import cash.p.terminal.modules.send.SendScreen
 import cash.p.terminal.modules.send.SendSuggestionsBar
 import cash.p.terminal.modules.send.address.AddressCheckerControl
+import cash.p.terminal.modules.send.fee.insufficientRequiredBalanceText
 import cash.p.terminal.modules.send.address.SmartContractCheckSection
 import cash.p.terminal.modules.send.offline.OfflineSignActionCell
 import cash.p.terminal.modules.send.offline.OfflineSignPage
@@ -66,6 +67,7 @@ fun SendTonPageContent(
     addressCheckerControl: AddressCheckerControl,
     onNextClick: (ProceedActionData) -> Unit,
 ) {
+    val requiredTon = viewModel.uiState.requiredTon
     SendTonScreen(
         navigation = navigation,
         prefilledData = prefilledData,
@@ -84,7 +86,8 @@ fun SendTonPageContent(
             feeCoinBalance = viewModel.feeCoinBalance,
             feePrimary = viewModel.formatFeePrimary(viewModel.uiState.fee),
             feeSecondary = viewModel.formatFeeSecondary(viewModel.uiState.fee, viewModel.feeCoinRate),
-            insufficientFeeBalance = viewModel.isInsufficientFeeBalance(viewModel.uiState.fee),
+            insufficientFeeBalance = viewModel.isInsufficientFeeBalance(requiredTon),
+            insufficientFeeText = viewModel.insufficientRequiredTonText(requiredTon),
             offlineSignSupported = viewModel.offlineSignSupported,
         ),
         callbacks = SendTonScreenCallbacks(
@@ -143,7 +146,7 @@ private fun SendTonContent(
     SendScreen(
         title = state.title,
         onCloseClick = { navigation.navigateUpSafely() },
-        proceedEnabled = state.uiState.canBeSend,
+        proceedEnabled = state.onlineSendEnabled,
         onSendClick = { callbacks.onNextClick(state.uiState.proceedActionData(state.wallet)) },
         bottomOverlay = {
             TonSuggestionsBar(
@@ -204,8 +207,13 @@ private data class SendTonScreenState(
     val feePrimary: String,
     val feeSecondary: String,
     val insufficientFeeBalance: Boolean,
+    val insufficientFeeText: String?,
     val offlineSignSupported: Boolean,
-)
+) {
+    // Offline signing is not gated on the TON balance; only online sending is.
+    val onlineSendEnabled: Boolean
+        get() = uiState.canBeSend && !insufficientFeeBalance
+}
 
 private data class SendTonScreenCallbacks(
     val onOfflineSignClick: () -> Unit,
@@ -310,6 +318,7 @@ private fun TonFeeAndRiskSections(
             feeSecondary = state.feeSecondary,
             insufficientFeeBalance = state.insufficientFeeBalance,
             onBalanceClicked = onBalanceClick,
+            insufficientFeeText = state.insufficientFeeText,
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -352,9 +361,15 @@ private fun TonProceedButtons(
                 .padding(horizontal = 16.dp, vertical = 24.dp),
             title = stringResource(Res.string.Send_DialogProceed),
             onClick = { callbacks.onNextClick(state.uiState.proceedActionData(state.wallet)) },
-            enabled = state.uiState.canBeSend
+            enabled = state.onlineSendEnabled
         )
     }
+}
+
+@Composable
+internal fun SendTonViewModel.insufficientRequiredTonText(requiredTon: BigDecimal?): String? {
+    if (requiredTon == null || !isInsufficientFeeBalance(requiredTon)) return null
+    return insufficientRequiredBalanceText(requiredTon, feeCoinBalance ?: BigDecimal.ZERO, feeToken).getString()
 }
 
 private fun SendTonUiState.proceedActionData(wallet: Wallet) =

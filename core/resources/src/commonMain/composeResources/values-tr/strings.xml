@@ -608,6 +608,7 @@
     <string name="Swap_Price">Fiyat</string>
     <string name="Swap_AvailableBalance">Mevcut Bakiye</string>
     <string name="swap_insufficient_fee_balance">Mevcut %1$s bakiyesi, işlem ücreti dahil bu işlemi gerçekleştirmek için gereken tutardan düşüktür.</string>
+    <string name="insufficient_balance_required_available">Yeterli %1$s yok. Bu işlem, ağ ücretleri dahil en az %2$s gerektiriyor; kullanılabilir bakiye %3$s.</string>
     <string name="fee_warning_low_balance">Bakiye gerekli seviyenin altında. Ücretler %1$s\u0027ye kadar çıkabilir.</string>
     <string name="swap_balance_for_fees">Ücretler için bakiye</string>
     <string name="fee">Ücret</string>
