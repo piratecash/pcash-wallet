@@ -1,8 +1,9 @@
 package cash.p.terminal.shared.desktop
 
 import cash.p.terminal.modules.market.MarketPages
+import cash.p.terminal.modules.markdown.MarkdownPage
 import cash.p.terminal.navigation.HSPage
 
 class DesktopMarketPages : MarketPages {
-    override fun markdown(url: String): HSPage? = null
+    override fun markdown(url: String): HSPage = MarkdownPage(MarkdownPage.Input(url, true))
 }

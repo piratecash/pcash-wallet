@@ -13,6 +13,8 @@ import cash.p.terminal.modules.coin.CoinPage
 import cash.p.terminal.modules.createaccount.CreateAccountPage
 import cash.p.terminal.modules.manageaccount.backupkey.BackupKeyPage
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
+import cash.p.terminal.modules.markdown.MarkdownPage
+import cash.p.terminal.modules.markdown.isMarkdownLink
 import cash.p.terminal.modules.multiswap.SwapPage
 import cash.p.terminal.modules.multiswap.exchanges.MultiSwapExchangesPage
 import cash.p.terminal.modules.restoreaccount.RestoreAccountPage
@@ -53,11 +55,17 @@ class DesktopWalletPages(private val urlOpener: UrlOpener) :
     override fun resetToFactory(account: Account): HSPage? = null
     override fun faq(topic: FaqTopic): HSPage = DesktopMarkdownAssetPage(topic.assetPrefix)
     override fun appIcon(): HSPage? = null
+    override fun privacy(): HSPage = DesktopPrivacyPage()
     override val isBlockchainStatusAvailable = true
     override fun blockchainStatus(blockchain: Blockchain): HSPage = BlockchainStatusPage(blockchain)
 
-    // Desktop has no in-app markdown reader for remote files, so every link opens in the browser.
-    override fun openMarkdownOrWeblink(navigation: HSNavigation, url: String) = urlOpener.open(url)
+    override fun openMarkdownOrWeblink(navigation: HSNavigation, url: String) {
+        if (isMarkdownLink(url)) {
+            navigation.slideFromRight(MarkdownPage(MarkdownPage.Input(url)))
+        } else {
+            urlOpener.open(url)
+        }
+    }
 
     // Tangem cards need NFC: hardwareWallet() and resetToFactory() hide every way to these.
     override suspend fun accessCodeRecovery(): HSPage? = null

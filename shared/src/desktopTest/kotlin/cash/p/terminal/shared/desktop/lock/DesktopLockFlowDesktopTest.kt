@@ -133,7 +133,7 @@ class DesktopLockFlowDesktopTest {
     private fun ComposeUiTest.createPasswordAndLock() {
         setContent {
             TestWindowHost {
-                ComposeAppTheme { DesktopRoot(appVersion = "test", wipeFailed = false) }
+                ComposeAppTheme { DesktopRoot(wipeFailed = false) }
             }
         }
 

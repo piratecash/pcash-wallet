@@ -30,8 +30,12 @@ private object DesktopMarketFavoritesChangeListener : MarketFavoritesChangeListe
 internal actual fun platformMarketModule(): Module = module {
     single { MarketApiConfig(MarketApiConfig.PROD_BASE_URL, MarketApiConfig.API_KEY) }
 
+    single(named(MARKET_HTTP_CACHE)) {
+        Cache(desktopAppDataFile("market-http-cache"), HTTP_CACHE_SIZE_BYTES)
+    }
+
     single(named(RETROFIT_OK_HTTP_CLIENT)) {
-        marketOkHttpClient(Cache(desktopAppDataFile("market-http-cache"), HTTP_CACHE_SIZE_BYTES))
+        marketOkHttpClient(get<Cache>(named(MARKET_HTTP_CACHE)))
     }
 
     single<InitialCoinsSource> { ClasspathInitialCoinsSource() }

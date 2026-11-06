@@ -1,5 +1,6 @@
 package cash.p.terminal.shared.desktop
 
+import cash.p.terminal.entities.AppVersion
 import cash.p.terminal.modules.amount.AmountInputType
 import io.horizontalsystems.core.DesktopSettingsStore
 import kotlinx.coroutines.CoroutineScope
@@ -17,11 +18,10 @@ import kotlin.test.assertTrue
 
 class DesktopWalletSettingsStorageTest {
 
-    private val directory = Files.createTempDirectory("wallet-settings").toFile()
+    private val directory = Files.createTempDirectory("wallet-settings-store").toFile()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val storage = DesktopWalletSettingsStorage(
-        DesktopSettingsStore(File(directory, "settings.preferences_pb"), scope)
-    )
+    private val settingsStore = DesktopSettingsStore(File(directory, "settings.preferences_pb"), scope)
+    private val storage = DesktopWalletSettingsStorage(settingsStore)
 
     @AfterTest
     fun tearDown() {
@@ -68,5 +68,41 @@ class DesktopWalletSettingsStorageTest {
 
         assertEquals(setOf("oneinch", "changenow"), storage.disabledProviderIds)
         assertEquals("""[{"name":"changelly"}]""", storage.backendProviders)
+    }
+
+    @Test
+    fun releaseNotes_nothingStored_showsAfterUpdateAndHasNoShownVersion() {
+        assertTrue(storage.showChangelogAfterUpdate)
+        assertNull(storage.changelogShownForAppVersion)
+    }
+
+    @Test
+    fun releaseNotes_written_isReadBack() {
+        storage.showChangelogAfterUpdate = false
+        storage.changelogShownForAppVersion = "1.2.3"
+
+        assertFalse(storage.showChangelogAfterUpdate)
+        assertEquals("1.2.3", storage.changelogShownForAppVersion)
+    }
+
+    @Test
+    fun appVersions_nothingStored_isEmpty() {
+        assertEquals(emptyList(), storage.appVersions)
+    }
+
+    @Test
+    fun appVersions_written_isReadBack() {
+        val versions = listOf(AppVersion("1.0.0", 10L), AppVersion("1.1.0", 20L))
+
+        storage.appVersions = versions
+
+        assertEquals(versions, storage.appVersions)
+    }
+
+    @Test
+    fun appVersions_corruptValue_isEmpty() {
+        settingsStore.setString("appVersions", "{not json")
+
+        assertEquals(emptyList(), storage.appVersions)
     }
 }

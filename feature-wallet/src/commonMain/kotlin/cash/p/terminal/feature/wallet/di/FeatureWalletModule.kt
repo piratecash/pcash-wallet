@@ -14,6 +14,8 @@ import cash.p.terminal.core.managers.LitecoinKitPool
 import cash.p.terminal.core.managers.RestoreSettingsManager
 import cash.p.terminal.core.managers.SeedPhraseQrCrypto
 import cash.p.terminal.core.managers.StellarAccountManager
+import cash.p.terminal.core.managers.AppVersionManager
+import cash.p.terminal.core.managers.ReleaseNotesManager
 import cash.p.terminal.core.managers.TermsManager
 import cash.p.terminal.core.managers.ThorchainAccountManagers
 import cash.p.terminal.core.managers.TimePasswordProvider
@@ -31,6 +33,10 @@ import cash.p.terminal.core.usecase.MoneroWalletUseCase
 import cash.p.terminal.core.usecase.ValidateMoneroHeightUseCase
 import cash.p.terminal.core.usecase.ValidateMoneroMnemonicUseCase
 import cash.p.terminal.feature.wallet.LocalizedAssetReader
+import cash.p.terminal.modules.releasenotes.ReleaseNotesViewModel
+import cash.p.terminal.modules.settings.about.AboutViewModel
+import cash.p.terminal.modules.settings.appcache.AppCacheViewModel
+import cash.p.terminal.modules.settings.appstatus.AppStatusViewModel
 import cash.p.terminal.modules.settings.appearance.AppearanceViewModel
 import cash.p.terminal.modules.settings.terms.TermsViewModel
 import cash.p.terminal.core.managers.RandomProvider
@@ -52,6 +58,7 @@ import cash.p.terminal.modules.createaccount.CreateAdvancedAccountViewModel
 import cash.p.terminal.modules.createaccount.passphraseterms.PassphraseTermsViewModel
 import cash.p.terminal.modules.importwallet.ImportWalletViewModel
 import cash.p.terminal.modules.intro.IntroViewModel
+import cash.p.terminal.modules.markdown.MarkdownViewModel
 import cash.p.terminal.modules.manageaccount.ManageAccountViewModel
 import cash.p.terminal.modules.manageaccount.backupconfirmkey.BackupConfirmKeyViewModel
 import cash.p.terminal.modules.manageaccount.backupkey.BackupKeyViewModel
@@ -439,6 +446,8 @@ val featureWalletModule = module {
     singleOf(::DefaultUserManager) bind UserManager::class
     singleOf(::AccountFactory) bind IAccountFactory::class
     singleOf(::TermsManager) bind ITermsManager::class
+    singleOf(::ReleaseNotesManager)
+    singleOf(::AppVersionManager)
     singleOf(::BackupManager) bind IBackupManager::class
     factoryOf(::WalletActivator)
     factoryOf(::WordsManager)
@@ -461,6 +470,10 @@ val featureWalletModule = module {
     factoryOf(::BlockchainSettingsBackup)
     viewModelOf(::TermsViewModel)
     viewModelOf(::AppearanceViewModel)
+    viewModelOf(::AboutViewModel)
+    viewModelOf(::AppStatusViewModel)
+    viewModelOf(::AppCacheViewModel)
+    viewModelOf(::ReleaseNotesViewModel)
     viewModelOf(::QRScannerViewModel)
     factoryOf(::WatchAddressService)
     factoryOf(::BlockchainSettingsService)
@@ -475,6 +488,7 @@ val featureWalletModule = module {
     viewModel { (blockchain: Blockchain) -> EvmNetworkViewModel(blockchain, get()) }
     viewModel { (blockchain: Blockchain) -> AddRpcViewModel(blockchain, get()) }
 
+    viewModel { (url: String) -> MarkdownViewModel(url, get(), get()) }
     viewModelOf(::IntroViewModel)
     viewModelOf(::BackupAlertViewModel)
     viewModelOf(::CreateAdvancedAccountViewModel)

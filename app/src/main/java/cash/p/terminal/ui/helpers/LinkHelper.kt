@@ -8,19 +8,13 @@ import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.net.toUri
 import cash.p.terminal.R
+import cash.p.terminal.modules.markdown.validUrlOrNull
 import cash.p.terminal.ui_compose.theme.appColors
-import java.net.MalformedURLException
-import java.net.URL
 
 object LinkHelper {
 
-    fun isMarkdownLink(link: String): Boolean {
-        val url = getValidUrl(link) ?: return false
-        return url.endsWith(".md", ignoreCase = true) || url.endsWith(".markdown", ignoreCase = true)
-    }
-
     fun openLinkInAppBrowser(context: Context, link: String) {
-        val urlString = getValidUrl(link) ?: return
+        val urlString = validUrlOrNull(link) ?: return
 
         try {
             val builder = CustomTabsIntent.Builder()
@@ -52,23 +46,6 @@ object LinkHelper {
             } catch (e: Exception) {
                 Log.e("LinkHelper", "Failed to open URL: $urlString", e)
             }
-        }
-    }
-
-    private fun getValidUrl(urlString: String): String? {
-        if (urlString.isBlank())
-            return null
-
-        val url = createUrl(urlString) ?: createUrl(urlString, "https://") ?: return null
-
-        return url.toString()
-    }
-
-    private fun createUrl(urlString: String, protocol: String = ""): URL? {
-        return try {
-            URL("$protocol$urlString")
-        } catch (e: MalformedURLException) {
-            null
         }
     }
 }

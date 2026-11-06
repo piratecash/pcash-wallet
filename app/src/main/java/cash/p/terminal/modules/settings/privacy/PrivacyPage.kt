@@ -3,6 +3,7 @@ package cash.p.terminal.modules.settings.privacy
 import androidx.compose.runtime.Composable
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.navigation.navigateUpSafely
 import org.koin.compose.viewmodel.koinViewModel
 
 class PrivacyPage : HSPage() {
@@ -11,9 +12,9 @@ class PrivacyPage : HSPage() {
     override fun GetContent(navigation: HSNavigation) {
         val viewModel: PrivacyViewModel = koinViewModel()
         PrivacyScreen(
-            navigation = navigation,
-            uiState = viewModel.uiState,
-            toggleCrashData = viewModel::toggleCrashData
+            shareCrashData = viewModel.uiState.uiStatsEnabled,
+            onToggleShareCrashData = viewModel::toggleCrashData,
+            onClose = navigation::navigateUpSafely
         )
     }
 }

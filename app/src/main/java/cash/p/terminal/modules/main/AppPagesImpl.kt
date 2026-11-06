@@ -20,6 +20,7 @@ import cash.p.terminal.modules.qrscanner.QRScannerPage
 import cash.p.terminal.modules.resettofactorysettings.ResetToFactorySettingsPage
 import cash.p.terminal.modules.restoreaccount.RestoreAccountPage
 import cash.p.terminal.modules.settings.appearance.AppIconPage
+import cash.p.terminal.modules.settings.privacy.PrivacyPage
 import cash.p.terminal.navigation.AppPages
 import cash.p.terminal.navigation.BackupKeyInput
 import cash.p.terminal.navigation.HSNavigation
@@ -51,6 +52,7 @@ class AppPagesImpl(
         ResetToFactorySettingsPage(ResetToFactorySettingsPage.Input(account))
     override fun faq(topic: FaqTopic): HSPage = FaqManager.faqPage(topic)
     override fun appIcon(): HSPage = AppIconPage()
+    override fun privacy(): HSPage = PrivacyPage()
     override val isBlockchainStatusAvailable = true
     override fun blockchainStatus(blockchain: Blockchain): HSPage = BlockchainStatusPage(blockchain)
     override fun openMarkdownOrWeblink(navigation: HSNavigation, url: String) =

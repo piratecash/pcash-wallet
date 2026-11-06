@@ -37,8 +37,6 @@
     <ID>AppSingletonAccess:MainActivity.kt$MainActivity$App.sqlCipherLoadFailed</ID>
     <ID>AppSingletonAccess:MainModule.kt$MainModule$App.localStorage</ID>
     <ID>AppSingletonAccess:MainViewModel.kt$MainViewModel$App.tonConnectManager</ID>
-    <ID>AppSingletonAccess:MarkdownModule.kt$MarkdownModule.Factory$App.connectivityManager</ID>
-    <ID>AppSingletonAccess:MarkdownModule.kt$MarkdownModule.Factory$App.networkManager</ID>
     <ID>AppSingletonAccess:MarketKitExtensions.kt$App.priceManager</ID>
     <ID>AppSingletonAccess:MarketWidget.kt$MarketWidget$App.numberFormatter</ID>
     <ID>AppSingletonAccess:MarketWidgetManager.kt$MarketWidgetManager.Companion$App.localStorage</ID>
@@ -49,8 +47,6 @@
     <ID>AppSingletonAccess:PinComponentLogLoggingTest.kt$PinComponentLogLoggingTest$App.localStorage</ID>
     <ID>AppSingletonAccess:PinComponentSecureResetLevelTest.kt$PinComponentSecureResetLevelTest$App.localStorage</ID>
     <ID>AppSingletonAccess:PinSetModule.kt$PinSetModule.Factory$App.pinComponent</ID>
-    <ID>AppSingletonAccess:ReleaseNotesViewModel.kt$ReleaseNotesViewModel$App.connectivityManager</ID>
-    <ID>AppSingletonAccess:ReleaseNotesViewModel.kt$ReleaseNotesViewModel$App.releaseNotesManager</ID>
     <ID>AppSingletonAccess:RootedDeviceModule.kt$RootedDeviceModule.Factory$App.localStorage</ID>
     <ID>AppSingletonAccess:SecurityTorSettingsModule.kt$SecurityTorSettingsModule.Factory$App.pinComponent</ID>
     <ID>AppSingletonAccess:SecurityTorSettingsModule.kt$SecurityTorSettingsModule.Factory$App.torKitManager</ID>
@@ -238,9 +234,7 @@
     <ID>LargeClass:OfflineTransactionPayloadEncoderTest.kt$OfflineTransactionPayloadEncoderTest</ID>
     <ID>LargeClass:TokenBalanceViewModelTest.kt$TokenBalanceViewModelTest : KoinTest</ID>
     <ID>LargeClass:TransactionMonitorTest.kt$TransactionMonitorTest</ID>
-    <ID>LongMethod:AboutPage.kt$@Composable private fun SettingSections( viewModel: AboutViewModel, navigation: HSNavigation )</ID>
     <ID>LongMethod:AdvancedSecurityScreen.kt$@Composable internal fun AdvancedSecurityScreen( uiState: AdvancedSecurityUiState, onCreateHiddenWalletClick: () -&gt; Unit, onSecureResetToggle: (Boolean) -&gt; Unit, onDeleteContactsToggle: (Boolean) -&gt; Unit, onCalculatorPinClick: () -&gt; Unit, onClose: () -&gt; Unit )</ID>
-    <ID>LongMethod:AppStatusScreen.kt$@Composable fun AppStatusScreen( navigation: HSNavigation )</ID>
     <ID>LongMethod:AppearanceScreen.kt$@Composable internal fun AppearanceScreen( uiState: AppearanceUIState, onThemeSelect: (ThemeType) -&gt; Unit, onLaunchScreenSelect: (LaunchPage) -&gt; Unit, onBalanceViewTypeSelect: (BalanceViewType) -&gt; Unit, onPriceChangeIntervalSelect: (PriceChangeInterval) -&gt; Unit, onMarketTabsHiddenChange: (Boolean) -&gt; Unit, onBalanceTabButtonsHiddenChange: (Boolean) -&gt; Unit, onAppIconClick: () -&gt; Unit, onClose: () -&gt; Unit )</ID>
     <ID>LongMethod:BackupV4DecryptionTest.kt$BackupV4DecryptionTest$@Test fun `backup with hardware_card type is parsed correctly`()</ID>
     <ID>LongMethod:BtcBlockchainSettingsScreen.kt$@Composable internal fun BtcBlockchainSettingsScreen( uiState: BtcBlockchainSettingsUIState, onSaveClick: () -&gt; Unit, onSelectRestoreMode: (BtcBlockchainSettingsModule.ViewItem) -&gt; Unit, onCustomPeersChange: (String) -&gt; Unit, navigation: HSNavigation, onBlockchainStatusClick: () -&gt; Unit, windowInsets: WindowInsets = NavigationBarDefaults.windowInsets, )</ID>
@@ -262,7 +256,6 @@
     <ID>LongMethod:PushNotificationsScreen.kt$@Suppress("LongParameterList") @Composable internal fun PushNotificationsScreen( uiState: PushNotificationsUiState, onShowNotificationsToggle: (Boolean) -&gt; Unit, onBlockchainNotificationsToggle: (String, Boolean) -&gt; Unit, onPollingIntervalChange: (PollingInterval) -&gt; Unit, onShowBlockchainNameToggle: (Boolean) -&gt; Unit, onShowCoinAmountToggle: (Boolean) -&gt; Unit, onShowFiatAmountToggle: (Boolean) -&gt; Unit, onClose: () -&gt; Unit, noNotificationPermission: Boolean = false, onPermissionWarningClick: () -&gt; Unit = {}, )</ID>
     <ID>LongMethod:QRScannerScreen.kt$@Composable private fun ScannerOverlay()</ID>
     <ID>LongMethod:QRScannerScreen.kt$@Composable private fun ScannerView(onScan: (String) -&gt; Unit)</ID>
-    <ID>LongMethod:ReleaseNotesPage.kt$@Composable fun ReleaseNotesScreen( closeablePopup: Boolean, uiState: ReleaseNotesUiState, onCloseClick: () -&gt; Unit, onRetryClick: () -&gt; Unit, onWhatsNewShown: () -&gt; Unit, onShowChangelogToggle: () -&gt; Unit, onUrlClick: (String) -&gt; Unit = {} )</ID>
     <ID>LongMethod:ResetToFactorySettingsPage.kt$@Composable private fun ResetToFactorySettingsScreen( uiState: ResetToFactorySettingsViewUIState, navigation: HSNavigation, onResetCardClick: () -&gt; Unit )</ID>
     <ID>LongMethod:SecuritySettingsPage.kt$@Composable private fun SecurityCenterScreen( securitySettingsViewModel: SecuritySettingsViewModel, uiState: SecuritySettingsUiState, torViewModel: SecurityTorSettingsViewModel, navigation: HSNavigation, onTransactionAutoHideEnabledChange: (Boolean) -&gt; Unit, onSetTransactionAutoHidePinClicked: () -&gt; Unit, onDisableTransactionAutoHidePinClicked: () -&gt; Unit, onChangeDisplayClicked: () -&gt; Unit, onTransferPasscodeEnabledChange: (Boolean) -&gt; Unit, showAppRestartAlert: () -&gt; Unit, restartApp: () -&gt; Unit, onEnableSaveAccessCodeForHardwareWallet: (Boolean) -&gt; Unit, onSystemPinRequiredChange: (Boolean) -&gt; Unit, windowInsets: WindowInsets = NavigationBarDefaults.windowInsets, )</ID>
     <ID>LongMethod:SecuritySettingsPage.kt$SecuritySettingsPage$@Composable override fun GetContent(navigation: HSNavigation)</ID>
@@ -285,7 +278,6 @@
     <ID>LongMethod:WCSessionScreen.kt$@Composable fun WCSessionsScreen( navigation: HSNavigation, deepLinkUri: String?, windowInsets: WindowInsets = NavigationBarDefaults.windowInsets, )</ID>
     <ID>LongMethod:WcRequestScreen.kt$@Composable fun WcRequestScreen( navigation: HSNavigation, sessionRequest: Wallet.Model.SessionRequest, wcAction: AbstractWCAction )</ID>
     <ID>LongParameterList:AndroidAppSettingsBackup.kt$AndroidAppSettingsBackup$( private val localStorage: ILocalStorage, private val languageManager: LanguageManager, private val blockchainSettingsStorage: BlockchainSettingsStorage, private val evmBlockchainManager: EvmBlockchainManager, private val balanceViewTypeManager: BalanceViewTypeManager, private val appIconService: AppIconService, private val themeService: ThemeService, private val chartIndicatorManager: ChartIndicatorManager, private val chartIndicatorSettingsDao: ChartIndicatorSettingsDao, private val balanceHiddenManager: BalanceHiddenManager, private val baseTokenManager: BaseTokenManager, private val launchScreenService: LaunchScreenService, private val currencyManager: CurrencyManager, private val btcBlockchainManager: BtcBlockchainManager, private val evmSyncSourceManager: EvmSyncSourceManager, private val evmSyncSourceStorage: EvmSyncSourceStorage, private val solanaRpcSourceManager: SolanaRpcSourceManager, private val contactsRepository: ContactsRepository )</ID>
-    <ID>LongParameterList:AppStatusViewModel.kt$AppStatusViewModel$( private val context: Context, private val systemInfoManager: ISystemInfoManager, private val localStorage: ILocalStorage, private val uniqueCodeStorage: IUniqueCodeStorage, private val accountManager: IAccountManager, private val walletManager: IWalletManager, private val adapterManager: IAdapterManager, private val marketKit: MarketKitWrapper, private val evmBlockchainManager: EvmBlockchainManager, private val moneroKitManager: MoneroKitManager, private val stellarKitManager: StellarKitManager, private val thorchainKitManagers: ThorchainKitManagers, private val tronKitManager: TronKitManager, private val tonKitManager: TonKitManager, private val solanaKitManager: SolanaKitManager, private val btcBlockchainManager: BtcBlockchainManager, private val checkPremiumUseCase: CheckPremiumUseCase, private val networkErrorTracker: NetworkErrorTracker, private val dispatcherProvider: DispatcherProvider, private val statusReportFile: StatusReportFile, )</ID>
     <ID>LongParameterList:AppearanceScreen.kt$( uiState: AppearanceUIState, onThemeSelect: (ThemeType) -&gt; Unit, onLaunchScreenSelect: (LaunchPage) -&gt; Unit, onBalanceViewTypeSelect: (BalanceViewType) -&gt; Unit, onPriceChangeIntervalSelect: (PriceChangeInterval) -&gt; Unit, onMarketTabsHiddenChange: (Boolean) -&gt; Unit, onBalanceTabButtonsHiddenChange: (Boolean) -&gt; Unit, onAppIconClick: () -&gt; Unit, onClose: () -&gt; Unit )</ID>
     <ID>LongParameterList:BackupProvider.kt$BackupProvider$( localStorage: ILocalStorage, languageManager: LanguageManager, walletStorage: IEnabledWalletStorage, settingsManager: RestoreSettingsManager, accountManager: IAccountManager, accountFactory: IAccountFactory, walletManager: IWalletManager, restoreSettingsManager: RestoreSettingsManager, blockchainSettingsStorage: BlockchainSettingsStorage, evmBlockchainManager: EvmBlockchainManager, marketFavoritesManager: MarketFavoritesManager, balanceViewTypeManager: BalanceViewTypeManager, appIconService: AppIconService, themeService: ThemeService, chartIndicatorManager: ChartIndicatorManager, chartIndicatorSettingsDao: ChartIndicatorSettingsDao, balanceHiddenManager: BalanceHiddenManager, baseTokenManager: BaseTokenManager, launchScreenService: LaunchScreenService, currencyManager: CurrencyManager, btcBlockchainManager: BtcBlockchainManager, evmSyncSourceManager: EvmSyncSourceManager, evmSyncSourceStorage: EvmSyncSourceStorage, solanaRpcSourceManager: SolanaRpcSourceManager, contactsRepository: ContactsRepository )</ID>
     <ID>LongParameterList:ChecklistTermsScreen.kt$( title: String, terms: List&lt;TermItem&gt;, buttonTitle: String, buttonEnabled: Boolean, onCheckboxToggle: (Int) -&gt; Unit, onAgreeClick: () -&gt; Unit, onNavigateBack: () -&gt; Unit, warningContent: @Composable () -&gt; Unit, checkboxesEnabled: Boolean = true, )</ID>
@@ -314,8 +306,6 @@
     <ID>Material2:HsSlider.kt$import androidx.compose.material.Slider</ID>
     <ID>Material2:HsSlider.kt$import androidx.compose.material.SliderDefaults</ID>
     <ID>Material2:MainPage.kt$import androidx.compose.material.BadgedBox</ID>
-    <ID>Material2:PrivacyScreen.kt$import androidx.compose.material.Divider</ID>
-    <ID>Material2:PrivacyScreen.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:SetDuressPinIntroPage.kt$import androidx.compose.material.Divider</ID>
     <ID>Material2:SolanaNetworkPage.kt$import androidx.compose.material.Surface</ID>
     <ID>Material2:TonConnectMainScreen.kt$import androidx.compose.material.ModalBottomSheetValue</ID>
@@ -375,7 +365,6 @@
     <ID>ModifierMissing:AdditionalDataCell2.kt$AdditionalDataCell2</ID>
     <ID>ModifierMissing:AddressCell.kt$AddressCell</ID>
     <ID>ModifierMissing:AmountCell.kt$AmountCell</ID>
-    <ID>ModifierMissing:AppStatusScreen.kt$AppStatusScreen</ID>
     <ID>ModifierMissing:BlockchainSettingsPage.kt$BlockchainSettingsBlock</ID>
     <ID>ModifierMissing:CardTabs.kt$CardTabs</ID>
     <ID>ModifierMissing:CellTweet.kt$CellTweet</ID>
@@ -392,9 +381,7 @@
     <ID>ModifierMissing:PinNumpad.kt$PinNumpad</ID>
     <ID>ModifierMissing:PinSetView.kt$PinSet</ID>
     <ID>ModifierMissing:PinUnlockView.kt$PinUnlock</ID>
-    <ID>ModifierMissing:PrivacyScreen.kt$PrivacyScreen</ID>
     <ID>ModifierMissing:QRScannerScreen.kt$QRScannerScreen</ID>
-    <ID>ModifierMissing:ReleaseNotesPage.kt$ReleaseNotesScreen</ID>
     <ID>ModifierMissing:RootedDeviceScreen.kt$RootedDeviceScreen</ID>
     <ID>ModifierMissing:SecuritySettingsPage.kt$SecurityCenterCell</ID>
     <ID>ModifierMissing:SendSmsNotificationScreen.kt$SendSmsNotificationScreen</ID>
@@ -426,7 +413,6 @@
     <ID>ModifierMissing:WCSessionScreen.kt$WCSessionsScreen</ID>
     <ID>ModifierMissing:WCSignEthereumTransactionRequestScreen.kt$WCSignEthereumTransactionRequestScreen</ID>
     <ID>ModifierMissing:WcRequestScreen.kt$WcRequestScreen</ID>
-    <ID>MultipleEmitters:AboutPage.kt$SettingSections</ID>
     <ID>MultipleEmitters:AppIconScreen.kt$AppIconContent</ID>
     <ID>MultipleEmitters:BlockchainSettingsPage.kt$BlockchainSettingsBlock</ID>
     <ID>MultipleEmitters:MainPage.kt$MainScreen</ID>
@@ -443,7 +429,6 @@
     <ID>ParameterNaming:KeyStoreActivity.kt$onTermsAccepted</ID>
     <ID>ParameterNaming:QRScannerScreen.kt$onErrorMessageConsumed</ID>
     <ID>ParameterNaming:QRScannerScreen.kt$onGalleryImagePicked</ID>
-    <ID>ParameterNaming:ReleaseNotesPage.kt$onWhatsNewShown</ID>
     <ID>ParameterNaming:RootedDeviceScreen.kt$onIgnoreWarningClicked</ID>
     <ID>ParameterNaming:SecuritySettingsPage.kt$onChangeDisplayClicked</ID>
     <ID>ParameterNaming:SecuritySettingsPage.kt$onDisableTransactionAutoHidePinClicked</ID>
@@ -456,7 +441,6 @@
     <ID>ParameterNaming:TransactionAutoHideBlock.kt$onChangeDisplayClicked</ID>
     <ID>ParameterNaming:TransactionAutoHideBlock.kt$onDisablePinClicked</ID>
     <ID>ParameterNaming:TransactionAutoHideBlock.kt$onPinClicked</ID>
-    <ID>PreviewPublic:AppStatusScreen.kt$StatusBlockPreview</ID>
     <ID>PreviewPublic:BiometricDisabledDialog.kt$Preview_BiometricDisabledDialog</ID>
     <ID>PreviewPublic:CardTabs.kt$PreviewCardTabs</ID>
     <ID>PreviewPublic:CellTweet.kt$CellTweetPreview</ID>
@@ -466,7 +450,6 @@
     <ID>PreviewPublic:PinTopBlock.kt$Preview_PinTopBlockEnabled</ID>
     <ID>PreviewPublic:PinTopBlock.kt$Preview_PinTopBlockLocked</ID>
     <ID>PreviewPublic:QuoteInfoRow.kt$QuoteInfoRowPreview</ID>
-    <ID>PreviewPublic:ReleaseNotesPage.kt$ReleaseNotesScreenPreview</ID>
     <ID>PreviewPublic:RootedDeviceScreen.kt$Preview_RootedDeviceScreen</ID>
     <ID>PreviewPublic:SemiCircleChart.kt$SemiCircleChartPreview</ID>
     <ID>PreviewPublic:WCSessionError.kt$PreviewWCSessionsEmpty</ID>
@@ -544,7 +527,6 @@
     <ID>VariableNaming:TonHelperKtTest.kt$TonHelperKtTest$private val USER_WALLET_ADDRESS = "UQAQnxLqlX2B6w4jQzzzPWA8eyWZVZBz6Y0D_8noARLOaEAn"</ID>
     <ID>VariableNaming:TorControl.kt$TorControl$private val CONTROL_SOCKET_TIMEOUT = 60000</ID>
     <ID>VariableNaming:TorControl.kt$TorControl$private val MAX_BOOTSTRAP_CHECK_TRIES = 60</ID>
-    <ID>ViewModelForwarding:AboutPage.kt$SettingSections(aboutViewModel, navigation)</ID>
     <ID>ViewModelForwarding:IntroActivity.kt$StaticContent(viewModel, pagerState, closeActivity, pageCount)</ID>
     <ID>ViewModelForwarding:MainPage.kt$MainScreen( transactionsViewModel = transactionsViewModel, navigation = navigation, intentLiveData = intent, intentHandled = intentHandled )</ID>
     <ID>ViewModelForwarding:MainPage.kt$TransactionsScreen( navigation = navigation, paddingValues = paddingValues, viewModel = transactionsViewModel, onShowAllTransactionsClicked = showAllTransactions )</ID>

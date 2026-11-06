@@ -4,9 +4,11 @@ import cash.p.terminal.modules.multiswap.providers.SwapProvidersStorage
 import cash.p.terminal.ui.compose.BalanceHideOnFlipHandler
 import cash.p.terminal.modules.contacts.ContactsFileStorage
 import cash.p.terminal.modules.contacts.DeleteContactsPinSettings
+import cash.p.terminal.core.AppVersionStorage
 import cash.p.terminal.core.BalanceSettingsStorage
 import cash.p.terminal.core.IRestoreSettingsStorage
 import cash.p.terminal.core.NetworkSettingsStorage
+import cash.p.terminal.core.ReleaseNotesStorage
 import cash.p.terminal.core.TransactionSettingsStorage
 import cash.p.terminal.core.WalletOnboardingStorage
 import cash.p.terminal.core.adapters.BitcoinHardwareSigners
@@ -60,6 +62,8 @@ import cash.p.terminal.modules.backuplocal.fullbackup.WalletBackupProvider
 import cash.p.terminal.modules.balance.BalanceViewTypeManager
 import cash.p.terminal.modules.blockchainstatus.StatusReportBuildInfo
 import cash.p.terminal.modules.blockchainstatus.StatusReportExporter
+import cash.p.terminal.modules.settings.appcache.PlatformCacheCleaner
+import cash.p.terminal.modules.settings.appstatus.AppStatusPlatformInfo
 import cash.p.terminal.modules.settings.appearance.LaunchScreenService
 import cash.p.terminal.modules.send.offline.OfflineQrImageSaver
 import cash.p.terminal.modules.send.offline.OfflineTransactionFiles
@@ -82,6 +86,7 @@ import cash.p.terminal.wallet.IEnabledWalletStorage
 import cash.p.terminal.wallet.IHardwarePublicKeyStorage
 import cash.p.terminal.modules.balance.BalancePlatformActions
 import cash.p.terminal.modules.managewallets.HardwareWalletKeyProvisioner
+import cash.p.terminal.wallet.di.MARKET_HTTP_CACHE
 import cash.p.terminal.wallet.navigation.WalletPages
 import cash.p.terminal.wallet.policy.HardwareWalletTokenPolicy
 import cash.p.terminal.wallet.policy.PlatformChainSupport
@@ -95,6 +100,7 @@ import io.horizontalsystems.core.IThirdKeyboard
 import io.horizontalsystems.hdwalletkit.Mnemonic
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
+import org.koin.core.qualifier.named
 import org.koin.dsl.bind
 import org.koin.dsl.binds
 import org.koin.dsl.module
@@ -161,7 +167,7 @@ internal val desktopWalletModule = module {
     singleOf(::DesktopAppRestarter) bind AppRestarter::class
     singleOf(::DesktopWalletSettingsStorage) binds arrayOf(
         BalanceSettingsStorage::class, TransactionSettingsStorage::class, NetworkSettingsStorage::class,
-        SwapProvidersStorage::class,
+        ReleaseNotesStorage::class, AppVersionStorage::class, SwapProvidersStorage::class,
     )
     single<PlatformChainSupport> { DesktopPlatformChainSupport }
     single<PlatformOperationSupport> { DesktopPlatformOperationSupport }
@@ -172,6 +178,10 @@ internal val desktopWalletModule = module {
     singleOf(::DesktopSystemInfoManager) bind ISystemInfoManager::class
     singleOf(::DesktopStatusReportBuildInfo) bind StatusReportBuildInfo::class
     singleOf(::DesktopStatusReportExporter) bind StatusReportExporter::class
+    singleOf(::DesktopAppStatusPlatformInfo) bind AppStatusPlatformInfo::class
+    single<PlatformCacheCleaner> {
+        DesktopPlatformCacheCleaner(get(named(MARKET_HTTP_CACHE)), get(), get())
+    }
     singleOf(::DesktopKitPlatformContexts) bind KitPlatformContexts::class
     singleOf(::DesktopBitcoinKitDatabaseKeyProvider) bind BitcoinKitDatabaseKeyProvider::class
     singleOf(::DesktopTonKitDatabaseKeyProvider) bind TonKitDatabaseKeyProvider::class

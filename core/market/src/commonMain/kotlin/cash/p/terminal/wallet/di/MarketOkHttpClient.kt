@@ -7,6 +7,9 @@ import java.util.concurrent.TimeUnit
 
 internal const val RETROFIT_OK_HTTP_CLIENT = "retrofitOkHttpClient"
 
+/** Qualifier of the desktop HTTP [Cache], exposed so the app-cache screen can evict it. */
+const val MARKET_HTTP_CACHE = "marketHttpCache"
+
 /** Shared by both platform modules so the market timeouts and logging stay in one place. */
 internal fun marketOkHttpClient(cache: Cache?): OkHttpClient {
     val loggingInterceptor = HttpLoggingInterceptor().apply {

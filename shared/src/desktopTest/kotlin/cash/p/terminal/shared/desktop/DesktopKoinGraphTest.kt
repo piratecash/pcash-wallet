@@ -56,6 +56,8 @@ import cash.p.terminal.wallet.policy.PlatformChainSupport
 import cash.p.terminal.wallet.policy.PlatformOperationSupport
 import cash.p.terminal.wallet.useCases.WalletUseCase
 import io.horizontalsystems.core.IAppNumberFormatter
+import okio.FileSystem
+import okio.Path
 import org.koin.core.error.InstanceCreationException
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
@@ -777,11 +779,14 @@ class DesktopKoinGraphTest {
         /** Headers and the premium URL come from `desktopApp`; files, flags and the engine are passed by the definitions. */
         val providedOutsideTheGraph = listOf(
             AppHeadersProvider::class,
+            DesktopAppVersion::class,
             File::class,
             Gson::class,
             Boolean::class,
             String::class,
             HttpClientEngine::class,
+            FileSystem::class,
+            Path::class,
         )
 
         /** Built inside the view model definitions from their injected parameters. */
