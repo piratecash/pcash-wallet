@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -73,6 +74,8 @@ import cash.p.terminal.resources.tap_to_show_qr_code
 /** Copies a secret and confirms it with the standard "Copied" HUD. */
 @Composable
 fun rememberCopyWithHud(): (String) -> Unit {
+    // No Koin graph in @Preview, so skip the clipboard lookup there.
+    if (LocalInspectionMode.current) return {}
     val clipboardManager = koinInject<IClipboardManager>()
     val hudMessenger = rememberHudMessenger()
     val copiedText = stringResource(Res.string.Hud_Text_Copied)

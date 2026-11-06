@@ -6,7 +6,6 @@ import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cash.p.terminal.navigation.HSNavigation
-import cash.p.terminal.feature.wallet.qrScannerAvailable
 import cash.p.terminal.navigation.rememberQrScannerLauncher
 import cash.p.terminal.entities.Address
 import cash.p.terminal.ui_compose.entities.DataState
@@ -94,11 +93,7 @@ fun HSAddressInput(
         navigation = navigation,
         chooseContactEnable = viewModel.hasContacts(),
         blockchainType = viewModel.blockchainType,
-        onQrScanClick = if (qrScannerAvailable()) {
-            { qrScanner.open(scannerTitle) }
-        } else {
-            null
-        },
+        onQrScanClick = { qrScanner.open(scannerTitle) },
         onValueChange = {
             viewModel.parseText(it)
         },
