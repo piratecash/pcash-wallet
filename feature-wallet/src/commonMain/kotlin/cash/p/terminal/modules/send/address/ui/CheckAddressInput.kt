@@ -30,7 +30,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.core.launchAfterClearingFocus
 import cash.p.terminal.entities.Address
-import cash.p.terminal.feature.wallet.qrScannerAvailable
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.rememberQrScannerLauncher
 import cash.p.terminal.resources.Res
@@ -60,7 +59,6 @@ fun CheckAddressInput(
     val focusManager = LocalFocusManager.current
     val coroutineScope = rememberCoroutineScope()
     val scannerTitle = stringResource(Res.string.qr_scanner_title_smart_scan)
-    val qrScannerAvailable = qrScannerAvailable()
     val qrScanner = navigation.rememberQrScannerLauncher(koinInject(), onValueChange)
 
     val borderColor = when (state) {
@@ -129,17 +127,15 @@ fun CheckAddressInput(
                     }
                 )
             } else {
-                if (qrScannerAvailable) {
-                    ButtonSecondaryCircle(
-                        modifier = Modifier.padding(end = 8.dp),
-                        icon = Res.drawable.ic_qr_scan_20,
-                        onClick = {
-                            coroutineScope.launchAfterClearingFocus(focusManager) {
-                                qrScanner.open(scannerTitle)
-                            }
+                ButtonSecondaryCircle(
+                    modifier = Modifier.padding(end = 8.dp),
+                    icon = Res.drawable.ic_qr_scan_20,
+                    onClick = {
+                        coroutineScope.launchAfterClearingFocus(focusManager) {
+                            qrScanner.open(scannerTitle)
                         }
-                    )
-                }
+                    }
+                )
 
                 val clipboardManager = LocalClipboardManager.current
                 ButtonSecondaryDefault(

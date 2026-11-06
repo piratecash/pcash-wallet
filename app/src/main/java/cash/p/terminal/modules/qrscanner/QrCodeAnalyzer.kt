@@ -2,13 +2,7 @@ package cash.p.terminal.modules.qrscanner
 
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
-import com.google.zxing.BarcodeFormat
-import com.google.zxing.BinaryBitmap
-import com.google.zxing.DecodeHintType
-import com.google.zxing.MultiFormatReader
-import com.google.zxing.NotFoundException
 import com.google.zxing.PlanarYUVLuminanceSource
-import com.google.zxing.common.HybridBinarizer
 import java.util.concurrent.atomic.AtomicReference
 
 class QrCodeAnalyzer(
@@ -21,15 +15,7 @@ class QrCodeAnalyzer(
     // prevents that from leaking the calling screen.
     private val callback = AtomicReference(onQrCodeScanned)
 
-    private val reader = MultiFormatReader().apply {
-        setHints(
-            mapOf(
-                DecodeHintType.POSSIBLE_FORMATS to listOf(BarcodeFormat.QR_CODE),
-                DecodeHintType.TRY_HARDER to true,
-                DecodeHintType.ALSO_INVERTED to true
-            )
-        )
-    }
+    private val reader = QrCodeReader()
 
     override fun analyze(image: ImageProxy) {
         try {
@@ -53,35 +39,19 @@ class QrCodeAnalyzer(
                 else -> sourceData to Pair(width, height)
             }.let { (bytes, size) -> Triple(bytes, size.first, size.second) }
 
-            // Crop center for zoom effect (QR codes appear larger)
-            val cropFactor = 0.7
-            val cropWidth = (luminanceWidth * cropFactor).toInt()
-            val cropHeight = (luminanceHeight * cropFactor).toInt()
-            val cropLeft = (luminanceWidth - cropWidth) / 2
-            val cropTop = (luminanceHeight - cropHeight) / 2
-
             val source = PlanarYUVLuminanceSource(
                 luminance,
                 luminanceWidth,
                 luminanceHeight,
-                cropLeft,
-                cropTop,
-                cropWidth,
-                cropHeight,
+                0,
+                0,
+                luminanceWidth,
+                luminanceHeight,
                 false
             )
 
-            val binaryBitmap = BinaryBitmap(HybridBinarizer(source))
-
-            try {
-                val result = reader.decodeWithState(binaryBitmap)
-                result.text?.takeIf { it.isNotEmpty() }?.let { text ->
-                    callback.get()?.invoke(text)
-                }
-            } catch (e: NotFoundException) {
-                // No QR code found in this frame
-            } finally {
-                reader.reset()
+            reader.decode(source, cropToCenter = true)?.let { text ->
+                callback.get()?.invoke(text)
             }
         } finally {
             image.close()

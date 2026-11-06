@@ -439,6 +439,12 @@
     <string name="scan_qr_camera_initialization_failed">La caméra n\u0027est pas disponible. Veuillez réessayer ou utiliser un autre appareil.</string>
     <string name="qr_scanner_title_address">Adresse %1$s</string>
     <string name="qr_scanner_title_smart_scan">SCAN INTELLIGENT</string>
+    <string name="qr_scanner_open_image">Ouvrir une image</string>
+    <string name="qr_scanner_select_camera">Caméra</string>
+    <string name="qr_scanner_no_camera">Caméra introuvable ou accès refusé</string>
+    <string name="qr_scanner_no_camera_hint_macos">Autorisez l’accès à la caméra dans Réglages Système → Confidentialité et sécurité → Caméra, puis réessayez.</string>
+    <string name="qr_scanner_no_camera_hint_windows">Autorisez l’accès à la caméra dans Paramètres → Confidentialité et sécurité → Caméra, puis réessayez.</string>
+    <string name="qr_scanner_no_camera_hint_linux">Vérifiez qu’une caméra est connectée (/dev/video*) et que votre utilisateur appartient au groupe video, puis réessayez.</string>
     <string name="choose_from_photos">Choisir depuis les photos</string>
     <string name="image_decode_failed">Impossible de lire un code QR à partir de l\u0027image sélectionnée</string>
     <string name="Send_Error_UnsupportedAddress">Time lock ne fonctionne qu\u0027avec les adresses P2PKH (commençant par 1)</string>
@@ -2307,6 +2313,22 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="desktop_change_password_corrupted">Le fichier de clé est endommagé : une fois l\u0027application verrouillée, vous ne pourrez plus vous connecter. Enregistrez une sauvegarde de chaque phrase de récupération.</string>
     <string name="desktop_change_password_success">Mot de passe modifié</string>
     <string name="desktop_security_lock_now">Verrouiller maintenant</string>
+    <string name="swap_progress_title">Progression du swap</string>
+    <string name="swap_progress_step_of">Étape %1$d sur %2$d</string>
+    <string name="swap_progress_step_header">Étape %1$d · %2$s</string>
+    <string name="swap_progress_leg_send">Envoi de %1$s</string>
+    <string name="swap_progress_leg_receive">Réception de %1$s</string>
+    <string name="swap_progress_leg_swap">Échange de %1$s contre %2$s</string>
+    <string name="swap_progress_leg_transfer">Transfert de %1$s</string>
+    <string name="swap_progress_action_required_aml">Le fournisseur a suspendu le swap pour un contrôle AML.</string>
+    <string name="swap_progress_action_required_frozen">Le fournisseur a gelé le swap.</string>
+    <string name="swap_progress_action_required_overdue">Le dépôt est arrivé après l’expiration de la cotation.</string>
+    <string name="swap_progress_action_required_default">Le swap est suspendu et nécessite votre action.</string>
+    <string name="swap_progress_contact_support">Contactez le support du fournisseur ci-dessous.</string>
+    <string name="swap_support_telegram">Support %1$s · Telegram</string>
+    <string name="swap_support_email">Support %1$s · E-mail</string>
+    <string name="swap_support_email_deposit_tx">Transaction de dépôt : %1$s</string>
+    <string name="swap_support_email_deposit_address">Adresse de dépôt : %1$s</string>
 
     <!-- Shamir backup restore -->
     <string name="import_wallet_shamir">Sauvegarde Shamir</string>

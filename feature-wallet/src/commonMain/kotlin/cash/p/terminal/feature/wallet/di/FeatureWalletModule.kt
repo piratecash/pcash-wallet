@@ -68,6 +68,7 @@ import cash.p.terminal.modules.manageaccounts.ManageAccountsViewModel
 import cash.p.terminal.modules.moneroconfigure.MoneroConfigureViewModel
 import cash.p.terminal.modules.mwebconfigure.MwebConfigureViewModel
 import cash.p.terminal.modules.premium.about.AboutPremiumViewModel
+import cash.p.terminal.modules.qrscanner.QRScannerViewModel
 import cash.p.terminal.modules.restoreaccount.duplicatewallet.DuplicateWalletViewModel
 import cash.p.terminal.modules.restoreaccount.restoremnemonic.RestoreMnemonicViewModel
 import cash.p.terminal.modules.restoreaccount.restoreshamir.RestoreShamirViewModel
@@ -223,6 +224,9 @@ import cash.p.terminal.modules.receive.viewmodels.NetworkSelectViewModel
 import cash.p.terminal.modules.receive.viewmodels.ReceiveMoneroViewModel
 import cash.p.terminal.modules.receive.viewmodels.ReceiveSharedViewModel
 import cash.p.terminal.modules.receive.viewmodels.ReceiveTokenSelectViewModel
+import cash.p.terminal.modules.swapprogress.SwapLegExplorer
+import cash.p.terminal.modules.swapprogress.UnstoppableSwapProgressViewModel
+import cash.p.terminal.modules.swapprogress.UnstoppableSwapStepsFactory
 import cash.p.terminal.modules.transactionInfo.transactionInfoViewModel
 import cash.p.terminal.modules.transactions.CheckAmlIncomingTransactionUseCase
 import cash.p.terminal.modules.transactions.ITransactionRecordRepository
@@ -471,6 +475,7 @@ val featureWalletModule = module {
     factoryOf(::BlockchainSettingsBackup)
     viewModelOf(::TermsViewModel)
     viewModelOf(::AppearanceViewModel)
+    viewModelOf(::QRScannerViewModel)
     factoryOf(::WatchAddressService)
     factoryOf(::BlockchainSettingsService)
     viewModelOf(::BlockchainSettingsViewModel)
@@ -583,6 +588,11 @@ val featureWalletModule = module {
     viewModelOf(::TransactionsViewModel)
     viewModelOf(::OfflineSignedTransactionsViewModel)
     viewModel { (transactionItem: TransactionItem) -> transactionInfoViewModel(transactionItem) }
+    singleOf(::SwapLegExplorer)
+    singleOf(::UnstoppableSwapStepsFactory)
+    viewModel { (swapDate: Long, transactionUid: String, walletUid: String?) ->
+        UnstoppableSwapProgressViewModel(swapDate, transactionUid, walletUid, get(), get(), get(), get(), get(), get())
+    }
     viewModel { (selected: Contact?, blockchainType: BlockchainType?) ->
         SelectContactViewModel(get(), selected, blockchainType)
     }
