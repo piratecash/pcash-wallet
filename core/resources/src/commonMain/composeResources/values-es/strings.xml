@@ -2363,4 +2363,6 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="evm_node_request_failed">El nodo de la red no pudo procesar la solicitud. Inténtalo de nuevo o elige otra fuente en la configuración de Blockchain.\n\nRespuesta del nodo: %1$s</string>
     <string name="desktop_transfer_password">Contraseña antes de enviar</string>
     <string name="desktop_transfer_password_description">Se solicita la contraseña de la aplicación antes de cada envío, lo que protege tus activos si alguien accede a tu ordenador con la aplicación desbloqueada.</string>
+    <string name="tron_controlled_by_others_title">Otros pueden controlar esta cuenta</string>
+    <string name="tron_controlled_by_others_warning">Los permisos de esta cuenta han cambiado: otras claves pueden controlarla. Los fondos que envíe a ella podrían retirarse sin su participación. Recárguela solo si sabe de quién son esas claves.</string>
 </resources>

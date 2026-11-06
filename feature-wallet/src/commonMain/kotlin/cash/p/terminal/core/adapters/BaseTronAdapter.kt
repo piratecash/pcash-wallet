@@ -17,6 +17,8 @@ import cash.p.terminal.core.toRawHexString
 import cash.p.terminal.wallet.IAdapter
 import cash.p.terminal.wallet.IBalanceAdapter
 import cash.p.terminal.wallet.IReceiveAdapter
+import cash.p.terminal.wallet.ReceiveAccountStatus
+import io.horizontalsystems.tronkit.models.AccountStatus
 import io.horizontalsystems.tronkit.models.Address
 import io.horizontalsystems.tronkit.models.Contract
 import io.horizontalsystems.tronkit.models.RawTransactionBroadcastStatus
@@ -51,10 +53,8 @@ abstract class BaseTronAdapter(
 
     // IReceiveAdapter
 
-    override suspend fun isAddressActive(address: String): Boolean {
-        val tronAddress = Address.fromBase58(address)
-        return tronKit.isAccountActive(tronAddress)
-    }
+    override suspend fun accountStatus(address: String): ReceiveAccountStatus =
+        tronKit.accountStatus(Address.fromBase58(address)).toReceiveAccountStatus(hasSigner = signer != null)
 
     override val receiveAddress: String
         get() = tronKit.address.base58
@@ -165,6 +165,15 @@ abstract class BaseTronAdapter(
 }
 
 internal class TronSignerNotInitializedException : IllegalStateException("Tron signer is not initialized")
+
+/** A watch account funds nothing, so foreign control is not reported for it. */
+internal fun AccountStatus.toReceiveAccountStatus(hasSigner: Boolean): ReceiveAccountStatus =
+    when (this) {
+        AccountStatus.NotActive -> ReceiveAccountStatus.NotActive
+        AccountStatus.Active -> ReceiveAccountStatus.Active
+        AccountStatus.ControlledByOthers ->
+            if (hasSigner) ReceiveAccountStatus.ControlledByOthers else ReceiveAccountStatus.Active
+    }
 
 private fun OfflineBroadcastMetadata.Tron.toTronRetryMetadata() = RawTransactionRetryMetadata(
     expiration = expiration,

@@ -2371,4 +2371,6 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="evm_node_request_failed">O nó da rede não conseguiu processar a solicitação. Tente novamente ou escolha outra fonte nas configurações da Blockchain.\n\nResposta do nó: %1$s</string>
     <string name="desktop_transfer_password">Senha antes de enviar</string>
     <string name="desktop_transfer_password_description">A senha do aplicativo é solicitada antes de cada envio, protegendo seus ativos caso alguém acesse seu computador com o aplicativo desbloqueado.</string>
+    <string name="tron_controlled_by_others_title">Outras pessoas podem controlar esta conta</string>
+    <string name="tron_controlled_by_others_warning">As permissões desta conta foram alteradas: outras chaves podem controlá-la. Os fundos que você enviar para ela podem ser sacados sem a sua participação. Deposite nela apenas se você souber de quem são essas chaves.</string>
 </resources>
