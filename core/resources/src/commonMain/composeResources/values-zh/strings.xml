@@ -2297,6 +2297,22 @@
     <string name="desktop_change_password_corrupted">密钥文件已损坏：应用锁定后您将无法登录。请为每个恢复短语保存备份。</string>
     <string name="desktop_change_password_success">密码已更改</string>
     <string name="desktop_security_lock_now">立即锁定</string>
+    <string name="swap_progress_title">兑换进度</string>
+    <string name="swap_progress_step_of">第 %1$d 步，共 %2$d 步</string>
+    <string name="swap_progress_step_header">第 %1$d 步 · %2$s</string>
+    <string name="swap_progress_leg_send">正在发送 %1$s</string>
+    <string name="swap_progress_leg_receive">正在接收 %1$s</string>
+    <string name="swap_progress_leg_swap">正在将 %1$s 兑换为 %2$s</string>
+    <string name="swap_progress_leg_transfer">转账 %1$s</string>
+    <string name="swap_progress_action_required_aml">服务商因 AML 审查暂停了此次兑换。</string>
+    <string name="swap_progress_action_required_frozen">服务商已冻结此次兑换。</string>
+    <string name="swap_progress_action_required_overdue">存款在报价过期后才到账。</string>
+    <string name="swap_progress_action_required_default">兑换已暂停，需要您采取行动。</string>
+    <string name="swap_progress_contact_support">请在下方联系服务商客服。</string>
+    <string name="swap_support_telegram">%1$s 客服 · Telegram</string>
+    <string name="swap_support_email">%1$s 客服 · 邮件</string>
+    <string name="swap_support_email_deposit_tx">存款交易：%1$s</string>
+    <string name="swap_support_email_deposit_address">存款地址：%1$s</string>
 
     <!-- Shamir backup restore -->
     <string name="import_wallet_shamir">Shamir 备份</string>

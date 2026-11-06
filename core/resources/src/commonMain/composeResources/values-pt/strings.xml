@@ -2314,6 +2314,22 @@
     <string name="desktop_change_password_corrupted">O arquivo de chave está danificado: depois de a app ser bloqueada, não poderá entrar. Guarde uma cópia de segurança de cada frase de recuperação.</string>
     <string name="desktop_change_password_success">Senha alterada</string>
     <string name="desktop_security_lock_now">Bloquear agora</string>
+    <string name="swap_progress_title">Progresso do swap</string>
+    <string name="swap_progress_step_of">Passo %1$d de %2$d</string>
+    <string name="swap_progress_step_header">Passo %1$d · %2$s</string>
+    <string name="swap_progress_leg_send">A enviar %1$s</string>
+    <string name="swap_progress_leg_receive">A receber %1$s</string>
+    <string name="swap_progress_leg_swap">A trocar %1$s por %2$s</string>
+    <string name="swap_progress_leg_transfer">Transferência de %1$s</string>
+    <string name="swap_progress_action_required_aml">O fornecedor suspendeu o swap para uma verificação AML.</string>
+    <string name="swap_progress_action_required_frozen">O fornecedor congelou o swap.</string>
+    <string name="swap_progress_action_required_overdue">O depósito chegou depois de a cotação expirar.</string>
+    <string name="swap_progress_action_required_default">O swap está suspenso e requer a sua ação.</string>
+    <string name="swap_progress_contact_support">Contacte o suporte do fornecedor abaixo.</string>
+    <string name="swap_support_telegram">Suporte %1$s · Telegram</string>
+    <string name="swap_support_email">Suporte %1$s · E-mail</string>
+    <string name="swap_support_email_deposit_tx">Transação de depósito: %1$s</string>
+    <string name="swap_support_email_deposit_address">Endereço de depósito: %1$s</string>
 
     <!-- Shamir backup restore -->
     <string name="import_wallet_shamir">Backup Shamir</string>

@@ -2305,6 +2305,22 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="desktop_change_password_corrupted">Die Schlüsseldatei ist beschädigt: Sobald die App gesperrt ist, können Sie sich nicht mehr anmelden. Speichern Sie eine Sicherungskopie jeder Wiederherstellungsphrase.</string>
     <string name="desktop_change_password_success">Passwort geändert</string>
     <string name="desktop_security_lock_now">Jetzt sperren</string>
+    <string name="swap_progress_title">Swap-Fortschritt</string>
+    <string name="swap_progress_step_of">Schritt %1$d von %2$d</string>
+    <string name="swap_progress_step_header">Schritt %1$d · %2$s</string>
+    <string name="swap_progress_leg_send">%1$s wird gesendet</string>
+    <string name="swap_progress_leg_receive">%1$s wird empfangen</string>
+    <string name="swap_progress_leg_swap">%1$s wird in %2$s getauscht</string>
+    <string name="swap_progress_leg_transfer">Überweisung %1$s</string>
+    <string name="swap_progress_action_required_aml">Der Anbieter hat den Swap für eine AML-Prüfung pausiert.</string>
+    <string name="swap_progress_action_required_frozen">Der Anbieter hat den Swap eingefroren.</string>
+    <string name="swap_progress_action_required_overdue">Die Einzahlung ist nach Ablauf des Angebots eingegangen.</string>
+    <string name="swap_progress_action_required_default">Der Swap ist pausiert und erfordert Ihr Eingreifen.</string>
+    <string name="swap_progress_contact_support">Wenden Sie sich unten an den Support des Anbieters.</string>
+    <string name="swap_support_telegram">%1$s-Support · Telegram</string>
+    <string name="swap_support_email">%1$s-Support · E-Mail</string>
+    <string name="swap_support_email_deposit_tx">Einzahlungstransaktion: %1$s</string>
+    <string name="swap_support_email_deposit_address">Einzahlungsadresse: %1$s</string>
 
     <!-- Shamir backup restore -->
     <string name="import_wallet_shamir">Shamir-Backup</string>

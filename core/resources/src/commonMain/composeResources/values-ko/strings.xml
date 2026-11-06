@@ -2306,6 +2306,22 @@
     <string name="desktop_change_password_corrupted">키 파일이 손상되었습니다. 앱이 잠기면 로그인할 수 없게 됩니다. 모든 복구 문구의 백업을 저장하세요.</string>
     <string name="desktop_change_password_success">비밀번호가 변경되었습니다</string>
     <string name="desktop_security_lock_now">지금 잠금</string>
+    <string name="swap_progress_title">스왑 진행 상황</string>
+    <string name="swap_progress_step_of">%2$d단계 중 %1$d단계</string>
+    <string name="swap_progress_step_header">%1$d단계 · %2$s</string>
+    <string name="swap_progress_leg_send">%1$s 전송 중</string>
+    <string name="swap_progress_leg_receive">%1$s 수신 중</string>
+    <string name="swap_progress_leg_swap">%1$s에서 %2$s(으)로 스왑 중</string>
+    <string name="swap_progress_leg_transfer">%1$s 이체</string>
+    <string name="swap_progress_action_required_aml">제공업체가 AML 검토를 위해 스왑을 일시 중지했습니다.</string>
+    <string name="swap_progress_action_required_frozen">제공업체가 스왑을 동결했습니다.</string>
+    <string name="swap_progress_action_required_overdue">견적 만료 후에 입금이 도착했습니다.</string>
+    <string name="swap_progress_action_required_default">스왑이 일시 중지되었으며 사용자의 조치가 필요합니다.</string>
+    <string name="swap_progress_contact_support">아래에서 제공업체 지원팀에 문의하세요.</string>
+    <string name="swap_support_telegram">%1$s 지원 · Telegram</string>
+    <string name="swap_support_email">%1$s 지원 · 이메일</string>
+    <string name="swap_support_email_deposit_tx">입금 거래: %1$s</string>
+    <string name="swap_support_email_deposit_address">입금 주소: %1$s</string>
 
     <!-- Shamir backup restore -->
     <string name="import_wallet_shamir">Shamir 백업</string>
