@@ -2,6 +2,8 @@ package cash.p.terminal.core.adapters
 
 import cash.p.terminal.core.ITransactionsAdapter
 import cash.p.terminal.core.managers.MoneroKitWrapper
+import cash.p.terminal.core.managers.OfflineModeManager
+import cash.p.terminal.core.managers.isNetworkPaused
 import cash.p.terminal.entities.LastBlockInfo
 import cash.p.terminal.entities.TransactionValue
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
@@ -12,15 +14,18 @@ import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.transaction.TransactionSource
 import com.m2049r.xmrwallet.model.TransactionInfo
+import io.horizontalsystems.core.entities.BlockchainType
 import io.reactivex.Flowable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.rx2.asFlowable
 import java.math.BigDecimal
 
 class MoneroTransactionsAdapter(
     private val moneroKitWrapper: MoneroKitWrapper,
-    private val source: TransactionSource
+    private val source: TransactionSource,
+    private val offlineModeManager: OfflineModeManager,
 ) : ITransactionsAdapter {
 
     override val explorerTitle: String
@@ -36,10 +41,18 @@ class MoneroTransactionsAdapter(
         get() = moneroKitWrapper.lastBlockInfoFlow.map {}.asFlowable()
 
     override val transactionsState: AdapterState
-        get() = AdapterState.Synced
+        get() = if (offlineModeManager.isNetworkPaused(source.account, BlockchainType.Monero)) {
+            AdapterState.Synced
+        } else {
+            moneroKitWrapper.syncState.value
+        }
 
     override val transactionsStateUpdatedFlowable: Flowable<Unit>
-        get() = moneroKitWrapper.transactionsStateUpdatedFlow.asFlowable()
+        get() = merge(
+            moneroKitWrapper.syncState.map { },
+            offlineModeManager.effectiveFlow.map { },
+            moneroKitWrapper.transactionsStateUpdatedFlow,
+        ).asFlowable()
 
     override suspend fun getTransactions(
         from: TransactionRecord?,
