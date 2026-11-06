@@ -6,17 +6,14 @@ import android.net.Uri
 import android.provider.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LifecycleStartEffect
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.withResumed
 import cash.p.terminal.core.deeplink.DeeplinkParser
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.managers.TonConnectManager
@@ -29,7 +26,6 @@ import cash.p.terminal.navigation.QrScannerInput
 import cash.p.terminal.navigation.QrScannerResult
 import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.tangem.domain.sdk.CardSdkConfigRepository
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -58,16 +54,8 @@ class QRScannerPage(val input: QrScannerInput) : HSPage() {
             }
         }
 
-        val pageLifecycle = LocalLifecycleOwner.current.lifecycle
-        LaunchedEffect(viewModel) {
-            viewModel.scanResult.collectLatest { decoded ->
-                // A result can arrive while this page is not resumed (app backgrounded, or a late gallery
-                // decode after Back). Wait for this page's own RESUMED: once it is popped, the wait is
-                // cancelled, so a late result never reaches the caller or pops it.
-                pageLifecycle.withResumed {
-                    navigateForScanResult(decoded, navigation, hostLifecycleOwner, deeplinkParser, tonConnectManager)
-                }
-            }
+        CollectQrScanResult(viewModel) { decoded ->
+            navigateForScanResult(decoded, navigation, hostLifecycleOwner, deeplinkParser, tonConnectManager)
         }
 
         QRScannerScreen(

@@ -32,7 +32,6 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cash.p.terminal.core.Caution
 import cash.p.terminal.feature.wallet.WalletSendPages
-import cash.p.terminal.feature.wallet.qrScannerAvailable
 import cash.p.terminal.navigation.rememberQrScannerLauncher
 import cash.p.terminal.modules.backupalert.BackupAlert
 import cash.p.terminal.modules.balance.AccountViewItem
@@ -59,6 +58,7 @@ import cash.p.terminal.resources.ic_qr_scan_20
 import cash.p.terminal.resources.ic_search
 import cash.p.terminal.resources.ic_wallet_connect_24
 import cash.p.terminal.resources.qr_scanner_title_smart_scan
+import cash.p.terminal.resources.scan
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.TransparentModalBottomSheet
 import cash.p.terminal.ui_compose.components.AppBar
@@ -90,7 +90,6 @@ fun BalanceForAccount(
     val sendPages: WalletSendPages = koinInject()
     val platformActions: BalancePlatformActions = koinInject()
     val hud = rememberHudMessenger()
-    val qrScannerAvailable = qrScannerAvailable()
     val qrScanner = navigation.rememberQrScannerLauncher(appPages, viewModel::handleScannedData)
     val scannerTitle = stringResource(Res.string.qr_scanner_title_smart_scan)
     var showInvalidUrlSheet by rememberSaveable { mutableStateOf(false) }
@@ -137,10 +136,16 @@ fun BalanceForAccount(
                                 })
                         )
                     }
-                    if (!accountViewItem.type.isWatchAccountType && qrScannerAvailable) {
+                    if (!accountViewItem.type.isWatchAccountType) {
                         add(
                             MenuItem(
-                                title = TranslatableString.ResString(Res.string.WalletConnect_NewConnect),
+                                title = TranslatableString.ResString(
+                                    if (platformActions.connectionsSupported) {
+                                        Res.string.WalletConnect_NewConnect
+                                    } else {
+                                        Res.string.scan
+                                    }
+                                ),
                                 icon = Res.drawable.ic_qr_scan_20,
                                 onClick = { qrScanner.open(scannerTitle, showPasteButton = true) }
                             )

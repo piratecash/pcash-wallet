@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.qrscanner
 
-import android.net.Uri
 import cash.p.terminal.qr.multipart.MultipartQrEncoder
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -12,7 +11,10 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.image_decode_failed
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -128,13 +130,39 @@ class QRScannerViewModelTest {
     fun onImagePicked_afterCameraResult_emitsNothing() = runTest(dispatcher) {
         val viewModel = createViewModel()
         val cameraResult = "bitcoin:1abcXYZ"
-        val uri: Uri = mockk(relaxed = true)
-        coEvery { qrCodeImageDecoder.decode(uri) } returns Result.success("bitcoin:1decodedFromImage")
+        val imageRef = "content://media/image/1"
+        coEvery { qrCodeImageDecoder.decode(imageRef) } returns "bitcoin:1decodedFromImage"
 
         viewModel.onFrameScanned(cameraResult)
-        viewModel.onImagePicked(uri)
+        viewModel.onImagePicked(imageRef)
 
         assertEquals(listOf(cameraResult), viewModel.scanResult.replayCache)
+    }
+
+    @Test
+    fun onImagePicked_decoderReturnsText_emitsTextAndStopsLoading() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        coEvery { qrCodeImageDecoder.decode("image") } returns "bitcoin:1decodedFromImage"
+
+        viewModel.onImagePicked("image")
+
+        assertEquals(listOf("bitcoin:1decodedFromImage"), viewModel.scanResult.replayCache)
+        assertFalse(viewModel.uiState.value.isDecodingFromImage)
+    }
+
+    @Test
+    fun onImagePicked_decoderReturnsNull_showsDecodeErrorUntilConsumed() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        coEvery { qrCodeImageDecoder.decode("image") } returns null
+
+        viewModel.onImagePicked("image")
+
+        assertEquals(Res.string.image_decode_failed, viewModel.uiState.value.errorMessageRes)
+        assertTrue(viewModel.scanResult.replayCache.isEmpty())
+
+        viewModel.onErrorMessageConsumed()
+
+        assertEquals(null, viewModel.uiState.value.errorMessageRes)
     }
 
     @Test

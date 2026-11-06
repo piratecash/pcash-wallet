@@ -45,9 +45,8 @@ class FormsQrScannerDesktopTest {
         assertScanShown { navigation ->
             FormsInput(
                 hint = "hint",
-                qrScannerEnabled = true,
                 qrScannerTitle = "scan",
-                navigation = navigation,
+                qrScannerNavigation = navigation,
                 pasteEnabled = false,
                 onValueChange = { received += it },
             )
@@ -60,9 +59,8 @@ class FormsQrScannerDesktopTest {
             FormsInputMultiline(
                 hint = "hint",
                 pasteEnabled = false,
-                qrScannerEnabled = true,
                 qrScannerTitle = "scan",
-                navigation = navigation,
+                qrScannerNavigation = navigation,
                 onValueChange = { received += it },
             )
         }
