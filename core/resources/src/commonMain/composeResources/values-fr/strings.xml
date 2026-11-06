@@ -781,6 +781,7 @@
     <string name="TransactionInfo_HistoricalRate">Taux historique</string>
     <string name="TransactionInfo_AnnouncedAmount">Montant annoncé</string>
     <string name="transaction_info_executed_amount">Montant exécuté</string>
+    <string name="swap_result_pending_info">La valeur sera disponible une fois l’échange terminé</string>
     <string name="TransactionInfo_PriceImpact">Impact sur le prix</string>
     <string name="swap_duration">Durée de l’échange</string>
     <string name="swap_duration_approximate">~%1$s</string>

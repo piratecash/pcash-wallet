@@ -26,6 +26,7 @@ import cash.p.terminal.entities.transactionrecords.tron.TronTransactionRecord
 import cash.p.terminal.modules.paycore.PayCoreAssetResolver
 import cash.p.terminal.modules.transactions.FilterTransactionType
 import cash.p.terminal.modules.transactions.TransactionStatus
+import cash.p.terminal.modules.transactions.positiveOrNull
 import cash.p.terminal.modules.transactions.toUniversalStatus
 import cash.p.terminal.modules.swapprogress.progressSummary
 import cash.p.terminal.modules.swapprogress.supportContacts
@@ -459,7 +460,7 @@ class TransactionInfoService(
         mutex.withLock {
             transactionInfoItem = transactionInfoItem.copy(
                 swapAmountOut = swapTransaction.amountOut,
-                swapAmountOutReal = swapTransaction.amountOutReal,
+                swapAmountOutReal = swapTransaction.amountOutReal.positiveOrNull(),
                 swapAmountIn = swapTransaction.amountIn,
                 swapCoinCodeOut = getCoinCode(swapTransaction.coinUidOut),
                 swapCoinCodeIn = getCoinCode(swapTransaction.coinUidIn),

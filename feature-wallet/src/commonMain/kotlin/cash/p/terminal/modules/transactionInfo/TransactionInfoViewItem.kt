@@ -41,6 +41,8 @@ sealed class TransactionInfoViewItem {
 
     class Value(val title: String, val value: String) : TransactionInfoViewItem()
 
+    class AwaitingSwapResult(val title: String) : TransactionInfoViewItem()
+
     class ValueClickable(val title: String, val value: String) : TransactionInfoViewItem()
 
     class ValueColored(val title: String, val value: String, val color: ColorName) :

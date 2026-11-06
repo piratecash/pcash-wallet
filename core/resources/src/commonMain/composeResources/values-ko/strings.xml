@@ -785,6 +785,7 @@
     <string name="TransactionInfo_HistoricalRate">과거 환율</string>
     <string name="TransactionInfo_AnnouncedAmount">공시 금액</string>
     <string name="transaction_info_executed_amount">체결 금액</string>
+    <string name="swap_result_pending_info">스왑이 완료되면 값을 확인할 수 있습니다</string>
     <string name="TransactionInfo_PriceImpact">가격 영향</string>
     <string name="swap_duration">스왑 시간</string>
     <string name="swap_duration_approximate">~%1$s</string>

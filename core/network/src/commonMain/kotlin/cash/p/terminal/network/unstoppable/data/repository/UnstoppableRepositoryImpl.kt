@@ -105,7 +105,7 @@ internal class UnstoppableRepositoryImpl(
 
         return SwapProviderTransactionStatusResult(
             status = status,
-            amountOutReal = track.toAmount?.takeIf { it > BigDecimal.ZERO },
+            amountOutReal = track.toAmount,
             // v2 track response carries no completion timestamp.
             finishedAt = null,
         )

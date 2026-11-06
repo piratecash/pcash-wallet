@@ -785,6 +785,7 @@
     <string name="TransactionInfo_HistoricalRate">Geçmiş Kur</string>
     <string name="TransactionInfo_AnnouncedAmount">Duyurulan miktar</string>
     <string name="transaction_info_executed_amount">Gerçekleşen miktar</string>
+    <string name="swap_result_pending_info">Değer takas tamamlandıktan sonra kullanılabilir olacak</string>
     <string name="TransactionInfo_PriceImpact">Fiyat etkisi</string>
     <string name="swap_duration">Takas süresi</string>
     <string name="swap_duration_approximate">~%1$s</string>

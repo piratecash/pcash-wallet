@@ -780,6 +780,7 @@
     <string name="TransactionInfo_HistoricalRate">Estado histórico</string>
     <string name="TransactionInfo_AnnouncedAmount">Monto anunciado</string>
     <string name="transaction_info_executed_amount">Monto ejecutado</string>
+    <string name="swap_result_pending_info">El valor estará disponible cuando se complete la permuta</string>
     <string name="TransactionInfo_PriceImpact">Impacto en el precio</string>
     <string name="swap_duration">Duración de la permuta</string>
     <string name="swap_duration_approximate">~%1$s</string>
