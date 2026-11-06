@@ -21,6 +21,11 @@ import cash.p.terminal.shared.desktop.lock.CreatePasswordViewModel
 import cash.p.terminal.shared.desktop.lock.DesktopInactivityLock
 import cash.p.terminal.shared.desktop.lock.ForgotPasswordViewModel
 import cash.p.terminal.shared.desktop.lock.UnlockViewModel
+import cash.p.terminal.modules.qrscanner.QrCodeImageDecoder
+import cash.p.terminal.shared.desktop.qrscanner.DesktopQrCodeImageDecoder
+import cash.p.terminal.shared.desktop.qrscanner.DesktopQrScannerViewModel
+import cash.p.terminal.shared.desktop.qrscanner.DesktopWebcamSession
+import cash.p.terminal.shared.desktop.qrscanner.DesktopWebcamSettings
 import cash.p.terminal.shared.desktop.settings.DesktopAutoLockIntervalsViewModel
 import cash.p.terminal.shared.desktop.settings.DesktopLanguageSettingsViewModel
 import cash.p.terminal.shared.desktop.settings.DesktopSecurityViewModel
@@ -48,6 +53,7 @@ import io.horizontalsystems.core.AppForegroundState
 import io.horizontalsystems.core.BaseCurrencyStorage
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.CurrentDateProvider
+import cash.p.terminal.modules.markdown.desktopMarkdownModule
 import io.horizontalsystems.core.DefaultDispatcherProvider
 import io.horizontalsystems.core.DesktopAppForegroundState
 import io.horizontalsystems.core.DesktopClipboardManager
@@ -61,6 +67,7 @@ import io.horizontalsystems.core.IEncryptionManager
 import io.horizontalsystems.core.ILanguageManager
 import io.horizontalsystems.core.ILockoutStorage
 import io.horizontalsystems.core.MarketSettingsStore
+import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.bind
@@ -68,11 +75,18 @@ import org.koin.dsl.binds
 import org.koin.dsl.module
 
 private const val GUIDES_URL =
-    "https://raw.githubusercontent.com/horizontalsystems/Unstoppable-Wallet-Website/refs/tags/v1.4/src/edu.json"
+    "https://raw.githubusercontent.com/horizontalsystems/blockchain-crypto-guides/v1.2/index.json"
 
 /** Desktop implementations of the seams the shared features resolve from the host Koin graph. */
 val desktopFeatureModule = module {
-    includes(walletFeatureModule, featureWalletModule, featureStackingModule, featurePremiumModule, desktopWalletModule)
+    includes(
+        walletFeatureModule,
+        featureWalletModule,
+        featureStackingModule,
+        featurePremiumModule,
+        desktopWalletModule,
+        desktopMarkdownModule,
+    )
 
     single { DesktopSettingsStore(desktopAppDataFile("settings.preferences_pb")) } binds
         arrayOf(MarketSettingsStore::class, BaseCurrencyStorage::class, ILockoutStorage::class)
@@ -107,6 +121,9 @@ val desktopFeatureModule = module {
     singleOf(::DesktopSecretFieldsEncryption) bind IEncryptionManager::class
     singleOf(::DesktopInactivityLock)
     singleOf(::DesktopSettingsPages) bind SettingsPages::class
+    singleOf(::DesktopQrCodeImageDecoder) bind QrCodeImageDecoder::class
+    singleOf(::DesktopWebcamSettings)
+    factoryOf(::DesktopWebcamSession)
 
     viewModelOf(::CreatePasswordViewModel)
     viewModelOf(::UnlockViewModel)
@@ -116,6 +133,7 @@ val desktopFeatureModule = module {
     viewModelOf(::DesktopSecurityViewModel)
     viewModelOf(::DesktopAutoLockIntervalsViewModel)
     viewModelOf(::DesktopLanguageSettingsViewModel)
+    viewModelOf(::DesktopQrScannerViewModel)
 
     singleOf(::DesktopMarketPages) bind MarketPages::class
     singleOf(::DesktopHudMessenger) bind HudMessenger::class

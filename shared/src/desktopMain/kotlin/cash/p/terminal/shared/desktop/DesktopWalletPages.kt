@@ -13,6 +13,8 @@ import cash.p.terminal.modules.coin.CoinPage
 import cash.p.terminal.modules.createaccount.CreateAccountPage
 import cash.p.terminal.modules.manageaccount.backupkey.BackupKeyPage
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
+import cash.p.terminal.modules.markdown.MarkdownPage
+import cash.p.terminal.modules.markdown.isMarkdownLink
 import cash.p.terminal.modules.multiswap.SwapPage
 import cash.p.terminal.modules.multiswap.exchanges.MultiSwapExchangesPage
 import cash.p.terminal.modules.restoreaccount.RestoreAccountPage
@@ -23,6 +25,7 @@ import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.QrScannerInput
 import cash.p.terminal.navigation.rememberResultLauncher
 import cash.p.terminal.shared.desktop.lock.ConfirmPasswordPage
+import cash.p.terminal.shared.desktop.qrscanner.DesktopQrScannerPage
 import cash.p.terminal.shared.main.DesktopMainPage
 import cash.p.terminal.ui_compose.CoinFragmentInput
 import cash.p.terminal.ui_compose.components.UrlOpener
@@ -35,7 +38,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-/** The desktop pages of the wallet screens: no camera, no hardware wallets, no app icons (entries hidden). */
+/** The desktop pages of the wallet screens: no hardware wallets, no app icons (entries hidden). */
 class DesktopWalletPages(private val urlOpener: UrlOpener) :
     AppPages, WalletPages, WalletPlatformPages, WalletSendPages {
     override fun coin(coinUid: String): HSPage = CoinPage(CoinFragmentInput(coinUid))
@@ -44,21 +47,25 @@ class DesktopWalletPages(private val urlOpener: UrlOpener) :
     override fun backupKey(input: BackupKeyInput): HSPage = BackupKeyPage(input)
     override fun backupLocal(account: Account): HSPage = BackupLocalPage(account)
 
-    override fun qrScanner(input: QrScannerInput): HSPage =
-        throw UnsupportedOperationException("No QR scanner on desktop: isQrScannerAvailable hides its entries")
+    override fun qrScanner(input: QrScannerInput): HSPage = DesktopQrScannerPage(input)
 
     override fun swap(tokenOut: Token): HSPage = SwapPage(tokenOut = tokenOut)
 
-    override val isQrScannerAvailable = false
     override fun hardwareWallet(input: ManageAccountsModule.Input?): HSPage? = null
     override fun resetToFactory(account: Account): HSPage? = null
     override fun faq(topic: FaqTopic): HSPage = DesktopMarkdownAssetPage(topic.assetPrefix)
     override fun appIcon(): HSPage? = null
+    override fun privacy(): HSPage = DesktopPrivacyPage()
     override val isBlockchainStatusAvailable = true
     override fun blockchainStatus(blockchain: Blockchain): HSPage = BlockchainStatusPage(blockchain)
 
-    // Desktop has no in-app markdown reader for remote files, so every link opens in the browser.
-    override fun openMarkdownOrWeblink(navigation: HSNavigation, url: String) = urlOpener.open(url)
+    override fun openMarkdownOrWeblink(navigation: HSNavigation, url: String) {
+        if (isMarkdownLink(url)) {
+            navigation.slideFromRight(MarkdownPage(MarkdownPage.Input(url)))
+        } else {
+            urlOpener.open(url)
+        }
+    }
 
     // Tangem cards need NFC: hardwareWallet() and resetToFactory() hide every way to these.
     override suspend fun accessCodeRecovery(): HSPage? = null

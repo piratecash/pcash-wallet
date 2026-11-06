@@ -56,6 +56,8 @@ import cash.p.terminal.wallet.policy.PlatformChainSupport
 import cash.p.terminal.wallet.policy.PlatformOperationSupport
 import cash.p.terminal.wallet.useCases.WalletUseCase
 import io.horizontalsystems.core.IAppNumberFormatter
+import okio.FileSystem
+import okio.Path
 import org.koin.core.error.InstanceCreationException
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
@@ -314,6 +316,8 @@ import cash.p.terminal.shared.desktop.lock.UnlockViewModel
 import cash.p.terminal.shared.desktop.session.mnemonicAccount
 import cash.p.terminal.shared.desktop.settings.DesktopAutoLockIntervalsViewModel
 import cash.p.terminal.shared.desktop.settings.DesktopLanguageSettingsViewModel
+import cash.p.terminal.shared.desktop.qrscanner.DesktopQrScannerViewModel
+import cash.p.terminal.modules.qrscanner.QRScannerViewModel
 import cash.p.terminal.shared.desktop.settings.DesktopSecurityViewModel
 import com.google.gson.Gson
 import kotlin.io.path.createTempDirectory
@@ -658,6 +662,8 @@ class DesktopKoinGraphTest {
             DesktopSecurityViewModel::class to null,
             DesktopAutoLockIntervalsViewModel::class to null,
             DesktopLanguageSettingsViewModel::class to null,
+            QRScannerViewModel::class to null,
+            DesktopQrScannerViewModel::class to null,
         )
     }
 
@@ -782,11 +788,14 @@ class DesktopKoinGraphTest {
         /** Headers and the premium URL come from `desktopApp`; files, flags and the engine are passed by the definitions. */
         val providedOutsideTheGraph = listOf(
             AppHeadersProvider::class,
+            DesktopAppVersion::class,
             File::class,
             Gson::class,
             Boolean::class,
             String::class,
             HttpClientEngine::class,
+            FileSystem::class,
+            Path::class,
         )
 
         /** Built inside the view model definitions from their injected parameters. */

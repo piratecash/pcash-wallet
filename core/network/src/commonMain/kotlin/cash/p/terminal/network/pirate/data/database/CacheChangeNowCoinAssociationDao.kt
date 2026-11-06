@@ -13,4 +13,7 @@ internal interface CacheChangeNowCoinAssociationDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCoins(entity: ChangeNowAssociationCoin)
+
+    @Query("DELETE FROM change_now_coins")
+    suspend fun deleteAll()
 }

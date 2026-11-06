@@ -1,6 +1,5 @@
 package cash.p.terminal.core
 
-import cash.p.terminal.entities.AppVersion
 import cash.p.terminal.entities.SyncMode
 import cash.p.terminal.shared.main.MainTabStorage
 import cash.p.terminal.modules.market.TimeDuration
@@ -17,7 +16,7 @@ import io.horizontalsystems.core.ISmsNotificationSettings
 import kotlinx.coroutines.flow.StateFlow
 
 interface ILocalStorage : ILoggingSettings, ISmsNotificationSettings, BaseCurrencyStorage, WalletOnboardingStorage,
-    AppearanceSettingsStore, MainTabStorage,
+    AppearanceSettingsStore, MainTabStorage, ReleaseNotesStorage, AppVersionStorage,
     BalanceSettingsStorage, TransactionSettingsStorage, NetworkSettingsStorage {
     var marketSearchRecentCoinUids: List<String>
 
@@ -34,7 +33,6 @@ interface ILocalStorage : ILoggingSettings, ISmsNotificationSettings, BaseCurren
     var baseBinanceProvider: String?
     var baseZcashProvider: String?
     var syncMode: SyncMode?
-    var appVersions: List<AppVersion>
     var isAlertNotificationOn: Boolean
     var encryptedSampleText: String?
     var bitcoinDerivation: Derivation?
@@ -47,7 +45,7 @@ interface ILocalStorage : ILoggingSettings, ISmsNotificationSettings, BaseCurren
 
     var notificationId: String?
     var notificationServerTime: Long
-    var changelogShownForAppVersion: String?
+    override var changelogShownForAppVersion: String?
     var ignoreRootedDeviceWarning: Boolean
     var appIcon: AppIcon?
     val appIconRaw: String?
@@ -68,7 +66,7 @@ interface ILocalStorage : ILoggingSettings, ISmsNotificationSettings, BaseCurren
     var pinRandomized: Boolean
     var statsLastSyncTime: Long
     var shareCrashDataEnabled: Boolean
-    var showChangelogAfterUpdate: Boolean
+    override var showChangelogAfterUpdate: Boolean
     var selectBalanceTabOnNextLaunch: Boolean
 
     var updateCheckInterval: UpdateCheckInterval

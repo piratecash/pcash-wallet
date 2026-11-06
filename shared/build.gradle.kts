@@ -78,6 +78,8 @@ kotlin {
                 implementation(libs.datastore.preferences.core)
                 implementation(libs.room.runtime)
                 implementation(libs.bitcoin.kit.sqlcipher.driver)
+                implementation(libs.openpnp.capture.java)
+                implementation(libs.zxing.core)
             }
         }
         commonTest {

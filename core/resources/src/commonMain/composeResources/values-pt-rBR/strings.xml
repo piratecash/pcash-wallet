@@ -472,6 +472,12 @@
     <string name="scan_qr_camera_initialization_failed">Câmera não disponível. Por favor, tente novamente ou use outro dispositivo.</string>
     <string name="qr_scanner_title_address">Endereço %1$s</string>
     <string name="qr_scanner_title_smart_scan">SCAN INTELIGENTE</string>
+    <string name="qr_scanner_open_image">Abrir imagem</string>
+    <string name="qr_scanner_select_camera">Câmera</string>
+    <string name="qr_scanner_no_camera">Câmera não encontrada ou acesso negado</string>
+    <string name="qr_scanner_no_camera_hint_macos">Permita o acesso à câmera em Configurações do Sistema → Privacidade e Segurança → Câmera e tente novamente.</string>
+    <string name="qr_scanner_no_camera_hint_windows">Permita o acesso à câmera em Configurações → Privacidade e segurança → Câmera e tente novamente.</string>
+    <string name="qr_scanner_no_camera_hint_linux">Verifique se há uma câmera conectada (/dev/video*) e se o seu usuário pertence ao grupo video, e tente novamente.</string>
     <string name="choose_from_photos">Escolher das fotos</string>
     <string name="image_decode_failed">Não foi possível ler um código QR da imagem selecionada</string>
     <string name="Send_Error_UnsupportedAddress">O bloqueio de tempo funciona apenas ao enviar para endereços de pagamento começando com 1... (também conhecidos como endereços BIP44)</string>
@@ -2346,6 +2352,22 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="desktop_change_password_corrupted">O arquivo de chave está danificado: depois que o app for bloqueado, você não conseguirá entrar. Salve um backup de cada frase de recuperação.</string>
     <string name="desktop_change_password_success">Senha alterada</string>
     <string name="desktop_security_lock_now">Bloquear agora</string>
+    <string name="swap_progress_title">Progresso do swap</string>
+    <string name="swap_progress_step_of">Etapa %1$d de %2$d</string>
+    <string name="swap_progress_step_header">Etapa %1$d · %2$s</string>
+    <string name="swap_progress_leg_send">Enviando %1$s</string>
+    <string name="swap_progress_leg_receive">Recebendo %1$s</string>
+    <string name="swap_progress_leg_swap">Trocando %1$s por %2$s</string>
+    <string name="swap_progress_leg_transfer">Transferência de %1$s</string>
+    <string name="swap_progress_action_required_aml">O provedor pausou o swap para uma verificação AML.</string>
+    <string name="swap_progress_action_required_frozen">O provedor congelou o swap.</string>
+    <string name="swap_progress_action_required_overdue">O depósito chegou após a expiração da cotação.</string>
+    <string name="swap_progress_action_required_default">O swap está pausado e requer sua ação.</string>
+    <string name="swap_progress_contact_support">Entre em contato com o suporte do provedor abaixo.</string>
+    <string name="swap_support_telegram">Suporte %1$s · Telegram</string>
+    <string name="swap_support_email">Suporte %1$s · E-mail</string>
+    <string name="swap_support_email_deposit_tx">Transação de depósito: %1$s</string>
+    <string name="swap_support_email_deposit_address">Endereço de depósito: %1$s</string>
 
     <!-- Shamir backup restore -->
     <string name="import_wallet_shamir">Backup Shamir</string>
