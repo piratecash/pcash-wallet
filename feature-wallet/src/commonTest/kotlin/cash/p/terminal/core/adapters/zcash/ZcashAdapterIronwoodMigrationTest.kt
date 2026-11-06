@@ -200,6 +200,19 @@ class ZcashAdapterIronwoodMigrationTest : ZcashAdapterTestFixture() {
         }
 
     @Test
+    fun proposeIronwoodMigration_afterTheRateBoundary_chargesTwoActionsPerStepAtTheNewRate() =
+        runTest(dispatcher) {
+            stubMigrationStatus(MigrationPhase.MIGRATING, standardNotes = 3)
+            startMigratableAdapter()
+            emitSessionSyncState(SyncState.Syncing(current = 1, target = RATE_BOUNDARY_TARGET))
+            advanceUntilIdle()
+
+            val proposal = adapter.proposeIronwoodMigration()
+
+            assertEquals((3 * 2 * REDUCED_FEE_PER_ACTION).convertZatoshiToZec(), proposal.fee)
+        }
+
+    @Test
     fun proposeIronwoodMigration_phaseComplete_throwsLocalizedException() = runTest(dispatcher) {
         stubMigrationStatus(MigrationPhase.COMPLETE, standardNotes = 0)
         startMigratableAdapter()
