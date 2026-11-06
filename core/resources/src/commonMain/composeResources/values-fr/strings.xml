@@ -44,6 +44,7 @@
     <string name="trezor_not_initialized_description">Ce Trezor n\u0027est pas encore configuré. Terminez la configuration sur l\u0027appareil, puis reconnectez-le.</string>
     <string name="trezor_not_initialized_cta">Guide de configuration</string>
     <string name="trezor_connect_failed">Impossible de se connecter au Trezor.</string>
+    <string name="hardware_connect_device_to_sync">Connectez l\u0027appareil pour synchroniser</string>
     <string name="Button_Restore">Restaurer</string>
     <string name="Button_Reset">Réinitialiser</string>
     <string name="Button_Understand">J’ai Compris</string>

@@ -11,6 +11,21 @@ import kotlinx.coroutines.job
 interface MoneroHardwareGateway {
     /** [block] receives the device's wallet public key. */
     suspend fun <T> execute(account: Account, block: (String) -> T): T
+
+    /** [execute] for work nobody asked for: it must never prompt the user, on the phone or on the device. */
+    suspend fun <T> executeUnattended(account: Account, block: (String) -> T): T = execute(account, block)
+
+    /** [executeUnattended] whose caller gives the device up when [isUserOperationWaiting]. */
+    suspend fun <T> executeYielding(account: Account, block: (String) -> T): T = executeUnattended(account, block)
+
+    /** A user operation is waiting for the device that a running [executeYielding] block holds. */
+    val isUserOperationWaiting: Boolean get() = false
+
+    /** The device confirmed Live Refresh for [account] in the current session, so unattended work may resume it. */
+    fun markLiveRefreshConfirmed(account: Account) = Unit
+
+    /** Wipes the cached device sessions of every account not in [accountIds]. */
+    fun retainSessions(accountIds: Set<String>) = Unit
 }
 
 @OptIn(InternalCoroutinesApi::class)
