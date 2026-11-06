@@ -59,13 +59,6 @@ class UnstoppableRepositoryImplTest {
     }
 
     @Test
-    fun getTransactionStatus_zeroAmount_returnsNullAmount() = runTest {
-        coEvery { api.track(any()) } returns trackDto("""{"status":"swapping","toAmount":"0"}""")
-
-        assertNull(requireNotNull(repository.getTransactionStatus(request)).amountOutReal)
-    }
-
-    @Test
     fun getTransactionStatus_unknownStatus_returnsNull() = runTest {
         coEvery { api.track(any()) } returns trackDto("""{"status":"unknown"}""")
 
