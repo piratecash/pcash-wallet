@@ -342,7 +342,7 @@ abstract class BitcoinBaseAdapter(
         else -> emptyList<TransactionRecord>()
     }
 
-    // Records superseded by our own replacement are hidden, so a page is refilled until it is full
+    // Records superseded by a replacement are hidden, so a page is refilled until it is full
     // or the kit runs out: a short page tells the caller that everything is loaded.
     private suspend fun getTransactionsAsync(
         from: TransactionRecord?,
@@ -776,11 +776,35 @@ abstract class BitcoinBaseAdapter(
             wallet.account.id,
             wallet.token.blockchainType.uid,
             transaction.transactionHash
-        ) ?: return BitcoinReplacementRole()
+        ) ?: return replacedIncomingRole(transaction)
         return chain.roleOf(transaction.transactionHash, transaction.uid, transaction.conflictingTxHash) { hash ->
             val member = if (hash == transaction.transactionHash) transaction else kit.getTransaction(hash)
             member.replacementState()
         }
+    }
+
+    /** Only the kit's conflict reveals a sender's speed-up here; anything but a full direct replacement stays visible. */
+    private fun replacedIncomingRole(transaction: TransactionInfo): BitcoinReplacementRole {
+        val winner = transaction.conflictingTxHash
+            ?.takeIf { transaction.type == TransactionType.Incoming }
+            ?.let(kit::getTransaction)
+            ?: return BitcoinReplacementRole()
+        val paidInFull = winner.type == TransactionType.Incoming &&
+            winner.conflictingTxHash == null &&
+            winner.amount >= transaction.amount &&
+            winner.spendsSameOutputAs(transaction)
+        return if (paidInFull) {
+            BitcoinReplacementRole(replacedByHash = winner.transactionHash, ownConflict = true)
+        } else {
+            BitcoinReplacementRole()
+        }
+    }
+
+    private fun TransactionInfo.spendsSameOutputAs(other: TransactionInfo): Boolean {
+        // The input table's key omits the transaction hash: a replacement with the same sequence overwrites the input.
+        if (other.inputs.isEmpty()) return other.status != TransactionStatus.INVALID
+        val spent = inputs.mapNotNullTo(mutableSetOf()) { it.spentOutput }
+        return other.inputs.any { it.spentOutput in spent }
     }
 
     // The kit looks a hash up only among valid transactions, so an invalidated one reads as absent.

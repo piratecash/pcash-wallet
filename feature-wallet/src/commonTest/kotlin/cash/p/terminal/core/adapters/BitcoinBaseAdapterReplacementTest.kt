@@ -4,11 +4,13 @@ import cash.p.terminal.core.TransactionSettingsStorage
 import cash.p.terminal.core.managers.BackgroundKeepAliveManager
 import cash.p.terminal.core.managers.NetworkErrorTracker
 import cash.p.terminal.core.managers.OfflineModeManager
+import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
 import cash.p.terminal.modules.transactions.FilterTransactionType
 import cash.p.terminal.wallet.WalletFactory
 import io.horizontalsystems.bitcoincore.BitcoinCore
 import io.horizontalsystems.bitcoincore.models.TransactionInfo
+import io.horizontalsystems.bitcoincore.models.TransactionInputInfo
 import io.horizontalsystems.bitcoincore.models.TransactionStatus
 import io.horizontalsystems.bitcoincore.models.TransactionType
 import io.horizontalsystems.bitcoinkit.BitcoinKit
@@ -21,6 +23,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.koin.core.context.startKoin
@@ -126,6 +129,104 @@ class BitcoinBaseAdapterReplacementTest {
         assertEquals(setOf("uid-A", "uid-B"), record.replacementChainUids.toSet())
     }
 
+    @Test
+    fun getTransactions_incomingReplacedBySamePayment_onlyReplacementVisible() = runTest {
+        val winner = heldWinner()
+        val replaced = replacedIncoming()
+        kitHolds(winner, replaced)
+
+        assertEquals(listOf("uid-W"), transactions(limit = 3).map { it.uid })
+        val record = createAdapter().transactionRecord(replaced)
+        assertEquals("W", record.replacedByHash)
+        assertTrue(record.ownReplacementConflict)
+    }
+
+    @Test
+    fun getTransactions_incomingReplacedByLargerPayment_onlyReplacementVisible() = runTest {
+        kitHolds(heldWinner(amount = 1_001), replacedIncoming())
+
+        assertEquals(listOf("uid-W"), transactions(limit = 3).map { it.uid })
+    }
+
+    @Test
+    fun getTransactions_incomingReplacedBySmallerPayment_staysVisibleWithWarning() = runTest {
+        kitHolds(heldWinner(amount = 999), replacedIncoming())
+
+        assertVisibleWithWarning(transactions(limit = 3), uid = "uid-R", conflictingHash = "W")
+    }
+
+    @Test
+    fun getTransactions_incomingDescendantOfReplaced_staysVisibleWithWarning() = runTest {
+        val descendant = info(
+            uid = "uid-D",
+            hash = "D",
+            conflictingHash = "W",
+            type = TransactionType.Incoming,
+            spentOutputs = listOf("R:1"),
+        )
+        kitHolds(heldWinner(), replacedIncoming(), descendant)
+
+        val page = transactions(limit = 3)
+
+        assertEquals(listOf("uid-W", "uid-D"), page.map { it.uid })
+        assertVisibleWithWarning(page, uid = "uid-D", conflictingHash = "W")
+    }
+
+    @Test
+    fun getTransactions_incomingWithoutSpentOutputs_staysVisibleWithWarning() = runTest {
+        kitHolds(heldWinner(), replacedIncoming(spentOutputs = listOf(null)))
+
+        assertVisibleWithWarning(transactions(limit = 3), uid = "uid-R", conflictingHash = "W")
+    }
+
+    @Test
+    fun getTransactions_invalidIncomingWithoutInputs_staysVisibleWithWarning() = runTest {
+        kitHolds(heldWinner(), replacedIncoming(spentOutputs = emptyList()))
+
+        assertVisibleWithWarning(transactions(limit = 3), uid = "uid-R", conflictingHash = "W")
+    }
+
+    @Test
+    fun getTransactions_validIncomingLostInputsToReplacement_onlyReplacementVisible() = runTest {
+        kitHolds(heldWinner(), replacedIncoming(spentOutputs = emptyList(), status = TransactionStatus.RELAYED))
+
+        assertEquals(listOf("uid-W"), transactions(limit = 3).map { it.uid })
+    }
+
+    @Test
+    fun getTransactions_incomingConflictWinnerNotHeldByKit_staysVisibleWithWarning() = runTest {
+        every { kit.getTransaction("W") } returns null
+        kitHolds(replacedIncoming())
+
+        assertVisibleWithWarning(transactions(limit = 3), uid = "uid-R", conflictingHash = "W")
+    }
+
+    @Test
+    fun getTransactions_incomingConflictWinnerOutgoing_staysVisibleWithWarning() = runTest {
+        kitHolds(heldWinner(type = TransactionType.Outgoing), replacedIncoming())
+
+        assertVisibleWithWarning(transactions(limit = 3), uid = "uid-R", conflictingHash = "W")
+    }
+
+    @Test
+    fun getTransactions_incomingConflictWinnerAlsoInConflict_staysVisibleWithWarning() = runTest {
+        val replaced = replacedIncoming(status = TransactionStatus.RELAYED)
+        every { kit.getTransaction("R") } returns replaced
+        kitHolds(heldWinner(conflictingHash = "R"), replaced)
+
+        val page = transactions(limit = 3)
+
+        assertVisibleWithWarning(page, uid = "uid-R", conflictingHash = "W")
+        assertVisibleWithWarning(page, uid = "uid-W", conflictingHash = "R")
+    }
+
+    @Test
+    fun getTransactions_outgoingConflictWithIncomingWinner_staysVisible() = runTest {
+        kitHolds(heldWinner(), replacedIncoming(type = TransactionType.Outgoing))
+
+        assertVisibleWithWarning(transactions(limit = 3), uid = "uid-R", conflictingHash = "W")
+    }
+
     private suspend fun rememberSpeedUp() = registry.remember(
         wallet.account.id,
         wallet.token.blockchainType.uid,
@@ -149,19 +250,64 @@ class BitcoinBaseAdapterReplacementTest {
         wallet = wallet,
     )
 
-    private fun info(uid: String, hash: String, conflictingHash: String? = null) = TransactionInfo(
+    private fun assertVisibleWithWarning(page: List<TransactionRecord>, uid: String, conflictingHash: String) {
+        val record = page.single { it.uid == uid } as BitcoinTransactionRecord
+        assertEquals(conflictingHash, record.conflictingHash)
+        assertFalse(record.ownReplacementConflict)
+        assertNull(record.replacedByHash)
+    }
+
+    private fun heldWinner(
+        amount: Long = 1_000,
+        type: TransactionType = TransactionType.Incoming,
+        conflictingHash: String? = null,
+    ) = info(
+        uid = "uid-W",
+        hash = "W",
+        conflictingHash = conflictingHash,
+        type = type,
+        amount = amount,
+        spentOutputs = listOf(SHARED_OUTPUT),
+    ).also { every { kit.getTransaction("W") } returns it }
+
+    private fun replacedIncoming(
+        spentOutputs: List<String?> = listOf(SHARED_OUTPUT),
+        status: TransactionStatus = TransactionStatus.INVALID,
+        type: TransactionType = TransactionType.Incoming,
+    ) = info(
+        uid = "uid-R",
+        hash = "R",
+        conflictingHash = "W",
+        type = type,
+        spentOutputs = spentOutputs,
+        status = status,
+    )
+
+    private fun info(
+        uid: String,
+        hash: String,
+        conflictingHash: String? = null,
+        type: TransactionType = TransactionType.Outgoing,
+        amount: Long = 1_000,
+        spentOutputs: List<String?> = emptyList(),
+        status: TransactionStatus = TransactionStatus.RELAYED,
+    ) = TransactionInfo(
         uid = uid,
         transactionHash = hash,
         transactionIndex = 0,
-        inputs = emptyList(),
+        inputs = spentOutputs.map { TransactionInputInfo(mine = false, spentOutput = it) },
         outputs = emptyList(),
-        amount = 1_000,
-        type = TransactionType.Outgoing,
+        amount = amount,
+        type = type,
         fee = 10,
         blockHeight = null,
         timestamp = 0,
-        status = TransactionStatus.RELAYED,
+        status = status,
         conflictingTxHash = conflictingHash,
         rbfEnabled = true,
     )
+
+    private companion object {
+        const val SHARED_OUTPUT = "prev:0"
+    }
 }
