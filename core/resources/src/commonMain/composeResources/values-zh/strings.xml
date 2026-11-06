@@ -2344,4 +2344,6 @@
     <string name="evm_node_request_failed">网络节点无法处理该请求。请重试，或在区块链设置中选择其他来源。\n\n节点响应：%1$s</string>
     <string name="desktop_transfer_password">发送前输入密码</string>
     <string name="desktop_transfer_password_description">每次发送前都会要求输入应用密码，即使有人在应用未锁定时使用您的电脑，也能保护您的资产。</string>
+    <string name="tron_controlled_by_others_title">其他人可能控制此账户</string>
+    <string name="tron_controlled_by_others_warning">此账户的权限已被更改：其他密钥可能控制该账户。您转入的资金可能在未经您同意的情况下被提取。仅当您知道这些密钥属于谁时才向其充值。</string>
 </resources>

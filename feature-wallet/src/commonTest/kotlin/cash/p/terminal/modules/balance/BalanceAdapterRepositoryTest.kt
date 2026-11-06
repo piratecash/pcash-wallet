@@ -9,18 +9,21 @@ import cash.p.beam.BeamWalletState
 import cash.p.terminal.core.NotSupportedOnPlatformException
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.adapters.BeamAdapter
+import cash.p.terminal.core.adapters.TronAdapter
 import cash.p.terminal.core.factories.AdapterFactory
 import cash.p.terminal.core.managers.AdapterManager
 import cash.p.terminal.core.managers.BeamLifecycleCoordinator
 import cash.p.terminal.core.managers.BeamSessionOwner
 import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.core.managers.PendingBalanceCalculator
+import cash.p.terminal.core.managers.TronKitWrapper
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.IAdapter
 import cash.p.terminal.wallet.IBalanceAdapter
 import cash.p.terminal.wallet.Wallet
+import cash.p.terminal.wallet.balance.BalanceWarning
 import cash.p.terminal.wallet.entities.BalanceData
 import cash.p.terminal.wallet.policy.PlatformChainSupport
 import cash.p.terminal.wallet.policy.PlatformOperation
@@ -28,6 +31,10 @@ import cash.p.terminal.wallet.policy.PlatformOperationSupport
 import io.horizontalsystems.core.BackgroundManagerState
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.entities.BlockchainType
+import io.horizontalsystems.tronkit.TronKit
+import io.horizontalsystems.tronkit.models.AccountStatus
+import io.horizontalsystems.tronkit.models.Address
+import io.horizontalsystems.tronkit.transaction.Signer
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -37,6 +44,7 @@ import io.reactivex.Observable
 import io.reactivex.processors.PublishProcessor
 import io.reactivex.subjects.PublishSubject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.TestScope
@@ -45,6 +53,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -204,6 +213,103 @@ class BalanceAdapterRepositoryTest {
         }
     }
 
+    @Test
+    fun warning_signerAccountNotActive_returnsInactiveWarning() = runTest(dispatcher) {
+        assertWarning(BalanceWarning.TronInactiveAccountWarning, AccountStatus.NotActive, mockk<Signer>())
+    }
+
+    @Test
+    fun warning_watchAccountNotActive_returnsInactiveWarning() = runTest(dispatcher) {
+        assertWarning(BalanceWarning.TronInactiveAccountWarning, AccountStatus.NotActive, signer = null)
+    }
+
+    @Test
+    fun warning_signerAccountControlledByOthers_returnsControlledWarning() = runTest(dispatcher) {
+        assertWarning(BalanceWarning.TronControlledByOthersWarning, AccountStatus.ControlledByOthers, mockk<Signer>())
+    }
+
+    @Test
+    fun warning_watchAccountControlledByOthers_returnsNoWarning() = runTest(dispatcher) {
+        assertWarning(expected = null, AccountStatus.ControlledByOthers, signer = null)
+    }
+
+    @Test
+    fun warning_accountActive_returnsNoWarning() = runTest(dispatcher) {
+        assertWarning(expected = null, AccountStatus.Active, mockk<Signer>())
+    }
+
+    @Test
+    fun warning_requestFails_returnsNoWarning() = runTest(dispatcher) {
+        val tronKit = tronKit()
+        coEvery { tronKit.accountStatus(any()) } throws IllegalStateException("no network")
+        every { adapterManager.getAdapterForWalletOld(tronWallet) } returns
+            TronAdapter(TronKitWrapper(tronKit, mockk<Signer>()))
+        val repository = createRepository()
+        try {
+            assertNull(repository.warning(tronWallet))
+        } finally {
+            repository.clear()
+        }
+    }
+
+    @Test
+    fun awaitAdapter_adapterExistsBeforeSubscription_returnsWithoutReadyEvent() = runTest(dispatcher) {
+        every { adapterManager.initializationInProgressFlow } returns MutableStateFlow(false)
+        every { adapterManager.getAdapterForWalletOld(testWallet) } returns mockk<IAdapter>()
+        val repository = createRepository()
+        try {
+            val waiting = async { repository.awaitAdapter(testWallet) }
+            advanceUntilIdle()
+
+            assertTrue(waiting.isCompleted)
+        } finally {
+            repository.clear()
+        }
+    }
+
+    @Test
+    fun awaitAdapter_adapterAppearsAfterSubscription_returnsOnReadyEvent() = runTest(dispatcher) {
+        val ready = PublishProcessor.create<Map<Wallet, IAdapter>>()
+        every { adapterManager.adaptersReadyObservable } returns ready
+        every { adapterManager.initializationInProgressFlow } returns MutableStateFlow(true)
+        every { adapterManager.getAdapterForWalletOld(testWallet) } returns null
+        val repository = createRepository()
+        try {
+            val waiting = async { repository.awaitAdapter(testWallet) }
+            advanceUntilIdle()
+            assertFalse(waiting.isCompleted)
+
+            every { adapterManager.getAdapterForWalletOld(testWallet) } returns mockk<IAdapter>()
+            ready.onNext(emptyMap())
+            advanceUntilIdle()
+
+            assertTrue(waiting.isCompleted)
+        } finally {
+            repository.clear()
+        }
+    }
+
+    @Test
+    fun awaitAdapter_initializationFinishesWithAdapter_returnsWithoutReadyEvent() = runTest(dispatcher) {
+        val initializing = MutableStateFlow(true)
+        every { adapterManager.initializationInProgressFlow } returns initializing
+        every { adapterManager.getAdapterForWalletOld(testWallet) } returns null
+        val repository = createRepository()
+        try {
+            val waiting = async { repository.awaitAdapter(testWallet) }
+            advanceUntilIdle()
+            assertFalse(waiting.isCompleted)
+
+            every { adapterManager.getAdapterForWalletOld(testWallet) } returns mockk<IAdapter>()
+            initializing.value = false
+            advanceUntilIdle()
+
+            assertTrue(waiting.isCompleted)
+        } finally {
+            repository.clear()
+        }
+    }
+
     // R1: the row a syncing BEAM wallet shows. Deliberately end-to-end over the real
     // BeamAdapter and the real AdapterManager, because the seam that produced the reported
     // zero sits between them, not in this repository.
@@ -305,6 +411,31 @@ class BalanceAdapterRepositoryTest {
         } finally {
             repository.clear()
             adapter.close()
+        }
+    }
+
+    private val tronWallet = mockk<Wallet>(relaxed = true) {
+        every { token } returns mockk(relaxed = true) {
+            every { blockchainType } returns BlockchainType.Tron
+        }
+    }
+
+    private fun tronKit() = mockk<TronKit> {
+        every { address } returns mockk<Address> {
+            every { base58 } returns "TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE"
+        }
+    }
+
+    // Over the real adapter: the watch-account rule lives between it and the kit.
+    private suspend fun assertWarning(expected: BalanceWarning?, status: AccountStatus, signer: Signer?) {
+        val tronKit = tronKit()
+        coEvery { tronKit.accountStatus(any()) } returns status
+        every { adapterManager.getAdapterForWalletOld(tronWallet) } returns TronAdapter(TronKitWrapper(tronKit, signer))
+        val repository = createRepository()
+        try {
+            assertEquals(expected, repository.warning(tronWallet))
+        } finally {
+            repository.clear()
         }
     }
 
