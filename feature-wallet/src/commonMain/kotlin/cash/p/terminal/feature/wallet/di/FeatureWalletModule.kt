@@ -569,7 +569,9 @@ val featureWalletModule = module {
     }
     viewModel { (provider: BlockchainStatusProvider) -> BlockchainStatusViewModel(provider, get(), get(), get()) }
     viewModel { (wallet: Wallet) ->
-        SyncErrorViewModel(SyncErrorService(wallet, get(), SharedAppConfig.reportEmail, get(), get(), get(), get()))
+        SyncErrorViewModel(
+            SyncErrorService(wallet, get(), SharedAppConfig.reportEmail, get(), get(), get(), get(), get(), get())
+        )
     }
     singleOf(::CheckAmlIncomingTransactionUseCase)
     singleOf(::AmlStatusManager)

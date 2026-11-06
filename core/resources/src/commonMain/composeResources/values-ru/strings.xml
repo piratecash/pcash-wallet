@@ -45,6 +45,7 @@
     <string name="trezor_not_initialized_description">Этот Trezor ещё не настроен. Завершите настройку на устройстве и подключите его снова.</string>
     <string name="trezor_not_initialized_cta">Инструкция по настройке</string>
     <string name="trezor_connect_failed">Не удалось подключиться к Trezor.</string>
+    <string name="hardware_connect_device_to_sync">Подключите устройство для синхронизации</string>
     <string name="Button_Restore">Импорт</string>
     <string name="Button_Reset">Сбросить</string>
     <string name="Button_Understand">Я понимаю</string>
@@ -1469,6 +1470,7 @@
     <string name="Tor_Connection_Disable">Отключить Tor</string>
     <string name="Tor_Alert_Title">Доступ в интернет</string>
     <string name="TorPage_Connecting">Подключение Tor…</string>
+    <string name="TorPage_ConnectingProgress">Подключение Tor… %1$d%</string>
     <string name="TorPage_Failed">Не удалось подключиться к Tor</string>
     <string name="Tor_TorIsActive">Tor активен</string>
     <!--Coin Page-->

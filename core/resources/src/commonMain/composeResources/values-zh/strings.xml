@@ -59,6 +59,7 @@
     <string name="trezor_not_initialized_description">此 Trezor 尚未设置。请在设备上完成设置，然后重新连接。</string>
     <string name="trezor_not_initialized_cta">设置指南</string>
     <string name="trezor_connect_failed">无法连接到 Trezor。</string>
+    <string name="hardware_connect_device_to_sync">连接设备以同步</string>
     <string name="Button_Activate">激活</string>
     <string name="activation_required_dialog_description">要接收 %1$s，您需要激活该代币。Stellar 网络要求为每个代币建立信任线（trustline）。没有信任线，您的钱包将无法接收 %2$s——交易会被拒绝，资金也不会到账。</string>
     <string name="activate_you_activate">您将激活</string>
@@ -1432,6 +1433,7 @@
     <string name="Tor_Connection_Disable">禁用Tor</string>
     <string name="Tor_Alert_Title">互联网</string>
     <string name="TorPage_Connecting">토르 연결 중…</string>
+    <string name="TorPage_ConnectingProgress">正在连接 Tor… %1$d%</string>
     <string name="TorPage_Failed">Tor 연결 실패</string>
     <string name="Tor_TorIsActive">Tor 已激活</string>
     <!--Coin Page-->

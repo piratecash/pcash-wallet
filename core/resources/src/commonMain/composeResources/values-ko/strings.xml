@@ -59,6 +59,7 @@
     <string name="trezor_not_initialized_description">이 Trezor는 아직 설정되지 않았습니다. 기기에서 설정을 완료한 뒤 다시 연결하세요.</string>
     <string name="trezor_not_initialized_cta">설정 가이드</string>
     <string name="trezor_connect_failed">Trezor에 연결하지 못했습니다.</string>
+    <string name="hardware_connect_device_to_sync">동기화하려면 기기를 연결하세요</string>
     <string name="Button_Activate">활성화</string>
     <string name="activation_required_dialog_description">%1$s을(를) 받으려면 토큰을 활성화해야 합니다. Stellar 네트워크는 각 토큰마다 신뢰선(trustline) 설정을 요구합니다. 신뢰선이 없으면 지갑에서 %2$s을(를) 받을 수 없으며, 트랜잭션이 거부되어 자금이 전달되지 않습니다.</string>
     <string name="activate_you_activate">활성화할 토큰</string>
@@ -1441,6 +1442,7 @@
     <string name="Tor_Connection_Disable">토르 비활성화</string>
     <string name="Tor_Alert_Title">인터넷</string>
     <string name="TorPage_Connecting">토르 연결 중…</string>
+    <string name="TorPage_ConnectingProgress">토르 연결 중… %1$d%</string>
     <string name="TorPage_Failed">Tor 연결 실패</string>
     <string name="Tor_TorIsActive">Tor 활성화</string>
     <!--Coin Page-->

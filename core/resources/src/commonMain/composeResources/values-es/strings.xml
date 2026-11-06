@@ -59,6 +59,7 @@
     <string name="trezor_not_initialized_description">Este Trezor aún no está configurado. Completa la configuración en el dispositivo y vuelve a conectarlo.</string>
     <string name="trezor_not_initialized_cta">Guía de configuración</string>
     <string name="trezor_connect_failed">No se pudo conectar con Trezor.</string>
+    <string name="hardware_connect_device_to_sync">Conecta el dispositivo para sincronizar</string>
     <string name="Button_Activate">Activar</string>
     <string name="activation_required_dialog_description">Para recibir %1$s, debe activar el token. La red Stellar requiere establecer una línea de confianza (trustline) para cada token. Sin ella, su monedero no podrá recibir %2$s: la transacción será rechazada y los fondos no serán entregados.</string>
     <string name="activate_you_activate">Usted activa</string>
@@ -1433,6 +1434,7 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="Tor_Connection_Disable">Desactivar Tor</string>
     <string name="Tor_Alert_Title">Internet</string>
     <string name="TorPage_Connecting">Conectando Tor…</string>
+    <string name="TorPage_ConnectingProgress">Conectando Tor… %1$d%</string>
     <string name="TorPage_Failed">Error al conectar Tor</string>
     <string name="Tor_TorIsActive">Tor está activo</string>
     <!--Coin Page-->

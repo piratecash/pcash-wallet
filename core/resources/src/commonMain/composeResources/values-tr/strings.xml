@@ -59,6 +59,7 @@
     <string name="trezor_not_initialized_description">Bu Trezor henüz kurulmadı. Kurulumu cihazda tamamlayın ve yeniden bağlayın.</string>
     <string name="trezor_not_initialized_cta">Kurulum kılavuzu</string>
     <string name="trezor_connect_failed">Trezor\u0027a bağlanılamadı.</string>
+    <string name="hardware_connect_device_to_sync">Senkronize etmek için cihazı bağlayın</string>
     <string name="Button_Activate">Etkinleştir</string>
     <string name="activation_required_dialog_description">%1$s almak için tokeni etkinleştirmeniz gerekir. Stellar ağı her token için bir güven hattı (trustline) kurulmasını gerektirir. Bu olmadan cüzdanınız %2$s alamaz — işlem reddedilir ve fonlar teslim edilmez.</string>
     <string name="activate_you_activate">Etkinleştirdiğiniz</string>
@@ -1443,6 +1444,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="Tor_Connection_Disable">Tor\u0027u devre dışı bırak</string>
     <string name="Tor_Alert_Title">İnternet</string>
     <string name="TorPage_Connecting">Tor Bağlanıyor…</string>
+    <string name="TorPage_ConnectingProgress">Tor Bağlanıyor… %1$d%</string>
     <string name="TorPage_Failed">Tor bağlanılamadı</string>
     <string name="Tor_TorIsActive">Tor aktif</string>
     <!--Coin Page-->
