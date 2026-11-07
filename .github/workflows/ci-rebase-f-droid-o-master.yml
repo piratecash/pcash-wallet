@@ -2,14 +2,20 @@ name: F-Droid Branch Sync and Build
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   sync-and-build-fdroid:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # The last step force-pushes the rebased f-droid branch.
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: true # The last step pushes with these credentials.
 
       - name: Configure Git
         run: |
@@ -25,7 +31,7 @@ jobs:
           git rebase origin/master
 
       - name: Set up JDK
-        uses: actions/setup-java@v6
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with:
           distribution: 'temurin'
           java-version: '21'
