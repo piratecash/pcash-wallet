@@ -40,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.tooling.preview.Preview
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -76,6 +77,7 @@ import cash.p.terminal.ui_compose.components.HSpacer
 import cash.p.terminal.ui_compose.components.HsCheckbox
 import cash.p.terminal.ui_compose.components.HsIconButton
 import cash.p.terminal.ui_compose.components.HsImage
+import cash.p.terminal.ui_compose.components.InfoBottomSheet
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.SectionUniversalLawrence
 import cash.p.terminal.modules.transactions.poison_status.CopyWarningBottomSheet
@@ -126,6 +128,7 @@ import cash.p.terminal.resources.Transactions_Completed
 import cash.p.terminal.resources.Transactions_Failed
 import cash.p.terminal.resources.Transactions_Pending
 import cash.p.terminal.resources.Transactions_Processing
+import cash.p.terminal.resources.swap_result_pending_info
 import cash.p.terminal.resources.alpha_aml_title
 import cash.p.terminal.resources.beam_cancel_transaction
 import cash.p.terminal.resources.ic_arrow_medium2_up_24
@@ -678,6 +681,55 @@ fun TransactionInfoStatusCell(
 }
 
 @Composable
+fun TransactionInfoAwaitingSwapResultCell(title: String, modifier: Modifier = Modifier) {
+    var showInfo by remember { mutableStateOf(false) }
+    RowUniversal(
+        modifier = modifier.padding(horizontal = 16.dp),
+    ) {
+        subhead2_grey(text = title)
+        Spacer(modifier = Modifier.width(8.dp))
+        HsIconButton(
+            modifier = Modifier.size(20.dp),
+            onClick = { showInfo = true }
+        ) {
+            Image(
+                painter = painterResource(Res.drawable.ic_info_20),
+                contentDescription = null
+            )
+        }
+        Spacer(
+            Modifier
+                .weight(1f)
+                .defaultMinSize(minWidth = 8.dp)
+        )
+        subhead2_grey(
+            text = stringResource(Res.string.Transactions_Processing),
+            modifier = Modifier.padding(end = 8.dp)
+        )
+        HSCircularProgressIndicator(
+            progress = 0.15f,
+            size = 16.dp,
+            color = ComposeAppTheme.colors.textDisabled
+        )
+    }
+    if (showInfo) {
+        InfoBottomSheet(
+            title = title,
+            text = stringResource(Res.string.swap_result_pending_info),
+            onDismiss = { showInfo = false }
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun TransactionInfoAwaitingSwapResultCellPreview() {
+    ComposeAppTheme {
+        TransactionInfoAwaitingSwapResultCell(title = "Executed Amount")
+    }
+}
+
+@Composable
 fun TransactionInfoOfflineStatusCell(
     status: ColoredValue,
     navigation: HSNavigation,
@@ -852,9 +904,23 @@ fun TransactionInfoExplorerCell(
     iconResId: DrawableResource = Res.drawable.ic_language,
 ) {
     val urlOpener = LocalUrlOpener.current
+    TransactionInfoLinkCell(
+        title = title,
+        iconResId = iconResId,
+        onClick = { urlOpener.open(url) },
+    )
+}
+
+@Composable
+fun TransactionInfoLinkCell(
+    title: String,
+    iconResId: DrawableResource,
+    onClick: () -> Unit,
+    value: String? = null,
+) {
     RowUniversal(
         modifier = Modifier.padding(horizontal = 16.dp),
-        onClick = { urlOpener.open(url) }
+        onClick = onClick
     ) {
         Image(
             modifier = Modifier.size(20.dp),
@@ -867,6 +933,13 @@ fun TransactionInfoExplorerCell(
             modifier = Modifier.padding(horizontal = 16.dp)
         )
         Spacer(Modifier.weight(1f))
+        value?.let {
+            subhead1_grey(
+                text = it,
+                maxLines = 1,
+                modifier = Modifier.padding(end = 8.dp)
+            )
+        }
         Image(
             modifier = Modifier.size(20.dp),
             painter = painterResource(Res.drawable.ic_arrow_right),
@@ -1106,7 +1179,7 @@ private fun HSNavigation.openTransactionOptions(
     }
 }
 
-private fun statusTitle(status: TransactionStatus) = when (status) {
+internal fun statusTitle(status: TransactionStatus) = when (status) {
     TransactionStatus.Completed -> Res.string.Transactions_Completed
     TransactionStatus.Failed -> Res.string.Transactions_Failed
     TransactionStatus.Pending -> Res.string.Transactions_Pending

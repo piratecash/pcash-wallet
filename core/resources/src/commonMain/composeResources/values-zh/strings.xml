@@ -401,7 +401,6 @@
     <string name="Balance_ReceiveHint_Search">查询</string>
     <!--Send NFT-->
     <string name="SendNft_Title">发送​​</string>
-    <string name="SendNft_Error_NotEnoughtBalance">余额不足</string>
     <!--Send-->
     <string name="Send_Title">发送%1$s</string>
     <string name="Send_Hint_Address">地址或域名</string>
@@ -439,6 +438,12 @@
     <string name="scan_qr_camera_initialization_failed">相机不可用。请重试或使用其他设备。</string>
     <string name="qr_scanner_title_address">%1$s 地址</string>
     <string name="qr_scanner_title_smart_scan">智能扫描</string>
+    <string name="qr_scanner_open_image">打开图片</string>
+    <string name="qr_scanner_select_camera">摄像头</string>
+    <string name="qr_scanner_no_camera">未找到摄像头或访问被拒绝</string>
+    <string name="qr_scanner_no_camera_hint_macos">请在系统设置 → 隐私与安全性 → 摄像头中允许摄像头访问权限，然后重试。</string>
+    <string name="qr_scanner_no_camera_hint_windows">请在设置 → 隐私和安全性 → 摄像头中允许摄像头访问权限，然后重试。</string>
+    <string name="qr_scanner_no_camera_hint_linux">请确认已连接摄像头（/dev/video*）且您的用户属于 video 用户组，然后重试。</string>
     <string name="choose_from_photos">从照片中选择</string>
     <string name="image_decode_failed">无法从所选图片读取二维码</string>
     <string name="Send_Error_UnsupportedAddress">时间锁定只能和P2PKH地址（以1开头）一起使用</string>
@@ -599,6 +604,7 @@
     <string name="Swap_Price">价格</string>
     <string name="Swap_AvailableBalance">可用余额</string>
     <string name="swap_insufficient_fee_balance">当前 %1$s 余额低于处理此交易所需的金额（包括交易手续费）。</string>
+    <string name="insufficient_balance_required_available">%1$s 不足。此交易需要至少 %2$s（包含网络手续费），当前可用 %3$s。</string>
     <string name="fee_warning_low_balance">余额低于所需水平。手续费可能高达 %1$s。</string>
     <string name="swap_balance_for_fees">手续费余额</string>
     <string name="fee">手续费</string>
@@ -778,6 +784,7 @@
     <string name="TransactionInfo_HistoricalRate">历史价格</string>
     <string name="TransactionInfo_AnnouncedAmount">公布金额</string>
     <string name="transaction_info_executed_amount">成交金额</string>
+    <string name="swap_result_pending_info">互兑完成后即可查看该数值</string>
     <string name="TransactionInfo_PriceImpact">价格影响</string>
     <string name="swap_duration">互兑时长</string>
     <string name="swap_duration_approximate">~%1$s</string>
@@ -1773,62 +1780,6 @@
     <string name="notification_permission_revoked_title">通知不可用</string>
     <string name="notification_permission_revoked_message">未授予通知权限。点击打开设置。</string>
 
-    <string name="Nfts_PriceType_Days_7">平均7天</string>
-    <string name="Nfts_PriceType_Days_30">平均30天</string>
-    <string name="Nfts_PriceType_LastSale">收盘价</string>
-    <string name="Nfts_Asset_OnSale">在售</string>
-    <string name="Nfts_Asset_OnAuction">在拍卖时</string>
-    <string name="Nfts_Asset_OnSaleUntil">直到 %s</string>
-    <string name="Nfts_Empty">你的钱包中没有 NFT</string>
-    <string name="Nfts_PriceMode">价格模式</string>
-    <string name="NftAsset_Overview">行情</string>
-    <string name="NftAsset_Activity">活动</string>
-    <string name="NftAsset_Action_Share">分享</string>
-    <string name="NftAsset_Action_Save">保存</string>
-    <string name="NftAsset_Price_Purchase">购买价格</string>
-    <string name="NftAsset_Price_Average7d">平均7天</string>
-    <string name="NftAsset_Price_Average30d">平均30天</string>
-    <string name="NftAsset_Price_Floor">底价</string>
-    <string name="NftAsset_Price_BuyNow">立即购买</string>
-    <string name="NftAsset_Price_MinimumBid">最低出价</string>
-    <string name="NftAsset_Price_BestOffer">最佳报价</string>
-    <string name="NftAsset_Properties">属性</string>
-    <string name="NftAsset_Description">描述</string>
-    <string name="NftAsset_Details">详细信息</string>
-    <string name="NftAsset_Links">链接</string>
-    <string name="NftAsset_ContractAddress">智能合约地址</string>
-    <string name="NftAsset_TokenId">代币 ID</string>
-    <string name="NftAsset_TokenStandard">代币标准</string>
-    <string name="NftAsset_Blockchain">区块链</string>
-    <string name="NftAsset_Links_Website">网站</string>
-    <string name="PoweredBy_OpenSeaAPI">由 OpenSea API 提供支持</string>
-    <string name="Nft_TopCollections">前列 NFT 收藏</string>
-    <string name="Nft_TopCollections_Description">按交易量排列的主要NFT收藏。</string>
-    <!-- NFT Collection -->
-    <string name="NftCollection_Overview">行情</string>
-    <string name="NftCollection_Items">项目</string>
-    <string name="NftCollection_Activity">活动</string>
-    <string name="NftCollection_Owners">所有者</string>
-    <string name="NftCollection_TodaysSales">今天的卖家</string>
-    <string name="NftCollection_TodaysSalesCount">%s NFT</string>
-    <string name="NftCollection_Royalty">荣耀</string>
-    <string name="NftCollection_InceptionDate">起始日期</string>
-    <!-- NFT Collection Events -->
-    <string name="NftCollection_EventType_SelectorTitle">选择事件类型</string>
-    <string name="NftCollection_EventType_All">所有</string>
-    <string name="NftCollection_EventType_List">列表</string>
-    <string name="NftCollection_EventType_Sale">出售</string>
-    <string name="NftCollection_EventType_Cancelled">取消</string>
-    <string name="NftCollection_EventType_BidEntered">已输入出价</string>
-    <string name="NftCollection_EventType_BidWithdrawn">已撤回出价</string>
-    <string name="NftCollection_EventType_Transfer">转帐</string>
-    <string name="NftCollection_EventType_OfferEntered">已输入报价</string>
-    <string name="NftCollection_EventType_Approve">批准</string>
-    <string name="NftCollection_EventType_Custom">自定义</string>
-    <string name="NftCollection_EventType_Payout">支出</string>
-    <string name="NftCollection_EventType_BulkCancel">批量取消</string>
-    <string name="NftCollection_EventType_Mint">薄荷绿</string>
-    <string name="NftCollection_EventType_Unknown">未知</string>
     <!--Rate list-->
     <string name="RateList_TopGainers">涨幅最大者</string>
     <string name="RateList_TopLosers">跌幅最大者</string>
@@ -1852,7 +1803,6 @@
     <string name="Hud_Text_Activate">激活</string>
     <!--Widget-->
     <string name="WidgetList_Config_Title">选择类型</string>
-    <string name="NftAssetActivity_Empty">还没有项目活动</string>
     <string name="Widget_EnableAutostartWarning">为了确保这个部件正常工作，您应该启用自动启动。</string>
     <!--Alert-->
     <string name="alert_keys_invalidated_title">Android密钥库错误</string>
@@ -2293,6 +2243,22 @@
     <string name="desktop_change_password_corrupted">密钥文件已损坏：应用锁定后您将无法登录。请为每个恢复短语保存备份。</string>
     <string name="desktop_change_password_success">密码已更改</string>
     <string name="desktop_security_lock_now">立即锁定</string>
+    <string name="swap_progress_title">兑换进度</string>
+    <string name="swap_progress_step_of">第 %1$d 步，共 %2$d 步</string>
+    <string name="swap_progress_step_header">第 %1$d 步 · %2$s</string>
+    <string name="swap_progress_leg_send">正在发送 %1$s</string>
+    <string name="swap_progress_leg_receive">正在接收 %1$s</string>
+    <string name="swap_progress_leg_swap">正在将 %1$s 兑换为 %2$s</string>
+    <string name="swap_progress_leg_transfer">转账 %1$s</string>
+    <string name="swap_progress_action_required_aml">服务商因 AML 审查暂停了此次兑换。</string>
+    <string name="swap_progress_action_required_frozen">服务商已冻结此次兑换。</string>
+    <string name="swap_progress_action_required_overdue">存款在报价过期后才到账。</string>
+    <string name="swap_progress_action_required_default">兑换已暂停，需要您采取行动。</string>
+    <string name="swap_progress_contact_support">请在下方联系服务商客服。</string>
+    <string name="swap_support_telegram">%1$s 客服 · Telegram</string>
+    <string name="swap_support_email">%1$s 客服 · 邮件</string>
+    <string name="swap_support_email_deposit_tx">存款交易：%1$s</string>
+    <string name="swap_support_email_deposit_address">存款地址：%1$s</string>
 
     <!-- Shamir backup restore -->
     <string name="import_wallet_shamir">Shamir 备份</string>

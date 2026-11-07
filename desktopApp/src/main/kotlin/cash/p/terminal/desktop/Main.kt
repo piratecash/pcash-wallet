@@ -19,6 +19,7 @@ import cash.p.terminal.feature.market.di.marketFeatureModule
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.desktop_already_running
 import cash.p.terminal.shared.desktop.DesktopAppExit
+import cash.p.terminal.shared.desktop.DesktopAppVersion
 import cash.p.terminal.shared.desktop.DesktopBalanceAutoHide
 import cash.p.terminal.shared.desktop.DesktopForegroundEffect
 import cash.p.terminal.shared.desktop.DesktopLaunchArguments
@@ -57,7 +58,6 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 private const val APPLICATION_NAME = "P.CASH"
-private const val APPLICATION_VERSION = "desktop"
 private const val INSTANCE_LOCK_FILE = ".instance.lock"
 private const val BEAM_NATIVE_PATH_PROPERTY = "beam.sdk.native.path"
 
@@ -68,10 +68,14 @@ private var instanceLock: SingleInstanceLock? = null
 
 fun main(args: Array<String>) {
     val launchArguments = DesktopLaunchArguments.parse(args)
-    // The packager re-signs natives inside jars, so SQLCipher and BEAM load their copies from the app resources.
+    // The packager re-signs natives inside jars, so SQLCipher, BEAM and JNA load their copies from the app resources.
     System.getProperty("compose.application.resources.dir")?.let {
         System.setProperty(SqlCipherDriver.NATIVE_DIR_PROPERTY, it)
         System.setProperty(BEAM_NATIVE_PATH_PROPERTY, File(it, System.mapLibraryName("beam_sdk_kmp")).path)
+        System.setProperty("jna.boot.library.path", it)
+        System.setProperty("jna.library.path", it)
+        // Never unpack a jar's copy into a temp directory: only the packaged natives may load.
+        System.setProperty("jna.nounpack", "true")
     }
     secureDesktopAppDataDirectory()
     launchArguments.awaitPreviousInstance()
@@ -118,7 +122,7 @@ fun main(args: Array<String>) {
             }
             DesktopForegroundEffect(windowState.isMinimized)
             ComposeAppTheme(darkTheme = rememberDesktopDarkTheme()) {
-                DesktopRoot(APPLICATION_VERSION, launchArguments.wipeFailed)
+                DesktopRoot(launchArguments.wipeFailed)
             }
         }
     }
@@ -152,9 +156,10 @@ private fun buildImageLoader(context: PlatformContext): ImageLoader {
 }
 
 private val desktopModule = module {
+    single { DesktopAppVersion(APP_VERSION_NAME) }
     single<AppHeadersProvider> {
         object : AppHeadersProvider {
-            override val appVersion = APPLICATION_VERSION
+            override val appVersion = "desktop-$APP_VERSION_NAME"
             override val currentLanguage: String
                 get() = Locale.getDefault().language.ifEmpty { "en" }
             override val appSignature: String? = null

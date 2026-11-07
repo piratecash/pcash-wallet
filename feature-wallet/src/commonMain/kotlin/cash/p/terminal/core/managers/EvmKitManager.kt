@@ -23,7 +23,6 @@ import io.horizontalsystems.ethereumkit.models.Signature
 import io.horizontalsystems.ethereumkit.models.SignedRawTransaction
 import io.horizontalsystems.ethereumkit.models.TransactionData
 import io.horizontalsystems.merkleiokit.MerkleTransactionAdapter
-import io.horizontalsystems.nftkit.core.NftKit
 import io.horizontalsystems.oneinchkit.OneInchKit
 import io.horizontalsystems.uniswapkit.TokenFactory.UnsupportedChainError
 import io.horizontalsystems.uniswapkit.UniswapKit
@@ -157,26 +156,6 @@ class EvmKitManager(
 
         addDecorators(evmKit)
 
-        val nftKit: NftKit? = null
-//        var nftKit: NftKit? = null
-//        val supportedNftTypes = blockchainType.supportedNftTypes
-//        if (supportedNftTypes.isNotEmpty()) {
-//            val nftKitInstance = NftKit.getInstance(App.instance, evmKit)
-//            supportedNftTypes.forEach {
-//                when (it) {
-//                    NftType.Eip721 -> {
-//                        nftKitInstance.addEip721TransactionSyncer()
-//                        nftKitInstance.addEip721Decorators()
-//                    }
-//                    NftType.Eip1155 -> {
-//                        nftKitInstance.addEip1155TransactionSyncer()
-//                        nftKitInstance.addEip1155Decorators()
-//                    }
-//                }
-//            }
-//            nftKit = nftKitInstance
-//        }
-
         val merkleTransactionAdapter = try {
             MerkleTransactionAdapter.getInstance(
                 merkleIoPubKey = SharedAppConfig.merkleIoKey,
@@ -203,7 +182,6 @@ class EvmKitManager(
 
         return EvmKitWrapper(
             evmKit = evmKit,
-            nftKit = nftKit,
             blockchainType = blockchainType,
             signer = signer,
             merkleTransactionAdapter = merkleTransactionAdapter,
@@ -231,7 +209,6 @@ class EvmKitManager(
         EthereumKit.migrateDatabase(context, chain, walletId, databaseKey)
         Erc20Kit.migrateDatabases(context, chain, walletId, databaseKey)
         MerkleTransactionAdapter.migrateDatabase(context, chain, walletId, databaseKey)
-        NftKit.migrateDatabase(context, chain, walletId, databaseKey)
     }
 
     suspend fun stopFor(accountId: String) = lifecycleMutex.withLock {
@@ -334,7 +311,6 @@ class EvmKitManager(
 
 class EvmKitWrapper(
     val evmKit: EthereumKit,
-    val nftKit: NftKit?,
     val blockchainType: BlockchainType,
     val signer: Signer?,
     val merkleTransactionAdapter: MerkleTransactionAdapter?,

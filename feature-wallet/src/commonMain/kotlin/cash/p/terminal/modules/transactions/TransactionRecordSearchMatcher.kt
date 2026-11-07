@@ -162,10 +162,7 @@ class TransactionRecordSearchMatcher {
         add(value.coinCode)
         add(value.fullName)
         add(value.badge)
-        value.nftUid?.let { nftUid ->
-            add(nftUid.tokenId)
-            add(nftUid.contractAddress)
-        }
+        if (value is TransactionValue.NftValue) add(value.mintAddress)
     }
 
     private fun MutableList<String?>.addEvents(events: List<TransferEvent>?) {

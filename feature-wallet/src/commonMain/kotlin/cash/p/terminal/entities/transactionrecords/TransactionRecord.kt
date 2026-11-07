@@ -2,7 +2,6 @@ package cash.p.terminal.entities.transactionrecords
 
 import cash.p.terminal.entities.LastBlockInfo
 import cash.p.terminal.entities.TransactionValue
-import cash.p.terminal.entities.nft.NftUid
 import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
 import cash.p.terminal.entities.transactionrecords.evm.EvmTransactionRecord
 import cash.p.terminal.entities.transactionrecords.solana.SolanaTransactionRecord
@@ -74,31 +73,6 @@ abstract class TransactionRecord(
         return TransactionStatus.Pending
     }
 }
-
-val TransactionRecord.nftUids: Set<NftUid>
-    get() = if (this is EvmTransactionRecord) {
-        when (transactionRecordType) {
-            TransactionRecordType.EVM_CONTRACT_CALL,
-            TransactionRecordType.EVM_EXTERNAL_CONTRACT_CALL -> {
-                ((incomingEvents!! + outgoingEvents!!).mapNotNull { it.value.nftUid }).toSet()
-            }
-
-            TransactionRecordType.EVM_OUTGOING -> {
-                value!!.nftUid?.let { setOf(it) } ?: emptySet()
-            }
-
-            else -> emptySet()
-        }
-    } else {
-        emptySet()
-    }
-
-val List<TransactionRecord>.nftUids: Set<NftUid>
-    get() {
-        val nftUids = mutableSetOf<NftUid>()
-        forEach { nftUids.addAll(it.nftUids) }
-        return nftUids
-    }
 
 fun TransactionRecord.getShortOutgoingTransactionRecord(): ShortOutgoingTransactionRecord? =
     when (this) {

@@ -19,7 +19,6 @@ class MarketKitSyncTest {
             coEvery { sync(any()) } throws IllegalStateException("database or disk is full")
         }
         val marketKit = MarketKit(
-            nftManager = mockk(),
             marketOverviewManager = mockk(),
             coinManager = mockk(),
             coinSyncer = coinSyncer,

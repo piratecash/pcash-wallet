@@ -32,7 +32,6 @@ import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
 import cash.p.terminal.ui_compose.components.HFillSpacer
 import cash.p.terminal.ui_compose.components.HSpacer
-import cash.p.terminal.ui_compose.components.NftIcon
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.caption_grey
@@ -125,7 +124,6 @@ fun SectionView(viewItems: List<ViewItem>, navigation: HSNavigation) {
             is ViewItem.AmountMulti -> AmountMulti(item)
             is ViewItem.Amount -> Amount(item)
             is ViewItem.AmountWithTitle -> AmountWithTitle(item)
-            is ViewItem.NftAmount -> NftAmount(item)
             is ViewItem.Address -> {
                 TransactionInfoAddressCell(
                     title = item.title,
@@ -317,24 +315,6 @@ private fun AmountWithTitle(item: ViewItem.AmountWithTitle) {
                 subhead2_grey(text = it)
             }
         }
-    }
-}
-
-@Composable
-private fun NftAmount(item: ViewItem.NftAmount) {
-    RowUniversal(
-        modifier = Modifier.padding(horizontal = 16.dp)
-    ) {
-        NftIcon(
-            modifier = Modifier.padding(end = 16.dp),
-            iconUrl = item.iconUrl,
-        )
-        Text(
-            text = item.amount,
-            maxLines = 1,
-            style = ComposeAppTheme.typography.subhead2,
-            color = setColorByType(item.type)
-        )
     }
 }
 

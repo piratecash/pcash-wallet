@@ -1,6 +1,6 @@
 package cash.p.terminal.network.unstoppable.data.entity
 
-import cash.p.terminal.network.data.serializers.FlexibleBigDecimalSerializer
+import cash.p.terminal.network.data.serializers.FlexibleNullableBigDecimalSerializer
 import kotlinx.serialization.Serializable
 import java.math.BigDecimal
 
@@ -12,11 +12,11 @@ internal data class TrackResponseDto(
     val hash: String? = null,
     val chainId: String? = null,
     val fromAsset: String? = null,
-    @Serializable(with = FlexibleBigDecimalSerializer::class)
+    @Serializable(with = FlexibleNullableBigDecimalSerializer::class)
     val fromAmount: BigDecimal? = null,
     val fromAddress: String? = null,
     val toAsset: String? = null,
-    @Serializable(with = FlexibleBigDecimalSerializer::class)
+    @Serializable(with = FlexibleNullableBigDecimalSerializer::class)
     val toAmount: BigDecimal? = null,
     val toAddress: String? = null,
     val legs: List<LegDto>? = null,
@@ -30,11 +30,11 @@ internal data class LegDto(
     val hash: String? = null,
     val chainId: String? = null,
     val fromAsset: String? = null,
-    @Serializable(with = FlexibleBigDecimalSerializer::class)
+    @Serializable(with = FlexibleNullableBigDecimalSerializer::class)
     val fromAmount: BigDecimal? = null,
     val fromAddress: String? = null,
     val toAsset: String? = null,
-    @Serializable(with = FlexibleBigDecimalSerializer::class)
+    @Serializable(with = FlexibleNullableBigDecimalSerializer::class)
     val toAmount: BigDecimal? = null,
     val toAddress: String? = null,
 )

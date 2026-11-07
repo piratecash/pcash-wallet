@@ -401,7 +401,6 @@
     <string name="Balance_ReceiveHint_Search">Ara</string>
     <!--Send NFT-->
     <string name="SendNft_Title">Gönder</string>
-    <string name="SendNft_Error_NotEnoughtBalance">Yetersiz bakiye</string>
     <!--Send-->
     <string name="Send_Title">%1$s gönder</string>
     <string name="Send_Hint_Address">Adres veya Domain</string>
@@ -439,6 +438,12 @@
     <string name="scan_qr_camera_initialization_failed">Kamera kullanılamıyor. Lütfen tekrar deneyin veya farklı bir cihaz kullanın.</string>
     <string name="qr_scanner_title_address">%1$s adresi</string>
     <string name="qr_scanner_title_smart_scan">AKILLI TARAMA</string>
+    <string name="qr_scanner_open_image">Resim Aç</string>
+    <string name="qr_scanner_select_camera">Kamera</string>
+    <string name="qr_scanner_no_camera">Kamera bulunamadı veya erişim reddedildi</string>
+    <string name="qr_scanner_no_camera_hint_macos">Sistem Ayarları → Gizlilik ve Güvenlik → Kamera bölümünden kamera erişimine izin verin, sonra tekrar deneyin.</string>
+    <string name="qr_scanner_no_camera_hint_windows">Ayarlar → Gizlilik ve güvenlik → Kamera bölümünden kamera erişimine izin verin, sonra tekrar deneyin.</string>
+    <string name="qr_scanner_no_camera_hint_linux">Bir kameranın bağlı olduğundan (/dev/video*) ve kullanıcınızın video grubunda olduğundan emin olun, sonra tekrar deneyin.</string>
     <string name="choose_from_photos">Fotoğraflardan seç</string>
     <string name="image_decode_failed">Seçilen görüntüden bir QR kodu okunamadı</string>
     <string name="Send_Error_UnsupportedAddress">Zaman kilitleme sadece BIP44 (1 ile başlayan) adresleriyle çalışır</string>
@@ -603,6 +608,7 @@
     <string name="Swap_Price">Fiyat</string>
     <string name="Swap_AvailableBalance">Mevcut Bakiye</string>
     <string name="swap_insufficient_fee_balance">Mevcut %1$s bakiyesi, işlem ücreti dahil bu işlemi gerçekleştirmek için gereken tutardan düşüktür.</string>
+    <string name="insufficient_balance_required_available">Yeterli %1$s yok. Bu işlem, ağ ücretleri dahil en az %2$s gerektiriyor; kullanılabilir bakiye %3$s.</string>
     <string name="fee_warning_low_balance">Bakiye gerekli seviyenin altında. Ücretler %1$s\u0027ye kadar çıkabilir.</string>
     <string name="swap_balance_for_fees">Ücretler için bakiye</string>
     <string name="fee">Ücret</string>
@@ -782,6 +788,7 @@
     <string name="TransactionInfo_HistoricalRate">Geçmiş Kur</string>
     <string name="TransactionInfo_AnnouncedAmount">Duyurulan miktar</string>
     <string name="transaction_info_executed_amount">Gerçekleşen miktar</string>
+    <string name="swap_result_pending_info">Değer takas tamamlandıktan sonra kullanılabilir olacak</string>
     <string name="TransactionInfo_PriceImpact">Fiyat etkisi</string>
     <string name="swap_duration">Takas süresi</string>
     <string name="swap_duration_approximate">~%1$s</string>
@@ -1784,62 +1791,6 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="notification_permission_revoked_title">Bildirimler Kullanılamıyor</string>
     <string name="notification_permission_revoked_message">Bildirim izni verilmedi. Ayarları açmak için dokunun.</string>
 
-    <string name="Nfts_PriceType_Days_7">Ortalama 7G</string>
-    <string name="Nfts_PriceType_Days_30">Ortalama 30G</string>
-    <string name="Nfts_PriceType_LastSale">Son İndirim</string>
-    <string name="Nfts_Asset_OnSale">İndirimde</string>
-    <string name="Nfts_Asset_OnAuction">Müzayedede</string>
-    <string name="Nfts_Asset_OnSaleUntil">%s kadar</string>
-    <string name="Nfts_Empty">Cüzdanınızda NFT yok</string>
-    <string name="Nfts_PriceMode">Fiyat Modu</string>
-    <string name="NftAsset_Overview">İzleme</string>
-    <string name="NftAsset_Activity">Aktivite</string>
-    <string name="NftAsset_Action_Share">Paylaş</string>
-    <string name="NftAsset_Action_Save">Kaydet</string>
-    <string name="NftAsset_Price_Purchase">Paket Fiyatı</string>
-    <string name="NftAsset_Price_Average7d">Ortalama 7G</string>
-    <string name="NftAsset_Price_Average30d">Ortalama 30G</string>
-    <string name="NftAsset_Price_Floor">Taban Fiyatı</string>
-    <string name="NftAsset_Price_BuyNow">Şimdi Al</string>
-    <string name="NftAsset_Price_MinimumBid">Minimum Teklif</string>
-    <string name="NftAsset_Price_BestOffer">En İyi Teklif</string>
-    <string name="NftAsset_Properties">Özellikler</string>
-    <string name="NftAsset_Description">Açıklama</string>
-    <string name="NftAsset_Details">Ayrıntılar</string>
-    <string name="NftAsset_Links">Bağlantılar</string>
-    <string name="NftAsset_ContractAddress">Sözleşme Adresi</string>
-    <string name="NftAsset_TokenId">Token Kimliği</string>
-    <string name="NftAsset_TokenStandard">Token Standardı</string>
-    <string name="NftAsset_Blockchain">Blockchains</string>
-    <string name="NftAsset_Links_Website">Web sitesi</string>
-    <string name="PoweredBy_OpenSeaAPI">OpenSea API tarafından desteklenmektedir</string>
-    <string name="Nft_TopCollections">En İyi NFT Koleksiyonları</string>
-    <string name="Nft_TopCollections_Description">İşlem hacmine göre önde gelen NFT koleksiyonları.</string>
-    <!-- NFT Collection -->
-    <string name="NftCollection_Overview">İzleme</string>
-    <string name="NftCollection_Items">Ögeler</string>
-    <string name="NftCollection_Activity">Aktivite</string>
-    <string name="NftCollection_Owners">Sahip</string>
-    <string name="NftCollection_TodaysSales">Bugünün Satıcıları</string>
-    <string name="NftCollection_TodaysSalesCount">%s NFT</string>
-    <string name="NftCollection_Royalty">Royalty</string>
-    <string name="NftCollection_InceptionDate">Başlangıç ​​tarihi</string>
-    <!-- NFT Collection Events -->
-    <string name="NftCollection_EventType_SelectorTitle">Etkinlik Türü Seç</string>
-    <string name="NftCollection_EventType_All">Hepsi</string>
-    <string name="NftCollection_EventType_List">Liste</string>
-    <string name="NftCollection_EventType_Sale">İndirim</string>
-    <string name="NftCollection_EventType_Cancelled">İptal</string>
-    <string name="NftCollection_EventType_BidEntered">Teklif Girildi</string>
-    <string name="NftCollection_EventType_BidWithdrawn">Teklif Geri Çekildi</string>
-    <string name="NftCollection_EventType_Transfer">Aktar</string>
-    <string name="NftCollection_EventType_OfferEntered">Son Teklif Girildi</string>
-    <string name="NftCollection_EventType_Approve">Onayla</string>
-    <string name="NftCollection_EventType_Custom">Özel</string>
-    <string name="NftCollection_EventType_Payout">Ödeme</string>
-    <string name="NftCollection_EventType_BulkCancel">Toplu İptal</string>
-    <string name="NftCollection_EventType_Mint">Mint</string>
-    <string name="NftCollection_EventType_Unknown">Bilinmeyen</string>
     <!--Rate list-->
     <string name="RateList_TopGainers">Gainers</string>
     <string name="RateList_TopLosers">Losers</string>
@@ -1863,7 +1814,6 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="Hud_Text_Activate">Activate</string>
     <!--Widget-->
     <string name="WidgetList_Config_Title">Türü Seç</string>
-    <string name="NftAssetActivity_Empty">Henüz öğe etkinliği yok</string>
     <string name="Widget_EnableAutostartWarning">To make sure that this widget works properly, you should enable Autostart.</string>
     <!--Alert-->
     <string name="alert_keys_invalidated_title">Android anahtar deposu hatası</string>
@@ -2310,6 +2260,22 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="desktop_change_password_corrupted">Anahtar dosyası zarar görmüş: uygulama kilitlendiğinde oturum açamayacaksınız. Her kurtarma ifadesinin bir yedeğini kaydedin.</string>
     <string name="desktop_change_password_success">Şifre değiştirildi</string>
     <string name="desktop_security_lock_now">Şimdi kilitle</string>
+    <string name="swap_progress_title">Takas ilerlemesi</string>
+    <string name="swap_progress_step_of">Adım %1$d / %2$d</string>
+    <string name="swap_progress_step_header">Adım %1$d · %2$s</string>
+    <string name="swap_progress_leg_send">%1$s gönderiliyor</string>
+    <string name="swap_progress_leg_receive">%1$s alınıyor</string>
+    <string name="swap_progress_leg_swap">%1$s, %2$s karşılığında takas ediliyor</string>
+    <string name="swap_progress_leg_transfer">%1$s transferi</string>
+    <string name="swap_progress_action_required_aml">Sağlayıcı, AML kontrolü için takası duraklattı.</string>
+    <string name="swap_progress_action_required_frozen">Sağlayıcı takası dondurdu.</string>
+    <string name="swap_progress_action_required_overdue">Para yatırma, teklifin süresi dolduktan sonra ulaştı.</string>
+    <string name="swap_progress_action_required_default">Takas duraklatıldı ve işleminizi bekliyor.</string>
+    <string name="swap_progress_contact_support">Aşağıdan sağlayıcının destek ekibiyle iletişime geçin.</string>
+    <string name="swap_support_telegram">%1$s desteği · Telegram</string>
+    <string name="swap_support_email">%1$s desteği · E-posta</string>
+    <string name="swap_support_email_deposit_tx">Para yatırma işlemi: %1$s</string>
+    <string name="swap_support_email_deposit_address">Para yatırma adresi: %1$s</string>
 
     <!-- Shamir backup restore -->
     <string name="import_wallet_shamir">Shamir yedeği</string>

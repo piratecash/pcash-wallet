@@ -384,7 +384,6 @@
     <!--Send NFT-->
     <string name="Info_Reserved_Title">Зарезервовано</string>
     <string name="SendNft_Title">Надіслати</string>
-    <string name="SendNft_Error_NotEnoughtBalance">Недостатньо коштів</string>
     <!--Send-->
     <string name="Send_EnterAddress">Вкажіть адресу</string>
     <string name="Send_Title">Надіслати %1$s</string>
@@ -423,6 +422,12 @@
     <string name="scan_qr_camera_initialization_failed">Камера недоступна. Будь ласка, спробуйте ще раз або скористайтеся іншим пристроєм.</string>
     <string name="qr_scanner_title_address">Адреса %1$s</string>
     <string name="qr_scanner_title_smart_scan">РОЗУМНЕ СКАНУВАННЯ</string>
+    <string name="qr_scanner_open_image">Відкрити зображення</string>
+    <string name="qr_scanner_select_camera">Камера</string>
+    <string name="qr_scanner_no_camera">Камеру не знайдено або доступ заборонено</string>
+    <string name="qr_scanner_no_camera_hint_macos">Дозвольте доступ до камери в Системних налаштуваннях → Конфіденційність і безпека → Камера, потім спробуйте ще раз.</string>
+    <string name="qr_scanner_no_camera_hint_windows">Дозвольте доступ до камери в Параметрах → Конфіденційність і захист → Камера, потім спробуйте ще раз.</string>
+    <string name="qr_scanner_no_camera_hint_linux">Переконайтеся, що камера підключена (/dev/video*) і ваш користувач входить до групи video, потім спробуйте ще раз.</string>
     <string name="choose_from_photos">Вибрати з фото</string>
     <string name="image_decode_failed">Не вдалося зчитати QR-код із вибраного зображення</string>
     <string name="Send_Error_UnsupportedAddress">TimeLock працює тільки при надсиланні на платіжні адреси, що починаються з 1... (також відомих як BIP44 адреси)</string>
@@ -581,6 +586,7 @@
     <string name="Swap_Price">Ціна</string>
     <string name="Swap_AvailableBalance">Доступний баланс</string>
     <string name="swap_insufficient_fee_balance">Поточний баланс %1$s нижчий за суму, необхідну для проведення цієї транзакції, включаючи комісію.</string>
+    <string name="insufficient_balance_required_available">Недостатньо %1$s. Для цієї транзакції потрібно щонайменше %2$s з урахуванням комісій мережі, доступно %3$s.</string>
     <string name="fee_warning_low_balance">Баланс нижчий за необхідний рівень. Комісія може становити до %1$s.</string>
     <string name="swap_balance_for_fees">Баланс для комісій</string>
     <string name="fee">Комісія</string>
@@ -766,6 +772,7 @@
     <string name="TransactionInfo_HistoricalRate">Історичний курс</string>
     <string name="TransactionInfo_AnnouncedAmount">Оголошена сума</string>
     <string name="transaction_info_executed_amount">Виконана сума</string>
+    <string name="swap_result_pending_info">Значення буде доступне після завершення обміну</string>
     <string name="TransactionInfo_PriceImpact">Вплив на ціну</string>
     <string name="swap_duration">Час обміну</string>
     <string name="swap_duration_approximate">~%1$s</string>
@@ -1664,62 +1671,7 @@
     <string name="Detectors_TokenDetectors">Детектори токенів</string>
     <string name="Detectors_GeneralDetectors">Загальні детектори</string>
     <string name="Detectors_IssuesCount">Проблеми %d</string>
-    <string name="Nfts_PriceType_Days_7">7Д сер.</string>
-    <string name="Nfts_PriceType_Days_30">30Д сер.</string>
-    <string name="Nfts_PriceType_LastSale">Останній продаж</string>
-    <string name="Nfts_Asset_OnSale">У продажу</string>
-    <string name="Nfts_Asset_OnAuction">На аукціоні</string>
-    <string name="Nfts_Asset_OnSaleUntil">до %s</string>
-    <string name="Nfts_Empty">У вас немає NFT у вашому гаманці</string>
-    <string name="Nfts_PriceMode">Режим ціни</string>
-    <string name="NftAsset_Overview">Огляд</string>
-    <string name="NftAsset_Activity">Активність</string>
-    <string name="NftAsset_Action_Share">Поділитися</string>
-    <string name="NftAsset_Action_Save">Зберегти</string>
-    <string name="NftAsset_Price_Purchase">Ціна покупки</string>
-    <string name="NftAsset_Price_Average7d">Сер. 7Д</string>
-    <string name="NftAsset_Price_Average30d">Сер. 30Д</string>
-    <string name="NftAsset_Price_Floor">Мінімальна ціна</string>
-    <string name="NftAsset_Price_BuyNow">Купити зараз</string>
-    <string name="NftAsset_Price_MinimumBid">Мін. ставка</string>
-    <string name="NftAsset_Price_BestOffer">Найкраща пропозиція</string>
-    <string name="NftAsset_Properties">Параметри</string>
-    <string name="NftAsset_Description">Опис</string>
-    <string name="NftAsset_Details">Деталі</string>
-    <string name="NftAsset_Links">Посилання</string>
-    <string name="NftAsset_ContractAddress">Адреса контракту</string>
-    <string name="NftAsset_TokenId">ID токена</string>
-    <string name="NftAsset_TokenStandard">Стандарт токена</string>
-    <string name="NftAsset_Blockchain">Блокчейн</string>
-    <string name="NftAsset_Links_Website">Веб-сайт</string>
-    <string name="PoweredBy_OpenSeaAPI">За підтримки OpenSea API</string>
-    <string name="Nft_TopCollections">Топ NFT колекції</string>
-    <string name="Nft_TopCollections_Description">Провідні колекції NFT за обсягом торгів.</string>
-    <!-- NFT Collection -->
-    <string name="NftCollection_Overview">Огляд</string>
-    <string name="NftCollection_Items">Елементи</string>
-    <string name="NftCollection_Activity">Активність</string>
-    <string name="NftCollection_Owners">Власники</string>
-    <string name="NftCollection_TodaysSales">Сьогоднішні продажі</string>
-    <string name="NftCollection_TodaysSalesCount">%s NFT</string>
-    <string name="NftCollection_Royalty">Роялті</string>
-    <string name="NftCollection_InceptionDate">Дата створення</string>
-    <!-- NFT Collection Events -->
-    <string name="NftCollection_EventType_SelectorTitle">Виберіть тип події</string>
-    <string name="NftCollection_EventType_All">Усі</string>
-    <string name="NftCollection_EventType_List">Лістинг</string>
-    <string name="NftCollection_EventType_Sale">Продаж</string>
-    <string name="NftCollection_EventType_Cancelled">Скасовано</string>
-    <string name="NftCollection_EventType_BidEntered">Ставку зроблено</string>
-    <string name="NftCollection_EventType_BidWithdrawn">Ставку відкликано</string>
-    <string name="NftCollection_EventType_Transfer">Переказ</string>
-    <string name="NftCollection_EventType_OfferEntered">Пропозицію зроблено</string>
-    <string name="NftCollection_EventType_Approve">Схвалення</string>
-    <string name="NftCollection_EventType_Custom">Користувацька</string>
-    <string name="NftCollection_EventType_Payout">Виплата</string>
-    <string name="NftCollection_EventType_BulkCancel">Масове скасування</string>
-    <string name="NftCollection_EventType_Mint">Карбування</string>
-    <string name="NftCollection_EventType_Unknown">Невідома</string>
+
     <!--Rate list-->
     <string name="RateList_TopGainers">Зростаючі активи</string>
     <string name="RateList_TopLosers">Падаючі активи</string>
@@ -1744,7 +1696,6 @@
     <string name="Hud_Text_Activate">Активувати</string>
     <!--Widget-->
     <string name="WidgetList_Config_Title">Вибрати тип</string>
-    <string name="NftAssetActivity_Empty">Немає активності</string>
     <string name="Widget_EnableAutostartWarning">Щоб переконатися, що цей віджет працює правильно, необхідно увімкнути автозапуск.</string>
     <!--Alert-->
     <string name="alert_keys_invalidated_title">Помилка Android Keystore</string>
@@ -2455,6 +2406,22 @@
     <string name="desktop_change_password_corrupted">Файл ключа пошкоджено: після блокування застосунку ви не зможете увійти. Збережіть резервну копію кожної фрази відновлення.</string>
     <string name="desktop_change_password_success">Пароль змінено</string>
     <string name="desktop_security_lock_now">Заблокувати зараз</string>
+    <string name="swap_progress_title">Хід обміну</string>
+    <string name="swap_progress_step_of">Крок %1$d з %2$d</string>
+    <string name="swap_progress_step_header">%1$d крок · %2$s</string>
+    <string name="swap_progress_leg_send">Надсилання %1$s</string>
+    <string name="swap_progress_leg_receive">Отримання %1$s</string>
+    <string name="swap_progress_leg_swap">Обмін %1$s на %2$s</string>
+    <string name="swap_progress_leg_transfer">Переказ %1$s</string>
+    <string name="swap_progress_action_required_aml">Провайдер призупинив обмін для AML-перевірки.</string>
+    <string name="swap_progress_action_required_frozen">Провайдер заморозив обмін.</string>
+    <string name="swap_progress_action_required_overdue">Депозит надійшов після закінчення терміну котирування.</string>
+    <string name="swap_progress_action_required_default">Обмін призупинено, потрібна ваша дія.</string>
+    <string name="swap_progress_contact_support">Зверніться до підтримки провайдера нижче.</string>
+    <string name="swap_support_telegram">Підтримка %1$s · Telegram</string>
+    <string name="swap_support_email">Підтримка %1$s · Email</string>
+    <string name="swap_support_email_deposit_tx">Транзакція депозиту: %1$s</string>
+    <string name="swap_support_email_deposit_address">Адреса депозиту: %1$s</string>
 
     <!-- Shamir backup restore -->
     <string name="import_wallet_shamir">Shamir Backup</string>

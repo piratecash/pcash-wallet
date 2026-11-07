@@ -2,10 +2,7 @@ package cash.p.terminal.modules.transactions
 
 import cash.p.terminal.core.managers.SpamManager
 import cash.p.terminal.entities.LastBlockInfo
-import cash.p.terminal.entities.nft.NftAssetBriefMetadata
-import cash.p.terminal.entities.nft.NftUid
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
-import cash.p.terminal.entities.transactionrecords.nftUids
 import cash.p.terminal.modules.contacts.model.Contact
 import cash.p.terminal.wallet.Clearable
 import cash.p.terminal.wallet.transaction.TransactionSource
@@ -27,7 +24,6 @@ enum class SearchScanState { Idle, Scanning, Finished }
 class TransactionsService(
     private val rateRepository: TransactionsRateRepository,
     private val transactionSyncStateRepository: TransactionSyncStateRepository,
-    private val nftMetadataService: NftMetadataService,
     private val spamManager: SpamManager
 ) : Clearable {
 
@@ -72,11 +68,6 @@ class TransactionsService(
                     handleLastBlockInfo(source, lastBlockInfo)
                 }
         }
-        coroutineScope.launch {
-            nftMetadataService.assetsBriefMetadataFlow.collect {
-                handle(it)
-            }
-        }
     }
 
     fun set(
@@ -111,29 +102,6 @@ class TransactionsService(
         transactionSyncStateRepository.setTransactionWallets(
             transactionWallets.filterBySelection(transactionWallet, blockchain)
         )
-    }
-
-    private fun handle(assetBriefMetadataMap: Map<NftUid, NftAssetBriefMetadata>) {
-        _transactionItems.update { currentList ->
-            if (currentList.isEmpty()) return@update currentList
-
-            var updated = false
-            val newList = currentList.map { item ->
-                val updatedMetadata = item.nftMetadata.toMutableMap()
-                item.record.nftUids.forEach { nftUid ->
-                    assetBriefMetadataMap[nftUid]?.let { updatedMetadata[nftUid] = it }
-                }
-
-                if (updatedMetadata == item.nftMetadata) {
-                    item
-                } else {
-                    updated = true
-                    item.withUpdatedListData(nftMetadata = updatedMetadata)
-                }
-            }
-
-            if (updated) newList else currentList
-        }
     }
 
     private fun handleLastBlockInfo(source: TransactionSource, lastBlockInfo: LastBlockInfo) {
@@ -194,17 +162,8 @@ class TransactionsService(
         searchExhausted: Boolean = false,
     ) {
         val capturedVersion = serviceVersion
-        val nftUids = transactionRecords.nftUids
-        val nftMetadata = nftMetadataService.assetsBriefMetadata(nftUids)
 
-        val missingNftUids = nftUids.subtract(nftMetadata.keys)
-        if (missingNftUids.isNotEmpty()) {
-            coroutineScope.launch {
-                nftMetadataService.fetch(missingNftUids)
-            }
-        }
-
-        // Discard stale data if set() or cancelPendingLoads() was called during async work
+        // Discard stale data if set() or cancelPendingLoads() ran concurrently
         if (capturedVersion != serviceVersion) {
             return
         }
@@ -248,7 +207,7 @@ class TransactionsService(
                 if (existingItem == null) {
                     val lastBlockInfo = transactionSyncStateRepository.getLastBlockInfo(record.source)
                     val currencyValue = record.currencyValue(rateRepository)
-                    TransactionItem(record, currencyValue, lastBlockInfo, nftMetadata)
+                    TransactionItem(record, currencyValue, lastBlockInfo)
                 } else if (existingItem.record === record) {
                     existingItem
                 } else {

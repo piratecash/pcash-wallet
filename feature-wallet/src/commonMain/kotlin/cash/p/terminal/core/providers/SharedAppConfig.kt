@@ -19,6 +19,13 @@ object SharedAppConfig {
     const val isSwapEnabled = true
     const val fiatDecimal: Int = 2
 
+    const val companyWebPageLink = "https://p.cash/"
+    const val appWebPageLink = "https://p.cash/#MOBILE_APPS"
+    const val appGithubLink = "https://github.com/piratecash/pcash-wallet"
+    const val appTwitterLink = "https://twitter.com/PirateCash_NET"
+    const val appTelegramLink = "https://t.me/pcash"
+    const val appRedditLink = "https://www.reddit.com/r/PirateCash/"
+
     val chainalysisApiKey by lazy { EncodedSecrets.CHAINALYSIS_API_KEY }
     val hashDitApiKey by lazy { EncodedSecrets.HASH_DIT_API_KEY }
     val alphaAmlApiKey by lazy { EncodedSecrets.ALPHA_AML_API_KEY }

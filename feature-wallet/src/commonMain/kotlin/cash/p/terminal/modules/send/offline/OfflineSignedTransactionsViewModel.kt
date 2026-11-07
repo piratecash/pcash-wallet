@@ -143,7 +143,7 @@ class OfflineSignedTransactionsViewModel(
         return OfflineSignedTransactionViewItem(
             uid = uid, txHash = hash,
             transactionItem = TransactionItem(
-                record, record.currencyValue(rateRepository), null, emptyMap(),
+                record, record.currencyValue(rateRepository), null,
                 walletUid = wallet.tokenQueryId, offlineStatus = status,
             ),
             statusValue = status, metadataUnknown = false,
@@ -396,7 +396,6 @@ class OfflineSignedTransactionsViewModel(
             record = record,
             currencyValue = if (metadataUnknown) null else record.currencyValue(rateRepository),
             lastBlockInfo = null,
-            nftMetadata = emptyMap(),
             walletUid = walletUid,
             offlineStatus = status.toInfoColoredValue(),
         )
