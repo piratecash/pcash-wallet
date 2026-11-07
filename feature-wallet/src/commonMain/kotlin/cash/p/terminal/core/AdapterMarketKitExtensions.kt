@@ -7,22 +7,10 @@ import cash.p.terminal.wallet.entities.FullCoin
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.protocolType
 import io.horizontalsystems.bitcoincash.MainNetBitcoinCash
-import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.hdwalletkit.HDWallet
-import io.horizontalsystems.nftkit.models.NftType
 
 val Token.isCustom: Boolean
     get() = coin.uid == tokenQuery.customCoinUid
-
-val BlockchainType.supportedNftTypes: List<NftType>
-    get() = when (this) {
-        BlockchainType.Ethereum -> listOf(NftType.Eip721, NftType.Eip1155)
-//        BlockchainType.BinanceSmartChain -> listOf(NftType.Eip721)
-//        BlockchainType.Polygon -> listOf(NftType.Eip721, NftType.Eip1155)
-//        BlockchainType.Avalanche -> listOf(NftType.Eip721)
-//        BlockchainType.ArbitrumOne -> listOf(NftType.Eip721)
-        else -> listOf()
-    }
 
 val TokenType.derivation: TokenType.Derivation?
     get() = when (this) {

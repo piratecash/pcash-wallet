@@ -22,8 +22,6 @@
 -keep class cash.p.terminal.wallet.providers.SignalResponse { <fields>; <init>(...); }
 -keep class cash.p.terminal.wallet.providers.CryptoCompareProvider$PostsResponse { <fields>; <init>(...); }
 -keep class cash.p.terminal.wallet.providers.CryptoCompareProvider$PostItem { <fields>; <init>(...); }
--keep class cash.p.terminal.wallet.providers.TopCollectionRaw { <fields>; <init>(...); }
--keep class cash.p.terminal.core.providers.nft.** { <fields>; <init>(...); }
 -keep class cash.p.terminal.modules.coin.tweets.* { <fields>; <init>(...); }
 -keep class cash.p.terminal.modules.multiswap.providers.AllBridgeAPI$Response$** { <fields>; <init>(...); }
 -keep class cash.p.terminal.modules.multiswap.providers.ThornodeAPI$Response$** { <fields>; <init>(...); }
@@ -57,7 +55,6 @@
 # which is not always its module name.
 -keep class io.horizontalsystems.ethereumkit.** { *; }
 -keep class io.horizontalsystems.erc20kit.** { *; }
--keep class io.horizontalsystems.nftkit.** { *; }
 -keep class io.horizontalsystems.uniswapkit.** { *; }
 -keep class io.horizontalsystems.oneinchkit.** { *; }
 -keep class io.horizontalsystems.tronkit.** { *; }

@@ -93,6 +93,7 @@ import cash.p.terminal.core.storage.migrations.Migration_118_119
 import cash.p.terminal.core.storage.migrations.Migration_119_120
 import cash.p.terminal.core.storage.migrations.Migration_120_121
 import cash.p.terminal.core.storage.migrations.Migration_121_122
+import cash.p.terminal.core.storage.migrations.Migration_122_123
 
 private val MIGRATIONS = listOf(
     Migration_31_32,
@@ -186,6 +187,7 @@ private val MIGRATIONS = listOf(
     Migration_119_120,
     Migration_120_121,
     Migration_121_122,
+    Migration_122_123,
 )
 
 fun buildAppDatabase(context: Context): AppDatabase =

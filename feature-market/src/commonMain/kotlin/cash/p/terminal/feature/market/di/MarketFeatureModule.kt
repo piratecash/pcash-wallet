@@ -59,10 +59,6 @@ import cash.p.terminal.modules.market.toppairs.TopPairsViewModel
 import cash.p.terminal.modules.market.etf.EtfViewModel
 import cash.p.terminal.modules.market.metricspage.MetricsPageChartService
 import cash.p.terminal.modules.market.metricspage.MetricsPageViewModel
-import cash.p.terminal.modules.market.topnftcollections.TopNftCollectionsRepository
-import cash.p.terminal.modules.market.topnftcollections.TopNftCollectionsService
-import cash.p.terminal.modules.market.topnftcollections.TopNftCollectionsViewItemFactory
-import cash.p.terminal.modules.market.topnftcollections.TopNftCollectionsViewModel
 import cash.p.terminal.modules.market.tvl.GlobalMarketRepository
 import cash.p.terminal.modules.market.tvl.TvlChartService
 import cash.p.terminal.modules.market.tvl.TvlChartViewModel
@@ -143,9 +139,6 @@ val marketFeatureModule = module {
             ChartCurrencyValueFormatterShortened(get()), get(), get()
         )
     }
-    viewModel { params ->
-        TopNftCollectionsViewModel(TopNftCollectionsService(params.get(), params.get(), get()), get())
-    }
     viewModel { params -> MetricsPageViewModel(params.get(), get(), get()) }
     viewModelOf(::ChartIndicatorsViewModel)
     viewModel { params -> MovingAverageSettingViewModel(params.get(), get()) }
@@ -163,8 +156,6 @@ val marketFeatureModule = module {
     factoryOf(::MarketTopMoversRepository)
     factoryOf(::TopPlatformsRepository)
     factoryOf(::GlobalMarketRepository)
-    factoryOf(::TopNftCollectionsRepository)
-    factoryOf(::TopNftCollectionsViewItemFactory)
     factoryOf(::MarketSearchService)
     factoryOf(::MarketDiscoveryService)
     factory { params -> CoinCategoryMarketDataChartService(get(), get(), params.get()) }

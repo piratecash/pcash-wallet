@@ -10,50 +10,10 @@ import cash.p.terminal.modules.xrate.XRateService
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.getMaxSendableBalance
-import io.horizontalsystems.ethereumkit.models.TransactionData
-import java.math.BigInteger
 import java.math.RoundingMode
 import io.horizontalsystems.core.CurrencyManager
 import org.koin.core.scope.Scope
 
-
-data class SendEvmData(
-    val transactionData: TransactionData,
-    val additionalInfo: AdditionalInfo? = null
-) {
-    sealed class AdditionalInfo {
-        class Send(val info: SendInfo) : AdditionalInfo()
-
-        val sendInfo: SendInfo?
-            get() = (this as? Send)?.info
-    }
-
-    data class SendInfo(
-        val nftShortMeta: NftShortMeta? = null
-    )
-
-    data class NftShortMeta(
-        val nftName: String,
-        val previewImageUrl: String?
-    )
-}
-
-object SendEvmModule {
-
-    data class TransactionDataParcelable(
-        val toAddress: String,
-        val value: BigInteger,
-        val input: ByteArray
-    ) {
-        constructor(transactionData: TransactionData) : this(
-            transactionData.to.hex,
-            transactionData.value,
-            transactionData.input
-        )
-    }
-
-
-}
 
 internal fun Scope.sendEvmViewModel(
     wallet: Wallet,

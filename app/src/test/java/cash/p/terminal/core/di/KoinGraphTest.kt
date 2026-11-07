@@ -154,8 +154,6 @@ import cash.p.terminal.modules.market.platform.PlatformChartService
 import cash.p.terminal.modules.market.metricspage.MetricsPageChartService
 import cash.p.terminal.modules.market.metricspage.MetricsPageViewModel
 import cash.p.terminal.modules.market.topcoins.MarketTopCoinsViewModel
-import cash.p.terminal.modules.market.topnftcollections.TopNftCollectionsService
-import cash.p.terminal.modules.market.topnftcollections.TopNftCollectionsViewModel
 import cash.p.terminal.modules.market.tvl.TvlChartService
 import cash.p.terminal.modules.market.tvl.TvlChartViewModel
 import cash.p.terminal.modules.market.tvl.TvlService
@@ -199,8 +197,6 @@ import cash.p.terminal.modules.send.beam.BeamOfflineOperations
 import cash.p.terminal.modules.send.bitcoin.advanced.SendBtcAdvancedSettingsViewModel
 import cash.p.terminal.modules.send.bitcoin.utxoexpert.UtxoExpertModeViewModel
 import cash.p.terminal.modules.send.securitycheck.SecurityCheckViewModel
-import cash.p.terminal.modules.send.evm.SendEvmData
-import io.horizontalsystems.ethereumkit.models.TransactionData
 import cash.p.terminal.core.ISendBitcoinAdapter
 import cash.p.terminal.core.ISendZcashAdapter
 import cash.p.terminal.core.ISendEthereumAdapter
@@ -415,10 +411,6 @@ class KoinGraphTest : KoinTest {
         definition<SendBtcAdvancedSettingsViewModel>(BlockchainType::class),
         definition<UtxoExpertModeViewModel>(ISendBitcoinAdapter::class, Token::class, List::class),
         definition<SecurityCheckViewModel>(Token::class, String::class, Boolean::class),
-        ParameterTypeInjection(
-            internalClass("send.evm.confirmation.SendEvmConfirmationViewModel"),
-            listOf(TransactionData::class, SendEvmData.AdditionalInfo::class),
-        ),
         definition<ResendBitcoinViewModel>(
             SpeedUpCancelType::class, BitcoinTransactionRecord::class, ReplacementTransactionInfo::class,
             BitcoinBaseAdapter::class, IFeeRateProvider::class,
@@ -477,7 +469,6 @@ class KoinGraphTest : KoinTest {
     private fun marketMetricsInjections() = arrayOf(
         definition<TvlViewModel>(TvlService::class, TvlViewItemFactory::class),
         definition<TvlChartViewModel>(TvlChartService::class, ChartCurrencyValueFormatterShortened::class),
-        definition<TopNftCollectionsViewModel>(TopNftCollectionsService::class),
         definition<MetricsPageViewModel>(MetricsType::class),
         definition<MetricsPageChartService>(MetricsType::class),
     )

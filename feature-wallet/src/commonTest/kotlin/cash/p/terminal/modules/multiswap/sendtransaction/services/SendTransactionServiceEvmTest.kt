@@ -175,7 +175,6 @@ class SendTransactionServiceEvmTest : KoinTest {
 
         val evmKitWrapper = EvmKitWrapper(
             evmKit = evmKit,
-            nftKit = null,
             blockchainType = BlockchainType.BinanceSmartChain,
             signer = signer,
             merkleTransactionAdapter = null,

@@ -73,7 +73,6 @@ class TransactionInfoViewItemFactory(
     fun getViewItemSections(transactionItem: TransactionInfoItem): List<List<TransactionInfoViewItem>> {
         val transaction = transactionItem.record
         val rates = transactionItem.rates
-        val nftMetadata = transactionItem.nftMetadata
         val status = transactionItem.externalStatus
             ?: transaction.status(transactionItem.lastBlockInfo?.height)
         val itemSections = mutableListOf<List<TransactionInfoViewItem>>()
@@ -183,7 +182,6 @@ class TransactionInfoViewItemFactory(
                                 coinPrice = rates[transactionType.value.coinUid],
                                 hideAmount = transactionItem.hideAmount,
                                 sentToSelf = transactionType.sentToSelf,
-                                nftMetadata = nftMetadata,
                                 blockchainType = blockchainType,
                                 showCopyWarning = isSuspicious,
                             )
@@ -295,7 +293,6 @@ class TransactionInfoViewItemFactory(
                                 coinPrice = rates[requireNotNull(transaction.value).coinUid],
                                 hideAmount = transactionItem.hideAmount,
                                 sentToSelf = transaction.sentToSelf,
-                                nftMetadata = nftMetadata,
                                 blockchainType = blockchainType,
                                 showCopyWarning = isSuspicious,
                             )
@@ -376,7 +373,6 @@ class TransactionInfoViewItemFactory(
                                     toAddress = event.address?.let(::listOf),
                                     coinPrice = rates[event.value.coinUid],
                                     hideAmount = transactionItem.hideAmount,
-                                    nftMetadata = nftMetadata,
                                     blockchainType = blockchainType,
                                     showCopyWarning = isSuspicious,
                                 )
@@ -392,7 +388,6 @@ class TransactionInfoViewItemFactory(
                                     toAddress = event.addressForIncomingAddress?.let(::listOf),
                                     coinPrice = rates[event.value.coinUid],
                                     hideAmount = transactionItem.hideAmount,
-                                    nftMetadata = nftMetadata,
                                     blockchainType = blockchainType,
                                     amlItem = amlItem.also { amlItem = null },
                                 )
@@ -408,7 +403,6 @@ class TransactionInfoViewItemFactory(
                                     toAddress = event.address?.let(::listOf),
                                     coinPrice = rates[event.value.coinUid],
                                     hideAmount = transactionItem.hideAmount,
-                                    nftMetadata = nftMetadata,
                                     blockchainType = blockchainType,
                                     showCopyWarning = isSuspicious,
                                 )
@@ -424,7 +418,6 @@ class TransactionInfoViewItemFactory(
                                     toAddress = event.addressForIncomingAddress?.let(::listOf),
                                     coinPrice = rates[event.value.coinUid],
                                     hideAmount = transactionItem.hideAmount,
-                                    nftMetadata = nftMetadata,
                                     blockchainType = blockchainType,
                                     amlItem = amlItem.also { amlItem = null },
                                 )
@@ -488,7 +481,6 @@ class TransactionInfoViewItemFactory(
                                 coinPrice = rates[requireNotNull(transaction.value).coinUid],
                                 hideAmount = transactionItem.hideAmount,
                                 sentToSelf = transaction.sentToSelf,
-                                nftMetadata = nftMetadata,
                                 blockchainType = blockchainType,
                                 showCopyWarning = isSuspicious,
                             )
@@ -522,7 +514,6 @@ class TransactionInfoViewItemFactory(
                                     toAddress = event.address?.let(::listOf),
                                     coinPrice = rates[event.value.coinUid],
                                     hideAmount = transactionItem.hideAmount,
-                                    nftMetadata = nftMetadata,
                                     blockchainType = blockchainType,
                                     showCopyWarning = isSuspicious,
                                 )
@@ -538,7 +529,6 @@ class TransactionInfoViewItemFactory(
                                     toAddress = event.addressForIncomingAddress?.let(::listOf),
                                     coinPrice = rates[event.value.coinUid],
                                     hideAmount = transactionItem.hideAmount,
-                                    nftMetadata = nftMetadata,
                                     blockchainType = blockchainType,
                                     amlItem = amlItem.also { amlItem = null },
                                 )
@@ -554,7 +544,6 @@ class TransactionInfoViewItemFactory(
                                     toAddress = event.address?.let(::listOf),
                                     coinPrice = rates[event.value.coinUid],
                                     hideAmount = transactionItem.hideAmount,
-                                    nftMetadata = nftMetadata,
                                     blockchainType = blockchainType,
                                     showCopyWarning = isSuspicious,
                                 )
@@ -570,7 +559,6 @@ class TransactionInfoViewItemFactory(
                                     toAddress = null,
                                     coinPrice = rates[event.value.coinUid],
                                     hideAmount = transactionItem.hideAmount,
-                                    nftMetadata = nftMetadata,
                                     blockchainType = blockchainType,
                                     amlItem = amlItem.also { amlItem = null },
                                 )
@@ -667,7 +655,6 @@ class TransactionInfoViewItemFactory(
                                 toAddress = transaction.to,
                                 coinPrice = rates[requireNotNull(transaction.mainValue).coinUid],
                                 hideAmount = transactionItem.hideAmount,
-                                nftMetadata = nftMetadata,
                                 blockchainType = blockchainType,
                                 amlItem = amlItem.also { amlItem = null },
                             )
@@ -683,7 +670,6 @@ class TransactionInfoViewItemFactory(
                                 coinPrice = rates[requireNotNull(transaction.mainValue).coinUid],
                                 hideAmount = transactionItem.hideAmount,
                                 sentToSelf = transaction.sentToSelf,
-                                nftMetadata = nftMetadata,
                                 blockchainType = blockchainType,
                                 showCopyWarning = isSuspicious,
                             )
@@ -698,7 +684,6 @@ class TransactionInfoViewItemFactory(
                                     toAddress = transfer.address?.let(::listOf),
                                     coinPrice = rates[transfer.value.coinUid],
                                     hideAmount = transactionItem.hideAmount,
-                                    nftMetadata = nftMetadata,
                                     blockchainType = blockchainType,
                                     showCopyWarning = isSuspicious,
                                 )
@@ -714,7 +699,6 @@ class TransactionInfoViewItemFactory(
                                     toAddress = transfer.addressForIncomingAddress?.let(::listOf),
                                     coinPrice = rates[transfer.value.coinUid],
                                     hideAmount = transactionItem.hideAmount,
-                                    nftMetadata = nftMetadata,
                                     blockchainType = blockchainType,
                                     amlItem = amlItem.also { amlItem = null },
                                 )
@@ -752,7 +736,6 @@ class TransactionInfoViewItemFactory(
                                 coinPrice = rates[requireNotNull(transaction.mainValue).coinUid],
                                 hideAmount = transactionItem.hideAmount,
                                 sentToSelf = transaction.sentToSelf,
-                                nftMetadata = nftMetadata,
                                 blockchainType = blockchainType,
                                 showCopyWarning = isSuspicious,
                             )
@@ -780,7 +763,6 @@ class TransactionInfoViewItemFactory(
                             coinPrice = rates[requireNotNull(transaction.mainValue).coinUid],
                             hideAmount = transactionItem.hideAmount,
                             sentToSelf = transaction.sentToSelf,
-                            nftMetadata = nftMetadata,
                             blockchainType = blockchainType,
                             showCopyWarning = isSuspicious,
                         ).toMutableList().apply {

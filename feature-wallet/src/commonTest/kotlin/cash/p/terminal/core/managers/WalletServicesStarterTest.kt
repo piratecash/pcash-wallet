@@ -15,7 +15,6 @@ class WalletServicesStarterTest {
     private val dispatcher = UnconfinedTestDispatcher()
     private val chainAccountManagersStarter = mockk<ChainAccountManagersStarter>(relaxed = true)
     private val adapterManager = mockk<IAdapterManager>(relaxed = true)
-    private val nftMetadataSyncer = mockk<NftMetadataSyncer>(relaxed = true)
     private val locallyCreatedTransactionRepository = mockk<LocallyCreatedTransactionRepository>(relaxed = true)
     private val addressLabelManager = mockk<AddressLabelManager>(relaxed = true)
     private val contactsRepository = mockk<ContactsRepository>(relaxed = true)
@@ -28,7 +27,6 @@ class WalletServicesStarterTest {
         coVerifyOrder {
             chainAccountManagersStarter.start()
             adapterManager.startAdapterManager()
-            nftMetadataSyncer.start()
             locallyCreatedTransactionRepository.trimAllAccounts()
             addressLabelManager.initialize()
             contactsRepository.initialize()
@@ -40,7 +38,6 @@ class WalletServicesStarterTest {
     private fun starter() = WalletServicesStarter(
         chainAccountManagersStarter = chainAccountManagersStarter,
         adapterManager = adapterManager,
-        nftMetadataSyncer = nftMetadataSyncer,
         locallyCreatedTransactionRepository = locallyCreatedTransactionRepository,
         addressLabelManager = addressLabelManager,
         contactsRepository = contactsRepository,

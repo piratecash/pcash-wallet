@@ -25,7 +25,6 @@ import cash.p.terminal.shared.main.rememberedMainTab
 import cash.p.terminal.modules.coin.CoinPage
 import cash.p.terminal.modules.market.platform.MarketPlatformPage
 import cash.p.terminal.modules.market.topplatforms.Platform
-import cash.p.terminal.modules.nft.collection.NftCollectionPage
 import cash.p.terminal.modules.walletconnect.WCManager
 import cash.p.terminal.modules.walletconnect.WCSessionManager
 import cash.p.terminal.modules.walletconnect.list.WCListPage
@@ -321,17 +320,6 @@ class MainViewModel(
                     deeplinkString.contains("coin-page") -> {
                         uid?.let {
                             deeplinkPage = DeeplinkPage(CoinPage(CoinFragmentInput(it)), fromBottom = false)
-                            tab = MainDestination.Market
-                        }
-                    }
-
-                    deeplinkString.contains("nft-collection") -> {
-                        val blockchainTypeUid = deepLink.getQueryParameterSafe("blockchainTypeUid")
-                        if (uid != null && blockchainTypeUid != null) {
-                            deeplinkPage = DeeplinkPage(
-                                NftCollectionPage(NftCollectionPage.Input(uid, blockchainTypeUid)),
-                                fromBottom = false
-                            )
                             tab = MainDestination.Market
                         }
                     }

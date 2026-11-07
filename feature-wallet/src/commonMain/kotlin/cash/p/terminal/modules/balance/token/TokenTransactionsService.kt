@@ -3,14 +3,10 @@ package cash.p.terminal.modules.balance.token
 import cash.p.terminal.core.managers.SpamManager
 import cash.p.terminal.core.managers.TransactionAdapterManager
 import cash.p.terminal.entities.LastBlockInfo
-import cash.p.terminal.entities.nft.NftAssetBriefMetadata
-import cash.p.terminal.entities.nft.NftUid
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
-import cash.p.terminal.entities.transactionrecords.nftUids
 import cash.p.terminal.modules.transactions.FilterTransactionType
 import cash.p.terminal.modules.transactions.HistoricalRateKey
 import cash.p.terminal.modules.transactions.ITransactionRecordRepository
-import cash.p.terminal.modules.transactions.NftMetadataService
 import cash.p.terminal.modules.transactions.SearchScanState
 import cash.p.terminal.modules.transactions.TransactionItem
 import cash.p.terminal.modules.transactions.TransactionSyncStateRepository
@@ -42,7 +38,6 @@ class TokenTransactionsService(
     private val rateRepository: TransactionsRateRepository,
     private val transactionSyncStateRepository: TransactionSyncStateRepository,
     private val transactionAdapterManager: TransactionAdapterManager,
-    private val nftMetadataService: NftMetadataService,
     private val spamManager: SpamManager,
 ) : Clearable {
     private enum class RecordsLoadFailure {
@@ -115,11 +110,6 @@ class TokenTransactionsService(
                 .collect { (source, lastBlockInfo) ->
                     handleLastBlockInfo(source, lastBlockInfo)
                 }
-        }
-        coroutineScope.launch {
-            nftMetadataService.assetsBriefMetadataFlow.collect {
-                handle(it)
-            }
         }
         coroutineScope.launch {
             // Completion is emitted only after TransactionAdapterManager has published its final
@@ -275,29 +265,6 @@ class TokenTransactionsService(
         }
     }
 
-    private fun handle(assetBriefMetadataMap: Map<NftUid, NftAssetBriefMetadata>) {
-        _transactionItems.update { currentList ->
-            if (currentList.isEmpty()) return@update currentList
-
-            var updated = false
-            val newList = currentList.map { item ->
-                val updatedMetadata = item.nftMetadata.toMutableMap()
-                item.record.nftUids.forEach { nftUid ->
-                    assetBriefMetadataMap[nftUid]?.let { updatedMetadata[nftUid] = it }
-                }
-
-                if (updatedMetadata == item.nftMetadata) {
-                    item
-                } else {
-                    updated = true
-                    item.withUpdatedListData(nftMetadata = updatedMetadata)
-                }
-            }
-
-            if (updated) newList else currentList
-        }
-    }
-
     private fun handleLastBlockInfo(source: TransactionSource, lastBlockInfo: LastBlockInfo) {
         _transactionItems.update { currentList ->
             var updated = false
@@ -382,17 +349,8 @@ class TokenTransactionsService(
         emptyBatchFallbackJob?.cancel()
 
         val capturedVersion = serviceVersion
-        val nftUids = transactionRecords.nftUids
-        val nftMetadata = nftMetadataService.assetsBriefMetadata(nftUids)
 
-        val missingNftUids = nftUids.subtract(nftMetadata.keys)
-        if (missingNftUids.isNotEmpty()) {
-            coroutineScope.launch {
-                nftMetadataService.fetch(missingNftUids)
-            }
-        }
-
-        // Discard a stale batch if setTransactionType() ran concurrently while loading metadata.
+        // Discard a stale batch if setTransactionType() ran concurrently.
         if (capturedVersion != serviceVersion) return
 
         val currentItems = _transactionItems.value
@@ -408,7 +366,7 @@ class TokenTransactionsService(
 
         lastHiddenOnlyLoadKey = null
 
-        publishRecords(transactionRecords, nftMetadata, capturedVersion)
+        publishRecords(transactionRecords, capturedVersion)
 
         // Mark loaded only after the items are published, so a consumer that observes
         // syncing flip to false always sees the new list — never an empty intermediate state.
@@ -422,7 +380,6 @@ class TokenTransactionsService(
 
     private suspend fun publishRecords(
         transactionRecords: List<TransactionRecord>,
-        nftMetadata: Map<NftUid, NftAssetBriefMetadata>,
         capturedVersion: Int,
     ) {
         _transactionItems.update { latestItems ->
@@ -438,7 +395,7 @@ class TokenTransactionsService(
                 if (existingItem == null) {
                     val lastBlockInfo = transactionSyncStateRepository.getLastBlockInfo(record.source)
                     val currencyValue = record.currencyValue(rateRepository)
-                    TransactionItem(record, currencyValue, lastBlockInfo, nftMetadata)
+                    TransactionItem(record, currencyValue, lastBlockInfo)
                 } else if (existingItem.record === record) {
                     existingItem
                 } else {

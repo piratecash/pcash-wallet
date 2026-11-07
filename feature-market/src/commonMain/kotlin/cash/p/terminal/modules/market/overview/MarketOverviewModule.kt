@@ -6,7 +6,6 @@ import cash.p.terminal.modules.market.MarketViewItem
 import cash.p.terminal.modules.market.TimeDuration
 import cash.p.terminal.modules.market.TopMarket
 import cash.p.terminal.modules.market.search.MarketSearchModule.DiscoveryItem.Category
-import cash.p.terminal.modules.market.topnftcollections.TopNftCollectionViewItem
 import cash.p.terminal.modules.market.topplatforms.TopPlatformViewItem
 import cash.p.terminal.ui_compose.Select
 import cash.p.terminal.ui_compose.entities.ViewState
@@ -30,7 +29,6 @@ object MarketOverviewModule {
     data class ViewItem(
         val marketMetrics: MarketMetrics,
 //        val boards: List<Board>,
-        val topNftCollectionsBoard: TopNftCollectionsBoard,
         val topSectorsBoard: TopSectorsBoard,
         val topPlatformsBoard: TopPlatformsBoard,
         val topMarketPairs: List<TopPairViewItem>,
@@ -66,13 +64,6 @@ object MarketOverviewModule {
         val title: StringResource,
         val iconRes: DrawableResource,
         val topMarketSelect: Select<TopMarket>
-    )
-
-    data class TopNftCollectionsBoard(
-        val title: StringResource,
-        val iconRes: DrawableResource,
-        val timeDurationSelect: Select<TimeDuration>,
-        val collections: List<TopNftCollectionViewItem>
     )
 
     data class TopSectorsBoard(

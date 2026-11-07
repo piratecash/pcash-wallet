@@ -16,7 +16,6 @@ import cash.p.terminal.modules.markdown.openMarkdownOrWeblink
 import cash.p.terminal.modules.manageaccount.backupkey.BackupKeyPage
 import cash.p.terminal.modules.multiswap.SwapPage
 import cash.p.terminal.modules.multiswap.exchanges.MultiSwapExchangesPage
-import cash.p.terminal.modules.nft.collection.NftCollectionPage
 import cash.p.terminal.modules.qrscanner.QRScannerPage
 import cash.p.terminal.modules.resettofactorysettings.ResetToFactorySettingsPage
 import cash.p.terminal.modules.restoreaccount.RestoreAccountPage
@@ -47,8 +46,6 @@ class AppPagesImpl(
     override fun swap(tokenOut: Token): HSPage = SwapPage(tokenOut = tokenOut)
     override fun backupLocal(account: Account): HSPage = BackupLocalPage(account)
     override fun markdown(url: String): HSPage = MarkdownPage(MarkdownPage.Input(url, true))
-    override fun nftCollection(collectionUid: String, blockchainUid: String): HSPage =
-        NftCollectionPage(NftCollectionPage.Input(collectionUid, blockchainUid))
 
     override fun hardwareWallet(input: ManageAccountsModule.Input?): HSPage = HardwareWalletPage(input)
     override fun resetToFactory(account: Account): HSPage =

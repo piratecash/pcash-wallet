@@ -206,8 +206,6 @@ import cash.p.terminal.modules.market.platform.MarketPlatformCoinsRepository
 import cash.p.terminal.modules.market.platform.MarketPlatformViewModel
 import cash.p.terminal.modules.market.platform.PlatformChartService
 import cash.p.terminal.modules.market.topcoins.MarketTopCoinsViewModel
-import cash.p.terminal.modules.market.topnftcollections.TopNftCollectionsService
-import cash.p.terminal.modules.market.topnftcollections.TopNftCollectionsViewModel
 import cash.p.terminal.modules.market.topplatforms.Platform
 import cash.p.terminal.modules.market.tvl.TvlChartService
 import cash.p.terminal.modules.market.tvl.TvlChartViewModel
@@ -342,8 +340,6 @@ import cash.p.terminal.modules.send.beam.BeamOfflineOperations
 import cash.p.terminal.modules.send.bitcoin.advanced.SendBtcAdvancedSettingsViewModel
 import cash.p.terminal.modules.send.bitcoin.utxoexpert.UtxoExpertModeViewModel
 import cash.p.terminal.modules.send.securitycheck.SecurityCheckViewModel
-import cash.p.terminal.modules.send.evm.SendEvmData
-import io.horizontalsystems.ethereumkit.models.TransactionData
 import cash.p.terminal.core.ISendBitcoinAdapter
 import cash.p.terminal.core.ISendZcashAdapter
 import cash.p.terminal.core.ISendEthereumAdapter
@@ -512,7 +508,6 @@ class DesktopKoinGraphTest {
         definition<PlatformChartService>(Platform::class),
         definition<TvlViewModel>(TvlService::class, TvlViewItemFactory::class),
         definition<TvlChartViewModel>(TvlChartService::class, ChartCurrencyValueFormatterShortened::class),
-        definition<TopNftCollectionsViewModel>(TopNftCollectionsService::class),
         definition<MetricsPageViewModel>(MetricsType::class),
         definition<MetricsPageChartService>(MetricsType::class),
     )
@@ -572,10 +567,6 @@ class DesktopKoinGraphTest {
         definition<SendBtcAdvancedSettingsViewModel>(BlockchainType::class),
         definition<UtxoExpertModeViewModel>(ISendBitcoinAdapter::class, Token::class, List::class),
         definition<SecurityCheckViewModel>(Token::class, String::class, Boolean::class),
-        ParameterTypeInjection(
-            internalClass("send.evm.confirmation.SendEvmConfirmationViewModel"),
-            listOf(TransactionData::class, SendEvmData.AdditionalInfo::class),
-        ),
     )
 
     /** These send classes are internal to feature-wallet; a rename fails here with ClassNotFoundException. */

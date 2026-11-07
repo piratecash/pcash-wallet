@@ -392,7 +392,6 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
                     .collectLatest { marketKit.sync(tryOrNull { needForceUpdateCoins() } ?: false) }
             }
             rateAppManager.onAppLaunch()
-            walletServicesStarter.startNftMetadataSync()
             get<LedgerTokenDescriptorSync>().start()
             if (!pinComponent.isPinSet) {
                 pinComponent.initDefaultPinLevel()
