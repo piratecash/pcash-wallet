@@ -753,6 +753,8 @@
     <string name="TransactionInfo_Date">Дата</string>
     <string name="transaction_info_sync_source">Джерело синхронізації</string>
     <string name="TransactionInfo_Id">ID Транзакції</string>
+    <string name="transaction_info_replaces_transaction">Замінює транзакцію</string>
+    <string name="transaction_info_replaced_by_transaction">Замінена транзакцією</string>
     <string name="TransactionInfo_Service">Сервіс</string>
     <string name="TransactionInfo_RawTransaction">Непідтверджена транзакція</string>
     <string name="TransactionInfo_ContactName">Ім\u0027я контакту</string>

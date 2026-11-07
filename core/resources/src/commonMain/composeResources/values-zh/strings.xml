@@ -765,6 +765,8 @@
     <string name="TransactionInfo_Date">日期</string>
     <string name="transaction_info_sync_source">同步来源</string>
     <string name="TransactionInfo_Id">交易ID</string>
+    <string name="transaction_info_replaces_transaction">被替换的交易</string>
+    <string name="transaction_info_replaced_by_transaction">被以下交易替换</string>
     <string name="TransactionInfo_Service">服务</string>
     <string name="TransactionInfo_RawTransaction">原始交易</string>
     <string name="TransactionInfo_ContactName">联系人姓名</string>

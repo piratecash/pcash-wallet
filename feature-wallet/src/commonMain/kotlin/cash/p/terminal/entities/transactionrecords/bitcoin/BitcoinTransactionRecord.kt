@@ -36,6 +36,13 @@ class BitcoinTransactionRecord(
     val canonicalTransactionHash: String? = null,
     /** Zcash Orchard -> Ironwood pool migration: a self-transfer shown with its own label. */
     val isIronwoodMigration: Boolean = false,
+    val replacedByHash: String? = null,
+    /** Root of the replacement chain this transaction won. */
+    val replacesHash: String? = null,
+    /** Uids stored for the other members of the chain, including a previous uid of this transaction. */
+    val replacementChainUids: List<String> = emptyList(),
+    /** [conflictingHash] is a member of this transaction's own replacement chain. */
+    val ownReplacementConflict: Boolean = false,
 ) : TransactionRecord(
     uid = uid,
     transactionHash = transactionHash,
@@ -79,6 +86,10 @@ class BitcoinTransactionRecord(
             mainValue = TransactionValue.CoinValue(token, amount),
             canonicalTransactionHash = canonicalTransactionHash,
             isIronwoodMigration = isIronwoodMigration,
+            replacedByHash = replacedByHash,
+            replacesHash = replacesHash,
+            replacementChainUids = replacementChainUids,
+            ownReplacementConflict = ownReplacementConflict,
         )
     }
 
