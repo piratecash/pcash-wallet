@@ -388,10 +388,14 @@ interface IMoneroReceiveAdapter : IReceiveAdapter, IMoneroHardwareWalletAdapter 
     suspend fun displayAddressOnDevice(addressIndex: Int)
 }
 
+/** [requiredTon] is all TON the transaction debits: the attached value plus every fee. */
+data class TonFeeEstimate(val fee: BigDecimal, val requiredTon: BigDecimal)
+
 interface ISendTonAdapter : IBalanceAdapter {
     suspend fun send(amount: BigDecimal, address: FriendlyAddress, memo: String?)
     suspend fun sendWithPayload(amount: BigInteger, address: String, payload: String)
-    suspend fun estimateFee(amount: BigDecimal, address: FriendlyAddress, memo: String?) : BigDecimal
+    suspend fun estimateFee(amount: BigDecimal, address: FriendlyAddress, memo: String?): TonFeeEstimate
+    suspend fun estimateFeeWithPayload(amount: BigInteger, address: String, payload: String): TonFeeEstimate
     suspend fun fetchOfflineAnchor(): TonOfflineAnchor
 }
 

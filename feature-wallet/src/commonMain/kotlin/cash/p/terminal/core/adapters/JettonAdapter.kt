@@ -6,6 +6,7 @@ import cash.p.terminal.core.ISendTonAdapter
 import cash.p.terminal.core.OfflineSignRequest
 import cash.p.terminal.core.OfflineTonSignRequest
 import cash.p.terminal.core.SignedOfflineTonTransaction
+import cash.p.terminal.core.TonFeeEstimate
 import cash.p.terminal.core.managers.TonKitWrapper
 import cash.p.terminal.core.managers.toAdapterState
 import cash.p.terminal.core.toRawHexString
@@ -137,17 +138,12 @@ class JettonAdapter(
         amount: BigDecimal,
         address: FriendlyAddress,
         memo: String?,
-    ): BigDecimal {
-        val baseDecimals = nativeToken.decimals
-        val estimateFee = tonKit.estimateFee(
-            jettonWallet = requireJettonWalletAddress(),
-            recipient = address,
-            amount = amount.movePointRight(decimals).toBigInteger(),
-            comment = memo
-        )
-
-        return estimateFee.toBigDecimal(baseDecimals).stripTrailingZeros()
-    }
+    ): TonFeeEstimate = tonKit.estimateFee(
+        jettonWallet = requireJettonWalletAddress(),
+        recipient = address,
+        amount = amount.movePointRight(decimals).toBigInteger(),
+        comment = memo
+    ).toAppEstimate()
 
     private fun requireJettonWalletAddress(): Address =
         checkNotNull(jettonBalance?.walletAddress) { "Jetton wallet is not available" }

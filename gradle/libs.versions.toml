@@ -73,7 +73,7 @@ kermit = "2.1.0"
 secp256k1 = "0.24.0"
 
 tonKotlin = "0.5.0" # updated for ktor 3.x compatibility
-piratecash-ton = "v2.0.0-pcash.13"
+piratecash-ton = "v2.0.0-pcash.14"
 beam-sdk = "v0.3.1"
 openpnp-capture-java = "v0.0.30-2-pcash.2"
 piratecash-bitcoin = "v0.1.0-pcash.41"

@@ -6,6 +6,7 @@ import cash.p.terminal.core.OfflineBroadcastMetadata
 import cash.p.terminal.core.OfflineTransactionAdapter
 import cash.p.terminal.core.OfflineTransactionStatusAdapter
 import cash.p.terminal.core.SignedOfflineTonTransaction
+import cash.p.terminal.core.TonFeeEstimate
 import cash.p.terminal.core.TonOfflineAnchor
 import cash.p.terminal.core.hexToByteArray
 import cash.p.terminal.core.managers.TonKitWrapper
@@ -18,8 +19,10 @@ import com.tonapps.wallet.data.core.entity.SendRequestEntity
 import io.horizontalsystems.tonkit.models.Network
 import io.horizontalsystems.tonkit.models.RawMessageBroadcastMetadata
 import io.horizontalsystems.tonkit.models.RawMessageBroadcastStatus
+import io.horizontalsystems.tonkit.models.TonFeeEstimate as KitTonFeeEstimate
 import org.json.JSONArray
 import org.json.JSONObject
+import java.math.BigDecimal
 import java.math.BigInteger
 
 abstract class BaseTonAdapter(
@@ -42,22 +45,31 @@ abstract class BaseTonAdapter(
     // IReceiveAdapter
 
     suspend fun sendWithPayloadBoc(amount: BigInteger, address: String, payload: String) {
-        val request = SendRequestEntity(
-            data = JSONObject().apply {
-                put("valid_until", System.currentTimeMillis() / 1000 + 300)
-                put("messages", JSONArray().apply {
-                    put(JSONObject().apply {
-                        put("address", address)
-                        put("amount",amount.toString())
-                        put("payload", payload)
-                    })
-                })
-            },
-            tonConnectRequestId = "id",
-            dAppId = "p.cash"
-        )
-        tonKit.send(tonKit.sign(request, tonKitWrapper.tonWallet))
+        tonKit.send(tonKit.sign(payloadRequest(amount, address, payload), tonKitWrapper.tonWallet))
     }
+
+    suspend fun estimateFeeWithPayload(amount: BigInteger, address: String, payload: String): TonFeeEstimate =
+        tonKit.estimateFee(payloadRequest(amount, address, payload)).toAppEstimate()
+
+    private fun payloadRequest(amount: BigInteger, address: String, payload: String) = SendRequestEntity(
+        data = JSONObject().apply {
+            put("valid_until", System.currentTimeMillis() / 1000 + 300)
+            put("messages", JSONArray().apply {
+                put(JSONObject().apply {
+                    put("address", address)
+                    put("amount", amount.toString())
+                    put("payload", payload)
+                })
+            })
+        },
+        tonConnectRequestId = "id",
+        dAppId = "p.cash"
+    )
+
+    protected fun KitTonFeeEstimate.toAppEstimate() =
+        TonFeeEstimate(fee = fee.toTonAmount(), requiredTon = totalDebit.toTonAmount())
+
+    protected fun BigInteger.toTonAmount(): BigDecimal = toBigDecimal(TON_DECIMALS).stripTrailingZeros()
 
     override val receiveAddress: String
         get() = tonKit.receiveAddress.toUserFriendly(false)
@@ -96,6 +108,8 @@ abstract class BaseTonAdapter(
         )
     }
 }
+
+private const val TON_DECIMALS = 9
 
 private fun OfflineBroadcastMetadata.Ton.toTonMetadata() = RawMessageBroadcastMetadata(
     validUntil = validUntil,

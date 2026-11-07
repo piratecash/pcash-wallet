@@ -4,6 +4,7 @@ import cash.p.terminal.core.ISendTonAdapter
 import cash.p.terminal.core.OfflineSignRequest
 import cash.p.terminal.core.OfflineTonSignRequest
 import cash.p.terminal.core.SignedOfflineTonTransaction
+import cash.p.terminal.core.TonFeeEstimate
 import cash.p.terminal.core.managers.TonKitWrapper
 import cash.p.terminal.core.managers.toAdapterState
 import cash.p.terminal.core.tryOrNull
@@ -71,7 +72,7 @@ class TonAdapter(tonKitWrapper: TonKitWrapper) : BaseTonAdapter(tonKitWrapper, 9
         }
         tryOrNull {
             val selfAddress = FriendlyAddress.parse(receiveAddress, false)
-            val estimatedFee = tonKit.estimateFee(selfAddress, SendAmount.Max, null)
+            val estimatedFee = tonKit.estimateFee(selfAddress, SendAmount.Max, null).fee
             _fee.value = estimatedFee.toBigDecimal().movePointLeft(decimals).stripTrailingZeros()
         }
     }
@@ -164,8 +165,9 @@ class TonAdapter(tonKitWrapper: TonKitWrapper) : BaseTonAdapter(tonKitWrapper, 9
         amount: BigDecimal,
         address: FriendlyAddress,
         memo: String?
-    ): BigDecimal {
-        val estimateFee = tonKit.estimateFee(address, getSendAmount(amount), memo)
-        return estimateFee.toBigDecimal(decimals).stripTrailingZeros()
+    ): TonFeeEstimate {
+        // Native: the amount is validated separately, so only the fee needs TON on top of it.
+        val fee = tonKit.estimateFee(address, getSendAmount(amount), memo).fee.toTonAmount()
+        return TonFeeEstimate(fee = fee, requiredTon = fee)
     }
 }

@@ -622,6 +622,7 @@
     <string name="Swap_Price">Цена</string>
     <string name="Swap_AvailableBalance">Доступный баланс</string>
     <string name="swap_insufficient_fee_balance">Текущий баланс %1$s ниже суммы, необходимой для проведения этой транзакции, включая комиссию.</string>
+    <string name="insufficient_balance_required_available">Недостаточно %1$s. Для этой транзакции нужно не менее %2$s с учётом комиссий сети, доступно %3$s.</string>
     <string name="fee_warning_low_balance">Баланс ниже необходимого уровня. Комиссия может составить до %1$s.</string>
     <string name="swap_balance_for_fees">Баланс для комиссий</string>
     <string name="fee">Комиссия</string>
@@ -823,6 +824,7 @@
     <string name="TransactionInfo_HistoricalRate">Исторический курс</string>
     <string name="TransactionInfo_AnnouncedAmount">Объявленная сумма</string>
     <string name="transaction_info_executed_amount">Реальная сумма</string>
+    <string name="swap_result_pending_info">Значение будет доступно после завершения обмена</string>
     <string name="TransactionInfo_PriceImpact">Влияние на цену</string>
     <string name="swap_duration">Время обмена</string>
     <string name="swap_duration_approximate">~%1$s</string>

@@ -636,6 +636,7 @@
     <string name="Swap_Price">Preis</string>
     <string name="Swap_AvailableBalance">Verfügbares Guthaben</string>
     <string name="swap_insufficient_fee_balance">Das aktuelle %1$s-Guthaben ist niedriger als der für diese Transaktion erforderliche Betrag einschließlich der Transaktionsgebühr.</string>
+    <string name="insufficient_balance_required_available">Nicht genug %1$s. Für diese Transaktion sind mindestens %2$s einschließlich Netzwerkgebühren erforderlich; verfügbar sind %3$s.</string>
     <string name="fee_warning_low_balance">Das Guthaben ist niedriger als erforderlich. Die Gebühren könnten bis zu %1$s betragen.</string>
     <string name="swap_balance_for_fees">Guthaben für Gebühren</string>
     <string name="fee">Gebühr</string>
@@ -812,6 +813,7 @@
     <string name="TransactionInfo_HistoricalRate">Historischer Rate</string>
     <string name="TransactionInfo_AnnouncedAmount">Angekündigter Betrag</string>
     <string name="transaction_info_executed_amount">Ausgeführter Betrag</string>
+    <string name="swap_result_pending_info">Der Wert ist nach Abschluss des Tauschs verfügbar</string>
     <string name="TransactionInfo_PriceImpact">Preisauswirkung</string>
     <string name="swap_duration">Tauschdauer</string>
     <string name="swap_duration_approximate">~%1$s</string>
