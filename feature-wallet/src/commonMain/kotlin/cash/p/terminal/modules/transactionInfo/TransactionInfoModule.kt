@@ -7,16 +7,15 @@ import cash.p.terminal.core.adapters.EvmTransactionsAdapter
 import io.horizontalsystems.core.entities.CurrencyValue
 import cash.p.terminal.entities.LastBlockInfo
 import cash.p.terminal.entities.SwapDuration
-import cash.p.terminal.entities.nft.NftAssetBriefMetadata
-import cash.p.terminal.entities.nft.NftUid
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.modules.offline.walletFor
 import cash.p.terminal.modules.transactions.AmlStatus
 import cash.p.terminal.modules.transactions.poison_status.PoisonStatus
-import cash.p.terminal.modules.transactions.NftMetadataService
 import cash.p.terminal.modules.transactions.TransactionItem
 import cash.p.terminal.modules.transactions.TransactionStatus
 import cash.p.terminal.network.changenow.domain.entity.TransactionStatusEnum
+import cash.p.terminal.modules.swapprogress.SupportContact
+import cash.p.terminal.modules.swapprogress.SwapProgressSummary
 import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.ui_compose.ColoredValue
 import cash.p.terminal.wallet.IWalletManager
@@ -51,7 +50,6 @@ data class TransactionInfoItem(
     val lastBlockInfo: LastBlockInfo?,
     val explorerData: List<TransactionInfoModule.ExplorerData>,
     val rates: Map<String, CurrencyValue>,
-    val nftMetadata: Map<NftUid, NftAssetBriefMetadata>,
     val hideAmount: Boolean,
     val transactionStatusUrl: Pair<String, String>? = null,
     // Swap provider amount fields
@@ -71,6 +69,9 @@ data class TransactionInfoItem(
     val swapTransactionId: String? = null,
     val swapTransactionStatus: TransactionStatusEnum? = null,
     val swapDuration: SwapDuration? = null,
+    val swapDate: Long? = null,
+    val swapProgress: SwapProgressSummary? = null,
+    val swapSupportContacts: List<SupportContact> = emptyList(),
     val poisonStatus: PoisonStatus = PoisonStatus.BLOCKCHAIN,
     val offlineStatus: ColoredValue? = null,
     // Record equality identifies the transaction, not changes to its status or details.
@@ -98,9 +99,9 @@ fun Scope.transactionInfoViewModel(transactionItem: TransactionItem): Transactio
         adapter = adapter,
         marketKit = get(),
         currencyManager = get(),
-        nftMetadataService = NftMetadataService(get()),
         updateSwapProviderTransactionsStatusUseCase = get(),
         swapProviderTransactionsStorage = get(),
+        unstoppableRepository = get(),
         dispatcherProvider = get(),
         transactionStatusUrl = transactionItem.transactionStatusUrl,
         offlineStatus = transactionItem.offlineStatus,
@@ -112,6 +113,7 @@ fun Scope.transactionInfoViewModel(transactionItem: TransactionItem): Transactio
         evmKitWrapper = (adapter as? EvmTransactionsAdapter)?.evmKitWrapper,
         platformOperationSupport = get(),
         unstoppableProviderTitles = get(),
+        walletUid = transactionItem.walletUid,
     )
 
     return TransactionInfoViewModel(

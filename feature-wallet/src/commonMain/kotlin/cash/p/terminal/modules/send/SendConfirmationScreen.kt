@@ -125,6 +125,7 @@ fun SendConfirmationScreen(
     feeWarningData: NetworkFeeWarningData? = null,
     sendCaution: HSCaution? = null,
     windowInsets: WindowInsets = NavigationBarDefaults.windowInsets,
+    insufficientFeeText: String? = null,
 ) {
     val closeUntil = sendEntryPoint ?: SendPage::class
     SendResultHud(
@@ -247,6 +248,7 @@ fun SendConfirmationScreen(
                     insufficientFeeBalance = insufficientFeeBalance,
                     onBalanceClicked = onBalanceClicked,
                     feeWarningData = feeWarningData,
+                    insufficientFeeText = insufficientFeeText,
                 )
 
                 if (!memo.isNullOrBlank()) {

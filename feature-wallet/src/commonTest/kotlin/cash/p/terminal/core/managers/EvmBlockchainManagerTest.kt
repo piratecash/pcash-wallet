@@ -11,7 +11,6 @@ import io.horizontalsystems.erc20kit.core.Erc20Kit
 import io.horizontalsystems.ethereumkit.core.EthereumKit
 import io.horizontalsystems.ethereumkit.models.Chain
 import io.horizontalsystems.merkleiokit.MerkleTransactionAdapter
-import io.horizontalsystems.nftkit.core.NftKit
 import io.mockk.Runs
 import io.mockk.clearMocks
 import io.mockk.coEvery
@@ -95,7 +94,6 @@ class EvmBlockchainManagerTest {
                 EthereumKit.clear(context, chain, ACCOUNT_ID)
                 Erc20Kit.clear(context, chain, ACCOUNT_ID)
                 MerkleTransactionAdapter.clear(context, chain, ACCOUNT_ID)
-                NftKit.clear(context, chain, ACCOUNT_ID)
             }
             databaseKeys.remove(ACCOUNT_ID)
         }
@@ -129,11 +127,10 @@ class EvmBlockchainManagerTest {
     }
 
     private fun mockKitClears() {
-        mockkObject(EthereumKit, Erc20Kit, MerkleTransactionAdapter, NftKit)
+        mockkObject(EthereumKit, Erc20Kit, MerkleTransactionAdapter)
         coEvery { EthereumKit.clear(any(), any(), any()) } just Runs
         coEvery { Erc20Kit.clear(any(), any(), any()) } just Runs
         coEvery { MerkleTransactionAdapter.clear(any(), any(), any()) } just Runs
-        coEvery { NftKit.clear(any(), any(), any()) } just Runs
     }
 
     private fun setEvmKitWrapper(evmKitManager: EvmKitManager, evmKit: EthereumKit) {
@@ -142,7 +139,6 @@ class EvmBlockchainManagerTest {
             "evmKitWrapper",
             EvmKitWrapper(
                 evmKit = evmKit,
-                nftKit = null,
                 blockchainType = BlockchainType.Ethereum,
                 signer = null,
                 merkleTransactionAdapter = null,

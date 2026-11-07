@@ -454,7 +454,6 @@
 
     <!--Send NFT-->
     <string name="SendNft_Title">Send</string>
-    <string name="SendNft_Error_NotEnoughtBalance">Not Enough Balance</string>
 
     <!--Send-->
     <string name="Send_EnterAddress">Enter Address</string>
@@ -546,6 +545,12 @@ Proceed only if you\u0027re sure.</string>
     <string name="scan_qr_camera_initialization_failed">Camera is not available. Please try again or use a different device.</string>
     <string name="qr_scanner_title_address">%1$s address</string>
     <string name="qr_scanner_title_smart_scan">SMART SCAN</string>
+    <string name="qr_scanner_open_image">Open Image</string>
+    <string name="qr_scanner_select_camera">Camera</string>
+    <string name="qr_scanner_no_camera">Camera not found or access denied</string>
+    <string name="qr_scanner_no_camera_hint_macos">Allow camera access in System Settings → Privacy &amp; Security → Camera, then try again.</string>
+    <string name="qr_scanner_no_camera_hint_windows">Allow camera access in Settings → Privacy &amp; security → Camera, then try again.</string>
+    <string name="qr_scanner_no_camera_hint_linux">Make sure a camera is connected (/dev/video*) and your user is in the video group, then try again.</string>
     <string name="choose_from_photos">Choose from Photos</string>
     <string name="image_decode_failed">Could not read a QR code from the selected image</string>
 
@@ -788,6 +793,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="Swap_Price">Price</string>
     <string name="Swap_AvailableBalance">Available Balance</string>
     <string name="swap_insufficient_fee_balance">The current %1$s balance is lower than the amount required to process this transaction, including the transaction fee.</string>
+    <string name="insufficient_balance_required_available">Not enough %1$s. This transaction needs at least %2$s including network fees; available %3$s.</string>
     <string name="fee_warning_low_balance">Balance is lower than necessary. You might pay up to %1$s in fees.</string>
     <string name="swap_balance_for_fees">Balance for Fees</string>
     <string name="Swap_PriceImpact">Price Impact</string>
@@ -1019,6 +1025,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="TransactionInfo_Price">Price</string>
     <string name="TransactionInfo_AnnouncedAmount">Announced Amount</string>
     <string name="transaction_info_executed_amount">Executed Amount</string>
+    <string name="swap_result_pending_info">The value will be available once the swap is completed</string>
     <string name="TransactionInfo_PriceImpact">Price Impact</string>
     <string name="swap_duration">Swap time</string>
     <string name="swap_duration_approximate">~%1$s</string>
@@ -2119,70 +2126,6 @@ Proceed only if you\u0027re sure.</string>
     <string name="Detectors_GeneralDetectors">General Detectors</string>
     <string name="Detectors_IssuesCount">Issues %d</string>
 
-    <string name="Nfts_Title" translatable="false">NFTs</string>
-    <string name="Nfts_PriceType_Days_7">7D avg.</string>
-    <string name="Nfts_PriceType_Days_30">30D avg.</string>
-    <string name="Nfts_PriceType_LastSale">Last Sale</string>
-    <string name="Nfts_Asset_OnSale">On Sale</string>
-    <string name="Nfts_Asset_OnAuction">On Auction</string>
-    <string name="Nfts_Asset_OnSaleUntil">until %s</string>
-    <string name="Nfts_Empty">You don\u0027t have an NFT in your wallet</string>
-    <string name="Nfts_PriceMode">Price Mode</string>
-
-    <string name="NftAsset_Overview">Overview</string>
-    <string name="NftAsset_Activity">Activity</string>
-    <string name="NftAsset_Action_Share">Share</string>
-    <string name="NftAsset_Action_Save">Save</string>
-    <string name="NftAsset_Price_Purchase">Purchase Price</string>
-    <string name="NftAsset_Price_Average7d">7D Average</string>
-    <string name="NftAsset_Price_Average30d">30D Average</string>
-    <string name="NftAsset_Price_Floor">Floor Price</string>
-    <string name="NftAsset_Price_BuyNow">Buy Now</string>
-    <string name="NftAsset_Price_MinimumBid">Minimum Bid</string>
-    <string name="NftAsset_Price_BestOffer">Best Offer</string>
-    <string name="NftAsset_Properties">Properties</string>
-    <string name="NftAsset_Description">Description</string>
-    <string name="NftAsset_Details">Details</string>
-    <string name="NftAsset_Links">Links</string>
-    <string name="NftAsset_ContractAddress">Contract Address</string>
-    <string name="NftAsset_TokenId">Token ID</string>
-    <string name="NftAsset_TokenStandard">Token Standard</string>
-    <string name="NftAsset_Blockchain">Blockchain</string>
-    <string name="NftAsset_Links_Website">Website</string>
-    <string name="NftAsset_Links_Discord" translatable="false">Discord</string>
-    <string name="NftAsset_Links_Twitter" translatable="false">Twitter</string>
-    <string name="PoweredBy_OpenSeaAPI">Powered by OpenSea API</string>
-
-    <string name="Nft_TopCollections">Top NFT Collections</string>
-    <string name="Nft_TopCollections_Description">Leading NFT collections by trading volume.</string>
-
-    <!-- NFT Collection -->
-    <string name="NftCollection_Overview">Overview</string>
-    <string name="NftCollection_Items">Items</string>
-    <string name="NftCollection_Activity">Activity</string>
-    <string name="NftCollection_Owners">Owners</string>
-    <string name="NftCollection_TodaysSales">Today\u0027s Sellers</string>
-    <string name="NftCollection_TodaysSalesCount">%s NFT</string>
-    <string name="NftCollection_Royalty">Royalty</string>
-    <string name="NftCollection_InceptionDate">Inception Date</string>
-
-    <!-- NFT Collection Events -->
-    <string name="NftCollection_EventType_SelectorTitle">Select Event Type</string>
-    <string name="NftCollection_EventType_All">All</string>
-    <string name="NftCollection_EventType_List">List</string>
-    <string name="NftCollection_EventType_Sale">Sale</string>
-    <string name="NftCollection_EventType_Cancelled">Cancel</string>
-    <string name="NftCollection_EventType_BidEntered">Bid Entered</string>
-    <string name="NftCollection_EventType_BidWithdrawn">Bid Withdrawn</string>
-    <string name="NftCollection_EventType_Transfer">Transfer</string>
-    <string name="NftCollection_EventType_OfferEntered">Offer Entered</string>
-    <string name="NftCollection_EventType_Approve">Approve</string>
-    <string name="NftCollection_EventType_Custom">Custom</string>
-    <string name="NftCollection_EventType_Payout">Payout</string>
-    <string name="NftCollection_EventType_BulkCancel">Bulk Cancel</string>
-    <string name="NftCollection_EventType_Mint">Mint</string>
-    <string name="NftCollection_EventType_Unknown">Unknown</string>
-
     <!--Rate list-->
     <string name="RateList_TopGainers">Gainers</string>
     <string name="RateList_TopLosers">Losers</string>
@@ -2213,7 +2156,6 @@ Proceed only if you\u0027re sure.</string>
 
     <!--Widget-->
     <string name="WidgetList_Config_Title">Choose Type</string>
-    <string name="NftAssetActivity_Empty">No item activity yet</string>
     <string name="Widget_EnableAutostartWarning">To make sure that this widget works properly, you should enable Autostart.</string>
 
     <!--Alert-->
@@ -2732,6 +2674,22 @@ Proceed only if you\u0027re sure.</string>
     <string name="desktop_change_password_corrupted">The key file is damaged: once the app is locked you will not be able to sign in. Save a backup of every recovery phrase.</string>
     <string name="desktop_change_password_success">Password changed</string>
     <string name="desktop_security_lock_now">Lock now</string>
+    <string name="swap_progress_title">Swap progress</string>
+    <string name="swap_progress_step_of">Step %1$d of %2$d</string>
+    <string name="swap_progress_step_header">Step %1$d · %2$s</string>
+    <string name="swap_progress_leg_send">Sending %1$s</string>
+    <string name="swap_progress_leg_receive">Receiving %1$s</string>
+    <string name="swap_progress_leg_swap">Swapping %1$s to %2$s</string>
+    <string name="swap_progress_leg_transfer">Transfer %1$s</string>
+    <string name="swap_progress_action_required_aml">The provider paused the swap for an AML check.</string>
+    <string name="swap_progress_action_required_frozen">The provider has frozen the swap.</string>
+    <string name="swap_progress_action_required_overdue">The deposit arrived after the quote expired.</string>
+    <string name="swap_progress_action_required_default">The swap is paused and needs your action.</string>
+    <string name="swap_progress_contact_support">Contact the provider’s support below.</string>
+    <string name="swap_support_telegram">%1$s support · Telegram</string>
+    <string name="swap_support_email">%1$s support · Email</string>
+    <string name="swap_support_email_deposit_tx">Deposit transaction: %1$s</string>
+    <string name="swap_support_email_deposit_address">Deposit address: %1$s</string>
 
     <!-- Shamir backup restore -->
     <string name="import_wallet_shamir">Shamir backup</string>

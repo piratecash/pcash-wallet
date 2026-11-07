@@ -103,7 +103,6 @@ internal class TransactionSpeedUpCancelViewModel(
 
                 sectionViewItems = sendEvmTransactionViewItemFactory.getItems(
                     transactionData,
-                    null,
                     sendTransactionService.decorate(transactionData)
                 )
                 emitState()

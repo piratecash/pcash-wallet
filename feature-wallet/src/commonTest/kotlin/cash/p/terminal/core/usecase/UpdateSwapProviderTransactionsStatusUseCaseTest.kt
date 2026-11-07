@@ -2,9 +2,11 @@ package cash.p.terminal.core.usecase
 
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
 import cash.p.terminal.modules.multiswap.providers.buildSwapProviderTransaction
+import cash.p.terminal.network.changenow.domain.entity.TransactionStatusEnum
 import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.network.swaprepository.SwapProviderStatusRequest
 import cash.p.terminal.network.swaprepository.SwapProviderTransactionStatusRepository
+import cash.p.terminal.network.swaprepository.SwapProviderTransactionStatusResult
 import cash.p.terminal.wallet.Token
 import io.mockk.coEvery
 import io.mockk.every
@@ -20,6 +22,7 @@ import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import java.math.BigDecimal
 
 class UpdateSwapProviderTransactionsStatusUseCaseTest {
 
@@ -83,7 +86,70 @@ class UpdateSwapProviderTransactionsStatusUseCaseTest {
         }
     }
 
+    @Test
+    fun updateTransactionStatusByDate_zeroAmountOutReal_storesNullAmount() = runTest {
+        givenStoredTransaction(storedAmount = null)
+        givenProviderResult(BigDecimal.ZERO)
+
+        UpdateSwapProviderTransactionsStatusUseCase(storage).updateTransactionStatusByDate(DATE)
+
+        verifyStoredAmount(null)
+    }
+
+    @Test
+    fun updateTransactionStatusByDate_zeroAmountOutRealWithStoredAmount_keepsStoredAmount() = runTest {
+        givenStoredTransaction(storedAmount = BigDecimal("5"))
+        givenProviderResult(BigDecimal.ZERO)
+
+        UpdateSwapProviderTransactionsStatusUseCase(storage).updateTransactionStatusByDate(DATE)
+
+        verifyStoredAmount(BigDecimal("5"))
+    }
+
+    @Test
+    fun updateTransactionStatusByDate_storedZeroAndNoNewAmount_clearsStoredZero() = runTest {
+        givenStoredTransaction(storedAmount = BigDecimal.ZERO)
+        givenProviderResult(null)
+
+        UpdateSwapProviderTransactionsStatusUseCase(storage).updateTransactionStatusByDate(DATE)
+
+        verifyStoredAmount(null)
+    }
+
+    @Test
+    fun updateTransactionStatusByDate_positiveAmountOutReal_storesAmount() = runTest {
+        givenStoredTransaction(storedAmount = null)
+        givenProviderResult(BigDecimal("0.5"))
+
+        UpdateSwapProviderTransactionsStatusUseCase(storage).updateTransactionStatusByDate(DATE)
+
+        verifyStoredAmount(BigDecimal("0.5"))
+    }
+
+    private fun givenStoredTransaction(storedAmount: BigDecimal?) {
+        coEvery { storage.getByDate(DATE) } returns
+            buildSwapProviderTransaction(SwapProvider.PCASH_BACKEND, "order-1")
+                .copy(date = DATE, amountOutReal = storedAmount)
+    }
+
+    private fun givenProviderResult(amountOutReal: BigDecimal?) {
+        coEvery { statusRepository.getTransactionStatus(any()) } returns
+            SwapProviderTransactionStatusResult(TransactionStatusEnum.EXCHANGING, amountOutReal)
+    }
+
+    private fun verifyStoredAmount(expected: BigDecimal?) {
+        verify {
+            storage.updateStatusFields(
+                date = DATE,
+                status = any(),
+                amountOutReal = expected,
+                finishedAt = any()
+            )
+        }
+    }
+
     private companion object {
+        const val DATE = 1_000L
         const val WALLET_ADDRESS = "0x2c7536E3605D9C16a7a3D7b1898e529396a65c23"
     }
 }

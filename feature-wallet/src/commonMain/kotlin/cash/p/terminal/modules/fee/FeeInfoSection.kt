@@ -43,6 +43,7 @@ fun FeeInfoSection(
     feeTitle: String? = null,
     feeLoading: Boolean = false,
     feeWarningData: NetworkFeeWarningData? = null,
+    insufficientFeeText: String? = null,
 ) {
     val isNativeCoinSwap = feeCoinBalance == null
     val feeWarningText = feeWarningData?.let {
@@ -89,7 +90,8 @@ fun FeeInfoSection(
         val feeTokenCode = feeToken?.coin?.code ?: tokenIn?.coin?.code ?: ""
         VSpacer(height = 8.dp)
         caption_lucian(
-            text = stringResource(Res.string.swap_insufficient_fee_balance, feeTokenCode),
+            text = insufficientFeeText?.takeUnless { balanceHidden }
+                ?: stringResource(Res.string.swap_insufficient_fee_balance, feeTokenCode),
             modifier = Modifier.padding(horizontal = 32.dp)
         )
     } else if (feeWarningText != null) {

@@ -11,8 +11,6 @@ import cash.p.terminal.wallet.managers.IBalanceHiddenManager
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
 import cash.p.terminal.core.usecase.UpdateSwapProviderTransactionsStatusUseCase
 import cash.p.terminal.entities.SwapProviderTransaction
-import cash.p.terminal.entities.nft.NftAssetBriefMetadata
-import cash.p.terminal.entities.nft.NftUid
 import cash.p.terminal.entities.transactionrecords.PendingTransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
@@ -20,7 +18,6 @@ import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRec
 import cash.p.terminal.entities.transactionrecords.evm.EvmTransactionRecord
 import cash.p.terminal.entities.transactionrecords.beam.BeamTransactionRecord
 import cash.p.terminal.entities.transactionrecords.monero.MoneroTransactionRecord
-import cash.p.terminal.entities.transactionrecords.nftUids
 import cash.p.terminal.entities.transactionrecords.solana.SolanaTransactionRecord
 import cash.p.terminal.entities.transactionrecords.stellar.StellarTransactionRecord
 import cash.p.terminal.entities.transactionrecords.thorchain.ThorchainTransactionRecord
@@ -28,16 +25,21 @@ import cash.p.terminal.entities.transactionrecords.ton.TonTransactionRecord
 import cash.p.terminal.entities.transactionrecords.tron.TronTransactionRecord
 import cash.p.terminal.modules.paycore.PayCoreAssetResolver
 import cash.p.terminal.modules.transactions.FilterTransactionType
-import cash.p.terminal.modules.transactions.NftMetadataService
 import cash.p.terminal.modules.transactions.TransactionStatus
+import cash.p.terminal.modules.transactions.positiveOrNull
 import cash.p.terminal.modules.transactions.toUniversalStatus
+import cash.p.terminal.modules.swapprogress.progressSummary
+import cash.p.terminal.modules.swapprogress.supportContacts
 import cash.p.terminal.network.changenow.domain.entity.toStatus
+import cash.p.terminal.network.swaprepository.SwapProvider
+import cash.p.terminal.network.unstoppable.domain.repository.UnstoppableRepository
 import cash.p.terminal.ui_compose.ColoredValue
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.transaction.TransactionSource
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.entities.CurrencyValue
 import io.horizontalsystems.core.DispatcherProvider
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -56,9 +58,9 @@ class TransactionInfoService(
     private val adapter: ITransactionsAdapter?,
     private val marketKit: MarketKitWrapper,
     private val currencyManager: CurrencyManager,
-    private val nftMetadataService: NftMetadataService,
     private val updateSwapProviderTransactionsStatusUseCase: UpdateSwapProviderTransactionsStatusUseCase,
     private val swapProviderTransactionsStorage: SwapProviderTransactionsStorage,
+    private val unstoppableRepository: UnstoppableRepository,
     private val dispatcherProvider: DispatcherProvider,
     private val userSwapTransactionId: String? = null,
     transactionStatusUrl: Pair<String, String>? = null,
@@ -103,7 +105,6 @@ class TransactionInfoService(
         explorerData = adapter?.getTransactionExplorerData(transactionRecord)?.map { it.toExplorerData() }
             ?: emptyList(),
         rates = mapOf(),
-        nftMetadata = mapOf(),
         hideAmount = balanceHiddenManager.isTransactionInfoHidden(transactionRecord.uid, walletUid),
         transactionStatusUrl = transactionStatusUrl,
         swapAmountOut = null,
@@ -342,6 +343,8 @@ class TransactionInfoService(
             }
         }
 
+        launchUnstoppableSwapProgress()
+
         adapter?.let { adapter ->
             launch {
                 adapter.getTransactionRecordsFlow(null, FilterTransactionType.All, null)
@@ -377,12 +380,6 @@ class TransactionInfoService(
         }
 
         launch {
-            nftMetadataService.assetsBriefMetadataFlow.collect {
-                handleNftMetadata(it)
-            }
-        }
-
-        launch {
             balanceHiddenManager.transactionInfoHiddenFlow(transactionRecord.uid, walletUid)
                 .collect {
                     mutex.withLock {
@@ -400,8 +397,25 @@ class TransactionInfoService(
         }
 
         fetchRates()
-        fetchNftMetadata()
         fetchAmlStatus()
+    }
+
+    private fun CoroutineScope.launchUnstoppableSwapProgress() {
+        val item = transactionInfoItem
+        val uuid = item.swapTransactionId?.takeIf { item.swapProvider == SwapProvider.UNSTOPPABLE } ?: return
+        launch {
+            unstoppableRepository.observeTrack(uuid).collect { track ->
+                updateItem { it.copy(swapProgress = track?.progressSummary()) }
+            }
+        }
+        launch {
+            val contacts = unstoppableRepository.supportContacts(item.swapSubProviderId)
+            updateItem { it.copy(swapSupportContacts = contacts) }
+        }
+    }
+
+    private suspend fun updateItem(transform: (TransactionInfoItem) -> TransactionInfoItem) {
+        mutex.withLock { transactionInfoItem = transform(transactionInfoItem) }
     }
 
     private fun findMatchingRealTransaction(
@@ -418,17 +432,6 @@ class TransactionInfoService(
             updateSwapProviderTransactionsStatusUseCase.updateTransactionStatusByDate(date)
                 .toUniversalStatus()
         }
-
-    private suspend fun fetchNftMetadata() {
-        val nftUids = transactionRecord.nftUids
-        val assetsBriefMetadata = nftMetadataService.assetsBriefMetadata(nftUids)
-
-        handleNftMetadata(assetsBriefMetadata)
-
-        if (nftUids.subtract(assetsBriefMetadata.keys).isNotEmpty()) {
-            nftMetadataService.fetch(nftUids)
-        }
-    }
 
     private suspend fun fetchRates() = withContext(dispatcherProvider.io) {
         val originalUids = coinUidsForRates
@@ -457,7 +460,7 @@ class TransactionInfoService(
         mutex.withLock {
             transactionInfoItem = transactionInfoItem.copy(
                 swapAmountOut = swapTransaction.amountOut,
-                swapAmountOutReal = swapTransaction.amountOutReal,
+                swapAmountOutReal = swapTransaction.amountOutReal.positiveOrNull(),
                 swapAmountIn = swapTransaction.amountIn,
                 swapCoinCodeOut = getCoinCode(swapTransaction.coinUidOut),
                 swapCoinCodeIn = getCoinCode(swapTransaction.coinUidIn),
@@ -468,6 +471,7 @@ class TransactionInfoService(
                 swapTransactionId = swapTransaction.transactionId,
                 swapTransactionStatus = swapStatus,
                 swapDuration = swapTransaction.swapDuration(),
+                swapDate = swapTransaction.date,
                 externalStatus = swapStatus.toUniversalStatus(),
             )
         }
@@ -497,12 +501,6 @@ class TransactionInfoService(
     private suspend fun handleRates(rates: Map<String, CurrencyValue>) {
         mutex.withLock {
             transactionInfoItem = transactionInfoItem.copy(rates = rates)
-        }
-    }
-
-    private suspend fun handleNftMetadata(nftMetadata: Map<NftUid, NftAssetBriefMetadata>) {
-        mutex.withLock {
-            transactionInfoItem = transactionInfoItem.copy(nftMetadata = nftMetadata)
         }
     }
 

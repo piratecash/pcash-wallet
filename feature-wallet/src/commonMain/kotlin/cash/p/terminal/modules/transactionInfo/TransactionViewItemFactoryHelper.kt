@@ -11,8 +11,6 @@ import cash.p.terminal.core.orHide
 import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.entities.LastBlockInfo
 import cash.p.terminal.entities.TransactionValue
-import cash.p.terminal.entities.nft.NftAssetBriefMetadata
-import cash.p.terminal.entities.nft.NftUid
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
@@ -186,7 +184,6 @@ object TransactionViewItemFactoryHelper {
         value: TransactionValue.NftValue,
         incoming: Boolean?,
         hideAmount: Boolean,
-        nftMetadata: NftAssetBriefMetadata?,
     ): TransactionInfoViewItem {
         val valueFormatted = if (hideAmount) "*****" else value.decimalValue.let { decimalValue ->
             val sign = when {
@@ -200,18 +197,11 @@ object TransactionViewItemFactoryHelper {
             "$sign$valueWithCoinCode"
         }
 
-        val nftName = nftMetadata?.name ?: value.tokenName?.let {
-            when (value.nftUid) {
-                is NftUid.Evm -> "$it #${value.nftUid.tokenId}"
-                is NftUid.Solana -> it
-            }
-        } ?: "#${value.nftUid.tokenId}"
-
         return TransactionInfoViewItem.NftAmount(
             title,
             ColoredValue(valueFormatted, amountColor(incoming)),
-            nftName,
-            nftMetadata?.previewImageUrl,
+            value.tokenName ?: "#${value.mintAddress}",
+            null,
             Res.drawable.icon_24_nft_placeholder,
             null,
         )
@@ -300,7 +290,6 @@ object TransactionViewItemFactoryHelper {
         changeAddresses: List<String>? = null,
         coinPrice: CurrencyValue?,
         hideAmount: Boolean,
-        nftMetadata: Map<NftUid, NftAssetBriefMetadata> = mapOf(),
         blockchainType: BlockchainType,
         amlItem: TransactionInfoViewItem.AmlCheck? = null,
         showCopyWarning: Boolean = false,
@@ -316,7 +305,7 @@ object TransactionViewItemFactoryHelper {
 
         when (value) {
             is TransactionValue.NftValue -> {
-                amount = getNftAmount(title, value, true, hideAmount, nftMetadata[value.nftUid])
+                amount = getNftAmount(title, value, true, hideAmount)
                 rate = null
             }
 
@@ -377,7 +366,6 @@ object TransactionViewItemFactoryHelper {
         coinPrice: CurrencyValue?,
         hideAmount: Boolean,
         sentToSelf: Boolean = false,
-        nftMetadata: Map<NftUid, NftAssetBriefMetadata> = mapOf(),
         blockchainType: BlockchainType,
         showCopyWarning: Boolean = false,
     ): List<TransactionInfoViewItem> {
@@ -397,8 +385,7 @@ object TransactionViewItemFactoryHelper {
                     title,
                     value,
                     if (sentToSelf) null else false,
-                    hideAmount,
-                    nftMetadata[value.nftUid]
+                    hideAmount
                 )
                 rate = null
             }

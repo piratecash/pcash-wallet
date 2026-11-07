@@ -16,7 +16,6 @@ private const val DELETED_ACCOUNTS_CLEANUP_DELAY_MS = 3000L
 class WalletServicesStarter(
     private val chainAccountManagersStarter: ChainAccountManagersStarter,
     private val adapterManager: IAdapterManager,
-    private val nftMetadataSyncer: NftMetadataSyncer,
     private val locallyCreatedTransactionRepository: LocallyCreatedTransactionRepository,
     private val addressLabelManager: AddressLabelManager,
     private val contactsRepository: ContactsRepository,
@@ -27,7 +26,6 @@ class WalletServicesStarter(
     suspend fun start() {
         startChainAccountManagers()
         startAdapters()
-        startNftMetadataSync()
         scheduleAccountDataCleanup()
         syncLabels()
     }
@@ -35,8 +33,6 @@ class WalletServicesStarter(
     fun startChainAccountManagers() = chainAccountManagersStarter.start()
 
     fun startAdapters() = adapterManager.startAdapterManager()
-
-    fun startNftMetadataSync() = nftMetadataSyncer.start()
 
     /** Returns at once: both jobs run on the application scope, the cleanup after a delay. */
     fun scheduleAccountDataCleanup() {

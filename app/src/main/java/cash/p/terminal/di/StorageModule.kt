@@ -47,7 +47,6 @@ val storageModule = module {
     single { get<AppDatabase>().locallyCreatedTransactionDao() }
     single { get<AppDatabase>().swapProviderTransactionsDao() }
     single { get<AppDatabase>().pinDao() }
-    single { get<AppDatabase>().nftDao() }
     single { get<AppDatabase>().chartIndicatorSettingsDao() }
     singleOf(::PinDbStorage)
 }

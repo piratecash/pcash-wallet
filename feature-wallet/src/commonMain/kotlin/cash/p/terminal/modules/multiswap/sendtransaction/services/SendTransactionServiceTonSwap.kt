@@ -6,7 +6,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.core.ISendTonAdapter
-import cash.p.terminal.core.LocalizedException
 import cash.p.terminal.core.getFeeTokenBalance
 import cash.p.terminal.core.ethereum.CautionViewItem
 import cash.p.terminal.core.isNative
@@ -26,16 +25,15 @@ import cash.p.terminal.modules.multiswap.ui.DataField
 import cash.p.terminal.modules.multiswap.ui.DataFieldSlippage
 import cash.p.terminal.modules.send.SendModule
 import cash.p.terminal.modules.send.SendResult
+import cash.p.terminal.modules.send.fee.requiredBalanceCaution
 import cash.p.terminal.modules.send.ton.SendTonAddressService
 import cash.p.terminal.modules.send.ton.SendTonAmountService
 import cash.p.terminal.modules.xrate.XRateService
-import cash.p.terminal.resources.Res
-import cash.p.terminal.resources.check_fee_warning
-import cash.p.terminal.resources.not_enough_ton_for_fee
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.getMaxSendableBalance
 import io.horizontalsystems.core.entities.CurrencyValue
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -194,10 +192,10 @@ class SendTransactionServiceTonSwap(
         routerMasterAddress = data.routerMasterAddress
         tonSwapQueryId = data.queryId
 
-        checkFeeBalance()
-
         loading = true // to show loading until fee is set
         emitState()
+
+        checkFeeBalance(data)
 
         fields = listOf(
             DataFieldSlippage(data.slippage),
@@ -221,34 +219,22 @@ class SendTransactionServiceTonSwap(
         updatedFee(data.forwardGas)
     }
 
-    private fun checkFeeBalance() {
-        val data = checkNotNull(tonSwapData) {
-            "SendTransactionData should be SendTransactionData.TonSwap"
-        }
-
-        val availableBalance = adapterManager.getFeeTokenBalance(feeToken, token)
-        if (availableBalance != null) {
-            val feeRequired = data.forwardGas.toBigDecimal().movePointLeft(feeToken.decimals)
-            feeCaution = if (availableBalance < feeRequired) {
-                val formattedBalance = numberFormatter.formatCoinFull(
-                    availableBalance,
-                    null,
-                    feeToken.decimals
-                )
-                createCaution(LocalizedException(Res.string.not_enough_ton_for_fee, formattedBalance))
-            } else {
-                null
-            }
-            hasEnoughFeeAmount = feeCaution == null
-        } else {
-            val neededFee =
-                data.forwardGas.toBigDecimal().movePointLeft(feeToken.decimals).stripTrailingZeros()
-                    .toPlainString() + " " + feeToken.coin.code
-            feeCaution = createCaution(
-                LocalizedException(Res.string.check_fee_warning, neededFee),
-                CautionViewItem.Type.Warning
+    private suspend fun checkFeeBalance(data: SendTransactionData.TonSwap) {
+        feeCaution = try {
+            val destination = checkNotNull(data.destinationAddress) { "Destination address is missing" }
+            // Same amount and payload as sendTransaction: the wallet debits the attached value plus fees.
+            val estimate = adapter.estimateFeeWithPayload(getAmount(), destination, data.payload)
+            requiredBalanceCaution(
+                available = adapterManager.getFeeTokenBalance(feeToken, token),
+                required = estimate.requiredTon,
+                feeToken = feeToken,
             )
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            createCaution(e)
         }
+        hasEnoughFeeAmount = feeCaution?.type != CautionViewItem.Type.Error
     }
 
     private fun getAmount(): BigInteger {

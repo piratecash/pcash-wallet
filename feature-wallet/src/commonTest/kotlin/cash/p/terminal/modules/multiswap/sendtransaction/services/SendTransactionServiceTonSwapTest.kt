@@ -1,12 +1,17 @@
 package cash.p.terminal.modules.multiswap.sendtransaction.services
 
 import cash.p.terminal.core.ISendTonAdapter
+import cash.p.terminal.core.TonFeeEstimate
+import cash.p.terminal.core.ethereum.CautionViewItem
 import cash.p.terminal.core.managers.PendingTransactionRegistrar
 import cash.p.terminal.entities.PendingTransactionDraft
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionData
 import cash.p.terminal.modules.offline.OfflineOperationGate
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.insufficient_balance_required_available
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IAdapterManager
+import cash.p.terminal.wallet.IBalanceAdapter
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
@@ -16,6 +21,7 @@ import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.useCases.WalletUseCase
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.IAppNumberFormatter
+import io.horizontalsystems.core.Translator
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.entities.Currency
@@ -24,9 +30,16 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.slot
 import io.mockk.unmockkAll
+import io.mockk.verify
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -38,7 +51,9 @@ import org.koin.test.KoinTestRule
 import java.math.BigDecimal
 import java.math.BigInteger
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class SendTransactionServiceTonSwapTest : KoinTest {
 
@@ -55,6 +70,7 @@ class SendTransactionServiceTonSwapTest : KoinTest {
     private lateinit var testWallet: Wallet
 
     private val testBalance = BigDecimal("100")
+    private var tonBalance: BigDecimal? = testBalance
 
     @get:Rule
     val koinRule = KoinTestRule.create {
@@ -118,6 +134,79 @@ class SendTransactionServiceTonSwapTest : KoinTest {
         coVerify(exactly = 0) { pendingRegistrar.updateTxId(any(), any()) }
     }
 
+    @Test
+    fun setSendTransactionData_tonBalanceBelowRequiredTon_notSendableWithError() = runTest {
+        val service = createFundedService()
+        tonBalance = BigDecimal("0.2787")
+
+        service.setSendTransactionData(tonSwapData())
+
+        val state = service.stateFlow.value
+        assertFalse(state.sendable)
+        assertEquals(CautionViewItem.Type.Error, state.feeCaution?.type)
+        verify {
+            Translator.getString(
+                Res.string.insufficient_balance_required_available,
+                "TON",
+                "0.301 TON",
+                "0.2787 TON",
+            )
+        }
+    }
+
+    @Test
+    fun setSendTransactionData_estimateFails_notSendableWithError() = runTest {
+        val service = createFundedService()
+        coEvery { adapter.estimateFeeWithPayload(any(), any(), any()) } throws IllegalStateException("emulation failed")
+
+        service.setSendTransactionData(tonSwapData())
+
+        val state = service.stateFlow.value
+        assertFalse(state.sendable)
+        assertEquals(CautionViewItem.Type.Error, state.feeCaution?.type)
+    }
+
+    @Test
+    fun setSendTransactionData_tonBalanceUnknown_sendableWithWarning() = runTest {
+        val service = createFundedService()
+        tonBalance = null
+        every { adapterManager.getAdapterForToken<IBalanceAdapter>(any()) } returns null
+
+        service.setSendTransactionData(tonSwapData())
+
+        val state = service.stateFlow.value
+        assertTrue(state.sendable)
+        assertEquals(CautionViewItem.Type.Warning, state.feeCaution?.type)
+    }
+
+    @Test
+    fun setSendTransactionData_estimatesWithSentAmountAndPayload() = runTest {
+        val service = createFundedService()
+        val data = tonSwapData()
+
+        coVerify {
+            adapter.estimateFeeWithPayload(
+                data.offerUnits + data.forwardGas + BigInteger("10000000"),
+                data.destinationAddress.orEmpty(),
+                data.payload,
+            )
+        }
+        assertNull(service.stateFlow.value.feeCaution)
+    }
+
+    // Waiting for a sendable state first proves the amount and address collectors have run,
+    // so a later "not sendable" can only come from the TON balance check.
+    private suspend fun TestScope.createFundedService(): SendTransactionServiceTonSwap {
+        tonBalance = BigDecimal("0.31")
+        val service = SendTransactionServiceTonSwap(testToken)
+        service.start(backgroundScope)
+        service.setSendTransactionData(tonSwapData())
+        withContext(Dispatchers.Default) {
+            withTimeout(5_000) { service.stateFlow.first { it.sendable } }
+        }
+        return service
+    }
+
     private fun setupTestData() {
         val testCoin = Coin(uid = "toncoin", name = "The Open Network", code = "TON")
         testToken = Token(
@@ -148,15 +237,19 @@ class SendTransactionServiceTonSwapTest : KoinTest {
         coEvery { adapterManager.awaitAdapterForWallet<ISendTonAdapter>(any(), any()) } returns adapter
         every { adapterManager.getBalanceAdapterForWallet(any()) } returns adapter
         every { adapterManager.getAdjustedBalanceData(any()) } returns BalanceData(testBalance)
-        every { adapterManager.getAdjustedBalanceDataForToken(any()) } returns BalanceData(testBalance)
+        every { adapterManager.getAdjustedBalanceDataForToken(any()) } answers { tonBalance?.let(::BalanceData) }
+        coEvery { adapter.estimateFeeWithPayload(any(), any(), any()) } returns
+            TonFeeEstimate(fee = BigDecimal("0.01"), requiredTon = BigDecimal("0.301"))
     }
 
     private fun setupAppMocks() {
+        mockkObject(Translator)
+        every { Translator.getString(any(), *anyVararg()) } returns "translated"
     }
 
     private fun tonSwapData(): SendTransactionData.TonSwap {
         return SendTransactionData.TonSwap(
-            forwardGas = BigInteger("300000000"),
+            forwardGas = BigInteger("240000000"),
             offerUnits = BigInteger("574700000"),
             routerAddress = TON_ROUTER_RAW,
             routerMasterAddress = TON_ROUTER_RAW,

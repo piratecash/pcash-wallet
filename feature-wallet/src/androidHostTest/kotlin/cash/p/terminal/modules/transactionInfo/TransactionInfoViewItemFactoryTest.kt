@@ -9,6 +9,8 @@ import cash.p.terminal.entities.LastBlockInfo
 import cash.p.terminal.entities.SwapDuration
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.modules.transactions.TransactionStatus
+import cash.p.terminal.modules.swapprogress.SupportContact
+import cash.p.terminal.modules.swapprogress.SwapProgressSummary
 import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.modules.transactions.beamHistoryRecord
 import cash.p.terminal.modules.transactions.beamInteractiveHistoryRecord
@@ -65,10 +67,14 @@ import org.robolectric.annotation.Config
 import java.math.BigDecimal
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.Swap_ErrorInsufficientBalance
+import cash.p.terminal.resources.TransactionInfo_ExecutedRate
 import cash.p.terminal.resources.TransactionInfo_Fee
 import cash.p.terminal.resources.TransactionInfo_From
+import cash.p.terminal.resources.TransactionInfo_Price
+import cash.p.terminal.resources.TransactionInfo_PriceImpact
 import cash.p.terminal.resources.TransactionInfo_Status
 import cash.p.terminal.resources.TransactionInfo_To
+import cash.p.terminal.network.changenow.domain.entity.TransactionStatusEnum
 import cash.p.terminal.resources.Transactions_Completed
 import cash.p.terminal.resources.Transactions_Failed
 import cash.p.terminal.resources.Transactions_Pending
@@ -85,10 +91,13 @@ import cash.p.terminal.resources.beam_history_waiting_for_sender
 import cash.p.terminal.resources.duration_short_hours
 import cash.p.terminal.resources.duration_short_minutes
 import cash.p.terminal.resources.duration_short_seconds
+import cash.p.terminal.resources.ic_support_24
+import cash.p.terminal.resources.icon_24_nft_placeholder
 import cash.p.terminal.resources.swap_duration
 import cash.p.terminal.resources.swap_duration_approximate
 import cash.p.terminal.resources.transaction_info_delegation_contract
 import cash.p.terminal.resources.transaction_info_delegation_warning
+import cash.p.terminal.resources.transaction_info_executed_amount
 import cash.p.terminal.resources.transaction_info_initiator
 import cash.p.terminal.resources.transaction_swap_status_confirming
 import cash.p.terminal.resources.transaction_swap_status_unknown
@@ -236,6 +245,20 @@ class TransactionInfoViewItemFactoryTest {
         assertEquals(BRIDGE_ADDRESS, address.value)
         assertEquals(false, address.showAdd)
         assertEquals(true, address.title.endsWith(" · Token Bridge"))
+    }
+
+    @Test
+    fun getReceiveSectionItems_solanaNftWithoutName_showsMintWithPlaceholder() {
+        val amount = solanaNftAmount(tokenName = null)
+
+        assertEquals("#NFT_MINT", amount.nftName)
+        assertNull(amount.iconUrl)
+        assertEquals(Res.drawable.icon_24_nft_placeholder, amount.iconPlaceholder)
+    }
+
+    @Test
+    fun getReceiveSectionItems_solanaNftWithName_showsName() {
+        assertEquals("Mad Lad", solanaNftAmount(tokenName = "Mad Lad").nftName)
     }
 
     @Test
@@ -845,6 +868,148 @@ class TransactionInfoViewItemFactoryTest {
         assertNull(swapDurationRow(null))
     }
 
+    @Test
+    fun getViewItemSections_swapInProgressWithoutRealAmount_showsAwaitingRows() {
+        val items = swapItems(externalStatus = TransactionStatus.Processing(0.5f))
+
+        val awaitingTitles = items.filterIsInstance<TransactionInfoViewItem.AwaitingSwapResult>().map { it.title }
+        assertEquals(
+            listOf(
+                Res.string.transaction_info_executed_amount,
+                Res.string.TransactionInfo_PriceImpact,
+                Res.string.TransactionInfo_ExecutedRate,
+                Res.string.TransactionInfo_Price,
+            ).map { Translator.getString(it) },
+            awaitingTitles
+        )
+        assertTrue(awaitingTitles.none { title -> items.hasRealRow(title) })
+    }
+
+    @Test
+    fun getViewItemSections_swapFinishedWithoutRealAmount_hidesResultRows() {
+        val items = swapItems(externalStatus = TransactionStatus.Completed)
+
+        assertTrue(items.filterIsInstance<TransactionInfoViewItem.AwaitingSwapResult>().isEmpty())
+        assertTrue(items.none { it is TransactionInfoViewItem.ValueColored || it is TransactionInfoViewItem.PriceWithToggle })
+    }
+
+    @Test
+    fun getViewItemSections_swapInProgressWithRealAmount_showsRealRows() {
+        val items = swapItems(externalStatus = TransactionStatus.Pending, amountOutReal = BigDecimal("9"))
+
+        assertTrue(items.filterIsInstance<TransactionInfoViewItem.AwaitingSwapResult>().isEmpty())
+        assertTrue(items.any { it is TransactionInfoViewItem.ValueColored })
+    }
+
+    private fun List<TransactionInfoViewItem>.hasRealRow(title: String) = any {
+        (it is TransactionInfoViewItem.Value && it.title == title) ||
+            (it is TransactionInfoViewItem.ValueClickable && it.title == title) ||
+            (it is TransactionInfoViewItem.ValueColored && it.title == title) ||
+            (it is TransactionInfoViewItem.PriceWithToggle && it.title == title)
+    }
+
+    @Test
+    fun getViewItemSections_unstoppableSwapWithProgress_showsStepOfRow() {
+        val row = unstoppableItems(swapProgress = SwapProgressSummary(2, 3, allCompleted = false))
+            .filterIsInstance<TransactionInfoViewItem.SwapProgress>().single()
+
+        assertEquals("string:swap_progress_step_of:2, 3", row.value)
+        assertEquals(1000L, row.swapDate)
+    }
+
+    @Test
+    fun getViewItemSections_unstoppableSwap_progressRowCarriesRecordAndWalletUid() {
+        val row = unstoppableItems().filterIsInstance<TransactionInfoViewItem.SwapProgress>().single()
+
+        assertEquals("offline-signed:hash", row.transactionUid)
+        assertEquals("wallet-1", row.walletUid)
+    }
+
+    @Test
+    fun getViewItemSections_unstoppableSwapAllCompleted_showsCompletedText() {
+        val row = unstoppableItems(swapProgress = SwapProgressSummary(3, 3, allCompleted = true))
+            .filterIsInstance<TransactionInfoViewItem.SwapProgress>().single()
+
+        assertEquals(Translator.getString(Res.string.Transactions_Completed), row.value)
+    }
+
+    @Test
+    fun getViewItemSections_unstoppableSwapWithoutProgress_showsStoredSwapStatus() {
+        val row = unstoppableItems(swapProgress = null, swapStatus = TransactionStatusEnum.FINISHED)
+            .filterIsInstance<TransactionInfoViewItem.SwapProgress>().single()
+
+        assertEquals(Translator.getString(Res.string.Transactions_Completed), row.value)
+    }
+
+    @Test
+    fun getViewItemSections_unstoppableSwapWithoutProgressOrStatus_showsRowWithoutValue() {
+        val row = unstoppableItems(swapProgress = null)
+            .filterIsInstance<TransactionInfoViewItem.SwapProgress>().single()
+
+        assertNull(row.value)
+    }
+
+    @Test
+    fun getViewItemSections_unstoppableSwapWithContacts_showsTelegramAndEmailRows() {
+        val items = unstoppableItems(
+            contacts = listOf(SupportContact.Telegram("https://t.me/pegasus"), SupportContact.Email("a@b.io")),
+        )
+
+        val telegram = items.filterIsInstance<TransactionInfoViewItem.Explorer>().single()
+        assertEquals("https://t.me/pegasus", telegram.url)
+        assertEquals(Res.drawable.ic_support_24, telegram.iconResId)
+        assertEquals("a@b.io", items.filterIsInstance<TransactionInfoViewItem.SupportEmail>().single().email)
+    }
+
+    @Test
+    fun getViewItemSections_unstoppableSwapWithoutContacts_hasNoSupportRows() {
+        val items = unstoppableItems(contacts = emptyList())
+
+        assertEquals(emptyList<TransactionInfoViewItem.SupportEmail>(), items.filterIsInstance<TransactionInfoViewItem.SupportEmail>())
+        assertEquals(emptyList<TransactionInfoViewItem.Explorer>(), items.filterIsInstance<TransactionInfoViewItem.Explorer>())
+    }
+
+    @Test
+    fun getViewItemSections_changeNowSwapWithProgressAndContacts_hasNeither() {
+        val items = unstoppableItems(
+            provider = SwapProvider.CHANGENOW,
+            swapProgress = SwapProgressSummary(1, 2, allCompleted = false),
+            contacts = listOf(SupportContact.Email("a@b.io")),
+        )
+
+        assertEquals(emptyList<TransactionInfoViewItem.SwapProgress>(), items.filterIsInstance<TransactionInfoViewItem.SwapProgress>())
+        assertEquals(emptyList<TransactionInfoViewItem.SupportEmail>(), items.filterIsInstance<TransactionInfoViewItem.SupportEmail>())
+    }
+
+    private fun unstoppableItems(
+        provider: SwapProvider = SwapProvider.UNSTOPPABLE,
+        swapProgress: SwapProgressSummary? = null,
+        contacts: List<SupportContact> = emptyList(),
+        swapStatus: TransactionStatusEnum? = null,
+    ): List<TransactionInfoViewItem> =
+        TransactionInfoViewItemFactory(
+            offlineOperationGate = mockk(relaxed = true),
+            wallet = null,
+            blockchainType = BlockchainType.Bitcoin,
+            evmKitWrapper = null,
+            platformOperationSupport = allOperationsSupported,
+            unstoppableProviderTitles = mockk(relaxed = true) { every { title(any()) } returns "Pegasus" },
+            walletUid = "wallet-1",
+        ).getViewItemSections(
+            transactionInfoItem(pendingRecord(toAddress = "")).copy(
+                swapAmountOut = BigDecimal.TEN,
+                swapAmountIn = BigDecimal.ONE,
+                swapCoinCodeOut = "ETH",
+                swapCoinCodeIn = "BTC",
+                swapProvider = provider,
+                swapSubProviderId = "PEGASUS",
+                swapDate = 1000L,
+                swapProgress = swapProgress,
+                swapSupportContacts = contacts,
+                swapTransactionStatus = swapStatus,
+            )
+        ).flatten()
+
     private fun stubDurationPatterns() {
         stubPattern(Res.string.duration_short_hours, "%1\$dh")
         stubPattern(Res.string.duration_short_minutes, "%1\$dm")
@@ -860,7 +1025,11 @@ class TransactionInfoViewItemFactoryTest {
             .filterIsInstance<TransactionInfoViewItem.Value>()
             .singleOrNull { it.title == Translator.getString(Res.string.swap_duration) }
 
-    private fun swapItems(swapDuration: SwapDuration?): List<TransactionInfoViewItem> =
+    private fun swapItems(
+        swapDuration: SwapDuration? = null,
+        externalStatus: TransactionStatus? = null,
+        amountOutReal: BigDecimal? = null,
+    ): List<TransactionInfoViewItem> =
         TransactionInfoViewItemFactory(
             offlineOperationGate = mockk(relaxed = true),
             wallet = null,
@@ -876,6 +1045,8 @@ class TransactionInfoViewItemFactoryTest {
                 swapCoinCodeIn = "BTC",
                 swapProvider = SwapProvider.CHANGENOW,
                 swapDuration = swapDuration,
+                externalStatus = externalStatus,
+                swapAmountOutReal = amountOutReal,
             )
         ).flatten()
 
@@ -947,10 +1118,24 @@ class TransactionInfoViewItemFactoryTest {
         lastBlockInfo = null,
         explorerData = emptyList(),
         rates = emptyMap(),
-        nftMetadata = emptyMap(),
         hideAmount = false,
         offlineStatus = offlineStatus,
     )
+
+    private fun solanaNftAmount(tokenName: String?): TransactionInfoViewItem.NftAmount =
+        TransactionViewItemFactoryHelper.getReceiveSectionItems(
+            value = TransactionValue.NftValue(
+                mintAddress = "NFT_MINT",
+                value = BigDecimal.ONE,
+                tokenName = tokenName,
+                tokenSymbol = null,
+            ),
+            fromAddress = "SENDER_ADDRESS",
+            toAddress = null,
+            coinPrice = null,
+            hideAmount = false,
+            blockchainType = BlockchainType.Solana,
+        ).filterIsInstance<TransactionInfoViewItem.NftAmount>().single()
 
     private fun tokenValue(
         code: String = "COSA",

@@ -45,10 +45,18 @@ object MarketWidgetStateDefinition : GlanceStateDefinition<MarketWidgetState> {
 
         override suspend fun readFrom(input: InputStream): MarketWidgetState = try {
             val jsonString = input.readBytes().decodeToString()
-            gson.fromJson(jsonString, MarketWidgetState::class.java)
+            gson.fromJson(jsonString, MarketWidgetState::class.java).withKnownType()
         } catch (exception: JsonSyntaxException) {
             throw CorruptionException("Could not read data: ${exception.message}")
         }
+
+        // Gson stores null for a type id that no longer exists (e.g. the removed "topNfts") despite the non-null field
+        private fun MarketWidgetState.withKnownType() =
+            if (MarketWidgetType.entries.contains(type)) {
+                this
+            } else {
+                MarketWidgetState(widgetId = widgetId, type = MarketWidgetType.TopGainers, loading = true)
+            }
 
         override suspend fun writeTo(t: MarketWidgetState, output: OutputStream) {
             output.use {

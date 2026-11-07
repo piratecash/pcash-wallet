@@ -72,9 +72,11 @@ secp256k1 = "0.24.0"
 
 tonKotlin = "0.5.0" # updated for ktor 3.x compatibility
 orgJson = "20250517"
-piratecash-ton = "v2.0.0-pcash.13"
+piratecash-ton = "v2.0.0-pcash.14"
 beam-sdk = "v0.3.1"
+openpnp-capture-java = "v0.0.30-2-pcash.2"
 piratecash-bitcoin = "v0.1.0-pcash.41"
+
 hd-wallet-kit = "1.0.1"
 stellar-kit = "v2.0.0-pcash.5"
 thorchain-kit = "1.2.0"
@@ -233,6 +235,7 @@ ton-kotlin-contract = { module = "org.ton.kotlin:ton-kotlin-contract", version.r
 org-json = { module = "org.json:json", version.ref = "orgJson" }
 ton-kit = { group = "com.github.piratecash.ton-kit-android", name = "tonkit", version.ref = "piratecash-ton" }
 beam-sdk = { module = "com.github.piratecash.beam-sdk-kmp:beam-sdk", version.ref = "beam-sdk" }
+openpnp-capture-java = { group = "com.github.piratecash", name = "openpnp-capture-java", version.ref = "openpnp-capture-java" }
 bitcoin-core = { group = "com.github.piratecash.bitcoin-kit-android", name = "bitcoincore", version.ref = "piratecash-bitcoin" }
 bitcoin-kit = { group = "com.github.piratecash.bitcoin-kit-android", name = "bitcoinkit", version.ref = "piratecash-bitcoin" }
 bitcoin-cash-kit = { group = "com.github.piratecash.bitcoin-kit-android", name = "bitcoincashkit", version.ref = "piratecash-bitcoin" }
@@ -257,7 +260,6 @@ ethereum-kit = { group = "com.github.piratecash.ethereum-kit-android", name = "e
 ethereum-kit-erc20 = { group = "com.github.piratecash.ethereum-kit-android", name = "erc20kit", version.ref = "piratecash-ethereum" }
 ethereum-kit-uniswap = { group = "com.github.piratecash.ethereum-kit-android", name = "uniswapkit", version.ref = "piratecash-ethereum" }
 ethereum-kit-oneinch = { group = "com.github.piratecash.ethereum-kit-android", name = "oneinchkit", version.ref = "piratecash-ethereum" }
-ethereum-kit-nft = { group = "com.github.piratecash.ethereum-kit-android", name = "nftkit", version.ref = "piratecash-ethereum" }
 ethereum-kit-merkleio = { group = "com.github.piratecash.ethereum-kit-android", name = "merkleiokit", version.ref = "piratecash-ethereum" }
 tron-kit = { group = "com.github.piratecash.tron-kit-android", name = "tronkit", version.ref = "piratecash-tron" }
 tangem-sdk = { group = "com.github.piratecash", name = "tangem-sdk-android", version.ref = "tangem-sdk" }

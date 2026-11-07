@@ -56,6 +56,8 @@ import cash.p.terminal.wallet.policy.PlatformChainSupport
 import cash.p.terminal.wallet.policy.PlatformOperationSupport
 import cash.p.terminal.wallet.useCases.WalletUseCase
 import io.horizontalsystems.core.IAppNumberFormatter
+import okio.FileSystem
+import okio.Path
 import org.koin.core.error.InstanceCreationException
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
@@ -204,8 +206,6 @@ import cash.p.terminal.modules.market.platform.MarketPlatformCoinsRepository
 import cash.p.terminal.modules.market.platform.MarketPlatformViewModel
 import cash.p.terminal.modules.market.platform.PlatformChartService
 import cash.p.terminal.modules.market.topcoins.MarketTopCoinsViewModel
-import cash.p.terminal.modules.market.topnftcollections.TopNftCollectionsService
-import cash.p.terminal.modules.market.topnftcollections.TopNftCollectionsViewModel
 import cash.p.terminal.modules.market.topplatforms.Platform
 import cash.p.terminal.modules.market.tvl.TvlChartService
 import cash.p.terminal.modules.market.tvl.TvlChartViewModel
@@ -314,6 +314,8 @@ import cash.p.terminal.shared.desktop.lock.UnlockViewModel
 import cash.p.terminal.shared.desktop.session.mnemonicAccount
 import cash.p.terminal.shared.desktop.settings.DesktopAutoLockIntervalsViewModel
 import cash.p.terminal.shared.desktop.settings.DesktopLanguageSettingsViewModel
+import cash.p.terminal.shared.desktop.qrscanner.DesktopQrScannerViewModel
+import cash.p.terminal.modules.qrscanner.QRScannerViewModel
 import cash.p.terminal.shared.desktop.settings.DesktopSecurityViewModel
 import com.google.gson.Gson
 import kotlin.io.path.createTempDirectory
@@ -338,8 +340,6 @@ import cash.p.terminal.modules.send.beam.BeamOfflineOperations
 import cash.p.terminal.modules.send.bitcoin.advanced.SendBtcAdvancedSettingsViewModel
 import cash.p.terminal.modules.send.bitcoin.utxoexpert.UtxoExpertModeViewModel
 import cash.p.terminal.modules.send.securitycheck.SecurityCheckViewModel
-import cash.p.terminal.modules.send.evm.SendEvmData
-import io.horizontalsystems.ethereumkit.models.TransactionData
 import cash.p.terminal.core.ISendBitcoinAdapter
 import cash.p.terminal.core.ISendZcashAdapter
 import cash.p.terminal.core.ISendEthereumAdapter
@@ -508,7 +508,6 @@ class DesktopKoinGraphTest {
         definition<PlatformChartService>(Platform::class),
         definition<TvlViewModel>(TvlService::class, TvlViewItemFactory::class),
         definition<TvlChartViewModel>(TvlChartService::class, ChartCurrencyValueFormatterShortened::class),
-        definition<TopNftCollectionsViewModel>(TopNftCollectionsService::class),
         definition<MetricsPageViewModel>(MetricsType::class),
         definition<MetricsPageChartService>(MetricsType::class),
     )
@@ -568,10 +567,6 @@ class DesktopKoinGraphTest {
         definition<SendBtcAdvancedSettingsViewModel>(BlockchainType::class),
         definition<UtxoExpertModeViewModel>(ISendBitcoinAdapter::class, Token::class, List::class),
         definition<SecurityCheckViewModel>(Token::class, String::class, Boolean::class),
-        ParameterTypeInjection(
-            internalClass("send.evm.confirmation.SendEvmConfirmationViewModel"),
-            listOf(TransactionData::class, SendEvmData.AdditionalInfo::class),
-        ),
     )
 
     /** These send classes are internal to feature-wallet; a rename fails here with ClassNotFoundException. */
@@ -658,6 +653,8 @@ class DesktopKoinGraphTest {
             DesktopSecurityViewModel::class to null,
             DesktopAutoLockIntervalsViewModel::class to null,
             DesktopLanguageSettingsViewModel::class to null,
+            QRScannerViewModel::class to null,
+            DesktopQrScannerViewModel::class to null,
         )
     }
 
@@ -782,11 +779,14 @@ class DesktopKoinGraphTest {
         /** Headers and the premium URL come from `desktopApp`; files, flags and the engine are passed by the definitions. */
         val providedOutsideTheGraph = listOf(
             AppHeadersProvider::class,
+            DesktopAppVersion::class,
             File::class,
             Gson::class,
             Boolean::class,
             String::class,
             HttpClientEngine::class,
+            FileSystem::class,
+            Path::class,
         )
 
         /** Built inside the view model definitions from their injected parameters. */

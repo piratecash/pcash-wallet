@@ -15,7 +15,6 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextClearance
 import androidx.navigation3.runtime.NavBackStack
 import cash.p.terminal.R
-import cash.p.terminal.feature.wallet.WalletPlatformPages
 import cash.p.terminal.modules.main.PlainTestPage
 import cash.p.terminal.modules.main.TestNav3Host
 import cash.p.terminal.modules.main.ScreenTestPage
@@ -67,7 +66,6 @@ class RestorePhraseQrScanTest {
             modules(
                 module {
                     single<AppPages> { mockk { every { qrScanner(any()) } returns scanner } }
-                    single { mockk<WalletPlatformPages> { every { isQrScannerAvailable } returns true } }
                     viewModel { recordingMnemonicViewModel() }
                     viewModel {
                         RestoreMnemonicNonStandardViewModel(

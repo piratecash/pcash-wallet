@@ -401,7 +401,6 @@
     <string name="Balance_ReceiveHint_Search">Chercher</string>
     <!--Send NFT-->
     <string name="SendNft_Title">Envoyer</string>
-    <string name="SendNft_Error_NotEnoughtBalance">Solde insuffisant</string>
     <!--Send-->
     <string name="Send_Title">Envoyer %1$s</string>
     <string name="Send_Hint_Address">Adresse ou domaine</string>
@@ -439,6 +438,12 @@
     <string name="scan_qr_camera_initialization_failed">La caméra n\u0027est pas disponible. Veuillez réessayer ou utiliser un autre appareil.</string>
     <string name="qr_scanner_title_address">Adresse %1$s</string>
     <string name="qr_scanner_title_smart_scan">SCAN INTELLIGENT</string>
+    <string name="qr_scanner_open_image">Ouvrir une image</string>
+    <string name="qr_scanner_select_camera">Caméra</string>
+    <string name="qr_scanner_no_camera">Caméra introuvable ou accès refusé</string>
+    <string name="qr_scanner_no_camera_hint_macos">Autorisez l’accès à la caméra dans Réglages Système → Confidentialité et sécurité → Caméra, puis réessayez.</string>
+    <string name="qr_scanner_no_camera_hint_windows">Autorisez l’accès à la caméra dans Paramètres → Confidentialité et sécurité → Caméra, puis réessayez.</string>
+    <string name="qr_scanner_no_camera_hint_linux">Vérifiez qu’une caméra est connectée (/dev/video*) et que votre utilisateur appartient au groupe video, puis réessayez.</string>
     <string name="choose_from_photos">Choisir depuis les photos</string>
     <string name="image_decode_failed">Impossible de lire un code QR à partir de l\u0027image sélectionnée</string>
     <string name="Send_Error_UnsupportedAddress">Time lock ne fonctionne qu\u0027avec les adresses P2PKH (commençant par 1)</string>
@@ -599,6 +604,7 @@
     <string name="Swap_Price">Prix</string>
     <string name="Swap_AvailableBalance">Solde disponible</string>
     <string name="swap_insufficient_fee_balance">Le solde actuel de %1$s est inférieur au montant requis pour traiter cette transaction, y compris les frais.</string>
+    <string name="insufficient_balance_required_available">%1$s insuffisant. Cette transaction nécessite au moins %2$s, frais de réseau inclus ; solde disponible : %3$s.</string>
     <string name="fee_warning_low_balance">Le solde est inférieur au niveau nécessaire. Les frais pourraient atteindre %1$s.</string>
     <string name="swap_balance_for_fees">Solde pour les frais</string>
     <string name="fee">Frais</string>
@@ -776,6 +782,7 @@
     <string name="TransactionInfo_HistoricalRate">Taux historique</string>
     <string name="TransactionInfo_AnnouncedAmount">Montant annoncé</string>
     <string name="transaction_info_executed_amount">Montant exécuté</string>
+    <string name="swap_result_pending_info">La valeur sera disponible une fois l’échange terminé</string>
     <string name="TransactionInfo_PriceImpact">Impact sur le prix</string>
     <string name="swap_duration">Durée de l’échange</string>
     <string name="swap_duration_approximate">~%1$s</string>
@@ -1780,62 +1787,6 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="notification_permission_revoked_title">Notifications indisponibles</string>
     <string name="notification_permission_revoked_message">L\u0027autorisation de notification n\u0027est pas accordée. Appuyez pour ouvrir les paramètres.</string>
 
-    <string name="Nfts_PriceType_Days_7">Moy. 7D</string>
-    <string name="Nfts_PriceType_Days_30">Moy. 30D</string>
-    <string name="Nfts_PriceType_LastSale">Dernière vente</string>
-    <string name="Nfts_Asset_OnSale">En Vente</string>
-    <string name="Nfts_Asset_OnAuction">Mise aux enchères</string>
-    <string name="Nfts_Asset_OnSaleUntil">jusqu\u0027à: %s</string>
-    <string name="Nfts_Empty">Vous n\u0027avez pas de NFT dans votre portefeuille</string>
-    <string name="Nfts_PriceMode">Mode prix</string>
-    <string name="NftAsset_Overview">Synthèse</string>
-    <string name="NftAsset_Activity">Activité</string>
-    <string name="NftAsset_Action_Share">Partager</string>
-    <string name="NftAsset_Action_Save">Sauvegarder</string>
-    <string name="NftAsset_Price_Purchase">Prix d\u0027achat</string>
-    <string name="NftAsset_Price_Average7d">Moyenne 7D</string>
-    <string name="NftAsset_Price_Average30d">Moyenne 30D</string>
-    <string name="NftAsset_Price_Floor">Prix plancher</string>
-    <string name="NftAsset_Price_BuyNow">Acheter Maintenant</string>
-    <string name="NftAsset_Price_MinimumBid">Enchère minimale</string>
-    <string name="NftAsset_Price_BestOffer">Meilleure offre</string>
-    <string name="NftAsset_Properties">Propriétés</string>
-    <string name="NftAsset_Description">Libellé</string>
-    <string name="NftAsset_Details">Détailles</string>
-    <string name="NftAsset_Links">Liens</string>
-    <string name="NftAsset_ContractAddress">Adresse du contrat</string>
-    <string name="NftAsset_TokenId">Identifiant du token</string>
-    <string name="NftAsset_TokenStandard">Standard du token</string>
-    <string name="NftAsset_Blockchain">Filtrer par blockchain</string>
-    <string name="NftAsset_Links_Website">Site Web</string>
-    <string name="PoweredBy_OpenSeaAPI">Propulsé par OpenSea API</string>
-    <string name="Nft_TopCollections">Top des collections NFT</string>
-    <string name="Nft_TopCollections_Description">Meilleures collections NFT en termes de volume de trading.</string>
-    <!-- NFT Collection -->
-    <string name="NftCollection_Overview">Synthèse</string>
-    <string name="NftCollection_Items">Éléments</string>
-    <string name="NftCollection_Activity">Activité</string>
-    <string name="NftCollection_Owners">Propriétaires</string>
-    <string name="NftCollection_TodaysSales">Vendeurs d\u0027aujourd\u0027hui</string>
-    <string name="NftCollection_TodaysSalesCount">%s NFT</string>
-    <string name="NftCollection_Royalty">Redevance</string>
-    <string name="NftCollection_InceptionDate">Date de création</string>
-    <!-- NFT Collection Events -->
-    <string name="NftCollection_EventType_SelectorTitle">Sélectionnez le type d\u0027événement</string>
-    <string name="NftCollection_EventType_All">Tout</string>
-    <string name="NftCollection_EventType_List">Liste</string>
-    <string name="NftCollection_EventType_Sale">Vente</string>
-    <string name="NftCollection_EventType_Cancelled">Annuler</string>
-    <string name="NftCollection_EventType_BidEntered">Enchère saisie</string>
-    <string name="NftCollection_EventType_BidWithdrawn">Enchère retirée</string>
-    <string name="NftCollection_EventType_Transfer">Transfert</string>
-    <string name="NftCollection_EventType_OfferEntered">Offre saisie</string>
-    <string name="NftCollection_EventType_Approve">Approuver</string>
-    <string name="NftCollection_EventType_Custom">Personnalisé</string>
-    <string name="NftCollection_EventType_Payout">Versement</string>
-    <string name="NftCollection_EventType_BulkCancel">Annuler en bloc</string>
-    <string name="NftCollection_EventType_Mint">Mint</string>
-    <string name="NftCollection_EventType_Unknown">Inconnu</string>
     <!--Rate list-->
     <string name="RateList_TopGainers">Gagnants</string>
     <string name="RateList_TopLosers">Perdants</string>
@@ -1859,7 +1810,6 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="Hud_Text_Activate">Activer</string>
     <!--Widget-->
     <string name="WidgetList_Config_Title">Choisir le type</string>
-    <string name="NftAssetActivity_Empty">Aucune activité pour l\u0027instant</string>
     <string name="Widget_EnableAutostartWarning">Pour vous assurer que ce widget fonctionne correctement, vous devez activer le démarrage automatique.</string>
     <!--Alert-->
     <string name="alert_keys_invalidated_title">Erreur de Keystore Android</string>
@@ -2306,6 +2256,22 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="desktop_change_password_corrupted">Le fichier de clé est endommagé : une fois l\u0027application verrouillée, vous ne pourrez plus vous connecter. Enregistrez une sauvegarde de chaque phrase de récupération.</string>
     <string name="desktop_change_password_success">Mot de passe modifié</string>
     <string name="desktop_security_lock_now">Verrouiller maintenant</string>
+    <string name="swap_progress_title">Progression du swap</string>
+    <string name="swap_progress_step_of">Étape %1$d sur %2$d</string>
+    <string name="swap_progress_step_header">Étape %1$d · %2$s</string>
+    <string name="swap_progress_leg_send">Envoi de %1$s</string>
+    <string name="swap_progress_leg_receive">Réception de %1$s</string>
+    <string name="swap_progress_leg_swap">Échange de %1$s contre %2$s</string>
+    <string name="swap_progress_leg_transfer">Transfert de %1$s</string>
+    <string name="swap_progress_action_required_aml">Le fournisseur a suspendu le swap pour un contrôle AML.</string>
+    <string name="swap_progress_action_required_frozen">Le fournisseur a gelé le swap.</string>
+    <string name="swap_progress_action_required_overdue">Le dépôt est arrivé après l’expiration de la cotation.</string>
+    <string name="swap_progress_action_required_default">Le swap est suspendu et nécessite votre action.</string>
+    <string name="swap_progress_contact_support">Contactez le support du fournisseur ci-dessous.</string>
+    <string name="swap_support_telegram">Support %1$s · Telegram</string>
+    <string name="swap_support_email">Support %1$s · E-mail</string>
+    <string name="swap_support_email_deposit_tx">Transaction de dépôt : %1$s</string>
+    <string name="swap_support_email_deposit_address">Adresse de dépôt : %1$s</string>
 
     <!-- Shamir backup restore -->
     <string name="import_wallet_shamir">Sauvegarde Shamir</string>

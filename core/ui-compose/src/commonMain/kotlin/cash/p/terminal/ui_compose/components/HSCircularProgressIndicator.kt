@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
@@ -50,7 +51,11 @@ fun HSCircularProgressIndicator(progress: Float) {
 }
 
 @Composable
-fun HSCircularProgressIndicator(progress: Float, size: Dp) {
+fun HSCircularProgressIndicator(
+    progress: Float,
+    size: Dp,
+    color: Color = ComposeAppTheme.colors.textSecondaryDimmed,
+) {
     val transition = rememberInfiniteTransition()
     val rotate by transition.animateFloat(
         initialValue = 0f,
@@ -68,7 +73,7 @@ fun HSCircularProgressIndicator(progress: Float, size: Dp) {
         modifier = Modifier
             .size(size)
             .rotate(rotate),
-        color = ComposeAppTheme.colors.textSecondaryDimmed,
+        color = color,
         strokeWidth = 2.dp
     )
 }

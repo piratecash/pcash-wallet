@@ -51,20 +51,23 @@ private fun TonOnlineConfirmation(
     sendEntryPoint: KClass<out HSPage>?,
     onRequestOfflineSign: (() -> Unit)?,
 ) {
-    var confirmationData by remember { mutableStateOf(sendViewModel.getConfirmationData()) }
+    var confirmationData by remember { mutableStateOf(sendViewModel.tonConfirmationData()) }
     var refresh by remember { mutableStateOf(false) }
 
     TonConfirmationRefreshEffect(
         isSynced = sendViewModel.isSynced,
         refresh = refresh,
-        onRefreshData = { confirmationData = sendViewModel.getConfirmationData() },
+        onRefreshData = { confirmationData = sendViewModel.tonConfirmationData() },
         onPause = { refresh = true },
     )
 
     TonConfirmationForm(
         navigation = navigation,
         sendEntryPoint = sendEntryPoint,
-        state = sendViewModel.confirmationState(confirmationData),
+        state = sendViewModel.confirmationState(
+            tonData = confirmationData,
+            insufficientFeeText = sendViewModel.insufficientRequiredTonText(confirmationData.requiredTon),
+        ),
         onRequestOfflineSign = onRequestOfflineSign,
         callbacks = TonConfirmationCallbacks(
             onClickSend = sendViewModel::onClickSendWithWarningCheck,
@@ -132,7 +135,7 @@ private fun TonConfirmationForm(
         isSynced = state.isSynced,
         hasAdapterError = state.hasAdapterError,
         onRetrySync = callbacks.onRetrySync,
-        sendEnabled = state.isEffectivelySynced,
+        sendEnabled = state.sendEnabled,
         onSignOfflineOnFailure = onRequestOfflineSign,
         sendToken = state.sendToken,
         feeToken = state.feeToken,
@@ -142,18 +145,31 @@ private fun TonConfirmationForm(
         balanceHidden = state.balanceHidden,
         onBalanceClicked = callbacks.onBalanceClick,
         feeWarningData = state.inlineFeeWarningData,
+        insufficientFeeText = state.insufficientFeeText,
     )
 
     NetworkFeeWarningOverlay(
         feeWarningData = state.feeWarningData,
-        onConfirm = callbacks.onFeeWarningConfirm,
+        // The balance can drop while the warning is open; close it instead of sending past the gate.
+        onConfirm = if (state.sendEnabled) callbacks.onFeeWarningConfirm else callbacks.onFeeWarningCancel,
         onCancel = callbacks.onFeeWarningCancel,
     )
 }
 
-private fun SendTonViewModel.confirmationState(confirmationData: SendConfirmationData) =
+private data class TonConfirmationData(
+    val data: SendConfirmationData,
+    val requiredTon: BigDecimal?,
+)
+
+private fun SendTonViewModel.tonConfirmationData() =
+    TonConfirmationData(getConfirmationData(), uiState.requiredTon)
+
+private fun SendTonViewModel.confirmationState(
+    tonData: TonConfirmationData,
+    insufficientFeeText: String?,
+) =
     TonConfirmationState(
-        confirmationData = confirmationData,
+        confirmationData = tonData.data,
         coinMaxAllowedDecimals = coinMaxAllowedDecimals,
         feeCoinMaxAllowedDecimals = feeTokenMaxAllowedDecimals,
         rate = coinRate,
@@ -167,7 +183,8 @@ private fun SendTonViewModel.confirmationState(confirmationData: SendConfirmatio
         feeToken = feeToken,
         feeCoinBalance = feeCoinBalance,
         displayBalance = displayBalance,
-        insufficientFeeBalance = isInsufficientFeeBalance(confirmationData.fee),
+        insufficientFeeBalance = isInsufficientFeeBalance(tonData.requiredTon),
+        insufficientFeeText = insufficientFeeText,
         balanceHidden = balanceHidden,
         inlineFeeWarningData = inlineFeeWarningData,
         feeWarningData = feeWarningData,
@@ -189,10 +206,14 @@ private data class TonConfirmationState(
     val feeCoinBalance: BigDecimal?,
     val displayBalance: BigDecimal?,
     val insufficientFeeBalance: Boolean,
+    val insufficientFeeText: String?,
     val balanceHidden: Boolean,
     val inlineFeeWarningData: NetworkFeeWarningData?,
     val feeWarningData: NetworkFeeWarningData?,
-)
+) {
+    val sendEnabled: Boolean
+        get() = isEffectivelySynced && !insufficientFeeBalance
+}
 
 private data class TonConfirmationCallbacks(
     val onClickSend: () -> Unit,

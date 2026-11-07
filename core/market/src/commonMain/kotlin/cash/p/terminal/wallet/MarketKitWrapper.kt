@@ -6,7 +6,6 @@ import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.managers.VirtualCoinMapper
 import cash.p.terminal.wallet.models.CoinPrice
 import cash.p.terminal.wallet.models.MarketInfo
-import cash.p.terminal.wallet.models.NftTopCollection
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.models.HsPeriodType
 import io.horizontalsystems.core.models.HsTimePeriod
@@ -271,11 +270,6 @@ class MarketKitWrapper(
         marketKit.topPlatformMarketInfosSingle(chain, currencyCode)
 
     fun getCoinSignalsSingle(coinUids: List<String>) = marketKit.coinsSignalsSingle(coinUids)
-
-    // NFT
-
-    suspend fun nftCollections(): List<NftTopCollection> =
-        marketKit.nftTopCollections()
 
     // Misc
 

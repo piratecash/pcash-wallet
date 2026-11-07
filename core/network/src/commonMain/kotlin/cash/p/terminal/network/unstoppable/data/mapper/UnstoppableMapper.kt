@@ -4,10 +4,12 @@ import cash.p.terminal.network.changenow.domain.entity.TransactionStatusEnum
 import cash.p.terminal.network.unstoppable.data.entity.ApprovalDto
 import cash.p.terminal.network.unstoppable.data.entity.AttachmentDto
 import cash.p.terminal.network.unstoppable.data.entity.ExecutionDto
+import cash.p.terminal.network.unstoppable.data.entity.LegDto
 import cash.p.terminal.network.unstoppable.data.entity.ProviderDto
 import cash.p.terminal.network.unstoppable.data.entity.RouteDto
 import cash.p.terminal.network.unstoppable.data.entity.SignableTxDto
 import cash.p.terminal.network.unstoppable.data.entity.TokensDto
+import cash.p.terminal.network.unstoppable.data.entity.TrackResponseDto
 import cash.p.terminal.network.unstoppable.domain.entity.UnstoppableApproval
 import cash.p.terminal.network.unstoppable.domain.entity.UnstoppableAttachment
 import cash.p.terminal.network.unstoppable.domain.entity.UnstoppableExecution
@@ -17,6 +19,8 @@ import cash.p.terminal.network.unstoppable.domain.entity.UnstoppableProviderToke
 import cash.p.terminal.network.unstoppable.domain.entity.UnstoppableRoute
 import cash.p.terminal.network.unstoppable.domain.entity.UnstoppableSignableTx
 import cash.p.terminal.network.unstoppable.domain.entity.UnstoppableToken
+import cash.p.terminal.network.unstoppable.domain.entity.UnstoppableTrack
+import cash.p.terminal.network.unstoppable.domain.entity.UnstoppableTrackLeg
 
 internal class UnstoppableMapper {
     fun mapRoute(dto: RouteDto) = UnstoppableRoute(
@@ -71,6 +75,35 @@ internal class UnstoppableMapper {
         "action_required" -> TransactionStatusEnum.WAITING
         else -> null
     }
+
+    fun mapTrack(dto: TrackResponseDto) = UnstoppableTrack(
+        status = mapTrackStatus(dto.status),
+        actionRequired = dto.status == "action_required",
+        pauseReason = dto.meta?.pauseReason,
+        toAmount = dto.toAmount,
+        legs = dto.legs.orEmpty().map(::mapLeg),
+    )
+
+    private fun mapLeg(dto: LegDto) = UnstoppableTrackLeg(
+        type = when (dto.type) {
+            "native_send" -> UnstoppableTrackLeg.Type.NativeSend
+            "swap" -> UnstoppableTrackLeg.Type.Swap
+            else -> UnstoppableTrackLeg.Type.Other
+        },
+        status = when (dto.status) {
+            "pending", "swapping", "action_required" -> UnstoppableTrackLeg.Status.InProgress
+            "completed" -> UnstoppableTrackLeg.Status.Completed
+            "failed", "refunded" -> UnstoppableTrackLeg.Status.Failed
+            else -> UnstoppableTrackLeg.Status.NotStarted
+        },
+        hash = dto.hash?.takeIf { it.isNotBlank() },
+        chainId = dto.chainId?.takeIf { it.isNotBlank() },
+        fromAsset = dto.fromAsset?.takeIf { it.isNotBlank() },
+        fromAmount = dto.fromAmount,
+        toAsset = dto.toAsset?.takeIf { it.isNotBlank() },
+        toAmount = dto.toAmount,
+        toAddress = dto.toAddress?.takeIf { it.isNotBlank() },
+    )
 
     private fun mapExecution(dto: ExecutionDto) = UnstoppableExecution(
         method = dto.method,
