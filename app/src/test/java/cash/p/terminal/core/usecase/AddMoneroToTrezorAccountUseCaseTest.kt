@@ -49,6 +49,18 @@ class AddMoneroToTrezorAccountUseCaseTest {
     }
 
     @Test
+    fun provision_withRestoreHeight_provisionsAtThatHeight() = runTest {
+        val account = account(walletPublicKey = WALLET_PUBLIC_KEY)
+        every { accountManager.account(account.id) } returns account
+        coEvery { provisioner.provision(account, ANSWERED_HEIGHT) } returns WALLET_PUBLIC_KEY
+
+        useCase.provision(account, ANSWERED_HEIGHT)
+
+        coVerify(exactly = 1) { provisioner.provision(account, ANSWERED_HEIGHT) }
+        verify(exactly = 0) { heightUseCase.getTodayHeight() }
+    }
+
+    @Test
     fun invoke_walletProvisioned_activatesMonero() = runTest {
         val account = account(walletPublicKey = WALLET_PUBLIC_KEY)
         every { accountManager.account(account.id) } returns account
@@ -107,6 +119,7 @@ class AddMoneroToTrezorAccountUseCaseTest {
 
     private companion object {
         const val RESTORE_HEIGHT = 3_529_956L
+        const val ANSWERED_HEIGHT = 3_100_000L
         const val WALLET_PUBLIC_KEY = "wallet-public-key"
     }
 }

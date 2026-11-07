@@ -15,11 +15,15 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
+import cash.p.terminal.ledger.ui.LedgerSetupPage
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
+import cash.p.terminal.modules.moneroconfigure.MoneroConfigurePage
+import cash.p.terminal.modules.zcashconfigure.ZcashConfigurePage
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.navigation.rememberResultLauncher
+import cash.p.terminal.navigation.slideFromBottom
 import cash.p.terminal.navigation.slideFromRight
 import cash.p.terminal.tangem.ui.HardwareWalletError
 import cash.p.terminal.tangem.ui.HardwareWalletOnboardingPage
@@ -50,7 +54,10 @@ class HardwareWalletPage(val input: ManageAccountsModule.Input?) : HSPage() {
             viewModel.success = it.success
         }
         val trezorLauncher = navigation.rememberResultLauncher<TrezorSetupPage.Result> {
-            viewModel.success = it.success
+            viewModel.onHardwareSetupFinished(it.success)
+        }
+        val ledgerLauncher = navigation.rememberResultLauncher<LedgerSetupPage.Result> {
+            viewModel.onHardwareSetupFinished(it.success)
         }
 
         LaunchedEffect(Unit) {
@@ -82,12 +89,16 @@ class HardwareWalletPage(val input: ManageAccountsModule.Input?) : HSPage() {
                 }
             }
         }
+        RestoreHeightRequests(viewModel, navigation)
 
         HardwareWalletScreen(
             navigation = navigation,
             onScanCard = viewModel::scanCard,
             onConnectTrezor = {
                 trezorLauncher.slideFromRight(TrezorSetupPage(TrezorSetupPage.Input(viewModel.accountName)))
+            },
+            onConnectLedger = {
+                ledgerLauncher.slideFromRight(LedgerSetupPage(viewModel.accountName))
             },
             onFinish = { navigation.removeLastUntil(popUpToInclusiveId, inclusive) },
             viewModel = viewModel,
@@ -96,10 +107,34 @@ class HardwareWalletPage(val input: ManageAccountsModule.Input?) : HSPage() {
 }
 
 @Composable
+private fun RestoreHeightRequests(viewModel: HardwareWalletViewModel, navigation: HSNavigation) {
+    val zcashLauncher = navigation.rememberResultLauncher<ZcashConfigurePage.Result> { result ->
+        viewModel.onRestoreHeightConfigured(RestoreHeightChain.Zcash, result.config)
+    }
+    val moneroLauncher = navigation.rememberResultLauncher<MoneroConfigurePage.Result> { result ->
+        viewModel.onRestoreHeightConfigured(RestoreHeightChain.Monero, result.config)
+    }
+    LaunchedEffect(Unit) {
+        viewModel.restoreHeightRequests.collect { chain ->
+            when (chain) {
+                RestoreHeightChain.Zcash -> zcashLauncher.slideFromBottom(
+                    ZcashConfigurePage(ZcashConfigurePage.Input(initialConfig = null))
+                )
+
+                RestoreHeightChain.Monero -> moneroLauncher.slideFromBottom(
+                    MoneroConfigurePage(MoneroConfigurePage.Input(initialConfig = null))
+                )
+            }
+        }
+    }
+}
+
+@Composable
 internal fun HardwareWalletScreen(
     navigation: HSNavigation,
     onScanCard: () -> Unit,
     onConnectTrezor: () -> Unit,
+    onConnectLedger: () -> Unit,
     onFinish: () -> Unit,
     viewModel: HardwareWalletViewModel
 ) {
@@ -140,29 +175,54 @@ internal fun HardwareWalletScreen(
                 onValueChange = viewModel::onChangeAccountName
             )
             Spacer(Modifier.height(32.dp))
-            val hasNfc = view.context.hasNFC()
-            ButtonPrimaryYellow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                title = stringResource(R.string.scan_tangem_card),
-                enabled = hasNfc,
-                onClick = onScanCard
-            )
-            if (!hasNfc) {
-                InfoText(
-                    text = stringResource(R.string.hardware_wallet_not_detected_error),
-                    paddingBottom = 0.dp
-                )
-            }
-            Spacer(Modifier.height(16.dp))
-            ButtonPrimaryDefault(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                title = stringResource(R.string.connect_trezor),
-                onClick = onConnectTrezor
+            ConnectButtons(
+                hasNfc = view.context.hasNFC(),
+                onScanCard = onScanCard,
+                onConnectTrezor = onConnectTrezor,
+                onConnectLedger = onConnectLedger,
             )
         }
+    }
+}
+
+@Composable
+private fun ConnectButtons(
+    hasNfc: Boolean,
+    onScanCard: () -> Unit,
+    onConnectTrezor: () -> Unit,
+    onConnectLedger: () -> Unit,
+) {
+    Column {
+        ButtonPrimaryYellow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            title = stringResource(R.string.scan_tangem_card),
+            enabled = hasNfc,
+            onClick = onScanCard
+        )
+        if (!hasNfc) {
+            InfoText(
+                text = stringResource(R.string.hardware_wallet_not_detected_error),
+                paddingBottom = 0.dp
+            )
+        }
+        Spacer(Modifier.height(16.dp))
+        ButtonPrimaryDefault(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            title = stringResource(R.string.connect_trezor),
+            onClick = onConnectTrezor
+        )
+        Spacer(Modifier.height(16.dp))
+        ButtonPrimaryDefault(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            title = stringResource(R.string.connect_ledger),
+            onClick = onConnectLedger
+        )
+        LedgerDeveloperSettings()
     }
 }

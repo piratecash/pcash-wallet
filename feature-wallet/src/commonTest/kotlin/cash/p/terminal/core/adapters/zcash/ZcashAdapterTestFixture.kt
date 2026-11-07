@@ -168,16 +168,7 @@ abstract class ZcashAdapterTestFixture {
             firmwareVersion = storedFirmwareVersion,
             walletPublicKey = "xpub-test",
         )
-        val account = mockk<Account>(relaxed = true) {
-            every { id } returns ACCOUNT_ID
-            every { name } returns "Test"
-            every { type } returns liveAccountType
-            every { origin } returns AccountOrigin.Created
-        }
-        every { wallet.account } returns account
-        every { wallet.hardwarePublicKey } returns mockk<HardwarePublicKey>(relaxed = true) {
-            every { key } returns SecretString("trezor-viewing-key")
-        }
+        stubDeviceAccount(liveAccountType, "trezor-viewing-key")
         val storedAccount = storedModel?.let {
             mockk<Account>(relaxed = true) {
                 every { type } returns AccountType.TrezorDevice(
@@ -189,6 +180,24 @@ abstract class ZcashAdapterTestFixture {
             }
         }
         every { accountManager.account(ACCOUNT_ID) } returns storedAccount
+    }
+
+    /** Switches [wallet] to a Ledger account, which keeps the device's unified viewing key. */
+    protected fun stubLedgerAccount() {
+        stubDeviceAccount(AccountType.LedgerDevice("device-1", "nanoSP", "wallet-key"), "ledger-viewing-key")
+    }
+
+    private fun stubDeviceAccount(accountType: AccountType, viewingKey: String) {
+        val account = mockk<Account>(relaxed = true) {
+            every { id } returns ACCOUNT_ID
+            every { name } returns "Test"
+            every { type } returns accountType
+            every { origin } returns AccountOrigin.Created
+        }
+        every { wallet.account } returns account
+        every { wallet.hardwarePublicKey } returns mockk<HardwarePublicKey>(relaxed = true) {
+            every { key } returns SecretString(viewingKey)
+        }
     }
 
     private fun stubLocalStorage() {

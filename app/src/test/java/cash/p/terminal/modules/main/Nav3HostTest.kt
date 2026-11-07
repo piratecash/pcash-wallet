@@ -4,12 +4,21 @@ import android.app.Application
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.lifecycle.Lifecycle
 import androidx.navigation3.runtime.NavBackStack
+import cash.p.terminal.R
+import cash.p.terminal.ledger.domain.LedgerUserOperations
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.ui_compose.ScreenSecurityState
+import cash.p.terminal.ui_compose.components.HudHelper
+import io.mockk.every
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -30,6 +39,7 @@ class Nav3HostTest {
 
     private val navigation = HSNavigation(NavBackStack<HSPage>(PlainTestPage()))
     private val isLocked = mutableStateOf(false)
+    private val ledgerOpeningApp = MutableStateFlow<String?>(null)
 
     private val isFlagSecure: Boolean
         get() = composeRule.activity.window.attributes.flags and WindowManager.LayoutParams.FLAG_SECURE != 0
@@ -37,12 +47,24 @@ class Nav3HostTest {
     @Before
     fun setUp() {
         ScreenSecurityState.isAppLocked = false
-        composeRule.setContent { Nav3Host(navigation, isLocked = isLocked) }
+        mockkObject(Translator)
+        every { Translator.getString(R.string.ledger_confirm_opening_app, any()) } returns HINT_TEXT
+        // Material snackbars refuse to inflate without a MaterialComponents theme.
+        composeRule.activity.setTheme(com.google.android.material.R.style.Theme_MaterialComponents)
+        composeRule.setContent {
+            Nav3Host(
+                navigation,
+                isLocked = isLocked,
+                ledgerUserOperations = LedgerUserOperations(),
+                ledgerOpeningApp = ledgerOpeningApp,
+            )
+        }
         composeRule.waitForIdle()
     }
 
     @After
     fun tearDown() {
+        unmockkObject(Translator)
         ScreenSecurityState.isAppLocked = false
     }
 
@@ -147,6 +169,55 @@ class Nav3HostTest {
         assertFalse(isFlagSecure)
     }
 
+    @Test
+    fun ledgerOpeningApp_set_showsHintUntilCleared() {
+        showHint("Monero")
+        hintNode().assertExists()
+
+        ledgerOpeningApp.value = null
+        composeRule.waitForIdle()
+
+        hintNode().assertDoesNotExist()
+    }
+
+    @Test
+    fun ledgerOpeningApp_hintReplacedBySnackbar_returnsAfterGracePeriod() {
+        showHint("Monero")
+
+        composeRule.runOnUiThread { HudHelper.showWarningMessage(composeRule.activity.window.decorView, "Copied") }
+        composeRule.waitForIdle()
+        hintNode().assertDoesNotExist()
+
+        composeRule.mainClock.advanceTimeBy(HINT_GRACE_MS + 500)
+        composeRule.waitForIdle()
+
+        hintNode().assertExists()
+    }
+
+    @Test
+    fun ledgerOpeningApp_hintReplacedTwiceQuickly_doesNotCrashAndReturns() {
+        showHint("Monero")
+
+        composeRule.runOnUiThread {
+            val view = composeRule.activity.window.decorView
+            HudHelper.showWarningMessage(view, "First")
+            HudHelper.showWarningMessage(view, "Second")
+        }
+        composeRule.waitForIdle()
+
+        composeRule.mainClock.advanceTimeBy(HINT_GRACE_MS + 500)
+        composeRule.waitForIdle()
+
+        hintNode().assertExists()
+    }
+
+    private fun showHint(appName: String) {
+        ledgerOpeningApp.value = appName
+        composeRule.waitForIdle()
+    }
+
+    private fun hintNode() = composeRule.onNode(hasText(HINT_TEXT))
+
     private fun lock() {
         composeRule.runOnUiThread {
             ScreenSecurityState.isAppLocked = true
@@ -171,5 +242,7 @@ class Nav3HostTest {
 
     private companion object {
         const val MAX_EXIT_FRAMES = 120
+        const val HINT_TEXT = "Confirm opening the Monero app"
+        const val HINT_GRACE_MS = 3_000L
     }
 }

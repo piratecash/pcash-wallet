@@ -22,7 +22,6 @@ import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionSettings
 import cash.p.terminal.modules.multiswap.ui.DataField
 import cash.p.terminal.modules.send.SendModule
 import cash.p.terminal.modules.send.SendResult
-import cash.p.terminal.modules.send.isHardwareWalletCancelled
 import cash.p.terminal.modules.send.monero.SendMoneroAddressService
 import cash.p.terminal.modules.send.monero.SendMoneroFeeService
 import cash.p.terminal.modules.send.ton.FeeStatus
@@ -224,11 +223,7 @@ class SendTransactionServiceMonero(
     }
 
     private fun updateCautions(error: Throwable) {
-        cautions = if (error.isHardwareWalletCancelled()) {
-            emptyList()
-        } else {
-            listOf(createCaution(error))
-        }
+        cautions = failureCautions(error)
         emitState()
     }
 

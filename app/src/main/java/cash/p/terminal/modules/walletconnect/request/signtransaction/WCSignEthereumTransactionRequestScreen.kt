@@ -12,6 +12,7 @@ import cash.p.terminal.R
 import cash.p.terminal.core.ethereum.evmSendErrorMessage
 import cash.p.terminal.core.managers.EvmKitWrapper
 import cash.p.terminal.modules.confirm.ConfirmTransactionScreen
+import cash.p.terminal.modules.send.signingErrorText
 import cash.p.terminal.modules.sendevmtransaction.SendEvmTransactionView
 import cash.p.terminal.modules.walletconnect.request.WCRequestPage
 import cash.p.terminal.modules.walletconnect.request.sendtransaction.WalletConnectTransaction
@@ -71,7 +72,7 @@ fun WCSignEthereumTransactionRequestScreen(
                             delay(1200)
                         } catch (t: Throwable) {
                             logger.warning("failed", t)
-                            HudHelper.showErrorMessage(view, t.evmSendErrorMessage())
+                            t.signingErrorText(t.evmSendErrorMessage())?.let { HudHelper.showErrorMessage(view, it) }
                         }
 
                         navigation.navigateUp()

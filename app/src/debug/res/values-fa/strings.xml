@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ledger_speculos_switch">Ledger از طریق speculos</string>
+    <string name="ledger_speculos_address">نشانی speculos (میزبان:درگاه)</string>
+</resources>

@@ -55,6 +55,9 @@ class MoneroDeviceWalletProvisionerTest {
         origin = AccountOrigin.Created,
         level = 0,
     )
+    private val ledgerAccount = account.copy(
+        type = AccountType.LedgerDevice(deviceId = "device-id", model = "NanoSPlus", walletPublicKey = walletPublicKey),
+    )
     private val restoreSettings = RestoreSettings()
     private val restoreSettingsManager = mockk<RestoreSettingsManager>(relaxed = true) {
         every { settings(account, BlockchainType.Monero) } returns restoreSettings
@@ -145,6 +148,41 @@ class MoneroDeviceWalletProvisionerTest {
 
         assertFalse(walletFile().exists())
         assertFalse(keysFile().exists())
+        coVerify(exactly = 0) { dao.insert(any()) }
+    }
+
+    @Test
+    fun provision_ledgerNewWallet_writesNoColdReconciliationState() = runTest(dispatcher) {
+        every { restoreSettingsManager.settings(ledgerAccount, BlockchainType.Monero) } returns restoreSettings
+        coEvery { dao.getAssociatedRecord(ledgerAccount.id) } returns null
+        coEvery { nativeWallet.create(any(), any(), HEIGHT, ledgerAccount) } coAnswers {
+            createWalletFiles(firstArg())
+            walletPublicKey
+        }
+
+        createProvisioner().provision(ledgerAccount, HEIGHT)
+
+        assertEquals(HEIGHT, restoreSettings.birthdayHeight)
+        verify(exactly = 0) { restoreSettingsManager.saveMoneroSpentReconciliationState(any(), any()) }
+        coVerify(exactly = 1) { dao.insert(match { it.fileName.value == LEDGER_BASE_NAME }) }
+        assertTrue(walletFile(LEDGER_BASE_NAME).isFile)
+    }
+
+    @Test
+    fun provision_ledgerViewKeyExportDenied_removesIncompleteFiles() = runTest(dispatcher) {
+        coEvery { dao.getAssociatedRecord(ledgerAccount.id) } returns null
+        coEvery { nativeWallet.create(any(), any(), HEIGHT, ledgerAccount) } coAnswers {
+            createWalletFiles(firstArg())
+            throw HardwareWalletOperationException(HardwareWalletErrorCode.ViewKeyExportDenied, "denied")
+        }
+
+        val error = assertFailsWith<HardwareWalletOperationException> {
+            createProvisioner().provision(ledgerAccount, HEIGHT)
+        }
+
+        assertSame(HardwareWalletErrorCode.ViewKeyExportDenied, error.error)
+        assertFalse(walletFile(LEDGER_BASE_NAME).exists())
+        assertFalse(keysFile(LEDGER_BASE_NAME).exists())
         coVerify(exactly = 0) { dao.insert(any()) }
     }
 
@@ -307,12 +345,13 @@ class MoneroDeviceWalletProvisionerTest {
         File(walletFile.parentFile, "${walletFile.name}.keys").writeText("keys")
     }
 
-    private fun walletFile() = temporaryFolder.root.resolve(BASE_NAME)
+    private fun walletFile(baseName: String = BASE_NAME) = temporaryFolder.root.resolve(baseName)
 
-    private fun keysFile() = temporaryFolder.root.resolve("$BASE_NAME.keys")
+    private fun keysFile(baseName: String = BASE_NAME) = temporaryFolder.root.resolve("$baseName.keys")
 
     private companion object {
         const val BASE_NAME = "trezor-account-id"
+        const val LEDGER_BASE_NAME = "ledger-account-id"
         const val PASSWORD = "password"
         const val ORIGINAL_HEIGHT = 3_000_000L
         const val HEIGHT = 3_529_956L

@@ -99,7 +99,7 @@ class WalletUseCase(
         }
         val hardwareId = when (val type = account.type) {
             is AccountType.HardwareCard -> type.cardId
-            is AccountType.TrezorDevice -> type.deviceId
+            is AccountType.HardwareDevice -> type.deviceId
             else -> error("Not a hardware wallet account")
         }
         val allKeysCreated = scanToAddUseCase.addTokensByScan(

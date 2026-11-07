@@ -68,9 +68,9 @@ import cash.p.terminal.modules.transactions.withClearedAmlStatus
 import cash.p.terminal.modules.transactions.withUpdatedAmlStatus
 import cash.p.terminal.premium.domain.PremiumSettings
 import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.hardware_connect_device_to_sync
 import cash.p.terminal.resources.token_balance_need_native_coin_body
 import cash.p.terminal.resources.token_balance_need_native_coin_title
-import cash.p.terminal.resources.trezor_connect_failed
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.AdapterState
@@ -563,6 +563,7 @@ class TokenBalanceViewModel(
             .isNullOrEmpty(),
         offlineSince = offlineSince,
         moneroHardwareWallet = moneroHardwareWallet,
+        moneroLedgerWallet = wallet.account.type is AccountType.LedgerDevice,
         moneroSpendReadiness = moneroSpendReadiness,
         moneroKeyImageSyncInProgress = moneroKeyImageSyncInProgress,
         moneroKeyImageSyncError = moneroKeyImageSyncError,
@@ -706,7 +707,7 @@ class TokenBalanceViewModel(
 
             MoneroSpendReadiness.ReconciliationFailed -> {
                 moneroKeyImageSyncInProgress = false
-                moneroKeyImageSyncError = Res.string.trezor_connect_failed
+                moneroKeyImageSyncError = Res.string.hardware_connect_device_to_sync
             }
 
             else -> Unit
@@ -967,7 +968,8 @@ class TokenBalanceViewModel(
         connectivityManager.isConnected.value -> BalanceViewModel.SyncError.Dialog(
             viewItem.wallet,
             viewItem.errorMessage,
-            viewItem.syncErrorBlockedByProvider
+            viewItem.syncErrorBlockedByProvider,
+            viewItem.syncErrorFromDevice
         )
 
         else -> BalanceViewModel.SyncError.NetworkNotAvailable()

@@ -1,17 +1,23 @@
 package cash.p.terminal.core.managers
 
 import cash.p.terminal.core.UnsupportedAccountException
+import cash.p.terminal.ledger.account.LedgerStellarSigner
+import cash.p.terminal.ledger.domain.LedgerAppAccess
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IHardwarePublicKeyStorage
 import cash.p.terminal.wallet.entities.HardwarePublicKey
+import cash.p.terminal.wallet.entities.HardwarePublicKeyType
+import cash.p.terminal.wallet.entities.SecretString
+import cash.p.terminal.wallet.entities.TokenType
 import io.horizontalsystems.core.IBackgroundManager
 import io.horizontalsystems.core.BackgroundManagerState
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.sqlcipher.room.DatabaseMigrationConflictException
 import io.horizontalsystems.sqlcipher.room.DatabaseMigrationResult
 import io.horizontalsystems.stellarkit.Network
+import io.horizontalsystems.stellarkit.Signer
 import io.horizontalsystems.stellarkit.StellarKit
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -19,6 +25,7 @@ import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
+import io.mockk.slot
 import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.coroutines.CompletableDeferred
@@ -34,6 +41,9 @@ import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
 import org.stellar.sdk.KeyPair
 import kotlin.test.assertFailsWith
 
@@ -52,6 +62,7 @@ class StellarKitManagerDatabaseTest {
 
     @Before
     fun setUp() {
+        startKoin { modules(module { single { mockk<LedgerAppAccess>(relaxed = true) } }) }
         mockkObject(StellarKit.Companion)
         coEvery { StellarKit.migrateDatabase(any(), any(), any(), any()) } returns DatabaseMigrationResult(0, 1)
         every { StellarKit.clear(any(), any(), any()) } returns Unit
@@ -78,6 +89,7 @@ class StellarKitManagerDatabaseTest {
             (scopeField.get(manager) as CoroutineScope).cancel()
         }
         unmockkAll()
+        stopKoin()
     }
 
     @Test
@@ -170,6 +182,39 @@ class StellarKitManagerDatabaseTest {
     }
 
     @Test
+    fun getStellarKitWrapper_ledgerAccount_createsKitWithLedgerSigner() = runTest {
+        val signer = slot<Signer>()
+        every {
+            StellarKit.getInstance(
+                signer = capture(signer),
+                network = any(),
+                context = any(),
+                walletId = any(),
+                databaseKey = any(),
+                eventListenerFactory = any(),
+            )
+        } returns stellarKit
+        coEvery {
+            hardwarePublicKeyStorage.getKeyByBlockchain(ACCOUNT_ID, BlockchainType.Stellar)
+        } returns HardwarePublicKey(
+            accountId = ACCOUNT_ID,
+            blockchainType = BlockchainType.Stellar.uid,
+            type = HardwarePublicKeyType.PUBLIC_KEY,
+            tokenType = TokenType.Native,
+            key = SecretString(STELLAR_ACCOUNT),
+            derivationPath = "m/44'/148'/0'",
+            publicKey = byteArrayOf(),
+            derivedPublicKey = byteArrayOf(),
+        )
+        val ledgerAccount = account.copy(type = AccountType.LedgerDevice("device", "NanoSPlus", "wallet-key"))
+
+        createManager().getStellarKitWrapper(ledgerAccount)
+
+        assertTrue(signer.captured is LedgerStellarSigner)
+        assertTrue(signer.captured.publicKey.contentEquals(KeyPair.fromAccountId(STELLAR_ACCOUNT).publicKey))
+    }
+
+    @Test
     fun clear_currentAccount_destroysKitAndClearsEveryNetworkBeforeRemovingKey() = runTest {
         val manager = createManager()
         manager.getStellarKitWrapper(account)
@@ -231,6 +276,7 @@ class StellarKitManagerDatabaseTest {
         backgroundManager = backgroundManager,
         hardwarePublicKeyStorage = hardwarePublicKeyStorage,
         hardwareSigners = AndroidStellarHardwareSigners(mockk(relaxed = true)),
+        deviceSigners = DeviceSignerFactory(mockk(relaxed = true), mockk(relaxed = true), mockk(relaxed = true)),
         platformContexts = mockk(relaxed = true),
         backgroundKeepAliveManager = mockk(relaxed = true),
         networkErrorTracker = mockk(relaxed = true),
@@ -248,5 +294,6 @@ class StellarKitManagerDatabaseTest {
 
     private companion object {
         const val ACCOUNT_ID = "account-id"
+        const val STELLAR_ACCOUNT = "GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H"
     }
 }

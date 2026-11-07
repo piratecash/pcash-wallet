@@ -30,7 +30,6 @@
     <ID>AppSingletonAccess:EvmSwapHelperTest.kt$EvmSwapHelperTest$App.adapterManager</ID>
     <ID>AppSingletonAccess:FeeRateProviderFactory.kt$FeeRateProviderFactory$App.feeRateProvider</ID>
     <ID>AppSingletonAccess:HSFeeInput.kt$App.numberFormatter</ID>
-    <ID>AppSingletonAccess:HardwareWalletViewModel.kt$HardwareWalletViewModel$App.accountFactory</ID>
     <ID>AppSingletonAccess:LanguageSettingsModule.kt$LanguageSettingsModule.Factory$App.languageManager</ID>
     <ID>AppSingletonAccess:LanguageSettingsModule.kt$LanguageSettingsModule.Factory$App.localStorage</ID>
     <ID>AppSingletonAccess:LegacyFeeSettingsViewModel.kt$LegacyFeeSettingsViewModel$App.numberFormatter</ID>
@@ -228,12 +227,14 @@
     <ID>LambdaParameterInRestartableEffect:MainPage.kt$intentHandled</ID>
     <ID>LambdaParameterInRestartableEffect:QRScannerScreen.kt$onErrorMessageConsumed</ID>
     <ID>LambdaParameterInRestartableEffect:QRScannerScreen.kt$onScan</ID>
+    <ID>LargeClass:BitcoinBaseAdapter.kt$BitcoinBaseAdapter : IAdapterITransactionsAdapterIBalanceAdapterIReceiveAdapterISendBitcoinAdapterOfflineTransactionAdapterHardwareAddressLocator</ID>
     <ID>LargeClass:LocalStorageManager.kt$LocalStorageManager : ILocalStorageIPinSettingsStorageILockoutStorageIThirdKeyboardIMarketStorageIUniqueCodeStorage</ID>
     <ID>LargeClass:MultiSwapExchangeViewModelTest.kt$MultiSwapExchangeViewModelTest</ID>
     <ID>LargeClass:OfflineBroadcastViewModelTest.kt$OfflineBroadcastViewModelTest</ID>
     <ID>LargeClass:OfflineTransactionPayloadEncoderTest.kt$OfflineTransactionPayloadEncoderTest</ID>
     <ID>LargeClass:TokenBalanceViewModelTest.kt$TokenBalanceViewModelTest : KoinTest</ID>
     <ID>LargeClass:TransactionMonitorTest.kt$TransactionMonitorTest</ID>
+    <ID>LargeClass:ZcashAdapter.kt$ZcashAdapter : IAdapterIBalanceAdapterIReceiveAdapterITransactionsAdapterISendZcashAdapterOneTimeReceiveAdapterHardwareAddressLocator</ID>
     <ID>LongMethod:AdvancedSecurityScreen.kt$@Composable internal fun AdvancedSecurityScreen( uiState: AdvancedSecurityUiState, onCreateHiddenWalletClick: () -&gt; Unit, onSecureResetToggle: (Boolean) -&gt; Unit, onDeleteContactsToggle: (Boolean) -&gt; Unit, onCalculatorPinClick: () -&gt; Unit, onClose: () -&gt; Unit )</ID>
     <ID>LongMethod:AppearanceScreen.kt$@Composable internal fun AppearanceScreen( uiState: AppearanceUIState, onThemeSelect: (ThemeType) -&gt; Unit, onLaunchScreenSelect: (LaunchPage) -&gt; Unit, onBalanceViewTypeSelect: (BalanceViewType) -&gt; Unit, onPriceChangeIntervalSelect: (PriceChangeInterval) -&gt; Unit, onMarketTabsHiddenChange: (Boolean) -&gt; Unit, onBalanceTabButtonsHiddenChange: (Boolean) -&gt; Unit, onAppIconClick: () -&gt; Unit, onClose: () -&gt; Unit )</ID>
     <ID>LongMethod:BackupV4DecryptionTest.kt$BackupV4DecryptionTest$@Test fun `backup with hardware_card type is parsed correctly`()</ID>

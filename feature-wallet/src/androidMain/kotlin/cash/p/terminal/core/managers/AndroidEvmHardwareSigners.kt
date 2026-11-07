@@ -7,6 +7,7 @@ import cash.p.terminal.trezor.signer.TrezorEvmSigner
 import cash.p.terminal.trezorkit.client.ITrezorClient
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.entities.HardwarePublicKey
+import cash.p.terminal.wallet.hardware.ExternalEvmTransactionSigner
 import io.horizontalsystems.ethereumkit.core.signer.Signer
 import io.horizontalsystems.ethereumkit.models.Address
 import io.horizontalsystems.ethereumkit.models.Chain
@@ -41,5 +42,6 @@ class AndroidEvmHardwareSigners(private val trezorClient: ITrezorClient) : EvmHa
         signer: Signer,
         rawTransaction: RawTransaction,
     ): Pair<RawTransaction, Signature>? =
-        (signer as? TrezorEvmSigner)?.signTransaction(rawTransaction)?.let { it.rawTransaction to it.signature }
+        (signer as? ExternalEvmTransactionSigner)?.signTransaction(rawTransaction)
+            ?.let { it.rawTransaction to it.signature }
 }

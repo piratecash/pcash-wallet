@@ -95,7 +95,7 @@ class SendTransactionServiceBitcoin(
     private val addressService = SendBitcoinAddressService(adapter)
     private val localStorage: TransactionSettingsStorage by inject(TransactionSettingsStorage::class.java)
     private val btcBlockchainManager: BtcBlockchainManager by inject(BtcBlockchainManager::class.java)
-    private val pluginService = SendBitcoinPluginService(wallet.token.blockchainType)
+    private val pluginService = SendBitcoinPluginService(wallet)
     private val marketKit: MarketKitWrapper by inject(MarketKitWrapper::class.java)
     private val xRateService = XRateService(marketKit, getKoinInstance<CurrencyManager>().baseCurrency)
 

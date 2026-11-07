@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
+import cash.p.terminal.modules.send.hardwareWalletCaution
 import cash.p.terminal.modules.send.isHardwareWalletCancelled
 import cash.p.terminal.resources.Error
 import cash.p.terminal.resources.Hud_Text_NoInternet
@@ -34,7 +35,6 @@ import cash.p.terminal.modules.send.offline.OfflineSignCapableViewModel
 import cash.p.terminal.modules.send.offline.OfflineSigningController
 import cash.p.terminal.modules.send.offline.OfflineTransactionFormat
 import cash.p.terminal.modules.xrate.XRateService
-import cash.p.terminal.core.HardwareWalletSupport
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.Token
@@ -195,7 +195,7 @@ internal class SendEvmViewModel(
                 onSendSuccess(addressState.address?.hex)
                 SendResult.Sent(sendResult.getRecordUid())
             } catch (e: Throwable) {
-                if (HardwareWalletSupport.isUserCancellation(e)) {
+                if (e.isHardwareWalletCancelled()) {
                     logger.i { "user cancelled" }
                     null
                 } else {
@@ -293,10 +293,11 @@ internal class SendEvmViewModel(
         }
     }
 
-    private fun createCaution(error: Throwable) = when (error) {
-        is UnknownHostException -> HSCaution(TranslatableString.ResString(Res.string.Hud_Text_NoInternet))
-        is LocalizedException -> HSCaution(TranslatableString.ResString(error.errorTextRes))
-        is JsonRpc.ResponseError.RpcError -> HSCaution(TranslatableString.PlainString(error.error.message))
-        else -> HSCaution(TranslatableString.PlainString(error.message ?: ""))
-    }
+    private fun createCaution(error: Throwable) = error.hardwareWalletCaution()
+        ?: when (error) {
+            is UnknownHostException -> HSCaution(TranslatableString.ResString(Res.string.Hud_Text_NoInternet))
+            is LocalizedException -> HSCaution(TranslatableString.ResString(error.errorTextRes))
+            is JsonRpc.ResponseError.RpcError -> HSCaution(TranslatableString.PlainString(error.error.message))
+            else -> HSCaution(TranslatableString.PlainString(error.message ?: ""))
+        }
 }

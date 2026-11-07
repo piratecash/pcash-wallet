@@ -23,7 +23,7 @@ internal class GetBnbAddressUseCaseImpl(
         return when (val accountType = account.type) {
             is SeedAccountType -> seedToEvmAddressUseCase(accountType.seed)
 
-            is AccountType.TrezorDevice,
+            is AccountType.HardwareDevice,
             is AccountType.HardwareCard -> {
                 val address =
                     withContext(Dispatchers.IO) { bnbPremiumAddressDao.getByAccount(account.id)?.address }

@@ -14,6 +14,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.R
 import cash.p.terminal.core.ethereum.evmSendErrorMessage
 import cash.p.terminal.modules.confirm.ConfirmTransactionScreen
+import cash.p.terminal.modules.send.signingErrorText
 import cash.p.terminal.modules.sendevmtransaction.SendEvmTransactionView
 import cash.p.terminal.modules.walletconnect.request.WCEvmTransactionSettingsPage
 import cash.p.terminal.modules.walletconnect.request.WCRequestPage
@@ -81,7 +82,8 @@ fun WCSendEthRequestScreen(
                     onClick = {
                         coroutineScope.launch {
                             buttonEnabled = false
-                            HudHelper.showInProcessMessage(view, sendingText, SnackbarDuration.INDEFINITE)
+                            val sendingHud =
+                                HudHelper.showInProcessMessage(view, sendingText, SnackbarDuration.INDEFINITE)
 
                             try {
                                 logger.info("click confirm button")
@@ -94,7 +96,12 @@ fun WCSendEthRequestScreen(
                             } catch (t: Throwable) {
                                 // The request stays pending: the user can confirm again or reject it.
                                 logger.warning("failed", t)
-                                HudHelper.showErrorMessage(view, t.evmSendErrorMessage())
+                                val errorText = t.signingErrorText(t.evmSendErrorMessage())
+                                if (errorText != null) {
+                                    HudHelper.showErrorMessage(view, errorText)
+                                } else {
+                                    sendingHud?.dismiss()
+                                }
                                 buttonEnabled = true
                             }
                         }

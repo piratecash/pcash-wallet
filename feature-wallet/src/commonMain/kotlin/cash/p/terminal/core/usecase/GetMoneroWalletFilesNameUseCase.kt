@@ -18,7 +18,7 @@ class GetMoneroWalletFilesNameUseCase(
             }
 
             is SeedAccountType,
-            is AccountType.TrezorDevice -> {
+            is AccountType.HardwareDevice -> {
                 databases.database.moneroFileDao().getAssociatedRecord(account.id)?.fileName?.value
             }
 

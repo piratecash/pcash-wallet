@@ -56,6 +56,7 @@ private fun TokenOfflineSectionPreview() {
 private fun MoneroSendPreparationBottomSheetPreview() {
     ComposeAppTheme {
         MoneroSendPreparationBottomSheet(
+            ledgerWallet = false,
             syncInProgress = false,
             error = null,
             fullWalletRecoveryAvailable = false,

@@ -41,6 +41,7 @@ class TonFallbackAddressProviderTest {
         networkErrorTracker = mockk(relaxed = true),
         offlineModeManager = mockk(relaxed = true),
         tonKitDatabaseKeyProvider = mockk(relaxed = true),
+        deviceSigners = mockk(relaxed = true),
     )
     private val dispatcher = UnconfinedTestDispatcher()
     private val provider =

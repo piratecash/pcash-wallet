@@ -19,6 +19,7 @@ import cash.p.terminal.resources.Button_Cancel
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.adding_tokens
 import cash.p.terminal.resources.connect
+import cash.p.terminal.resources.connect_ledger_to_add_message
 import cash.p.terminal.resources.connect_trezor_to_add_message
 import cash.p.terminal.resources.scan
 import cash.p.terminal.resources.scan_to_add_message
@@ -60,12 +61,16 @@ private fun CancelOrScanScreen(
     onConfirm: () -> Unit,
     onCancel: () -> Unit,
 ) {
-    val isTrezor = accountType is AccountType.TrezorDevice
+    val isHardwareDevice = accountType is AccountType.HardwareDevice
     val bodyText = stringResource(
-        if (isTrezor) Res.string.connect_trezor_to_add_message else Res.string.scan_to_add_message
+        when (accountType) {
+            is AccountType.TrezorDevice -> Res.string.connect_trezor_to_add_message
+            is AccountType.LedgerDevice -> Res.string.connect_ledger_to_add_message
+            else -> Res.string.scan_to_add_message
+        }
     )
     val confirmText = stringResource(
-        if (isTrezor) Res.string.connect else Res.string.scan
+        if (isHardwareDevice) Res.string.connect else Res.string.scan
     )
 
     ComposeAppTheme {

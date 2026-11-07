@@ -120,7 +120,7 @@ class ZcashWalletOpenerImpl(
     private fun birth(account: Account): Birth {
         val stored = restoreSettingsManager.settings(account, BlockchainType.Zcash).birthdayHeight
         return when {
-            stored != null && stored > 0 -> Birth(BirthSource.SETTING, stored.toInt())
+            stored != null && stored >= 0 -> Birth(BirthSource.SETTING, stored.toInt())
             account.origin == AccountOrigin.Created ->
                 // Birthday persistence predates the P.CASH fork, so a missing value cannot
                 // identify a migrated P.CASH wallet. Avoid a full scan for incomplete setup data.

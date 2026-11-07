@@ -67,6 +67,8 @@ import cash.p.terminal.core.managers.BtcBlockchainManager
 import cash.p.terminal.core.managers.DeviceFlipDetector
 import cash.p.terminal.core.managers.EffectiveMonitoredChains
 import android.content.Context
+import android.hardware.usb.UsbManager
+import io.horizontalsystems.core.common.usb.AndroidUsbPermissionRequester
 import android.net.ConnectivityManager as AndroidConnectivityManager
 import cash.p.terminal.core.managers.ConnectivityManager
 import cash.p.terminal.core.notifications.NotificationDeduplicator
@@ -115,6 +117,8 @@ import cash.p.terminal.core.managers.MoneroDeviceWalletNative
 import cash.p.terminal.core.managers.MoneroDeviceWalletFileStore
 import cash.p.terminal.core.managers.MoneroDeviceWalletProvisioner
 import cash.p.terminal.core.managers.MoneroTrezorReadiness
+import cash.p.terminal.core.managers.MoneroDeviceOperationGateway
+import cash.p.terminal.core.managers.MoneroLedgerOperationGateway
 import cash.p.terminal.core.managers.MoneroTrezorOperationGateway
 import cash.p.terminal.core.managers.MoneroHardwareGateway
 import cash.p.terminal.core.managers.RateAppManager
@@ -406,11 +410,16 @@ val managerModule = module {
     singleOf(::Mnemonic)
 
     singleOf(::DefaultMoneroNativeWalletRuntime) bind MoneroNativeWalletRuntime::class
-    singleOf(::MoneroTrezorOperationGateway) bind MoneroHardwareGateway::class
+    singleOf(::MoneroTrezorOperationGateway)
+    singleOf(::MoneroLedgerOperationGateway)
+    singleOf(::MoneroDeviceOperationGateway) bind MoneroHardwareGateway::class
+
     singleOf(::MoneroTrezorReadiness)
     singleOf(::DefaultMoneroDeviceWalletNative) bind MoneroDeviceWalletNative::class
     single { MoneroDeviceWalletFileStore.create(get()) }
     singleOf(::MoneroDeviceWalletProvisioner)
+    single { get<Context>().getSystemService(Context.USB_SERVICE) as UsbManager }
+    singleOf(::AndroidUsbPermissionRequester)
     single { MoneroWalletService(MoneroWalletFiles.root(get())) }
     singleOf(::SilentCameraManager) bind ISilentPhotoCapture::class
     singleOf(::CurrentDateProvider) bind ICurrentDateProvider::class
