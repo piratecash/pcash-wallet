@@ -185,7 +185,6 @@ class TransactionViewItemFactorySwapReplacementTest {
         record = record,
         currencyValue = null,
         lastBlockInfo = null,
-        nftMetadata = emptyMap(),
     )
 
     private fun swap(
