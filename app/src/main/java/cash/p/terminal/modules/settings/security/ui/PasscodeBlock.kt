@@ -59,7 +59,7 @@ fun PasscodeBlock(
                 openEditPin()
             }
         },
-        onDisableClick = disablePin
+        onDisableClick = disablePin.takeIf { uiState.pinDisableAllowed }
     )
 
     if (uiState.pinEnabled) {

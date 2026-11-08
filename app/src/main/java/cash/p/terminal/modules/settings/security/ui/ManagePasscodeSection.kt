@@ -24,7 +24,7 @@ fun ManagePasscodeSection(
     @DrawableRes iconRes: Int,
     enabled: Boolean,
     onManageClick: () -> Unit,
-    onDisableClick: () -> Unit,
+    onDisableClick: (() -> Unit)?,
     @StringRes editTextRes: Int,
     @StringRes enableTextRes: Int = R.string.SettingsSecurity_EnablePin,
     @StringRes disableTextRes: Int = R.string.SettingsSecurity_DisablePin,
@@ -61,7 +61,7 @@ fun ManagePasscodeSection(
                 onClick = onManageClick
             )
         }
-        if (enabled) {
+        if (enabled && onDisableClick != null) {
             add {
                 SecurityCenterCell(
                     start = {

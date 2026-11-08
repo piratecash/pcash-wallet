@@ -58,8 +58,7 @@ class PinSetViewModel(
                 pinComponent.isUnique(pin, pinType == PinType.DURESS)
             }
             PinType.HIDDEN_WALLET -> hiddenWalletPinPolicy.canUse(pin)
-            PinType.SECURE_RESET, PinType.DELETE_CONTACTS, PinType.LOG_LOGGING -> pinComponent.getPinLevel(pin) == null
-            else -> pinComponent.isUnique(pin, true) && pinComponent.isUnique(pin, false)
+            else -> pinComponent.getPinLevel(pin) == null
         }
     }
 

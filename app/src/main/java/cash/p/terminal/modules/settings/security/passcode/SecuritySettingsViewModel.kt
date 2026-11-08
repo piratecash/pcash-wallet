@@ -51,8 +51,10 @@ class SecuritySettingsViewModel(
 
     override fun createState() = SecuritySettingsUiState(
         pinEnabled = pinEnabled,
+        pinDisableAllowed = pinComponent.canDisablePin(),
         biometricsEnabled = pinComponent.isBiometricAuthEnabled,
         duressPinEnabled = duressPinEnabled,
+        duressAvailable = pinComponent.isDuressAvailable(),
         balanceAutoHideEnabled = balanceAutoHideEnabled,
         balanceHideOnFlipEnabled = balanceHideOnFlipEnabled,
         balanceHideOnFlipSupported = balanceHideOnFlipManager.isSupported,
@@ -149,8 +151,10 @@ class SecuritySettingsViewModel(
 
 data class SecuritySettingsUiState(
     val pinEnabled: Boolean,
+    val pinDisableAllowed: Boolean,
     val biometricsEnabled: Boolean,
     val duressPinEnabled: Boolean,
+    val duressAvailable: Boolean,
     val balanceAutoHideEnabled: Boolean,
     val balanceHideOnFlipEnabled: Boolean,
     val balanceHideOnFlipSupported: Boolean,
