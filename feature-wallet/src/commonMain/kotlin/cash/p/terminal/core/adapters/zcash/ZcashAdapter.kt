@@ -1065,11 +1065,11 @@ class ZcashAdapter(
         val isIronwoodMigration = !transaction.isIncoming &&
             ironwoodMigrations.contains(wallet.account.id, transaction.txid)
         // A migration keeps the funds in the wallet, so the moved amount is what was received
-        // back rather than the net change of the balance. Everything else takes the SDK's signed
-        // value as it is: negative when funds leave.
+        // back rather than the net change of the balance. Everything else excludes the fee from
+        // an actual send; a fee-only transaction (e.g. Shield Funds) keeps its net spend.
         val amount = when {
             isIronwoodMigration -> transaction.totalReceived.convertZatoshiToZec()
-            else -> transaction.value.convertZatoshiToZec()
+            else -> transaction.amountWithoutFee.convertZatoshiToZec()
         }
         return BitcoinTransactionRecord(
             token = wallet.token,
@@ -1101,6 +1101,10 @@ class ZcashAdapter(
             isIronwoodMigration = isIronwoodMigration,
         )
     }
+
+    /** The SDK's value counts the fee when funds leave; a transaction that only pays the fee keeps it. */
+    private val Transaction.amountWithoutFee: Long
+        get() = (value + fee).takeIf { it < 0 } ?: value
 
     // endregion
 
