@@ -64,6 +64,9 @@ class TransactionRecordRepository(
     @Volatile
     private var loadedPageNumber = 0
 
+    @Volatile
+    private var loadedRecordsCount = 0
+
     private var allNormalLoaded = AtomicBoolean(false)
     private var allExtraLoaded = AtomicBoolean(false)
 
@@ -317,6 +320,7 @@ class TransactionRecordRepository(
         allNormalLoaded.set(false)
         allExtraLoaded.set(false)
         loadedPageNumber = 1
+        loadedRecordsCount = 0
         loadItems(loadedPageNumber)
         subscribeForUpdates()
     }
@@ -431,7 +435,8 @@ class TransactionRecordRepository(
     private fun finishLoad(job: Job, page: Int) {
         if (loadingJob !== job) return
         loadingJob = null
-        if (reloadPending && !job.isCancelled) loadItems(page)
+        // Swap widening can publish a deeper page than the one requested.
+        if (reloadPending && !job.isCancelled) loadItems(maxOf(page, loadedPageNumber))
     }
 
     private suspend fun CoroutineScope.loadItemsForContext(
@@ -468,7 +473,7 @@ class TransactionRecordRepository(
         val extraRecords = loadRegularSwapExtraRecords(itemsCount, requestContext)
         if (!isActive || requestContext.isStale(revisions)) return
 
-        // Only a rendered row requests the next page, so an all-filtered window must widen here.
+        // Only a rendered row requests the next page, so a window that adds no new row must widen here.
         if (shouldWidenSwapWindow(page, itemsCount, requestContext, normalRecords, extraRecords)) {
             return loadRegularPage(page * 2, page * 2 * itemsPerPage, requestContext, adapters, revisions)
         }
@@ -496,9 +501,19 @@ class TransactionRecordRepository(
         extraRecords: ExtraRecordsResult,
     ): Boolean = requestContext.transactionType == FilterTransactionType.Swap &&
         normalRecords.complete && extraRecords.complete &&
-        normalRecords.records.isEmpty() && extraRecords.records.isEmpty() &&
+        distinctRecordsCount(normalRecords.records, extraRecords.records) <= alreadyShownRecordsCount(page) &&
         extraRecords.sourceRecordsCount >= itemsCount &&
         page * 2 * itemsPerPage <= TransactionSearchScanner.maxTotalScannedRecords
+
+    // A re-read of the current page must not compare: an unchanged list would widen on every update.
+    private fun alreadyShownRecordsCount(page: Int): Int =
+        if (page > loadedPageNumber) loadedRecordsCount else 0
+
+    // The sources can return the same record and the screen deduplicates by uid.
+    private fun distinctRecordsCount(
+        normalRecords: List<TransactionRecord>,
+        extraRecords: List<TransactionRecord>,
+    ): Int = (normalRecords + extraRecords).distinctBy { it.uid }.size
 
     private suspend fun CoroutineScope.loadSearchPage(
         page: Int,
@@ -638,6 +653,7 @@ class TransactionRecordRepository(
             .take(expectedItemsCount)
 
         loadedPageNumber = page
+        loadedRecordsCount = distinctRecordsCount(records, extraRecords)
         val sortedRecords = (normalSortedRecords + extraSortedRecords).sortedDescending()
         _itemsFlow.tryEmit(
             RecordsBatch(

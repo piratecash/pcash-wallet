@@ -7,6 +7,7 @@ import cash.p.terminal.core.managers.PendingTransactionMatcher
 import cash.p.terminal.core.managers.PendingTransactionRepository
 import cash.p.terminal.core.managers.TransactionAdapterManager
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
+import cash.p.terminal.entities.SwapProviderTransaction
 import cash.p.terminal.entities.TransactionValue
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
@@ -28,6 +29,8 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
@@ -114,7 +117,7 @@ class TransactionRecordRepositorySwapCallTest {
         allRecords: List<TransactionRecord>,
         taggedSwaps: List<TransactionRecord> = emptyList(),
         token: Token? = null,
-        onRead: (Int) -> Unit = {},
+        onRead: suspend (Int) -> Unit = {},
     ) = mockk<ITransactionsAdapter>(relaxed = true) {
         coEvery { getTransactions(any(), any(), any(), FilterTransactionType.All, any()) } returns emptyList()
         coEvery {
@@ -274,6 +277,84 @@ class TransactionRecordRepositorySwapCallTest {
         advanceUntilIdle()
 
         assertBatches(batches, listOf(first), listOf(first, second))
+        repository.clear()
+    }
+
+    @Test
+    fun loadNext_nextWindowAddsNoSwap_widensToOlderSwap() = runTest(timeout = 30.seconds) {
+        val first = flaggedSwap(5)
+        val second = flaggedSwap(65)
+        val (repository, batches) = repository(adapter(fillersWith(5 to first, 65 to second, total = 200)))
+
+        repository.openSwapTab()
+        advanceUntilIdle()
+        repository.loadNext()
+        advanceUntilIdle()
+
+        assertBatches(batches, listOf(first), listOf(first, second))
+        assertEquals(80, rawReadDepths.max())
+        repository.clear()
+    }
+
+    @Test
+    fun loadNext_nextWindowOnlyRepeatsTaggedSwap_widensToOlderSwap() = runTest(timeout = 30.seconds) {
+        val tagged = flaggedSwap(25)
+        val older = flaggedSwap(65)
+        val (repository, batches) = repository(
+            adapter(fillersWith(25 to tagged, 65 to older, total = 200), taggedSwaps = listOf(tagged))
+        )
+
+        repository.openSwapTab()
+        advanceUntilIdle()
+        repository.loadNext()
+        advanceUntilIdle()
+
+        assertEquals(setOf(tagged.uid, older.uid), batches.last().records.map { it.uid }.toSet())
+        repository.clear()
+    }
+
+    @Test
+    fun loadNext_updateDuringWidening_keepsOlderSwap() = runTest(timeout = 30.seconds) {
+        val first = flaggedSwap(5)
+        val second = flaggedSwap(65)
+        val updates = MutableSharedFlow<List<SwapProviderTransaction>>(extraBufferCapacity = 1)
+        every { noSwapProviders.observeAll() } returns updates
+        var updateSent = false
+        val adapter = adapter(fillersWith(5 to first, 65 to second, total = 200)) {
+            if (!updateSent && rawReadDepths.last() > 40) {
+                updateSent = true
+                updates.tryEmit(emptyList())
+                delay(1)
+            }
+        }
+        val (repository, batches) = repository(adapter)
+
+        repository.openSwapTab()
+        advanceUntilIdle()
+        repository.loadNext()
+        advanceUntilIdle()
+
+        assertTrue("update was not sent during widening", updateSent)
+        assertEquals(3, batches.size)
+        assertEquals(setOf(first.uid, second.uid), batches.last().records.map { it.uid }.toSet())
+        repository.clear()
+    }
+
+    @Test
+    fun recordsUpdate_sameWindowUnchanged_doesNotScanDeeper() = runTest(timeout = 30.seconds) {
+        val updates = MutableSharedFlow<Unit>()
+        val adapter = adapter(fillersWith(5 to flaggedSwap(5), total = 200))
+        every { adapter.getTransactionsReloadSignalFlow() } returns updates
+        val (repository, _) = repository(adapter)
+
+        repository.openSwapTab()
+        advanceUntilIdle()
+        val readsBeforeUpdate = rawReadDepths.size
+        updates.emit(Unit)
+        advanceUntilIdle()
+
+        assertTrue("update did not re-read the page", rawReadDepths.size > readsBeforeUpdate)
+        assertEquals(20, rawReadDepths.max())
         repository.clear()
     }
 
