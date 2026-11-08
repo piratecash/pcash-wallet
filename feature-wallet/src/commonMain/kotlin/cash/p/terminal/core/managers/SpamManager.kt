@@ -130,6 +130,7 @@ class SpamManager(
                 is TonTransactionRecord.Action.Type.Mint -> true
 
                 is TonTransactionRecord.Action.Type.ContractCall,
+                is TonTransactionRecord.Action.Type.LiquidityDeposit,
                 is TonTransactionRecord.Action.Type.ContractDeploy,
                 is TonTransactionRecord.Action.Type.Swap,
                 is TonTransactionRecord.Action.Type.Unsupported -> false

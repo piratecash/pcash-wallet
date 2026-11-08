@@ -719,6 +719,11 @@
     <string name="Transactions_Approve">Onayla</string>
     <string name="Transactions_Swap">Takas Edildi</string>
     <string name="transactions_swap_failed">Takas Başarısız</string>
+    <string name="transactions_liquidity_added">Likiditeye eklendi</string>
+    <string name="transactions_liquidity_removed">Likiditeden çekildi</string>
+    <string name="transactions_liquidity_add_failed">Likiditeye eklenemedi</string>
+    <string name="transactions_liquidity_remove_failed">Likiditeden çekilemedi</string>
+    <string name="transactions_liquidity_search_key">likidite</string>
     <string name="transaction_swap_status_new">New</string>
     <string name="transaction_swap_status_waiting">Waiting</string>
     <string name="transaction_swap_status_confirming">Confirming</string>

@@ -3,7 +3,15 @@ package cash.p.terminal.modules.transactions
 import cash.p.terminal.core.ICoinManager
 import cash.p.terminal.core.adapters.SolanaTransactionConverterTestFixture
 import cash.p.terminal.entities.TransactionValue
+import cash.p.terminal.entities.transactionrecords.LiquidityOperation
+import cash.p.terminal.entities.transactionrecords.TransactionRecordType
+import cash.p.terminal.entities.transactionrecords.evm.EvmTransactionRecord
 import cash.p.terminal.entities.transactionrecords.thorchain.ThorchainTransactionRecord
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.transactions_liquidity_add_failed
+import cash.p.terminal.resources.transactions_liquidity_removed
+import cash.p.terminal.resources.transactions_liquidity_search_key
+import io.horizontalsystems.core.Translator
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenType
@@ -13,6 +21,9 @@ import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.thorchainkit.models.Transaction
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.unmockkAll
+import org.junit.After
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -80,6 +91,52 @@ class TransactionRecordSearchMatcherTest {
         )
 
         assertTrue(matcher.matches(record, NFT_MINT))
+    }
+
+    @After
+    fun tearDown() {
+        unmockkAll()
+    }
+
+    @Test
+    fun matches_removeLiquidity_findsSearchKeyAndTitleCaseInsensitively() {
+        val record = liquidityRecord(LiquidityOperation(LiquidityOperation.Direction.Remove, failed = false))
+
+        assertTrue(matcher.matches(record, "ЛИКВИДНОСТЬ"))
+        assertTrue(matcher.matches(record, "выведено из ликвидности"))
+        assertFalse(matcher.matches(record, "добавлено"))
+    }
+
+    @Test
+    fun matches_failedAddLiquidity_findsFailedTitle() {
+        val record = liquidityRecord(LiquidityOperation(LiquidityOperation.Direction.Add, failed = true))
+
+        assertTrue(matcher.matches(record, "не удалось добавить"))
+    }
+
+    @Test
+    fun matches_recordWithoutLiquidityOperation_ignoresLiquidityKey() {
+        val record = liquidityRecord(null)
+
+        assertFalse(matcher.matches(record, "ликвидность"))
+    }
+
+    private fun liquidityRecord(operation: LiquidityOperation?): EvmTransactionRecord {
+        mockkObject(Translator)
+        every { Translator.getString(Res.string.transactions_liquidity_search_key) } returns "ликвидность"
+        every { Translator.getString(Res.string.transactions_liquidity_removed) } returns "Выведено из ликвидности"
+        every { Translator.getString(Res.string.transactions_liquidity_add_failed) } returns
+            "Не удалось добавить в ликвидность"
+        return EvmTransactionRecord(
+            transaction = mockk(relaxed = true) { every { hashString } returns "0xhash" },
+            token = rune,
+            source = TransactionSource(thorchain, mockk(relaxed = true), null),
+            protected = false,
+            transactionRecordType = TransactionRecordType.EVM_CONTRACT_CALL,
+            incomingEvents = emptyList(),
+            outgoingEvents = emptyList(),
+            liquidityOperation = operation,
+        )
     }
 
     private companion object {

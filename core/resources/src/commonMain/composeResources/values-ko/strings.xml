@@ -719,6 +719,11 @@
     <string name="Transactions_Approve">승인됨</string>
     <string name="Transactions_Swap">스왑됨</string>
     <string name="transactions_swap_failed">스왑 실패</string>
+    <string name="transactions_liquidity_added">유동성 추가됨</string>
+    <string name="transactions_liquidity_removed">유동성 출금됨</string>
+    <string name="transactions_liquidity_add_failed">유동성 추가 실패</string>
+    <string name="transactions_liquidity_remove_failed">유동성 출금 실패</string>
+    <string name="transactions_liquidity_search_key">유동성</string>
     <string name="transaction_swap_status_new">New</string>
     <string name="transaction_swap_status_waiting">Waiting</string>
     <string name="transaction_swap_status_confirming">Confirming</string>

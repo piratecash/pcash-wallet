@@ -11,6 +11,9 @@ import cash.p.terminal.entities.transactionrecords.solana.SolanaTransactionRecor
 import cash.p.terminal.entities.transactionrecords.stellar.StellarTransactionRecord
 import cash.p.terminal.entities.transactionrecords.ton.TonTransactionRecord
 import cash.p.terminal.entities.transactionrecords.tron.TronTransactionRecord
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.transactions_liquidity_search_key
+import io.horizontalsystems.core.Translator
 import java.util.Locale
 
 class TransactionRecordSearchMatcher {
@@ -38,6 +41,10 @@ class TransactionRecordSearchMatcher {
         add(record.token.coin.code)
         add(record.token.coin.name)
         addValue(record.mainValue)
+        record.liquidityOperation?.let {
+            add(Translator.getString(it.title))
+            add(Translator.getString(Res.string.transactions_liquidity_search_key))
+        }
     }
 
     private fun MutableList<String?>.addTypeSpecificFields(record: TransactionRecord) {
@@ -111,6 +118,14 @@ class TransactionRecordSearchMatcher {
                     add(type.address)
                     add(type.operation)
                     addValue(type.value)
+                }
+
+                is TonTransactionRecord.Action.Type.LiquidityDeposit -> {
+                    add(type.protocol)
+                    type.deposits.forEach {
+                        add(it.vault)
+                        addValue(it.value)
+                    }
                 }
 
                 is TonTransactionRecord.Action.Type.Unsupported -> add(type.type)

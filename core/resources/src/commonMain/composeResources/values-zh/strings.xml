@@ -715,6 +715,11 @@
     <string name="Transactions_Approve">批准</string>
     <string name="Transactions_Swap">已交换</string>
     <string name="transactions_swap_failed">交换失败</string>
+    <string name="transactions_liquidity_added">已添加流动性</string>
+    <string name="transactions_liquidity_removed">已移除流动性</string>
+    <string name="transactions_liquidity_add_failed">添加流动性失败</string>
+    <string name="transactions_liquidity_remove_failed">移除流动性失败</string>
+    <string name="transactions_liquidity_search_key">流动性</string>
     <string name="transaction_swap_status_new">New</string>
     <string name="transaction_swap_status_waiting">Waiting</string>
     <string name="transaction_swap_status_confirming">Confirming</string>

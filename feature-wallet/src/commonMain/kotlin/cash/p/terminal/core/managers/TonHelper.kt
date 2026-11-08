@@ -124,6 +124,21 @@ object TonHelper {
 //                            viewItems.append(contentsOf: sendSection(source: record.source, transactionValue: value, to: nil, rates: item.rates, balanceHidden: balanceHidden))
             }
 
+            is TonTransactionRecord.Action.Type.LiquidityDeposit -> {
+                actionType.deposits.forEach { deposit ->
+                    itemsForAction.addAll(
+                        TransactionViewItemFactoryHelper.getSendSectionItems(
+                            value = deposit.value,
+                            toAddress = listOf(deposit.vault),
+                            coinPrice = rates[deposit.value.coinUid],
+                            hideAmount = hideAmount,
+                            blockchainType = blockchainType,
+                            showCopyWarning = showCopyWarning,
+                        )
+                    )
+                }
+            }
+
             is TonTransactionRecord.Action.Type.Unsupported -> {
                 itemsForAction.add(Value("Action", actionType.type))
             }

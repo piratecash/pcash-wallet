@@ -946,6 +946,11 @@ Proceed only if you\u0027re sure.</string>
     <string name="Transactions_Approve">Approved</string>
     <string name="Transactions_Swap">Swapped</string>
     <string name="transactions_swap_failed">Swap failed</string>
+    <string name="transactions_liquidity_added">Added to liquidity</string>
+    <string name="transactions_liquidity_removed">Withdrawn from liquidity</string>
+    <string name="transactions_liquidity_add_failed">Failed to add to liquidity</string>
+    <string name="transactions_liquidity_remove_failed">Failed to withdraw from liquidity</string>
+    <string name="transactions_liquidity_search_key">liquidity</string>
     <string name="transaction_swap_status_new">New</string>
     <string name="transaction_swap_status_waiting">Waiting</string>
     <string name="transaction_swap_status_confirming">Confirming</string>

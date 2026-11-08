@@ -719,6 +719,11 @@
     <string name="Transactions_Approve">Approved</string>
     <string name="Transactions_Swap">Swapped</string>
     <string name="transactions_swap_failed">Swap failed</string>
+    <string name="transactions_liquidity_added">به نقدینگی اضافه شد</string>
+    <string name="transactions_liquidity_removed">از نقدینگی برداشت شد</string>
+    <string name="transactions_liquidity_add_failed">افزودن به نقدینگی ناموفق بود</string>
+    <string name="transactions_liquidity_remove_failed">برداشت از نقدینگی ناموفق بود</string>
+    <string name="transactions_liquidity_search_key">نقدینگی</string>
     <string name="transaction_swap_status_new">New</string>
     <string name="transaction_swap_status_waiting">Waiting</string>
     <string name="transaction_swap_status_confirming">Confirming</string>

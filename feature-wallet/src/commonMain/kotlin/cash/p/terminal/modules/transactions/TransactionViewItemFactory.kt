@@ -13,6 +13,7 @@ import cash.p.terminal.core.utils.SwapTransactionMatcher
 import cash.p.terminal.entities.SwapProviderTransaction
 import cash.p.terminal.entities.TransactionValue
 import cash.p.terminal.entities.transactionrecords.PendingTransactionRecord
+import cash.p.terminal.entities.transactionrecords.LiquidityOperation
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
@@ -346,7 +347,7 @@ class TransactionViewItemFactory(
                 uid = record.uid,
                 incomingValues = incomingValues,
                 outgoingValues = outgoingValues,
-                method = record.method,
+                method = record.liquidityOperation?.let { Translator.getString(it.title) } ?: record.method,
                 contractAddress = record.contractAddress!!,
                 blockchainType = record.blockchainType,
                 timestamp = record.timestamp,
@@ -354,7 +355,18 @@ class TransactionViewItemFactory(
                 progress = progress,
                 icon = icon,
                 spam = record.spam
-            )
+            ).let { viewItem ->
+                if (record.liquidityOperation == null) {
+                    viewItem
+                } else {
+                    val (primary, secondary) = getLiquidityValues(
+                        incomingValues,
+                        outgoingValues,
+                        transactionItem.currencyValue
+                    )
+                    viewItem.copy(primaryValue = primary, secondaryValue = secondary)
+                }
+            }
         }
 
         TransactionRecordType.EVM_EXTERNAL_CONTRACT_CALL -> {
@@ -547,7 +559,8 @@ class TransactionViewItemFactory(
                 ) ?: createViewItemFromTonTransactionRecord(
                     icon = icon,
                     record = record,
-                    currencyValue = transactionItem.currencyValue
+                    currencyValue = transactionItem.currencyValue,
+                    progress = progress
                 )
             }
 
@@ -760,11 +773,40 @@ class TransactionViewItemFactory(
         )
     }
 
+    private fun createTonLiquidityViewItem(
+        operation: LiquidityOperation,
+        icon: TransactionViewItem.Icon?,
+        record: TonTransactionRecord,
+        currencyValue: CurrencyValue?,
+        progress: Float?,
+    ): TransactionViewItem {
+        val (incomingValues, outgoingValues) = record.liquidityValues()
+        val (primaryValue, secondaryValue) = getLiquidityValues(incomingValues, outgoingValues, currencyValue)
+
+        return TransactionViewItem(
+            uid = record.uid,
+            progress = progress,
+            title = Translator.getString(operation.title),
+            subtitle = record.liquidityProtocol ?: Translator.getString(Res.string.Transactions_Multiple),
+            primaryValue = primaryValue,
+            secondaryValue = secondaryValue,
+            showAmount = showAmount,
+            date = Date(record.timestamp * 1000),
+            formattedTime = formatTime(record.timestamp),
+            icon = icon ?: iconType(record.blockchainType, incomingValues, outgoingValues)
+        )
+    }
+
     private fun createViewItemFromTonTransactionRecord(
         icon: TransactionViewItem.Icon?,
         record: TonTransactionRecord,
         currencyValue: CurrencyValue?,
+        progress: Float?,
     ): TransactionViewItem {
+        record.liquidityOperation?.let {
+            return createTonLiquidityViewItem(it, icon, record, currencyValue, progress)
+        }
+
         val title: String
         val subtitle: String?
         val primaryValue: ColoredValue?
@@ -811,6 +853,14 @@ class TransactionViewItemFactory(
                     secondaryValue = null
 
 
+                    iconX = TransactionViewItem.Icon.Platform.fromBlockchainType(record.blockchainType)
+                }
+
+                is TonTransactionRecord.Action.Type.LiquidityDeposit -> {
+                    title = Translator.getString(Res.string.Transactions_TonTransaction)
+                    subtitle = actionType.protocol.orEmpty()
+                    primaryValue = null
+                    secondaryValue = null
                     iconX = TransactionViewItem.Icon.Platform.fromBlockchainType(record.blockchainType)
                 }
 
@@ -2035,6 +2085,19 @@ class TransactionViewItemFactory(
                 currencyValue?.let { getColoredValue(it, ColorName.Secondary) }
             }
         }
+
+    private fun getLiquidityValues(
+        incomingValues: List<TransactionValue>,
+        outgoingValues: List<TransactionValue>,
+        currencyValue: CurrencyValue?
+    ): Pair<ColoredValue?, ColoredValue?> {
+        val (values, color) = when {
+            incomingValues.size == 2 && outgoingValues.isEmpty() -> incomingValues to ColorName.Remus
+            outgoingValues.size == 2 && incomingValues.isEmpty() -> outgoingValues to ColorName.Lucian
+            else -> return getValues(incomingValues, outgoingValues, currencyValue)
+        }
+        return getColoredValue(values[0], color) to getColoredValue(values[1], color)
+    }
 
     private fun getValues(
         incomingValues: List<TransactionValue>,

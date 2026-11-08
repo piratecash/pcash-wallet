@@ -224,6 +224,20 @@ fun TonConnectRequestActionSection(
             )
         }
 
+        is TonTransactionRecord.Action.Type.LiquidityDeposit -> {
+            actionType.deposits.forEach { deposit ->
+                SendCoinSection(
+                    transactionValue = deposit.value,
+                    address = deposit.vault,
+                    comment = null,
+                    sentToSelf = false,
+                    navigation = navigation,
+                    transactionInfoHelper = transactionInfoHelper,
+                    blockchainType = BlockchainType.Ton
+                )
+            }
+        }
+
         is TonTransactionRecord.Action.Type.Swap -> {
             SwapSection(
                 transactionInfoHelper = transactionInfoHelper,

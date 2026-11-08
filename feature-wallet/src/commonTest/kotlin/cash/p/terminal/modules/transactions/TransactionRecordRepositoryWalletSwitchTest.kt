@@ -236,10 +236,10 @@ class TransactionRecordRepositoryWalletSwitchTest {
                 getTransactions(any(), token, any(), FilterTransactionType.Swap, any())
             } returns emptyList()
             coEvery {
-                getTransactions(any(), token, any(), FilterTransactionType.Outgoing, contactA.addresses.first().address)
+                getTransactions(any(), token, any(), FilterTransactionType.All, contactA.addresses.first().address)
             } returns listOf(recordA)
             coEvery {
-                getTransactions(any(), token, any(), FilterTransactionType.Outgoing, contactB.addresses.first().address)
+                getTransactions(any(), token, any(), FilterTransactionType.All, contactB.addresses.first().address)
             } returns listOf(recordB)
             every { getTransactionRecordsFlow(any(), any(), any()) } returns emptyFlow()
             every { getTransactionUrl(any()) } returns ""
@@ -1455,13 +1455,13 @@ class TransactionRecordRepositoryWalletSwitchTest {
             getTransactions(any(), token, any(), FilterTransactionType.Swap, any())
         } returns emptyList()
         coEvery {
-            getTransactions(any(), token, any(), FilterTransactionType.Outgoing, any())
+            getTransactions(any(), token, any(), FilterTransactionType.All, any())
         } coAnswers { outgoingRecords() }
         every {
             getTransactionRecordsFlow(any(), FilterTransactionType.Swap, any())
         } returns emptyFlow()
         every {
-            getTransactionRecordsFlow(any(), FilterTransactionType.Outgoing, any())
+            getTransactionRecordsFlow(any(), FilterTransactionType.All, any())
         } returns outgoingUpdates
         every { getTransactionUrl(any()) } returns ""
     }

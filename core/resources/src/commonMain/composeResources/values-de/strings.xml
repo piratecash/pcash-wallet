@@ -712,6 +712,11 @@
     <string name="Transactions_Approve">Bestätigt</string>
     <string name="Transactions_Swap">Swapped</string>
     <string name="transactions_swap_failed">Swap fehlgeschlagen</string>
+    <string name="transactions_liquidity_added">Zur Liquidität hinzugefügt</string>
+    <string name="transactions_liquidity_removed">Aus der Liquidität abgezogen</string>
+    <string name="transactions_liquidity_add_failed">Hinzufügen zur Liquidität fehlgeschlagen</string>
+    <string name="transactions_liquidity_remove_failed">Abzug aus der Liquidität fehlgeschlagen</string>
+    <string name="transactions_liquidity_search_key">Liquidität</string>
     <string name="transaction_swap_status_new">New</string>
     <string name="transaction_swap_status_waiting">Waiting</string>
     <string name="transaction_swap_status_confirming">Confirming</string>
