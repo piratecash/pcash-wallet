@@ -1740,7 +1740,7 @@
     <string name="login_logging_log_successful">Registar logins bem-sucedidos</string>
     <string name="login_logging_log_unsuccessful">Registar logins falhados</string>
     <string name="login_logging_duress_mode">MODO COAÇÃO</string>
-    <string name="login_logging_log_into_duress">Entrar em modo coação</string>
+    <string name="login_logging_log_into_duress">Registar logins em modo coação</string>
     <string name="login_logging_send_notification">Enviar notificação de login</string>
     <string name="login_logging_delete_auth_data">Eliminar todos os dados de autenticação</string>
     <string name="login_logging_delete_auth_data_description">Esta função elimina todos os dados de autenticação com fotos ao entrar em modo coação.</string>
@@ -1838,13 +1838,13 @@
     <!--Set Pin-->
     <string name="PinSet_Title">Create Passcode</string>
     <string name="PinSet_Info">Sua senha será usada para desbloquear sua carteira</string>
-    <string name="PinSet_Transactions_Hide">Set Passcode for \“Transactions Auto Hide\” mode</string>
+    <string name="PinSet_Transactions_Hide">Definir código para o modo “Ocultação automática de transações”</string>
     <string name="PinSet_ConfirmInfo">Confirmar</string>
     <string name="PinSet_ErrorPinsDontMatch">Senhas não conferem. Tente novamente.</string>
-    <string name="PinSet_ErrorFailedToSavePin">Ocorreu um erro ao enviar a mensagem. Tente novamente.</string>
+    <string name="PinSet_ErrorFailedToSavePin">Ocorreu um erro ao guardar a sua senha. Tente novamente.</string>
     <string name="PinSet_ForBiometrics">Set a passcode to enable Biometrics</string>
     <string name="PinSet_ForDuress">Set a passcode to enable Duress Mode</string>
-    <string name="pin_set_for_login_logging">Set a passcode to enable login logging</string>
+    <string name="pin_set_for_login_logging">Definir código para ativar o registo de login</string>
     <string name="pin_set_for_login_logging_passcode">Definir código para proteger o registo de login</string>
     <string name="confirm_pin_to_disable_login_logging_passcode">Digite o código para desativar o registo de login</string>
     <string name="pin_set_for_delete_all_contacts">Defina um código para eliminar todos os contactos</string>

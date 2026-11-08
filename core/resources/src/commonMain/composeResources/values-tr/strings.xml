@@ -1740,7 +1740,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="login_logging_log_successful">Başarılı girişleri kaydet</string>
     <string name="login_logging_log_unsuccessful">Başarısız girişleri kaydet</string>
     <string name="login_logging_duress_mode">ZORLAMA MODU</string>
-    <string name="login_logging_log_into_duress">Zorlama moduna gir</string>
+    <string name="login_logging_log_into_duress">Zorlama moduna girişleri kaydet</string>
     <string name="login_logging_send_notification">Giriş bildirimi gönder</string>
     <string name="login_logging_delete_auth_data">Tüm kimlik doğrulama verilerini sil</string>
     <string name="login_logging_delete_auth_data_description">Bu işlev, zorlama moduna girerken tüm kimlik doğrulama verilerini fotoğraflarla birlikte siler.</string>
@@ -1837,14 +1837,14 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="Unlock_Random">Rastgele</string>
     <!--Set Pin-->
     <string name="PinSet_Title">Şifre belirle</string>
-    <string name="PinSet_Info">Şifre, programı açmak ve para göndermek için kullanılacak</string>
-    <string name="PinSet_Transactions_Hide">Set Passcode for \“Transactions Auto Hide\” mode</string>
+    <string name="PinSet_Info">Şifre, cüzdanınızın kilidini açmak için kullanılacak</string>
+    <string name="PinSet_Transactions_Hide">“İşlemleri Otomatik Gizle” modu için şifre belirleyin</string>
     <string name="PinSet_ConfirmInfo">Onayla</string>
     <string name="PinSet_ErrorPinsDontMatch">Kod uyuşmadı. Tekrar deneyin.</string>
     <string name="PinSet_ErrorFailedToSavePin">Şifre kaydedilirken hata oluştu. Tekrar deneyin.</string>
     <string name="PinSet_ForBiometrics">Biyometriyi etkinleştirmek için bir şifre belirleyin</string>
     <string name="PinSet_ForDuress">Duress Modunu etkinleştirmek için bir şifre kodu ayarlayın</string>
-    <string name="pin_set_for_login_logging">Set a passcode to enable login logging</string>
+    <string name="pin_set_for_login_logging">Giriş günlüğünü etkinleştirmek için şifre belirleyin</string>
     <string name="pin_set_for_login_logging_passcode">Giriş günlüğünü korumak için şifre belirleyin</string>
     <string name="confirm_pin_to_disable_login_logging_passcode">Giriş günlüğünü devre dışı bırakmak için şifreyi girin</string>
     <string name="pin_set_for_delete_all_contacts">Tüm kişileri silmek için bir kod belirleyin</string>
