@@ -7,6 +7,7 @@ import cash.p.terminal.core.TransactionSettingsStorage
 import cash.p.terminal.core.managers.BalanceHiddenManager
 import cash.p.terminal.core.managers.AddressMetadataManager
 import cash.p.terminal.core.managers.PoisonAddressManager
+import cash.p.terminal.core.managers.localizedEvmMethodLabel
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
 import cash.p.terminal.core.utils.IncomingTransaction
 import cash.p.terminal.core.utils.SwapTransactionMatcher
@@ -1422,7 +1423,7 @@ class TransactionViewItemFactory(
             outgoingValues,
             currencyValue
         )
-        val title = method ?: Translator.getString(Res.string.Transactions_ContractCall)
+        val title = method?.let(::localizedEvmMethodLabel) ?: Translator.getString(Res.string.Transactions_ContractCall)
 
         return TransactionViewItem(
             uid = uid,
