@@ -2255,6 +2255,7 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="desktop_change_password_current_hint">Senha atual</string>
     <string name="desktop_change_password_new_hint">Nova senha</string>
     <string name="desktop_change_password_failed">Não foi possível salvar a senha. A senha atual continua funcionando</string>
+    <string name="desktop_change_password_in_use">Esta senha já está em uso</string>
     <string name="desktop_change_password_corrupted">O arquivo de chave está danificado: depois que o app for bloqueado, você não conseguirá entrar. Salve um backup de cada frase de recuperação.</string>
     <string name="desktop_change_password_success">Senha alterada</string>
     <string name="desktop_security_lock_now">Bloquear agora</string>
@@ -2373,4 +2374,23 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="evm_node_request_failed">O nó da rede não conseguiu processar a solicitação. Tente novamente ou escolha outra fonte nas configurações da Blockchain.\n\nResposta do nó: %1$s</string>
     <string name="desktop_transfer_password">Senha antes de enviar</string>
     <string name="desktop_transfer_password_description">A senha do aplicativo é solicitada antes de cada envio, protegendo seus ativos caso alguém acesse seu computador com o aplicativo desbloqueado.</string>
+    <string name="desktop_unlock_legacy_format">Os dados foram criados por uma versão mais antiga do aplicativo e não podem ser abertos</string>
+    <string name="desktop_duress_password_set">Definir Modo Coação</string>
+    <string name="desktop_duress_password_edit">Editar senha do Modo Coação</string>
+    <string name="desktop_duress_password_disable">Desativar senha do Modo Coação</string>
+    <string name="desktop_duress_password_description">Este modo permite definir várias senhas do aplicativo, em que uma senha específica mostra apenas determinadas carteiras. Criado para manter as carteiras escolhidas seguras sob coação ou ameaças.</string>
+    <string name="desktop_duress_password_note_change_title">Alteração de senha</string>
+    <string name="desktop_duress_password_note_change_description">Alterar a senha no Modo Coação também altera a senha atual desse modo.</string>
+    <string name="desktop_duress_password_title">Senha do Modo Coação</string>
+    <string name="desktop_duress_password_set_description">Defina uma senha para o Modo Coação</string>
+    <string name="desktop_duress_password_edit_description">Digite uma nova senha para o Modo Coação</string>
+    <string name="desktop_hidden_wallet_password_title">Senha da carteira oculta</string>
+    <string name="desktop_hidden_wallet_password_description">Crie uma senha para a carteira oculta</string>
+    <string name="desktop_hidden_wallet_password_terms_warning">A carteira global não verá esta carteira e, se você esquecer a senha dela, poderá recuperar o acesso com a frase semente.</string>
+    <string-array name="desktop_hidden_wallet_password_terms">
+        <item>O usuário entende que a carteira não ficará visível entre as outras carteiras.</item>
+        <item>O usuário entende que, se esquecer a senha, a carteira pode ser recuperada conhecendo a frase semente.</item>
+    </string-array>
+    <string name="desktop_levels_limit_reached">O limite de níveis foi atingido. Não é possível adicionar mais senhas</string>
+    <string name="desktop_password_save_failed">Não foi possível salvar a senha. Tente novamente</string>
 </resources>

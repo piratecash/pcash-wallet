@@ -7,22 +7,21 @@ import io.horizontalsystems.core.entities.BlockchainType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class HardwarePublicKeyStorage(private val appDatabase: AppDatabase) : IHardwarePublicKeyStorage {
+class HardwarePublicKeyStorage(private val router: StorageRouter) : IHardwarePublicKeyStorage {
 
-    private val hardwarePublicKeyDao
-        get() = appDatabase.hardwarePublicKeyDao()
+    private fun dao(accountId: String) = router.account(accountId)?.hardwarePublicKeyDao()
 
     override fun deleteAll() {
-        hardwarePublicKeyDao.deleteAll()
+        router.forEachAccount { hardwarePublicKeyDao().deleteAll() }
     }
 
     override suspend fun save(keys: List<HardwarePublicKey>) {
-        hardwarePublicKeyDao.insertKeys(keys)
+        router.writePerStore(keys, { it.accountId }) { hardwarePublicKeyDao().insertKeys(it) }
     }
 
     override suspend fun getKey(accountId: String, blockchainType: BlockchainType, tokenType: TokenType) =
         withContext(Dispatchers.IO) {
-            hardwarePublicKeyDao.getPublicKey(
+            dao(accountId)?.getPublicKey(
                 accountId = accountId,
                 blockchainType = blockchainType.uid,
                 tokenType = tokenType
@@ -31,7 +30,7 @@ class HardwarePublicKeyStorage(private val appDatabase: AppDatabase) : IHardware
 
     override suspend fun getKeyByBlockchain(accountId: String, blockchainType: BlockchainType) =
         withContext(Dispatchers.IO) {
-            hardwarePublicKeyDao.getPublicKeyByBlockchain(
+            dao(accountId)?.getPublicKeyByBlockchain(
                 accountId = accountId,
                 blockchainType = blockchainType.uid
             )
@@ -39,8 +38,8 @@ class HardwarePublicKeyStorage(private val appDatabase: AppDatabase) : IHardware
 
     override suspend fun getAllPublicKeys(accountId: String): List<HardwarePublicKey> =
         withContext(Dispatchers.IO) {
-            hardwarePublicKeyDao.getAllPublicKeys(
+            dao(accountId)?.getAllPublicKeys(
                 accountId = accountId
-            )
+            ).orEmpty()
         }
 }

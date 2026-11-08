@@ -70,7 +70,7 @@ class MainActivityViewModelTest {
     fun setUp() {
         Dispatchers.setMain(dispatcher)
 
-        userManager = DefaultUserManager(accountManager)
+        userManager = DefaultUserManager(accountManager, mockk())
         isLockedFlow = MutableStateFlow(true)
         sendRequestFlow = MutableSharedFlow()
         dappRequestFlow = MutableSharedFlow()

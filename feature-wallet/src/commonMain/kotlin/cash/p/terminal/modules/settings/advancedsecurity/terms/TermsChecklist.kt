@@ -2,7 +2,7 @@ package cash.p.terminal.modules.settings.advancedsecurity.terms
 
 import cash.p.terminal.ui_compose.entities.TermItem
 
-internal class TermsChecklist(termTitles: Array<String>) {
+class TermsChecklist(termTitles: Array<String>) {
     private var terms = termTitles.mapIndexed { index, title ->
         TermItem(
             id = index,
@@ -27,7 +27,7 @@ internal class TermsChecklist(termTitles: Array<String>) {
     }
 }
 
-internal data class TermsChecklistState(
+data class TermsChecklistState(
     val terms: List<TermItem>,
     val agreeEnabled: Boolean
 )

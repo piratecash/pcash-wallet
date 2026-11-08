@@ -1,6 +1,6 @@
 package cash.p.terminal.core.managers
 
-import cash.p.terminal.core.storage.MoneroFileDao
+import cash.p.terminal.core.storage.StorageRouter
 import cash.p.terminal.entities.MoneroFileRecord
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
@@ -15,7 +15,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 internal class MoneroDeviceWalletProvisioner(
-    private val moneroFileDao: MoneroFileDao,
+    private val router: StorageRouter,
     private val nativeWallet: MoneroDeviceWalletNative,
     private val nativeRuntime: MoneroNativeWalletRuntime,
     private val files: MoneroDeviceWalletFileStore,
@@ -52,7 +52,7 @@ internal class MoneroDeviceWalletProvisioner(
                 }
                 check(files.valid(baseName)) { "Monero device wallet files are incomplete" }
                 onWalletCreated()
-                moneroFileDao.insert(
+                router.account(account.id)?.moneroFileDao()?.insert(
                     MoneroFileRecord(
                         accountId = account.id,
                         fileName = SecretString(baseName),
@@ -84,7 +84,7 @@ internal class MoneroDeviceWalletProvisioner(
         error: Throwable,
     ) = withContext(NonCancellable) {
         if (recordInserted) {
-            moneroFileDao.deleteAssociatedRecord(accountId)
+            router.account(accountId)?.moneroFileDao()?.deleteAssociatedRecord(accountId)
         }
         if (!files.cleanup(baseName)) {
             error.addSuppressed(
@@ -97,7 +97,7 @@ internal class MoneroDeviceWalletProvisioner(
         account: Account,
         restoreHeight: Long,
     ): String? {
-        val record = moneroFileDao.getAssociatedRecord(account.id) ?: return null
+        val record = router.account(account.id)?.moneroFileDao()?.getAssociatedRecord(account.id) ?: return null
         if (!files.valid(record.fileName.value)) {
             throw provisioningFailure("Monero device wallet files are incomplete")
         }
@@ -108,7 +108,7 @@ internal class MoneroDeviceWalletProvisioner(
             saveRestoreHeight(account, restoreHeight, onlyIfMissing = true)
             return walletPublicKey
         }
-        moneroFileDao.deleteAssociatedRecord(account.id)
+        router.account(account.id)?.moneroFileDao()?.deleteAssociatedRecord(account.id)
         return null
     }
 

@@ -14,6 +14,7 @@ import cash.p.terminal.modules.balance.token.addresspoisoning.AddressPoisoningVi
 import cash.p.terminal.modules.displayoptions.DisplayDiffOptionType
 import cash.p.terminal.modules.displayoptions.DisplayPricePeriod
 import cash.p.terminal.modules.multiswap.providers.SwapProvidersStorage
+import cash.p.terminal.shared.desktop.vault.DesktopAccountSettings
 import cash.p.terminal.wallet.BalanceSortType
 import cash.p.terminal.wallet.entities.EncryptedString
 import cash.p.terminal.wallet.managers.TransactionDisplayLevel
@@ -21,7 +22,10 @@ import io.horizontalsystems.core.DesktopSettingsStore
 import kotlinx.coroutines.flow.StateFlow
 
 /** Same defaults as Android `LocalStorageManager`; the PIN arrives already encrypted. Tor is Android-only. */
-class DesktopWalletSettingsStorage(private val store: DesktopSettingsStore) :
+class DesktopWalletSettingsStorage(
+    private val store: DesktopSettingsStore,
+    private val accountSettings: DesktopAccountSettings,
+) :
     BalanceSettingsStorage,
     TransactionSettingsStorage,
     NetworkSettingsStorage,
@@ -64,8 +68,8 @@ class DesktopWalletSettingsStorage(private val store: DesktopSettingsStore) :
         set(value) = store.setString(DIFF_OPTION_TYPE, value.name)
 
     override var nonRecommendedAccountAlertDismissedAccounts: Set<String>
-        get() = stringSet(NON_RECOMMENDED_DISMISSED)
-        set(value) = setStringSet(NON_RECOMMENDED_DISMISSED, value)
+        get() = accountSettings.strings(NON_RECOMMENDED_DISMISSED)
+        set(value) = accountSettings.setStrings(NON_RECOMMENDED_DISMISSED, value) { it }
 
     override var transactionHideEnabled: Boolean
         get() = store.flag(TRANSACTION_HIDE) ?: false
@@ -124,12 +128,12 @@ class DesktopWalletSettingsStorage(private val store: DesktopSettingsStore) :
     override val torEnabled: Boolean = false
 
     override var zcashIronwoodMigrationTxIds: Set<String>
-        get() = stringSet(ZCASH_IRONWOOD_TX_IDS)
-        set(value) = setStringSet(ZCASH_IRONWOOD_TX_IDS, value)
+        get() = accountSettings.strings(ZCASH_IRONWOOD_TX_IDS)
+        set(value) = accountSettings.setStrings(ZCASH_IRONWOOD_TX_IDS, value) { it.substringBefore(':') }
 
     override var zcashAccountIds: Set<String>
-        get() = stringSet(ZCASH_ACCOUNT_IDS)
-        set(value) = setStringSet(ZCASH_ACCOUNT_IDS, value)
+        get() = accountSettings.strings(ZCASH_ACCOUNT_IDS)
+        set(value) = accountSettings.setStrings(ZCASH_ACCOUNT_IDS, value) { it }
 
     override var moneroSkipNewAddressConfirm: Boolean
         get() = store.flag(MONERO_SKIP_NEW_ADDRESS_CONFIRM) ?: false

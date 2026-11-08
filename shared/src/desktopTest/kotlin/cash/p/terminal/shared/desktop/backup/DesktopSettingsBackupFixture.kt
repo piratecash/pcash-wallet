@@ -1,5 +1,6 @@
 package cash.p.terminal.shared.desktop.backup
 
+import cash.p.terminal.core.storage.StorageRouter
 import cash.p.terminal.modules.contacts.ContactsRepository
 import cash.p.terminal.modules.contacts.ContactsSettingsBackup
 import cash.p.terminal.shared.desktop.DesktopContactsFileStorage
@@ -43,9 +44,7 @@ import cash.p.terminal.shared.desktop.DesktopAppSettingsBackup
 import cash.p.terminal.shared.desktop.DesktopAppearanceSettingsStore
 import cash.p.terminal.shared.desktop.DesktopChartIndicatorStorage
 import cash.p.terminal.shared.desktop.DesktopWalletSettingsStorage
-import cash.p.terminal.shared.desktop.vault.DesktopAppDatabaseProvider
-import cash.p.terminal.core.storage.AppDatabase
-import cash.p.terminal.core.storage.AppDatabaseProvider
+import cash.p.terminal.shared.desktop.vault.DesktopStorageRouter
 import cash.p.terminal.shared.desktop.vault.DesktopPreferencesReset
 import cash.p.terminal.shared.desktop.vault.DesktopVaultFixture
 import cash.p.terminal.shared.desktop.vault.password
@@ -120,11 +119,11 @@ internal class DesktopSettingsBackupFixture {
     val vaultFiles get() = vaultFixture.files
 
     // Through the current vault, so the stores follow relaunchVault().
-    private val databaseProvider = object : AppDatabaseProvider {
-        override val database: AppDatabase get() = DesktopAppDatabaseProvider(vault).database
+    private val router = mockk<StorageRouter> {
+        every { shared } answers { DesktopStorageRouter(vault).shared }
     }
-    val blockchainSettingsStorage = BlockchainSettingsStorage(databaseProvider)
-    val evmSyncSourceStorage = EvmSyncSourceStorage(databaseProvider)
+    val blockchainSettingsStorage = BlockchainSettingsStorage(router)
+    val evmSyncSourceStorage = EvmSyncSourceStorage(router)
     val btcBlockchainManager = BtcBlockchainManager(blockchainSettingsStorage, marketKit)
     val evmSyncSourceManager =
         EvmSyncSourceManager(blockchainSettingsStorage, evmSyncSourceStorage, DesktopAddressResolutionConfig)
@@ -151,7 +150,7 @@ internal class DesktopSettingsBackupFixture {
         backup = newBackup()
     }
 
-    private fun newBaseTokenManager() = BaseTokenManager(coinManager, DesktopWalletSettingsStorage(settingsStore))
+    private fun newBaseTokenManager() = BaseTokenManager(coinManager, DesktopWalletSettingsStorage(settingsStore, mockk(relaxed = true)))
 
     private fun newBackup() = DesktopAppSettingsBackup(
         languageManager = languageManager,

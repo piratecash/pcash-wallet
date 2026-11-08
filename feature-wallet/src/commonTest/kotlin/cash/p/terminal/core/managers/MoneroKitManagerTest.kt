@@ -3,6 +3,8 @@ package cash.p.terminal.core.managers
 import cash.p.terminal.core.MoneroSpendReadiness
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.storage.MoneroFileDao
+import cash.p.terminal.core.storage.SingleDatabaseStorageRouter
+import cash.p.terminal.core.storage.StaticAppDatabaseProvider
 import cash.p.terminal.manager.IConnectivityManager
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
@@ -113,13 +115,13 @@ class MoneroKitManagerTest {
         // A live wrapper always belongs to the account whose wallet file it opened.
         every { mockWrapper.account } returns account
         return MoneroKitManager(
-            moneroWalletService = moneroWalletService,
+            moneroWalletServiceProvider = mockk { every { service } returns moneroWalletService },
             backgroundManager = backgroundManager,
             restoreSettingsManager = restoreSettingsManager,
             backgroundKeepAliveManager = backgroundKeepAliveManager,
             connectivityManager = connectivityManager,
             dispatcherProvider = dispatcherProvider,
-            moneroFileDao = moneroFileDao,
+            storageRouter = SingleDatabaseStorageRouter(StaticAppDatabaseProvider(mockk { every { moneroFileDao() } returns moneroFileDao })),
             removeMoneroWalletFilesUseCase = removeMoneroWalletFilesUseCase,
             networkErrorTracker = mockk(relaxed = true),
             offlineModeManager = offlineModeManager,

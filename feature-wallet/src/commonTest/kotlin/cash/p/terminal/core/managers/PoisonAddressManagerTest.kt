@@ -1,5 +1,6 @@
 package cash.p.terminal.core.managers
 
+import cash.p.terminal.core.storage.SingleDatabaseStorageRouter
 import cash.p.terminal.core.storage.StaticAppDatabaseProvider
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.storage.PoisonAddressDao
@@ -70,7 +71,7 @@ class PoisonAddressManagerTest {
 
         val dispatcher = UnconfinedTestDispatcher()
         manager = PoisonAddressManager(
-            StaticAppDatabaseProvider(mockk { every { poisonAddressDao() } returns dao }),
+            SingleDatabaseStorageRouter(StaticAppDatabaseProvider(mockk { every { poisonAddressDao() } returns dao })),
             contactsRepository,
             locallyCreatedTransactionRepository,
             TestDispatcherProvider(dispatcher, TestScope(dispatcher)),

@@ -24,7 +24,7 @@ import cash.p.terminal.wallet.managers.UserManager
 import cash.p.terminal.wallet.policy.HardwareWalletTokenPolicy
 import cash.p.terminal.premium.data.model.PremiumUser
 import cash.p.terminal.core.TestDispatcherProvider
-import cash.p.terminal.premium.domain.premiumDatabaseProviderOf
+import cash.p.terminal.premium.domain.premiumDatabaseRouterOf
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.mockk.MockKAnnotations
@@ -155,7 +155,7 @@ class CheckPremiumUseCaseTest {
 
         useCase = CheckPremiumUseCaseImpl(
             premiumUserRepository = premiumUserRepository,
-            premiumDatabaseProvider = premiumDatabaseProviderOf(demoPremiumUserDao, accountPremiumCacheDao),
+            premiumDatabaseRouter = premiumDatabaseRouterOf(demoPremiumUserDao, accountPremiumCacheDao),
             binanceApi = binanceApi,
             piratePlaceRepository = piratePlaceRepository,
             accountManager = accountManager,
@@ -737,7 +737,7 @@ class CheckPremiumUseCaseTest {
 
             useCase = CheckPremiumUseCaseImpl(
                 premiumUserRepository = premiumUserRepository,
-                premiumDatabaseProvider = premiumDatabaseProviderOf(demoPremiumUserDao, accountPremiumCacheDao),
+                premiumDatabaseRouter = premiumDatabaseRouterOf(demoPremiumUserDao, accountPremiumCacheDao),
                 binanceApi = binanceApi,
                 piratePlaceRepository = piratePlaceRepository,
                 accountManager = accountManager,
@@ -1655,7 +1655,7 @@ class CheckPremiumUseCaseTest {
         coEvery { demoPremiumUserDao.hasActiveTrialPremium() } returns false
         return CheckPremiumUseCaseImpl(
             premiumUserRepository = premiumUserRepository,
-            premiumDatabaseProvider = premiumDatabaseProviderOf(demoPremiumUserDao, accountPremiumCacheDao),
+            premiumDatabaseRouter = premiumDatabaseRouterOf(demoPremiumUserDao, accountPremiumCacheDao),
             binanceApi = binanceApi,
             piratePlaceRepository = piratePlaceRepository,
             accountManager = accountManager,

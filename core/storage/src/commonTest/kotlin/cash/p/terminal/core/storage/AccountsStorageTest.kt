@@ -11,12 +11,14 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
+import kotlin.test.assertFailsWith
 
 class AccountsStorageTest {
 
     private val dao = mockk<AccountsDao>(relaxUnitFun = true)
-    private val storage = AccountsStorage(StaticAppDatabaseProvider(databaseWith(dao)))
+    private val storage = AccountsStorage(SingleDatabaseStorageRouter(StaticAppDatabaseProvider(databaseWith(dao))))
 
     @Test
     fun allAccounts_savedThorchainAndMayachainWatchAccounts_restoresTypeAndAddress() {
@@ -69,7 +71,7 @@ class AccountsStorageTest {
     fun delete_databaseReplacedAfterFirstUse_writesToTheNewDatabase() {
         val newDao = mockk<AccountsDao>(relaxUnitFun = true)
         val provider = ReplaceableDatabaseProvider(databaseWith(dao))
-        val storage = AccountsStorage(provider)
+        val storage = AccountsStorage(SingleDatabaseStorageRouter(provider))
         storage.delete(ACCOUNT_ID)
 
         provider.database = databaseWith(newDao)
@@ -77,6 +79,26 @@ class AccountsStorageTest {
 
         verify(exactly = 1) { dao.delete(ACCOUNT_ID) }
         verify(exactly = 1) { newDao.delete(ACCOUNT_ID) }
+    }
+
+    @Test
+    fun save_accountNotVisible_failsInsteadOfLosingTheSeed() {
+        val storage = AccountsStorage(routerWithoutAccounts())
+
+        assertFailsWith<IllegalStateException> { storage.save(watchAccount("hidden", AccountType.EvmAddress("0x"))) }
+    }
+
+    @Test
+    fun readsAndUpdates_accountNotVisible_behaveLikeAnAbsentRow() {
+        val storage = AccountsStorage(routerWithoutAccounts())
+
+        assertNull(storage.loadAccount(ACCOUNT_ID))
+        storage.updateName(ACCOUNT_ID, "renamed")
+        storage.delete(ACCOUNT_ID)
+    }
+
+    private fun routerWithoutAccounts() = mockk<StorageRouter>(relaxUnitFun = true) {
+        every { account(any()) } returns null
     }
 
     private fun databaseWith(dao: AccountsDao): AppDatabase = mockk { every { accountsDao() } returns dao }

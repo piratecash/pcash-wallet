@@ -1,5 +1,6 @@
 package cash.p.terminal.core.managers
 
+import io.horizontalsystems.databasenaming.DatabaseNameResolver
 import android.content.Context
 import cash.p.terminal.core.UnsupportedAccountException
 import cash.p.terminal.wallet.Account
@@ -63,7 +64,10 @@ import kotlin.test.assertFailsWith
 class ThorchainKitManagerTest {
 
     private val context = mockk<Context>()
-    private val platformContexts = mockk<KitPlatformContexts> { every { thorchain } returns context }
+    private val platformContexts = mockk<KitPlatformContexts> {
+        every { thorchain(any()) } returns context
+        every { resolverFor(any()) } returns DatabaseNameResolver.Identity
+    }
     private val kitDatabaseKeys = mockk<BitcoinKitDatabaseKeyProvider>()
     private val offlineModeManager = mockk<OfflineModeManager>(relaxed = true)
     private val databaseKey = ByteArray(KEY_SIZE) { 1 }

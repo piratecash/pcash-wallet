@@ -1,7 +1,6 @@
 package cash.p.terminal.core.storage
 
 import androidx.room.*
-import cash.p.terminal.entities.ActiveAccount
 import cash.p.terminal.wallet.entities.AccountRecord
 
 @Dao
@@ -55,14 +54,8 @@ interface AccountsDao {
     @Query("DELETE FROM AccountRecord WHERE deleted = 1 AND id IN (:accountIds)")
     fun clearDeleted(accountIds: List<String>)
 
-    @Query("SELECT * FROM ActiveAccount WHERE level = :level LIMIT 1")
-    fun getActiveAccount(level: Int): ActiveAccount?
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertActiveAccount(activeAccount: ActiveAccount)
-
-    @Query("DELETE FROM ActiveAccount WHERE level = :level")
-    fun deleteActiveAccount(level: Int)
+    @Query("SELECT level FROM AccountRecord WHERE id = :id AND deleted = 0")
+    fun getLevel(id: String): Int?
 
     @Query("SELECT COUNT(*) FROM AccountRecord WHERE deleted = 0 AND level = :level")
     fun getCountByLevel(level: Int): Int

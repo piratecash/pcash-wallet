@@ -8,22 +8,28 @@ enum class BeamNetwork(val directoryName: String) {
     Mainnet("mainnet")
 }
 
-class BeamStorageLocator(private val platformContexts: KitPlatformContexts) {
-    private val baseDir: File get() = platformContexts.beamBaseDir
+open class BeamStorageLocator(
+    private val platformContexts: KitPlatformContexts,
+    private val storageNaming: KitStorageNaming,
+) {
+    private val baseDir: File get() = platformContexts.beamContainerDir
     private val root: File get() = File(baseDir, "beam")
 
-    fun hasAnyData(): Boolean {
+    open fun hasAnyData(): Boolean {
         if (Files.notExists(root.toPath())) return false
         return checkNotNull(root.list()) { "Unable to inspect BEAM storage" }.isNotEmpty()
     }
 
     fun storagePath(accountId: String, network: BeamNetwork = BeamNetwork.Mainnet): File =
-        File(baseDir, "beam/${storageId(accountId, network)}")
+        File(
+            platformContexts.beamBaseDir(accountId),
+            storageNaming.resolverFor(accountId).resolve("beam/${storageId(accountId, network)}"),
+        )
 
     fun databaseFile(accountId: String, network: BeamNetwork = BeamNetwork.Mainnet): File =
         File(storagePath(accountId, network), "wallet.db")
 
-    internal fun storageIds(): Set<String> {
+    open fun storageIds(): Set<String> {
         validateContained(root)
         if (Files.notExists(root.toPath())) return emptySet()
         return children(root).flatMap { account ->
@@ -37,7 +43,7 @@ class BeamStorageLocator(private val platformContexts: KitPlatformContexts) {
         }.toSet()
     }
 
-    fun validatedPath(id: String): File {
+    open fun validatedPath(id: String): File {
         val networkNames = BeamNetwork.entries.joinToString("|") { it.directoryName }
         require(id.matches(Regex("[0-9a-f]{64}/($networkNames)"))) { "Invalid BEAM storage scope" }
         return File(root, id).also {
@@ -65,7 +71,7 @@ class BeamStorageLocator(private val platformContexts: KitPlatformContexts) {
         if (file.isDirectory) children(file).forEach(::validateTree)
     }
 
-    private fun validateContained(file: File) {
+    protected fun validateContained(file: File) {
         val expected = File(baseDir.canonicalFile, file.relativeTo(baseDir).path)
         check(!Files.isSymbolicLink(file.toPath()) && file.canonicalFile == expected) {
             "BEAM storage contains a symbolic link"

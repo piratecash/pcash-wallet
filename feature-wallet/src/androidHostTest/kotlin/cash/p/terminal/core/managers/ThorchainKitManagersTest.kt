@@ -1,5 +1,6 @@
 package cash.p.terminal.core.managers
 
+import io.horizontalsystems.databasenaming.DatabaseNameResolver
 import android.content.Context
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.thorchainkit.ThorchainKit
@@ -17,7 +18,10 @@ import org.junit.Test
 class ThorchainKitManagersTest {
 
     private val context = mockk<Context>()
-    private val platformContexts = mockk<KitPlatformContexts> { every { thorchain } returns context }
+    private val platformContexts = mockk<KitPlatformContexts> {
+        every { thorchain(any()) } returns context
+        every { resolverFor(any()) } returns DatabaseNameResolver.Identity
+    }
     private val managers = ThorchainKitManagers(platformContexts, mockk(), mockk(), mockk(), mockk(), mockk())
 
     @After

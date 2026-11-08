@@ -24,7 +24,8 @@ val zcashLogger = Logger.withTag("ZEC")
 /** The tag contains "zcash", which is what the blockchain status screen filters the App Log by. */
 internal const val ZCASH_KIT_LOG_TAG = "zcash-kit"
 
-internal fun zcashAppLogger(accountId: String): AppLogger = AppLogger(ZCASH_KIT_LOG_TAG).getScoped(accountId)
+internal fun zcashAppLogger(accountId: String): AppLogger =
+    AppLogger(ZCASH_KIT_LOG_TAG).getScoped(accountId).forAccount(accountId)
 
 val Throwable.zcashErrorName: String
     get() = this::class.simpleName ?: "Unknown"

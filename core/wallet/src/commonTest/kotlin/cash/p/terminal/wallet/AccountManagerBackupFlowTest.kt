@@ -15,28 +15,67 @@ import org.junit.Test
 class AccountManagerBackupFlowTest {
 
     @Test
+    fun setLevel_pendingBackupAccountNotVisibleThere_clearsBackupNotification() = runTest {
+        val account = pendingBackupAccount()
+        val storage = mockk<IAccountsStorage>(relaxed = true) {
+            every { allAccounts(1) } returns emptyList()
+        }
+        val accountManager = accountManager(storage)
+        accountManager.save(account, updateActive = false)
+
+        accountManager.setLevel(1)
+
+        assertNull(accountManager.newAccountBackupRequiredFlow.value)
+    }
+
+    @Test
+    fun setLevel_pendingBackupAccountVisibleThere_keepsBackupNotification() = runTest {
+        val account = pendingBackupAccount()
+        val storage = mockk<IAccountsStorage>(relaxed = true) {
+            every { allAccounts(0) } returns listOf(account)
+        }
+        val accountManager = accountManager(storage)
+        accountManager.save(account, updateActive = false)
+
+        accountManager.setLevel(0)
+
+        assertEquals(account, accountManager.newAccountBackupRequiredFlow.value)
+    }
+
+    @Test
     fun delete_pendingBackupAccount_clearsBackupNotification() = runTest {
-        val account = Account(
-            id = "account-id",
-            name = "Trezor",
-            type = AccountType.TrezorDevice(
-                deviceId = "device-id",
-                model = "T3T1",
-                firmwareVersion = "2.8.10",
-                walletPublicKey = "wallet-public-key",
-            ),
-            origin = AccountOrigin.Created,
-            level = 0,
-            isBackedUp = false,
-            isFileBackedUp = false,
-        )
+        val account = pendingBackupAccount()
         val storage = mockk<IAccountsStorage>(relaxed = true) {
             every { loadAccount(account.id) } returns account
         }
-        val getMoneroWalletFilesNameUseCase =
-            mockk<IGetMoneroWalletFilesNameUseCase>()
-        coEvery { getMoneroWalletFilesNameUseCase(account) } returns null
-        val accountManager = AccountManager(
+        val accountManager = accountManager(storage)
+        accountManager.save(account, updateActive = false)
+        assertEquals(account, accountManager.newAccountBackupRequiredFlow.value)
+
+        accountManager.delete(account.id)
+
+        assertNull(accountManager.newAccountBackupRequiredFlow.value)
+    }
+
+    private fun pendingBackupAccount() = Account(
+        id = "account-id",
+        name = "Trezor",
+        type = AccountType.TrezorDevice(
+            deviceId = "device-id",
+            model = "T3T1",
+            firmwareVersion = "2.8.10",
+            walletPublicKey = "wallet-public-key",
+        ),
+        origin = AccountOrigin.Created,
+        level = 0,
+        isBackedUp = false,
+        isFileBackedUp = false,
+    )
+
+    private fun accountManager(storage: IAccountsStorage): AccountManager {
+        val getMoneroWalletFilesNameUseCase = mockk<IGetMoneroWalletFilesNameUseCase>()
+        coEvery { getMoneroWalletFilesNameUseCase(any()) } returns null
+        return AccountManager(
             storage = storage,
             getMoneroWalletFilesNameUseCase = getMoneroWalletFilesNameUseCase,
             removeMoneroWalletFilesUseCase = mockk<IRemoveMoneroWalletFilesUseCase>(relaxed = true),
@@ -44,11 +83,5 @@ class AccountManagerBackupFlowTest {
             deletionPreflight = mockk(relaxed = true),
             dispatcherProvider = DefaultDispatcherProvider(),
         )
-        accountManager.save(account, updateActive = false)
-        assertEquals(account, accountManager.newAccountBackupRequiredFlow.value)
-
-        accountManager.delete(account.id)
-
-        assertNull(accountManager.newAccountBackupRequiredFlow.value)
     }
 }

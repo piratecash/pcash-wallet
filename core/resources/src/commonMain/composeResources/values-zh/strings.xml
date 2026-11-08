@@ -2238,6 +2238,7 @@
     <string name="desktop_change_password_current_hint">当前密码</string>
     <string name="desktop_change_password_new_hint">新密码</string>
     <string name="desktop_change_password_failed">无法保存密码。当前密码仍然有效</string>
+    <string name="desktop_change_password_in_use">此密码已被使用</string>
     <string name="desktop_change_password_corrupted">密钥文件已损坏：应用锁定后您将无法登录。请为每个恢复短语保存备份。</string>
     <string name="desktop_change_password_success">密码已更改</string>
     <string name="desktop_security_lock_now">立即锁定</string>
@@ -2346,4 +2347,23 @@
     <string name="evm_node_request_failed">网络节点无法处理该请求。请重试，或在区块链设置中选择其他来源。\n\n节点响应：%1$s</string>
     <string name="desktop_transfer_password">发送前输入密码</string>
     <string name="desktop_transfer_password_description">每次发送前都会要求输入应用密码，即使有人在应用未锁定时使用您的电脑，也能保护您的资产。</string>
+    <string name="desktop_unlock_legacy_format">这些数据由旧版应用创建，无法打开</string>
+    <string name="desktop_duress_password_set">设置压力模式</string>
+    <string name="desktop_duress_password_edit">编辑压力模式密码</string>
+    <string name="desktop_duress_password_disable">停用压力模式密码</string>
+    <string name="desktop_duress_password_description">此模式可设置多个应用密码，其中指定的密码只会显示特定钱包，旨在在受到胁迫或威胁时保护所选钱包。</string>
+    <string name="desktop_duress_password_note_change_title">密码更改</string>
+    <string name="desktop_duress_password_note_change_description">在压力模式下更改密码，也会更改该模式的当前密码。</string>
+    <string name="desktop_duress_password_title">压力模式密码</string>
+    <string name="desktop_duress_password_set_description">为压力模式设置密码</string>
+    <string name="desktop_duress_password_edit_description">为压力模式输入新密码</string>
+    <string name="desktop_hidden_wallet_password_title">隐藏钱包密码</string>
+    <string name="desktop_hidden_wallet_password_description">为隐藏钱包创建密码</string>
+    <string name="desktop_hidden_wallet_password_terms_warning">全局钱包将看不到此钱包，如果您忘记其密码，可以使用助记词恢复对该钱包的访问。</string>
+    <string-array name="desktop_hidden_wallet_password_terms">
+        <item>用户明白该钱包不会显示在其他钱包之中。</item>
+        <item>用户明白，如果忘记密码，只要知道助记词即可恢复该钱包。</item>
+    </string-array>
+    <string name="desktop_levels_limit_reached">已达到层级上限，无法再添加密码</string>
+    <string name="desktop_password_save_failed">无法保存密码，请重试</string>
 </resources>

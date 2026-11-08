@@ -54,6 +54,7 @@ class Migration_122_123Test {
     private fun seedVersion122(seedNft: SupportSQLiteDatabase.() -> Unit) {
         buildAppDatabase(context).run {
             openHelper.writableDatabase.run {
+                execSQL("ALTER TABLE LogEntry DROP COLUMN userLevel")
                 execSQL(
                     "INSERT INTO AccountRecord (id, name, type, origin, isBackedUp, isFileBackedUp, level, deleted) " +
                         "VALUES ('$ACCOUNT_ID', 'Seeded', 'mnemonic', 'Created', 1, 0, 0, 0)"

@@ -1,5 +1,6 @@
 package cash.p.terminal.core.managers
 
+import cash.p.terminal.core.managers.IdentityKitStorageNaming
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
@@ -63,6 +64,7 @@ class TronKitManagerOfflineGateTest {
             networkErrorTracker = mockk(relaxed = true),
             hardwareSigners = mockk(relaxed = true),
             platformContexts = mockk(relaxed = true),
+            storageNaming = IdentityKitStorageNaming,
             offlineModeManager = offlineModeManager,
             tronKitDatabaseKeyProvider = mockk(relaxed = true),
         )

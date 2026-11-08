@@ -2,6 +2,7 @@ package cash.p.terminal.core.usecase
 
 import cash.p.terminal.core.storage.AppDatabaseProvider
 import cash.p.terminal.core.storage.MoneroFileDao
+import cash.p.terminal.core.storage.SingleDatabaseStorageRouter
 import cash.p.terminal.entities.MoneroFileRecord
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
@@ -26,7 +27,7 @@ class GetMoneroWalletFilesNameUseCaseTest {
             )
         }
         val databases = mockk<AppDatabaseProvider> { every { database.moneroFileDao() } returns dao }
-        val useCase = GetMoneroWalletFilesNameUseCase(databases)
+        val useCase = GetMoneroWalletFilesNameUseCase(SingleDatabaseStorageRouter(databases))
 
         val result = useCase(trezorAccount())
 

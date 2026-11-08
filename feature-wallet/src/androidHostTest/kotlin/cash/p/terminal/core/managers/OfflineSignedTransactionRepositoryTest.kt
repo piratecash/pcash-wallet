@@ -1,8 +1,8 @@
 package cash.p.terminal.core.managers
 
 import cash.p.terminal.core.TestDispatcherProvider
-import cash.p.terminal.core.storage.OfflineBroadcastedRawMatch
 import cash.p.terminal.core.storage.OfflineSignedTransactionDao
+import cash.p.terminal.core.storage.SingleDatabaseStorageRouter
 import cash.p.terminal.core.storage.StaticAppDatabaseProvider
 import cash.p.terminal.entities.DecodedOfflineTransaction
 import cash.p.terminal.entities.OfflineFeeMetadata
@@ -148,39 +148,6 @@ class OfflineSignedTransactionRepositoryTest {
             dao.reconcileBroadcasted(
                 accountId = "relay-account",
                 txHash = "imported-hash",
-                confirmedTxHash = "network-hash",
-                status = OfflineSignedTransactionStatus.Broadcasted.value,
-                timestamp = any(),
-            )
-        }
-    }
-
-    @Test
-    fun markBroadcastedRawDuplicates_existingBroadcastedRaw_reconcilesAccountPendingRows() = runTest(dispatcher) {
-        val repository = repository()
-        coEvery {
-            dao.broadcastedRawMatches(
-                accountId = "signing-account",
-                pendingStatus = OfflineSignedTransactionStatus.Pending.value,
-                broadcastedStatus = OfflineSignedTransactionStatus.Broadcasted.value,
-            )
-        } returns listOf(
-            OfflineBroadcastedRawMatch(
-                accountId = "signing-account",
-                txHash = "local-hash",
-                confirmedTxHash = "network-hash",
-            )
-        )
-        coEvery {
-            dao.reconcileBroadcasted(any(), any(), any(), any(), any())
-        } returns Unit
-
-        repository.markBroadcastedRawDuplicates("signing-account")
-
-        coVerify {
-            dao.reconcileBroadcasted(
-                accountId = "signing-account",
-                txHash = "local-hash",
                 confirmedTxHash = "network-hash",
                 status = OfflineSignedTransactionStatus.Broadcasted.value,
                 timestamp = any(),
@@ -420,7 +387,7 @@ class OfflineSignedTransactionRepositoryTest {
     )
 
     private fun CoroutineScope.repository() = OfflineSignedTransactionRepository(
-        databaseProvider = StaticAppDatabaseProvider(mockk { every { offlineSignedTransactionDao() } returns dao }),
+        router = SingleDatabaseStorageRouter(StaticAppDatabaseProvider(mockk { every { offlineSignedTransactionDao() } returns dao })),
         dispatcherProvider = TestDispatcherProvider(dispatcher, this),
     )
 

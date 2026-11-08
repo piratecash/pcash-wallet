@@ -13,7 +13,9 @@ import cash.p.terminal.core.storage.EnabledWalletsStorage
 import cash.p.terminal.core.storage.EvmSyncSourceStorage
 import cash.p.terminal.core.storage.HardwarePublicKeyStorage
 import cash.p.terminal.core.storage.RestoreSettingsStorage
+import cash.p.terminal.core.storage.SingleDatabaseStorageRouter
 import cash.p.terminal.core.storage.StaticAppDatabaseProvider
+import cash.p.terminal.core.storage.StorageRouter
 import cash.p.terminal.modules.pin.core.PinDbStorage
 import cash.p.terminal.wallet.IAccountsStorage
 import cash.p.terminal.wallet.IEnabledWalletStorage
@@ -26,6 +28,7 @@ import org.koin.dsl.module
 val storageModule = module {
     single { buildAppDatabase(get()) }
     singleOf(::StaticAppDatabaseProvider) bind AppDatabaseProvider::class
+    singleOf(::SingleDatabaseStorageRouter) bind StorageRouter::class
     singleOf(::NumberFormatter) bind IAppNumberFormatter::class
     singleOf(::RestoreSettingsStorage) bind IRestoreSettingsStorage::class
     singleOf(::AccountsStorage) bind IAccountsStorage::class
@@ -40,13 +43,12 @@ val storageModule = module {
     single { get<AppDatabase>().evmMethodLabelDao() }
     single { get<AppDatabase>().syncerStateDao() }
     single { get<AppDatabase>().recentAddressDao() }
-    single { get<AppDatabase>().userDeletedWalletDao() }
     singleOf(::DeletedWalletChecker) bind IDeletedWalletChecker::class
     single { get<AppDatabase>().poisonAddressDao() }
     single { get<AppDatabase>().pendingTransactionDao() }
     single { get<AppDatabase>().locallyCreatedTransactionDao() }
     single { get<AppDatabase>().swapProviderTransactionsDao() }
-    single { get<AppDatabase>().pinDao() }
-    single { get<AppDatabase>().chartIndicatorSettingsDao() }
+    single { get<StorageRouter>().shared.pinDao() }
+    single { get<StorageRouter>().shared.chartIndicatorSettingsDao() }
     singleOf(::PinDbStorage)
 }

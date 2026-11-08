@@ -2253,6 +2253,7 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="desktop_change_password_current_hint">Mot de passe actuel</string>
     <string name="desktop_change_password_new_hint">Nouveau mot de passe</string>
     <string name="desktop_change_password_failed">Impossible d\u0027enregistrer le mot de passe. Le mot de passe actuel fonctionne toujours</string>
+    <string name="desktop_change_password_in_use">Ce mot de passe est déjà utilisé</string>
     <string name="desktop_change_password_corrupted">Le fichier de clé est endommagé : une fois l\u0027application verrouillée, vous ne pourrez plus vous connecter. Enregistrez une sauvegarde de chaque phrase de récupération.</string>
     <string name="desktop_change_password_success">Mot de passe modifié</string>
     <string name="desktop_security_lock_now">Verrouiller maintenant</string>
@@ -2371,4 +2372,23 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="evm_node_request_failed">Le nœud du réseau n\'a pas pu traiter la requête. Réessayez ou choisissez une autre source dans les paramètres de la Blockchain.\n\nRéponse du nœud : %1$s</string>
     <string name="desktop_transfer_password">Mot de passe avant l\u0027envoi</string>
     <string name="desktop_transfer_password_description">Le mot de passe de l\u0027application est demandé avant chaque envoi, ce qui protège vos actifs si quelqu\u0027un accède à votre ordinateur pendant que l\u0027application est déverrouillée.</string>
+    <string name="desktop_unlock_legacy_format">Les données ont été créées par une version plus ancienne de l\u0027application et ne peuvent pas être ouvertes</string>
+    <string name="desktop_duress_password_set">Activer le mode Duress</string>
+    <string name="desktop_duress_password_edit">Modifier le mot de passe Duress</string>
+    <string name="desktop_duress_password_disable">Désactiver le mot de passe Duress</string>
+    <string name="desktop_duress_password_description">Ce mode permet de définir plusieurs mots de passe de l\u0027application, un mot de passe donné n\u0027affichant que certains portefeuilles. Conçu pour protéger des portefeuilles choisis en cas de contrainte ou de menaces.</string>
+    <string name="desktop_duress_password_note_change_title">Changement de mot de passe</string>
+    <string name="desktop_duress_password_note_change_description">Modifier le mot de passe en mode Duress modifie aussi le mot de passe actuel de ce mode.</string>
+    <string name="desktop_duress_password_title">Mot de passe Duress</string>
+    <string name="desktop_duress_password_set_description">Définissez un mot de passe pour le mode Duress</string>
+    <string name="desktop_duress_password_edit_description">Saisissez un nouveau mot de passe pour le mode Duress</string>
+    <string name="desktop_hidden_wallet_password_title">Mot de passe du portefeuille caché</string>
+    <string name="desktop_hidden_wallet_password_description">Créez un mot de passe pour le portefeuille caché</string>
+    <string name="desktop_hidden_wallet_password_terms_warning">Le portefeuille global ne verra pas ce portefeuille, et si vous oubliez son mot de passe, vous pourrez restaurer l\u0027accès au portefeuille avec la phrase de récupération.</string>
+    <string-array name="desktop_hidden_wallet_password_terms">
+        <item>L\u0027utilisateur comprend que le portefeuille ne sera pas visible parmi les autres portefeuilles.</item>
+        <item>L\u0027utilisateur comprend que, s\u0027il oublie le mot de passe, le portefeuille peut être restauré grâce à sa phrase de récupération.</item>
+    </string-array>
+    <string name="desktop_levels_limit_reached">La limite de niveaux est atteinte. Aucun mot de passe supplémentaire ne peut être ajouté</string>
+    <string name="desktop_password_save_failed">Impossible d\u0027enregistrer le mot de passe. Veuillez réessayer</string>
 </resources>

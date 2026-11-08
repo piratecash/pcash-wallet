@@ -56,6 +56,6 @@ class DesktopSecurityViewModelTest {
         vault = mockk(),
         settingsStore = settingsStore,
         balanceHiddenManager = balanceHiddenManager(settingsStore, dispatcherProvider),
-        transactionSettings = DesktopWalletSettingsStorage(settingsStore),
+        transactionSettings = DesktopWalletSettingsStorage(settingsStore, mockk(relaxed = true)),
     )
 }

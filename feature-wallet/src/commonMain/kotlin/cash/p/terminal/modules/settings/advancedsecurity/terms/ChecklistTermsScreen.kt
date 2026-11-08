@@ -9,12 +9,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringArrayResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import cash.p.terminal.R
-import cash.p.terminal.modules.evmfee.ButtonsGroupWithShade
+import cash.p.terminal.resources.AdvancedSecurity_Terms_Title
+import cash.p.terminal.resources.Button_IAgree
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.SecureReset_Terms_Warning
+import cash.p.terminal.resources.delete_all_contacts_terms_checkboxes
+import cash.p.terminal.ui_compose.components.ButtonsGroupWithShade
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui_compose.components.HsBackButton
@@ -23,9 +25,11 @@ import cash.p.terminal.ui_compose.components.TermsList
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.entities.TermItem
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import org.jetbrains.compose.resources.stringArrayResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
-internal fun ChecklistTermsScreen(
+fun ChecklistTermsScreen(
     title: String,
     terms: List<TermItem>,
     buttonTitle: String,
@@ -34,9 +38,11 @@ internal fun ChecklistTermsScreen(
     onAgreeClick: () -> Unit,
     onNavigateBack: () -> Unit,
     warningContent: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
     checkboxesEnabled: Boolean = true,
 ) {
     Scaffold(
+        modifier = modifier,
         containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
@@ -80,10 +86,10 @@ internal fun ChecklistTermsScreen(
 }
 
 @Suppress("UnusedPrivateMember")
-@Preview(showBackground = true)
+@Preview
 @Composable
 private fun ChecklistTermsScreenPreview() {
-    val termTitles = stringArrayResource(R.array.delete_all_contacts_terms_checkboxes)
+    val termTitles = stringArrayResource(Res.array.delete_all_contacts_terms_checkboxes)
     val terms = termTitles.mapIndexed { index, title ->
         TermItem(
             id = index,
@@ -94,9 +100,9 @@ private fun ChecklistTermsScreenPreview() {
 
     ComposeAppTheme {
         ChecklistTermsScreen(
-            title = stringResource(R.string.AdvancedSecurity_Terms_Title),
+            title = stringResource(Res.string.AdvancedSecurity_Terms_Title),
             terms = terms,
-            buttonTitle = stringResource(R.string.Button_IAgree),
+            buttonTitle = stringResource(Res.string.Button_IAgree),
             buttonEnabled = false,
             onCheckboxToggle = {},
             onAgreeClick = {},
@@ -104,7 +110,7 @@ private fun ChecklistTermsScreenPreview() {
             warningContent = {
                 TextImportantWarning(
                     modifier = Modifier.padding(horizontal = 16.dp),
-                    text = stringResource(R.string.SecureReset_Terms_Warning)
+                    text = stringResource(Res.string.SecureReset_Terms_Warning)
                 )
             }
         )

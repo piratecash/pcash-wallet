@@ -1,12 +1,14 @@
 package cash.p.terminal.core.managers
 
 import cash.p.terminal.core.adapters.TronAdapter
+import cash.p.terminal.core.managers.IdentityKitStorageNaming
 import cash.p.terminal.core.providers.SharedAppConfig
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import io.horizontalsystems.core.IBackgroundManager
 import io.horizontalsystems.core.BackgroundManagerState
+import io.horizontalsystems.databasenaming.DatabaseNameResolver
 import io.horizontalsystems.sqlcipher.room.DatabaseMigrationConflictException
 import io.horizontalsystems.sqlcipher.room.DatabaseMigrationResult
 import io.horizontalsystems.tronkit.TronKit
@@ -125,20 +127,20 @@ class TronKitManagerDatabaseTest {
 
     @Test
     fun clear_account_clearsFilesBeforeRemovingKey() = runTest {
-        every { TronAdapter.clear(any(), any()) } returns Unit
+        every { TronAdapter.clear(any(), any(), any()) } returns Unit
         every { keyProvider.remove(any()) } returns Unit
 
         createManager().clear(ACCOUNT_ID)
 
         verifyOrder {
-            TronAdapter.clear(any(), ACCOUNT_ID)
+            TronAdapter.clear(any(), ACCOUNT_ID, DatabaseNameResolver.Identity)
             keyProvider.remove(ACCOUNT_ID)
         }
     }
 
     @Test
     fun clear_fileClearFails_keepsKey() = runTest {
-        every { TronAdapter.clear(any(), any()) } throws DatabaseMigrationConflictException("clear conflict")
+        every { TronAdapter.clear(any(), any(), any()) } throws DatabaseMigrationConflictException("clear conflict")
 
         assertFailsWith<DatabaseMigrationConflictException> { createManager().clear(ACCOUNT_ID) }
 
@@ -147,12 +149,12 @@ class TronKitManagerDatabaseTest {
 
     @Test
     fun clear_keyRemovalFails_propagates() = runTest {
-        every { TronAdapter.clear(any(), any()) } returns Unit
+        every { TronAdapter.clear(any(), any(), any()) } returns Unit
         every { keyProvider.remove(any()) } throws KitDatabaseKeyException("remove failed")
 
         assertFailsWith<KitDatabaseKeyException> { createManager().clear(ACCOUNT_ID) }
 
-        verify(exactly = 1) { TronAdapter.clear(any(), ACCOUNT_ID) }
+        verify(exactly = 1) { TronAdapter.clear(any(), ACCOUNT_ID, DatabaseNameResolver.Identity) }
     }
 
     @Test
@@ -163,7 +165,7 @@ class TronKitManagerDatabaseTest {
 
         verifyOrder {
             tronKit.stop()
-            TronAdapter.clear(any(), ACCOUNT_ID)
+            TronAdapter.clear(any(), ACCOUNT_ID, DatabaseNameResolver.Identity)
         }
         assertNull(manager.tronKitWrapper)
     }
@@ -175,13 +177,13 @@ class TronKitManagerDatabaseTest {
         manager.clear(OTHER_ACCOUNT_ID)
 
         verify(exactly = 0) { tronKit.stop() }
-        verify(exactly = 1) { TronAdapter.clear(any(), OTHER_ACCOUNT_ID) }
+        verify(exactly = 1) { TronAdapter.clear(any(), OTHER_ACCOUNT_ID, DatabaseNameResolver.Identity) }
         assertSame(tronKit, manager.tronKitWrapper?.tronKit)
     }
 
     private suspend fun createManagerWithRunningKit() = createManager().also { manager ->
         coEvery { keyProvider.awaitKey(ACCOUNT_ID) } returns databaseKey
-        every { TronAdapter.clear(any(), any()) } returns Unit
+        every { TronAdapter.clear(any(), any(), any()) } returns Unit
         every { keyProvider.remove(any()) } returns Unit
         manager.getTronKitWrapper(account)
     }
@@ -193,6 +195,7 @@ class TronKitManagerDatabaseTest {
         networkErrorTracker = mockk(relaxed = true),
         hardwareSigners = mockk(relaxed = true),
         platformContexts = mockk(relaxed = true),
+        storageNaming = IdentityKitStorageNaming,
         offlineModeManager = mockk(relaxed = true),
         tronKitDatabaseKeyProvider = keyProvider,
     ).also { createdManager = it }

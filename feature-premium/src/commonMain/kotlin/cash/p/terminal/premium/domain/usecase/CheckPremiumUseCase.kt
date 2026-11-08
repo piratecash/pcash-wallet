@@ -32,6 +32,9 @@ interface CheckPremiumUseCase {
     /** Starts the background re-scan behind [premiumTypesFlow] once storage is readable; later calls are no-ops. */
     fun startWarmUp()
 
+    /** Stops the re-scan from reaching storage without waiting for it; [stopWarmUp] still follows. */
+    fun cancelWarmUp()
+
     /** Ends the re-scan and forgets the cached types, so the next [startWarmUp] reads the storage anew. */
     suspend fun stopWarmUp()
 }

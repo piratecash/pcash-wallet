@@ -117,7 +117,7 @@ class StatusReportFileTest {
         val exportReached = CountDownLatch(1)
         val releaseExport = CountDownLatch(1)
         koinLogsDao.dao = mockk<LogsDao>(relaxed = true).also { logsDao ->
-            every { logsDao.getGroupedPage(any(), any(), any()) } answers {
+            every { logsDao.getGroupedPage(any(), any(), any(), any()) } answers {
                 exportReached.countDown()
                 releaseExport.await(TIMEOUT_SECONDS, TimeUnit.SECONDS)
                 emptyList()

@@ -2255,6 +2255,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="desktop_change_password_current_hint">Mevcut şifre</string>
     <string name="desktop_change_password_new_hint">Yeni şifre</string>
     <string name="desktop_change_password_failed">Şifre kaydedilemedi. Mevcut şifre kullanılmaya devam ediyor</string>
+    <string name="desktop_change_password_in_use">Bu şifre zaten kullanılıyor</string>
     <string name="desktop_change_password_corrupted">Anahtar dosyası zarar görmüş: uygulama kilitlendiğinde oturum açamayacaksınız. Her kurtarma ifadesinin bir yedeğini kaydedin.</string>
     <string name="desktop_change_password_success">Şifre değiştirildi</string>
     <string name="desktop_security_lock_now">Şimdi kilitle</string>
@@ -2368,4 +2369,23 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="evm_node_request_failed">Ağ düğümü isteği işleyemedi. Tekrar deneyin veya Blockchain Ayarları\'ndan başka bir kaynak seçin.\n\nDüğüm yanıtı: %1$s</string>
     <string name="desktop_transfer_password">Göndermeden önce şifre</string>
     <string name="desktop_transfer_password_description">Her gönderimden önce uygulama şifresi istenir. Böylece uygulamanın kilidi açıkken biri bilgisayarınıza erişirse varlıklarınız korunur.</string>
+    <string name="desktop_unlock_legacy_format">Veriler uygulamanın daha eski bir sürümü tarafından oluşturulmuş ve açılamıyor</string>
+    <string name="desktop_duress_password_set">Baskı Modunu Ayarla</string>
+    <string name="desktop_duress_password_edit">Baskı Modu Şifresini Düzenle</string>
+    <string name="desktop_duress_password_disable">Baskı Modu Şifresini Devre Dışı Bırak</string>
+    <string name="desktop_duress_password_description">Bu mod, birden fazla uygulama şifresi belirlemenizi sağlar; belirli bir şifre yalnızca seçilen cüzdanları gösterir. Seçilen cüzdanları zorlama veya tehdit altında güvende tutmak için tasarlanmıştır.</string>
+    <string name="desktop_duress_password_note_change_title">Şifre Değişikliği</string>
+    <string name="desktop_duress_password_note_change_description">Baskı Modunda şifreyi değiştirmek, bu modun mevcut şifresini de değiştirir.</string>
+    <string name="desktop_duress_password_title">Baskı Modu Şifresi</string>
+    <string name="desktop_duress_password_set_description">Baskı Modu için bir şifre belirleyin</string>
+    <string name="desktop_duress_password_edit_description">Baskı Modu için yeni bir şifre girin</string>
+    <string name="desktop_hidden_wallet_password_title">Gizli Cüzdan Şifresi</string>
+    <string name="desktop_hidden_wallet_password_description">Gizli cüzdan için bir şifre oluşturun</string>
+    <string name="desktop_hidden_wallet_password_terms_warning">Genel cüzdan bu cüzdanı görmez; şifresini unutursanız cüzdana erişimi kurtarma ifadesiyle geri alabilirsiniz.</string>
+    <string-array name="desktop_hidden_wallet_password_terms">
+        <item>Kullanıcı, cüzdanın diğer cüzdanlar arasında görünmeyeceğini anlar.</item>
+        <item>Kullanıcı, şifreyi unutması halinde cüzdanın kurtarma ifadesi bilinerek geri yüklenebileceğini anlar.</item>
+    </string-array>
+    <string name="desktop_levels_limit_reached">Seviye sınırına ulaşıldı. Daha fazla şifre eklenemez</string>
+    <string name="desktop_password_save_failed">Şifre kaydedilemedi. Lütfen tekrar deneyin</string>
 </resources>

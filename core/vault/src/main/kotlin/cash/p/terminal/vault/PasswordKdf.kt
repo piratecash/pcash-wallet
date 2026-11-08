@@ -22,18 +22,30 @@ class Argon2Params private constructor(val memoryKib: Int, val iterations: Int, 
     }
 }
 
-private const val KEK_SIZE = 32
+/** Separate from [PasswordVault] so tests can count Argon2 runs and envelope attempts. */
+internal interface VaultCrypto {
+    fun deriveKek(password: ByteArray, salt: ByteArray, params: Argon2Params): ByteArray
 
-internal fun deriveKek(password: ByteArray, salt: ByteArray, params: Argon2Params): ByteArray {
-    val parameters = Argon2Parameters.Builder(Argon2Parameters.ARGON2_id)
-        .withVersion(Argon2Parameters.ARGON2_VERSION_13)
-        .withMemoryAsKB(params.memoryKib)
-        .withIterations(params.iterations)
-        .withParallelism(params.parallelism)
-        .withSalt(salt)
-        .build()
-    val generator = Argon2BytesGenerator().apply { init(parameters) }
-    return ByteArray(KEK_SIZE).also { generator.generateBytes(password, it) }
+    fun openEnvelope(envelope: ByteArray, kek: ByteArray, aad: ByteArray): ByteArray?
+}
+
+internal object DefaultVaultCrypto : VaultCrypto {
+    private const val KEK_SIZE = 32
+
+    override fun deriveKek(password: ByteArray, salt: ByteArray, params: Argon2Params): ByteArray {
+        val parameters = Argon2Parameters.Builder(Argon2Parameters.ARGON2_id)
+            .withVersion(Argon2Parameters.ARGON2_VERSION_13)
+            .withMemoryAsKB(params.memoryKib)
+            .withIterations(params.iterations)
+            .withParallelism(params.parallelism)
+            .withSalt(salt)
+            .build()
+        val generator = Argon2BytesGenerator().apply { init(parameters) }
+        return ByteArray(KEK_SIZE).also { generator.generateBytes(password, it) }
+    }
+
+    override fun openEnvelope(envelope: ByteArray, kek: ByteArray, aad: ByteArray): ByteArray? =
+        AesGcm.decrypt(envelope, kek, aad)
 }
 
 // Sized for the worst case so the encoder never reallocates and leaves an unwiped copy behind.

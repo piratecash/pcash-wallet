@@ -10,6 +10,7 @@ import cash.p.terminal.resources.desktop_forgot_password_action
 import cash.p.terminal.resources.desktop_forgot_password_title
 import cash.p.terminal.resources.desktop_forgot_password_warning
 import cash.p.terminal.resources.desktop_unlock_data_unreadable
+import cash.p.terminal.resources.desktop_unlock_legacy_format
 import cash.p.terminal.ui_compose.components.ButtonPrimaryRed
 import cash.p.terminal.ui_compose.components.ButtonPrimaryTransparent
 import cash.p.terminal.ui_compose.components.TextImportantError
@@ -24,11 +25,13 @@ import org.koin.compose.viewmodel.koinViewModel
 internal fun ForgotPasswordScreen(
     dataUnreadable: Boolean,
     onCancelClick: () -> Unit,
+    legacyFormat: Boolean = false,
     viewModel: ForgotPasswordViewModel = koinViewModel(),
 ) {
     ForgotPasswordContent(
         uiState = viewModel.uiState,
         dataUnreadable = dataUnreadable,
+        legacyFormat = legacyFormat,
         onUnderstoodChange = viewModel::onUnderstoodChange,
         onDeleteClick = viewModel::onDeleteClick,
         onCancelClick = onCancelClick,
@@ -39,13 +42,16 @@ internal fun ForgotPasswordScreen(
 internal fun ForgotPasswordContent(
     uiState: ForgotPasswordUiState,
     dataUnreadable: Boolean,
+    legacyFormat: Boolean,
     onUnderstoodChange: (Boolean) -> Unit,
     onDeleteClick: () -> Unit,
     onCancelClick: () -> Unit,
 ) {
     LockScreenLayout(title = stringResource(Res.string.desktop_forgot_password_title)) {
-        if (dataUnreadable) {
-            subhead2_lucian(text = stringResource(Res.string.desktop_unlock_data_unreadable))
+        if (dataUnreadable || legacyFormat) {
+            val notice =
+                if (legacyFormat) Res.string.desktop_unlock_legacy_format else Res.string.desktop_unlock_data_unreadable
+            subhead2_lucian(text = stringResource(notice))
             VSpacer(16.dp)
         }
         TextImportantError(text = stringResource(Res.string.desktop_forgot_password_warning))
@@ -75,6 +81,7 @@ private fun ForgotPasswordContentPreview() {
         ForgotPasswordContent(
             uiState = ForgotPasswordUiState(understood = true),
             dataUnreadable = true,
+            legacyFormat = false,
             onUnderstoodChange = {},
             onDeleteClick = {},
             onCancelClick = {},

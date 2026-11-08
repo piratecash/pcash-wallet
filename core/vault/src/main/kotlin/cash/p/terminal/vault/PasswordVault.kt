@@ -13,7 +13,8 @@ import java.nio.file.StandardOpenOption
 import java.security.SecureRandom
 
 sealed interface CreateResult {
-    class Created(val session: VaultSession) : CreateResult
+    /** The decoys are the positions in neither the session nor the pools: they are not recorded anywhere. */
+    class Created(val session: VaultSession, val slotPool: Set<Int>, val envelopePool: Set<Int>) : CreateResult
     data object AlreadyExists : CreateResult
     data object Failed : CreateResult
 }
@@ -22,95 +23,134 @@ sealed interface UnlockResult {
     class Success(val session: VaultSession) : UnlockResult
     data object WrongPassword : UnlockResult
     data object Corrupted : UnlockResult
+    data object LegacyFormat : UnlockResult
 }
 
-sealed interface ChangePasswordResult {
-    data object Success : ChangePasswordResult
-    data object WrongPassword : ChangePasswordResult
-    data object Corrupted : ChangePasswordResult
-}
+/** Not safe for concurrent [create]/[sealEnvelope]/[freeEnvelope]: the caller serializes them. */
+class PasswordVault internal constructor(
+    private val file: File,
+    private val kdfParams: Argon2Params,
+    private val crypto: VaultCrypto,
+) {
+    constructor(file: File, kdfParams: Argon2Params = Argon2Params.DEFAULT) : this(file, kdfParams, DefaultVaultCrypto)
 
-/** Not safe for concurrent [create]/[changePassword]: the caller serializes them. */
-class PasswordVault(private val file: File, private val kdfParams: Argon2Params = Argon2Params.DEFAULT) {
     private val secureRandom = SecureRandom()
     private val directory: Path get() = file.toPath().toAbsolutePath().parent
 
     fun exists(): Boolean = file.exists()
 
-    fun create(password: CharArray): CreateResult {
-        val masterKey = randomBytes(VaultFileFormat.MASTER_KEY_SIZE)
-        val result = try {
+    /**
+     * [prepareStorage] runs before the file is published: whatever goes wrong in it leaves no vault to unlock, so
+     * a retry starts over. An [IOException] from it reports [CreateResult.Failed].
+     */
+    fun create(password: CharArray, prepareStorage: (CreateResult.Created) -> Unit = {}): CreateResult {
+        val slots = allocate(SLOT_COUNT)
+        val envelopes = allocate(ENVELOPE_COUNT)
+        val payload = EnvelopePayload(slots.root, randomKey(), randomKey())
+        val created = CreateResult.Created(VaultSession(envelopes.root, payload), slots.pool, envelopes.pool)
+        var result: CreateResult = CreateResult.Failed
+        try {
+            prepareStorage(created)
             deleteOrphanTemps()
-            val bytes = VaultFileFormat.encode(VaultFile(listOf(sealSlot(masterKey, password))))
+            val bytes = VaultFileFormat.encode(newVaultFile(envelopes.root, password, payload))
             // A hard link publishes the complete file and fails if the target exists, in one atomic step.
             writeAndPublish(bytes) { temp -> Files.createLink(file.toPath(), temp) }
-            CreateResult.Created(VaultSession(masterKey))
+            result = created
         } catch (e: FileAlreadyExistsException) {
-            CreateResult.AlreadyExists
+            result = CreateResult.AlreadyExists
         } catch (e: IOException) {
-            CreateResult.Failed
+            result = CreateResult.Failed
         } catch (e: UnsupportedOperationException) {
-            CreateResult.Failed
+            result = CreateResult.Failed
+        } finally {
+            if (result !== created) created.session.close()
         }
-        if (result !is CreateResult.Created) masterKey.fill(0)
         return result
     }
 
+    /** Runs Argon2 once and tries every envelope whichever one opens, so the work does not reveal the position. */
     fun unlock(password: CharArray): UnlockResult {
-        val vault = readVault() ?: return UnlockResult.Corrupted
-        val masterKey = password.withUtf8Bytes { bytes -> vault.slots.firstNotNullOfOrNull { openSlot(it, bytes) } }
-        return masterKey?.let { UnlockResult.Success(VaultSession(it)) } ?: UnlockResult.WrongPassword
+        val bytes = readBytes() ?: return UnlockResult.Corrupted
+        if (VaultFileFormat.isLegacy(bytes)) return UnlockResult.LegacyFormat
+        val vault = VaultFileFormat.decode(bytes) ?: return UnlockResult.Corrupted
+
+        val kek = password.withUtf8Bytes { crypto.deriveKek(it, vault.salt, vault.params) }
+        val plaintexts = try {
+            vault.envelopes.mapIndexed { index, envelope ->
+                crypto.openEnvelope(envelope, kek, VaultFileFormat.envelopeAad(vault.params, vault.salt, index))
+            }
+        } finally {
+            kek.fill(0)
+        }
+        val index = plaintexts.indexOfFirst { it != null }
+        val session = plaintexts.getOrNull(index)?.let { VaultSession(index, VaultFileFormat.decodePayload(it)) }
+        plaintexts.forEach { it?.fill(0) }
+        return session?.let(UnlockResult::Success) ?: UnlockResult.WrongPassword
     }
 
-    fun changePassword(old: CharArray, new: CharArray): ChangePasswordResult {
-        val vault = readVault() ?: return ChangePasswordResult.Corrupted
+    /** Throws [IOException] when the file cannot answer: "not in use" must not be assumed. */
+    fun opensAny(password: CharArray): Boolean = when (val result = unlock(password)) {
+        is UnlockResult.Success -> {
+            result.session.close()
+            true
+        }
+        UnlockResult.WrongPassword -> false
+        UnlockResult.Corrupted, UnlockResult.LegacyFormat -> throw IOException("Vault file is unusable")
+    }
+
+    /** Takes the Argon2 parameters and salt from the file. Throws [IOException] and keeps the file on failure. */
+    fun sealEnvelope(index: Int, password: CharArray, payload: EnvelopePayload) =
+        replaceEnvelopes(listOf(index)) { vault -> sealedEnvelope(vault.params, vault.salt, index, password, payload) }
+
+    /** One atomic rewrite: all of them stop opening together. Throws [IOException] and keeps the file on failure. */
+    fun freeEnvelopes(indices: Collection<Int>) =
+        replaceEnvelopes(indices) { randomBytes(VaultFileFormat.ENVELOPE_SIZE) }
+
+    private inline fun replaceEnvelopes(indices: Collection<Int>, envelope: (VaultFile) -> ByteArray) {
+        indices.forEach { require(it in 0 until ENVELOPE_COUNT) { "Envelope $it is out of range" } }
+        val vault = readBytes()?.let(VaultFileFormat::decode) ?: throw IOException("Vault file is unusable")
+        val envelopes = vault.envelopes.toMutableList().apply { indices.forEach { set(it, envelope(vault)) } }
         deleteOrphanTemps()
-        val masterKeys = old.withUtf8Bytes { bytes -> vault.slots.map { openSlot(it, bytes) } }
-        val masterKey = masterKeys.firstNotNullOfOrNull { it } ?: return ChangePasswordResult.WrongPassword
-        try {
-            val sameKey = masterKeys.map { it?.contentEquals(masterKey) == true }
-            val slots = replaceSlots(vault.slots, sameKey, sealSlot(masterKey, new))
-            writeAndPublish(VaultFileFormat.encode(VaultFile(slots))) { temp ->
-                Files.move(temp, file.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
-            }
-            return ChangePasswordResult.Success
-        } finally {
-            masterKeys.forEach { it?.fill(0) }
+        writeAndPublish(VaultFileFormat.encode(VaultFile(vault.params, vault.salt, envelopes))) { temp ->
+            Files.move(temp, file.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
         }
     }
 
-    private fun readVault(): VaultFile? = try {
-        VaultFileFormat.decode(Files.readAllBytes(file.toPath()))
+    private fun readBytes(): ByteArray? = try {
+        Files.readAllBytes(file.toPath())
     } catch (e: NoSuchFileException) {
         null
     }
 
-    private fun sealSlot(masterKey: ByteArray, password: CharArray): VaultSlot {
+    private fun newVaultFile(rootEnvelope: Int, password: CharArray, payload: EnvelopePayload): VaultFile {
         val salt = randomBytes(VaultFileFormat.SALT_SIZE)
-        val kek = password.withUtf8Bytes { deriveKek(it, salt, kdfParams) }
+        val envelopes = List(ENVELOPE_COUNT) { randomBytes(VaultFileFormat.ENVELOPE_SIZE) }.toMutableList()
+        envelopes[rootEnvelope] = sealedEnvelope(kdfParams, salt, rootEnvelope, password, payload)
+        return VaultFile(kdfParams, salt, envelopes)
+    }
+
+    private fun sealedEnvelope(
+        params: Argon2Params,
+        salt: ByteArray,
+        index: Int,
+        password: CharArray,
+        payload: EnvelopePayload,
+    ): ByteArray {
+        val plaintext = VaultFileFormat.encodePayload(payload)
+        val kek = password.withUtf8Bytes { crypto.deriveKek(it, salt, params) }
         try {
-            val sealed = AesGcm.encrypt(masterKey, kek, VaultFileFormat.slotAad(kdfParams, salt))
-            return VaultSlot(kdfParams, salt, sealed)
+            return AesGcm.encrypt(plaintext, kek, VaultFileFormat.envelopeAad(params, salt, index))
         } finally {
             kek.fill(0)
+            plaintext.fill(0)
         }
     }
 
-    private fun openSlot(slot: VaultSlot, password: ByteArray): ByteArray? {
-        val kek = deriveKek(password, slot.salt, slot.params)
-        try {
-            return AesGcm.decrypt(slot.sealedMasterKey, kek, VaultFileFormat.slotAad(slot.params, slot.salt))
-        } finally {
-            kek.fill(0)
-        }
+    private fun allocate(positions: Int): Allocation {
+        val shuffled = (0 until positions).shuffled(secureRandom)
+        val decoys = DECOYS_MIN + secureRandom.nextInt(DECOYS_MAX - DECOYS_MIN + 1)
+        return Allocation(root = shuffled.first(), pool = shuffled.drop(1 + decoys).toSet())
     }
-
-    // Replaced slots collapse into the one new slot at the first replaced position; a slot holding
-    // another master key is kept even if the old password opens it, or that key would be lost.
-    private fun replaceSlots(slots: List<VaultSlot>, replaced: List<Boolean>, newSlot: VaultSlot) =
-        slots.filterIndexed { index, _ -> !replaced[index] }
-            .toMutableList()
-            .apply { add(replaced.indexOf(true), newSlot) }
 
     private inline fun writeAndPublish(bytes: ByteArray, publish: (Path) -> Unit) {
         val temp = Files.createTempFile(directory, "${file.name}.", ".tmp")
@@ -137,7 +177,7 @@ class PasswordVault(private val file: File, private val kdfParams: Argon2Params 
         }
     }
 
-    // A temp left by a crash could still hold a slot of a password that has since been changed.
+    // A temp left by a crash could still hold an envelope of a password that has since been changed.
     private fun deleteOrphanTemps() {
         val isOrphan = { candidate: Path ->
             candidate.fileName.toString().let { it.startsWith("${file.name}.") && it.endsWith(".tmp") }
@@ -146,6 +186,8 @@ class PasswordVault(private val file: File, private val kdfParams: Argon2Params 
             orphans.forEach(Files::deleteIfExists)
         }
     }
+
+    private fun randomKey(): ByteArray = randomBytes(EnvelopePayload.KEY_SIZE)
 
     private fun randomBytes(size: Int): ByteArray = ByteArray(size).also(secureRandom::nextBytes)
 
@@ -156,5 +198,15 @@ class PasswordVault(private val file: File, private val kdfParams: Argon2Params 
         } finally {
             bytes.fill(0)
         }
+    }
+
+    private class Allocation(val root: Int, val pool: Set<Int>)
+
+    companion object {
+        const val ENVELOPE_COUNT = 32
+        const val SLOT_COUNT = 24
+
+        private const val DECOYS_MIN = 3
+        private const val DECOYS_MAX = 8
     }
 }

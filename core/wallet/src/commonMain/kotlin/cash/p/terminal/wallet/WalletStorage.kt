@@ -140,7 +140,10 @@ class WalletStorage(
     }
 
     override fun delete(wallets: List<Wallet>) {
-        storage.delete(wallets.mapNotNull { map[it] })
+        // Ids are per database: each set goes only to the store of its account.
+        wallets.groupBy { it.account.id }.forEach { (accountId, accountWallets) ->
+            storage.delete(accountId, accountWallets.mapNotNull { map[it] })
+        }
     }
 
     override fun deleteByTokenQueryId(accountId: String, tokenQueryId: String) {

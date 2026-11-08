@@ -2258,6 +2258,7 @@
     <string name="desktop_change_password_current_hint">رمز عبور فعلی</string>
     <string name="desktop_change_password_new_hint">رمز عبور جدید</string>
     <string name="desktop_change_password_failed">ذخیره رمز عبور ممکن نشد. رمز عبور فعلی همچنان کار می‌کند</string>
+    <string name="desktop_change_password_in_use">این رمز عبور قبلاً استفاده شده است</string>
     <string name="desktop_change_password_corrupted">فایل کلید آسیب دیده است: پس از قفل شدن برنامه نمی‌توانید وارد شوید. از هر عبارت بازیابی یک نسخه پشتیبان ذخیره کنید.</string>
     <string name="desktop_change_password_success">رمز عبور تغییر یافت</string>
     <string name="desktop_security_lock_now">اکنون قفل کن</string>
@@ -2371,4 +2372,23 @@
     <string name="evm_node_request_failed">گره شبکه نتوانست درخواست را پردازش کند. دوباره تلاش کنید یا در تنظیمات بلاک‌چین منبع دیگری انتخاب کنید.\n\nپاسخ گره: %1$s</string>
     <string name="desktop_transfer_password">رمز عبور پیش از ارسال</string>
     <string name="desktop_transfer_password_description">پیش از هر ارسال، رمز عبور برنامه درخواست می‌شود تا اگر کسی هنگام باز بودن قفل برنامه به رایانهٔ شما دسترسی پیدا کند، دارایی‌هایتان محافظت شوند.</string>
+    <string name="desktop_unlock_legacy_format">داده‌ها با نسخه قدیمی‌تر برنامه ساخته شده‌اند و باز نمی‌شوند</string>
+    <string name="desktop_duress_password_set">تنظیم حالت اجبار</string>
+    <string name="desktop_duress_password_edit">ویرایش رمز عبور حالت اجبار</string>
+    <string name="desktop_duress_password_disable">غیرفعال کردن رمز عبور حالت اجبار</string>
+    <string name="desktop_duress_password_description">این حالت امکان تنظیم چند رمز عبور برای برنامه را می‌دهد؛ هر رمز عبور فقط کیف‌پول‌های مشخص‌شده را نمایش می‌دهد. برای محافظت از کیف‌پول‌های انتخابی هنگام اجبار یا تهدید طراحی شده است.</string>
+    <string name="desktop_duress_password_note_change_title">تغییر رمز عبور</string>
+    <string name="desktop_duress_password_note_change_description">تغییر رمز عبور در حالت اجبار، رمز عبور فعلی همان حالت را نیز تغییر می‌دهد.</string>
+    <string name="desktop_duress_password_title">رمز عبور حالت اجبار</string>
+    <string name="desktop_duress_password_set_description">یک رمز عبور برای حالت اجبار تنظیم کنید</string>
+    <string name="desktop_duress_password_edit_description">رمز عبور جدید حالت اجبار را وارد کنید</string>
+    <string name="desktop_hidden_wallet_password_title">رمز عبور کیف‌پول مخفی</string>
+    <string name="desktop_hidden_wallet_password_description">یک رمز عبور برای کیف‌پول مخفی ایجاد کنید</string>
+    <string name="desktop_hidden_wallet_password_terms_warning">کیف‌پول سراسری این کیف‌پول را نمی‌بیند و اگر رمز عبور آن را فراموش کنید، می‌توانید با عبارت بازیابی دوباره به آن دسترسی پیدا کنید.</string>
+    <string-array name="desktop_hidden_wallet_password_terms">
+        <item>کاربر می‌داند که این کیف‌پول میان سایر کیف‌پول‌ها نمایش داده نمی‌شود.</item>
+        <item>کاربر می‌داند که اگر رمز عبور را فراموش کند، با داشتن عبارت بازیابی می‌تواند کیف‌پول را بازیابی کند.</item>
+    </string-array>
+    <string name="desktop_levels_limit_reached">به سقف سطوح رسیده‌اید. نمی‌توان رمز عبور دیگری اضافه کرد</string>
+    <string name="desktop_password_save_failed">ذخیره رمز عبور ممکن نشد. لطفاً دوباره تلاش کنید</string>
 </resources>

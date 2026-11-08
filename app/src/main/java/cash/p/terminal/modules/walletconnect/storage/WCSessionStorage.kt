@@ -1,27 +1,26 @@
 package cash.p.terminal.modules.walletconnect.storage
 
-import cash.p.terminal.core.storage.AppDatabase
+import cash.p.terminal.core.storage.StorageRouter
+import cash.p.terminal.core.storage.acrossAccounts
+import cash.p.terminal.core.storage.forEachAccount
+import cash.p.terminal.core.storage.writePerStore
 
-class WCSessionStorage(appDatabase: AppDatabase) {
-
-    private val dao: WCSessionDao by lazy {
-        appDatabase.wcSessionDao()
-    }
+class WCSessionStorage(private val router: StorageRouter) {
 
     fun getAllSessions(): List<WalletConnectV2Session> {
-        return dao.getAll()
+        return router.acrossAccounts { wcSessionDao().getAll() }
     }
 
     fun getSessionsByAccountId(accountId: String): List<WalletConnectV2Session> {
-        return dao.getByAccountId(accountId)
+        return router.account(accountId)?.wcSessionDao()?.getByAccountId(accountId).orEmpty()
     }
 
     fun save(sessions: List<WalletConnectV2Session>) {
-        dao.insert(sessions)
+        router.writePerStore(sessions, { it.accountId }) { wcSessionDao().insert(it) }
     }
 
     fun deleteSessionsByTopics(topics: List<String> = listOf()) {
-        dao.deleteByTopics(topics)
+        router.forEachAccount { wcSessionDao().deleteByTopics(topics) }
     }
 
 }

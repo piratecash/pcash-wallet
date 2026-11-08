@@ -4,6 +4,7 @@ import cash.p.terminal.core.managers.AndroidKitPlatformContexts
 import android.content.Context
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.adapters.zcash.session.ZcashDatabaseFiles
+import cash.p.terminal.core.managers.IdentityKitStorageNaming
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.CoroutineScope
@@ -30,7 +31,8 @@ class ClearLegacyZcashDataUseCaseTest {
     fun setUp() {
         noBackupDir = Files.createTempDirectory("zcash-legacy").toFile()
         databaseFiles = ZcashDatabaseFiles(
-            AndroidKitPlatformContexts(mockk<Context> { every { noBackupFilesDir } returns noBackupDir })
+            AndroidKitPlatformContexts(mockk<Context> { every { noBackupFilesDir } returns noBackupDir }),
+            IdentityKitStorageNaming,
         )
         databaseFiles.legacyDir.mkdirs()
     }

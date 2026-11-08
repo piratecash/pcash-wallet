@@ -1,5 +1,6 @@
 package cash.p.terminal.core.managers
 
+import cash.p.terminal.core.managers.IdentityKitStorageNaming
 import cash.p.terminal.core.providers.SharedAppConfig
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
@@ -292,6 +293,7 @@ class TonKitManagerDatabaseTest {
         },
         hardwarePublicKeyStorage = mockk(relaxed = true),
         platformContexts = mockk(relaxed = true),
+        storageNaming = IdentityKitStorageNaming,
         backgroundKeepAliveManager = mockk(relaxed = true),
         networkErrorTracker = mockk(relaxed = true),
         offlineModeManager = offlineModeManager,

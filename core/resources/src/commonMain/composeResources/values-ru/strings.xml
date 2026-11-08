@@ -2426,6 +2426,7 @@
     <string name="desktop_change_password_current_hint">Текущий пароль</string>
     <string name="desktop_change_password_new_hint">Новый пароль</string>
     <string name="desktop_change_password_failed">Не удалось сохранить пароль. Текущий пароль продолжает действовать</string>
+    <string name="desktop_change_password_in_use">Этот пароль уже используется</string>
     <string name="desktop_change_password_corrupted">Файл ключа повреждён: после блокировки приложения вы не сможете войти. Сохраните резервную копию каждой фразы восстановления.</string>
     <string name="desktop_change_password_success">Пароль изменён</string>
     <string name="desktop_security_lock_now">Заблокировать сейчас</string>
@@ -2549,4 +2550,23 @@
     <string name="evm_node_request_failed">Узел сети не смог выполнить запрос. Повторите попытку или выберите другой источник в настройках блокчейна.\n\nОтвет узла: %1$s</string>
     <string name="desktop_transfer_password">Пароль перед отправкой</string>
     <string name="desktop_transfer_password_description">Перед каждой отправкой запрашивается пароль приложения. Это защитит ваши средства, если кто-то получит доступ к компьютеру с разблокированным приложением.</string>
+    <string name="desktop_unlock_legacy_format">Данные созданы более старой версией приложения и не могут быть открыты</string>
+    <string name="desktop_duress_password_set">Установить режим Duress</string>
+    <string name="desktop_duress_password_edit">Изменить Duress-пароль</string>
+    <string name="desktop_duress_password_disable">Отключить Duress-пароль</string>
+    <string name="desktop_duress_password_description">Этот режим позволяет задать несколько паролей приложения, при этом заданный пароль показывает только определённые кошельки. Создан для защиты выбранных кошельков при принуждении или угрозах.</string>
+    <string name="desktop_duress_password_note_change_title">Смена пароля</string>
+    <string name="desktop_duress_password_note_change_description">Смена пароля в режиме Duress также изменит текущий пароль этого режима.</string>
+    <string name="desktop_duress_password_title">Duress-пароль</string>
+    <string name="desktop_duress_password_set_description">Задайте пароль для режима Duress</string>
+    <string name="desktop_duress_password_edit_description">Введите новый пароль для режима Duress</string>
+    <string name="desktop_hidden_wallet_password_title">Пароль скрытого кошелька</string>
+    <string name="desktop_hidden_wallet_password_description">Создайте пароль для скрытого кошелька</string>
+    <string name="desktop_hidden_wallet_password_terms_warning">Глобальный кошелёк не увидит этот кошелёк, а если вы забудете его пароль, доступ к кошельку можно восстановить по seed-фразе.</string>
+    <string-array name="desktop_hidden_wallet_password_terms">
+        <item>Пользователь понимает, что кошелёк не будет виден среди других кошельков.</item>
+        <item>Пользователь понимает, что если он забудет пароль кошелька, его можно восстановить, зная seed-фразу.</item>
+    </string-array>
+    <string name="desktop_levels_limit_reached">Достигнут предел уровней. Новые пароли добавить нельзя</string>
+    <string name="desktop_password_save_failed">Не удалось сохранить пароль. Попробуйте ещё раз</string>
 </resources>

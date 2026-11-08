@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
+import java.util.concurrent.atomic.AtomicReference
 
 class AccountManager(
     private val storage: IAccountsStorage,
@@ -26,16 +27,24 @@ class AccountManager(
 ) : IAccountManager {
     private val logger = Logger.withTag("AccountManager")
 
-    private var accountsCache = mutableMapOf<String, Account>()
+    /** The accounts of one load; [generation] changes with every load, so a write from an earlier one is told apart. */
+    private data class CacheState(val level: Int, val accounts: Map<String, Account>, val generation: Long)
+
+    private val cache = AtomicReference(CacheState(LEVEL_NOT_SET, emptyMap(), 0))
     private val accountsDeletedSubject = PublishSubject.create<Unit>()
     private val _activeAccountStateFlow =
         MutableStateFlow<ActiveAccountState>(ActiveAccountState.NotLoaded)
     private var currentLevel = LEVEL_NOT_SET
 
+    override val visibleAccounts: VisibleAccounts?
+        get() = cache.get().let { state ->
+            state.takeIf { it.level != LEVEL_NOT_SET }?.let { VisibleAccounts(it.level, it.accounts.keys) }
+        }
+
     override val activeAccountStateFlow = _activeAccountStateFlow
 
     override val hasNonStandardAccount: Boolean
-        get() = accountsCache.any { it.value.nonStandard }
+        get() = cache.get().accounts.any { it.value.nonStandard }
 
     override var activeAccount: Account? = null
 
@@ -43,7 +52,7 @@ class AccountManager(
         get() = storage.isAccountsEmpty
 
     override val accounts: List<Account>
-        get() = accountsCache.map { it.value }
+        get() = cache.get().accounts.values.toList()
 
     private val _accountsSharedFlow = MutableSharedFlow<List<Account>>(
         replay = 0,
@@ -59,8 +68,16 @@ class AccountManager(
     private val _newAccountBackupRequiredFlow = MutableStateFlow<Account?>(null)
     override val newAccountBackupRequiredFlow = _newAccountBackupRequiredFlow.asStateFlow()
 
-    private fun updateCache(account: Account) {
-        accountsCache[account.id] = account
+    private val generation: Long get() = cache.get().generation
+
+    /** Applies only to the load the operation started against; false when a later one replaced it. */
+    private fun putAccount(startGeneration: Long, account: Account, mustExist: Boolean): Boolean {
+        var applied = false
+        cache.updateAndGet { state ->
+            applied = state.generation == startGeneration && (!mustExist || account.id in state.accounts)
+            if (applied) state.copy(accounts = LinkedHashMap(state.accounts).apply { put(account.id, account) }) else state
+        }
+        return applied
     }
 
     override fun setActiveAccountId(activeAccountId: String?) {
@@ -77,14 +94,15 @@ class AccountManager(
     override fun updateSignedHashes(signedHashes: Int) {
         activeAccount?.let {
             val hardwareCard = it.type as? AccountType.HardwareCard ?: return
+            val startGeneration = generation
             val updatedAccount = it.copy(
                 type = hardwareCard.copy(
                     signedHashes = signedHashes
                 )
             )
             storage.update(updatedAccount)
+            if (!putAccount(startGeneration, updatedAccount, mustExist = true)) return
             activeAccount = updatedAccount
-            updateCache(updatedAccount)
             _activeAccountStateFlow.update {
                 ActiveAccountState.ActiveAccount(updatedAccount)
             }
@@ -92,7 +110,7 @@ class AccountManager(
     }
 
     override fun account(id: String): Account? {
-        return accounts.find { account -> account.id == id }
+        return cache.get().accounts[id]
     }
 
     override fun onHandledBackupRequiredNewAccount() {
@@ -100,9 +118,10 @@ class AccountManager(
     }
 
     override fun save(account: Account, updateActive: Boolean) {
+        val startGeneration = generation
         storage.save(account)
 
-        updateCache(account)
+        if (!putAccount(startGeneration, account, mustExist = false)) return
         _accountsSharedFlow.tryEmit(accounts)
 
         if (updateActive) {
@@ -116,15 +135,16 @@ class AccountManager(
     }
 
     override fun import(accounts: List<Account>) {
-        for (account in accounts) {
+        val startGeneration = generation
+        val landed = accounts.filter { account ->
             storage.save(account)
-            updateCache(account)
+            putAccount(startGeneration, account, mustExist = false)
         }
 
         _accountsSharedFlow.tryEmit(accounts)
 
         if (activeAccount == null) {
-            accounts.minByOrNull { it.name.lowercase() }?.let { account ->
+            landed.minByOrNull { it.name.lowercase() }?.let { account ->
                 setActiveAccountId(account.id)
                 if (!account.isBackedUp && !account.isFileBackedUp) {
                     _newAccountBackupRequiredFlow.update {
@@ -135,45 +155,45 @@ class AccountManager(
         }
     }
 
-    override fun updateAccountLevels(accountIds: List<String>, level: Int) {
-        storage.updateLevels(accountIds, level)
-    }
-
-    override fun updateMaxLevel(level: Int) {
-        storage.updateMaxLevel(level)
-    }
-
     override fun update(account: Account) {
+        val startGeneration = generation
         storage.update(account)
-        modifyCachedAccount(account.id) { account }
+        modifyCachedAccount(startGeneration, account.id) { account }
     }
 
     override fun updateName(id: String, name: String) {
+        val startGeneration = generation
         storage.updateName(id, name)
-        modifyCachedAccount(id) { it.copy(name = name) }
+        modifyCachedAccount(startGeneration, id) { it.copy(name = name) }
     }
 
     override fun markAsBackedUp(id: String) {
-        val current = accountsCache[id] ?: storage.loadAccount(id) ?: return
+        val state = cache.get()
+        val current = state.accounts[id] ?: storage.loadAccount(id) ?: return
         storage.updateBackupFlags(id, isBackedUp = true, isFileBackedUp = current.isFileBackedUp)
-        modifyCachedAccount(id) { it.copy(isBackedUp = true) }
+        modifyCachedAccount(state.generation, id) { it.copy(isBackedUp = true) }
     }
 
     override fun markAsFileBackedUp(id: String) {
-        val current = accountsCache[id] ?: storage.loadAccount(id) ?: return
+        val state = cache.get()
+        val current = state.accounts[id] ?: storage.loadAccount(id) ?: return
         storage.updateBackupFlags(id, isBackedUp = current.isBackedUp, isFileBackedUp = true)
-        modifyCachedAccount(id) { it.copy(isFileBackedUp = true) }
+        modifyCachedAccount(state.generation, id) { it.copy(isFileBackedUp = true) }
     }
 
-    private inline fun modifyCachedAccount(id: String, transform: (Account) -> Account) {
-        accountsCache[id]?.let { cached ->
-            val updated = transform(cached)
-            updateCache(updated)
+    private fun modifyCachedAccount(startGeneration: Long, id: String, transform: (Account) -> Account) {
+        var updated: Account? = null
+        cache.updateAndGet { state ->
+            val cached = state.accounts[id]
+            updated = cached?.takeIf { state.generation == startGeneration }?.let(transform)
+            updated?.let { state.copy(accounts = LinkedHashMap(state.accounts).apply { put(id, it) }) } ?: state
+        }
+        updated?.let { account ->
             _accountsSharedFlow.tryEmit(accounts)
 
             if (activeAccount?.id == id) {
-                activeAccount = updated
-                _activeAccountStateFlow.update { ActiveAccountState.ActiveAccount(updated) }
+                activeAccount = account
+                _activeAccountStateFlow.update { ActiveAccountState.ActiveAccount(account) }
             }
         }
     }
@@ -193,7 +213,9 @@ class AccountManager(
             removeMoneroWalletFilesUseCase(walletFiles)
         }
 
-        accountsCache.remove(id)
+        cache.updateAndGet { state ->
+            if (id in state.accounts) state.copy(accounts = LinkedHashMap(state.accounts).apply { remove(id) }) else state
+        }
         _newAccountBackupRequiredFlow.update { account ->
             account?.takeUnless { it.id == id }
         }
@@ -208,24 +230,26 @@ class AccountManager(
 
     override fun clear() {
         storage.clear()
-        accountsCache.clear()
+        cache.updateAndGet { it.copy(accounts = emptyMap()) }
         _accountsSharedFlow.tryEmit(listOf())
         accountsDeletedSubject.onNext(Unit)
         setActiveAccountId(null)
     }
 
     override fun setLevel(level: Int) {
-        replaceCache(storage.allAccounts(level))
+        val loaded = replaceCache(level, storage.allAccounts(level))
+        // The alert carries the whole account, seed included: it must not outlive the account's visibility.
+        _newAccountBackupRequiredFlow.update { pending -> pending?.takeIf { it.id in loaded } }
         val activeAccountIdForLevel = storage.getActiveAccountId(level)
 
-        if (activeAccountIdForLevel != null && accountsCache.isEmpty() && currentLevel != LEVEL_NOT_SET) {
+        if (activeAccountIdForLevel != null && loaded.isEmpty() && currentLevel != LEVEL_NOT_SET) {
             logger.i { "Keystore problems, can't decode accounts, ignore account changing level" }
             return // looks like we can't decode accounts due to Keystore problems(found on Android 11 Oppo devices)
         }
         currentLevel = level
 
         if (activeAccount == null || activeAccount?.id != activeAccountIdForLevel) {
-            activeAccount = accountsCache[activeAccountIdForLevel] ?: accounts.firstOrNull()
+            activeAccount = loaded[activeAccountIdForLevel] ?: loaded.values.firstOrNull()
             _activeAccountStateFlow.update {
                 ActiveAccountState.ActiveAccount(activeAccount)
             }
@@ -234,7 +258,7 @@ class AccountManager(
     }
 
     override fun unload() {
-        replaceCache(emptyList())
+        replaceCache(LEVEL_NOT_SET, emptyList())
         currentLevel = LEVEL_NOT_SET
         activeAccount = null
         _newAccountBackupRequiredFlow.update { null }
@@ -242,8 +266,10 @@ class AccountManager(
         _accountsSharedFlow.tryEmit(accounts)
     }
 
-    private fun replaceCache(accounts: List<Account>) {
-        accountsCache = accounts.associateBy { it.id }.toMutableMap()
+    private fun replaceCache(level: Int, accounts: List<Account>): Map<String, Account> {
+        val loaded = accounts.associateBy { it.id }
+        cache.updateAndGet { CacheState(level, loaded, it.generation + 1) }
+        return loaded
     }
 
     override fun getDeletedAccountIds() = storage.getDeletedAccountIds()

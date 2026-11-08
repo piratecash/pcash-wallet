@@ -2246,6 +2246,7 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="desktop_change_password_current_hint">Aktuelles Passwort</string>
     <string name="desktop_change_password_new_hint">Neues Passwort</string>
     <string name="desktop_change_password_failed">Das Passwort konnte nicht gespeichert werden. Das aktuelle Passwort funktioniert weiterhin</string>
+    <string name="desktop_change_password_in_use">Dieses Passwort wird bereits verwendet</string>
     <string name="desktop_change_password_corrupted">Die Schlüsseldatei ist beschädigt: Sobald die App gesperrt ist, können Sie sich nicht mehr anmelden. Speichern Sie eine Sicherungskopie jeder Wiederherstellungsphrase.</string>
     <string name="desktop_change_password_success">Passwort geändert</string>
     <string name="desktop_security_lock_now">Jetzt sperren</string>
@@ -2359,4 +2360,23 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="evm_node_request_failed">Der Netzwerkknoten konnte die Anfrage nicht verarbeiten. Versuchen Sie es erneut oder wählen Sie in den Blockchain-Einstellungen eine andere Quelle.\n\nAntwort des Knotens: %1$s</string>
     <string name="desktop_transfer_password">Passwort vor dem Senden</string>
     <string name="desktop_transfer_password_description">Vor jeder Überweisung wird das App-Passwort abgefragt. Das schützt Ihre Guthaben, falls jemand bei entsperrter App Zugriff auf Ihren Computer erhält.</string>
+    <string name="desktop_unlock_legacy_format">Die Daten wurden von einer älteren Version der App erstellt und können nicht geöffnet werden</string>
+    <string name="desktop_duress_password_set">Duress-Modus festlegen</string>
+    <string name="desktop_duress_password_edit">Duress-Passwort bearbeiten</string>
+    <string name="desktop_duress_password_disable">Duress-Passwort deaktivieren</string>
+    <string name="desktop_duress_password_description">Mit diesem Modus lassen sich mehrere App-Passwörter einrichten, wobei ein bestimmtes Passwort nur ausgewählte Wallets anzeigt. Entwickelt, um ausgewählte Wallets bei Zwang oder Drohungen zu schützen.</string>
+    <string name="desktop_duress_password_note_change_title">Passwortänderung</string>
+    <string name="desktop_duress_password_note_change_description">Das Ändern des Passworts im Duress-Modus ändert auch das aktuelle Passwort für diesen Modus.</string>
+    <string name="desktop_duress_password_title">Duress-Passwort</string>
+    <string name="desktop_duress_password_set_description">Passwort für den Duress-Modus festlegen</string>
+    <string name="desktop_duress_password_edit_description">Neues Passwort für den Duress-Modus eingeben</string>
+    <string name="desktop_hidden_wallet_password_title">Passwort der versteckten Wallet</string>
+    <string name="desktop_hidden_wallet_password_description">Passwort für die versteckte Wallet erstellen</string>
+    <string name="desktop_hidden_wallet_password_terms_warning">Die globale Wallet wird diese Wallet nicht sehen, und wenn Sie das Passwort vergessen, können Sie den Zugriff auf die Wallet mit der Seed-Phrase wiederherstellen.</string>
+    <string-array name="desktop_hidden_wallet_password_terms">
+        <item>Der Benutzer versteht, dass die Wallet nicht unter den anderen Wallets sichtbar ist.</item>
+        <item>Der Benutzer versteht, dass die Wallet wiederhergestellt werden kann, wenn er ihre Seed-Phrase kennt, falls er das Passwort vergisst.</item>
+    </string-array>
+    <string name="desktop_levels_limit_reached">Das Limit der Ebenen ist erreicht. Es können keine weiteren Passwörter hinzugefügt werden</string>
+    <string name="desktop_password_save_failed">Das Passwort konnte nicht gespeichert werden. Bitte versuchen Sie es erneut</string>
 </resources>

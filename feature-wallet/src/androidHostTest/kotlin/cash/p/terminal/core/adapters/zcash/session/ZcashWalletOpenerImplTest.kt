@@ -6,6 +6,7 @@ import cash.p.terminal.core.NetworkSettingsStorage
 import cash.p.terminal.core.NonFatalReporter
 import cash.p.terminal.core.adapters.zcash.CapturedAppLog
 import cash.p.terminal.core.adapters.zcash.zcashAppLogger
+import cash.p.terminal.core.managers.IdentityKitStorageNaming
 import cash.p.terminal.core.managers.RestoreSettings
 import cash.p.terminal.core.managers.RestoreSettingsManager
 import cash.p.terminal.core.managers.ZcashBirthdayProvider
@@ -62,7 +63,8 @@ class ZcashWalletOpenerImplTest {
     @Before
     fun setUp() {
         noBackupDir = Files.createTempDirectory("zcash-open").toFile()
-        databaseFiles = ZcashDatabaseFiles(AndroidKitPlatformContexts(mockk<Context> { every { noBackupFilesDir } returns noBackupDir }))
+        databaseFiles = ZcashDatabaseFiles(AndroidKitPlatformContexts(mockk<Context> { every { noBackupFilesDir } returns noBackupDir }),
+            IdentityKitStorageNaming,)
         failureReporter = ZcashDatabaseFailureReporter(databaseFiles, mockk<NonFatalReporter>(relaxed = true))
 
         mockkObject(ZcashSdk)

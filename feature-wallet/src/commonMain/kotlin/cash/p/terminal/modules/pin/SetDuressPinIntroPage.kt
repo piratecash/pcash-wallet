@@ -11,23 +11,30 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.koin.compose.viewmodel.koinViewModel
-import cash.p.terminal.R
-import cash.p.terminal.modules.evmfee.ButtonsGroupWithShade
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.resources.AdvancedSecurity_Terms_Checkboxes
+import cash.p.terminal.resources.AdvancedSecurity_Terms_Warning
+import cash.p.terminal.resources.Button_Continue
+import cash.p.terminal.resources.DuressPin_Description
+import cash.p.terminal.resources.DuressPin_Notes
+import cash.p.terminal.resources.DuressPin_Notes_PasscodeChange_Description
+import cash.p.terminal.resources.DuressPin_Notes_PasscodeChange_Title
+import cash.p.terminal.resources.DuressPin_Title
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_edit_24
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
+import cash.p.terminal.ui_compose.components.ButtonsGroupWithShade
 import cash.p.terminal.ui_compose.components.HSpacer
 import cash.p.terminal.ui_compose.components.HeaderText
 import cash.p.terminal.ui_compose.components.HsBackButton
@@ -37,27 +44,41 @@ import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
-import cash.p.terminal.navigation.navigateUpSafely
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 
 class SetDuressPinIntroPage : HSPage() {
     @Composable
     override fun GetContent(navigation: HSNavigation) {
-        SetDuressPinIntroScreen(navigation)
+        val viewModel = koinViewModel<SetDuressPinIntroViewModel>()
+        val pages = koinInject<DuressSecretPages>()
+
+        SetDuressPinIntroScreen(
+            wording = pages.wording,
+            onContinueClick = {
+                navigation.slideFromRight(
+                    if (viewModel.shouldShowSelectAccounts) SetDuressPinSelectAccountsPage() else pages.setDuress(null)
+                )
+            },
+            onBack = navigation::navigateUpSafely,
+        )
     }
 }
 
 @Composable
-fun SetDuressPinIntroScreen(navigation: HSNavigation) {
-    val viewModel = koinViewModel<SetDuressPinIntroViewModel>()
-
+internal fun SetDuressPinIntroScreen(
+    wording: DuressWording,
+    onContinueClick: () -> Unit,
+    onBack: () -> Unit,
+) {
     Scaffold(
         containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
-                title = stringResource(R.string.DuressPin_Title),
-                navigationIcon = {
-                    HsBackButton(onClick = { navigation.navigateUpSafely() })
-                },
+                title = stringResource(Res.string.DuressPin_Title),
+                navigationIcon = { HsBackButton(onClick = onBack) },
             )
         }
     ) {
@@ -68,36 +89,19 @@ fun SetDuressPinIntroScreen(navigation: HSNavigation) {
                 .verticalScroll(rememberScrollState())
         ) {
             InfoText(
-                text = stringResource(R.string.DuressPin_Description),
+                text = stringResource(wording.introDescription),
                 paddingBottom = 32.dp
             )
-            HeaderText(text = stringResource(R.string.DuressPin_Notes))
+            HeaderText(text = stringResource(Res.string.DuressPin_Notes))
 
             Column(
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
                     .border(1.dp, ComposeAppTheme.colors.borderDefault, RoundedCornerShape(12.dp))
             ) {
-                if (viewModel.biometricAuthSupported) {
-                    NotesCell(
-                        icon = painterResource(id = R.drawable.icon_touch_id_24),
-                        title = stringResource(id = R.string.DuressPin_Notes_Biometrics_Title),
-                        description = stringResource(id = R.string.DuressPin_Notes_Biometrics_Description)
-                    )
+                wording.introNotes.forEachIndexed { index, note ->
+                    NotesCell(note, borderTop = index > 0)
                 }
-
-                NotesCell(
-                    icon = painterResource(id = R.drawable.ic_passcode),
-                    title = stringResource(id = R.string.DuressPin_Notes_PasscodeDisabling_Title),
-                    description = stringResource(id = R.string.DuressPin_Notes_PasscodeDisabling_Description),
-                    borderTop = true
-                )
-                NotesCell(
-                    icon = painterResource(id = R.drawable.ic_edit_24),
-                    title = stringResource(id = R.string.DuressPin_Notes_PasscodeChange_Title),
-                    description = stringResource(id = R.string.DuressPin_Notes_PasscodeChange_Description),
-                    borderTop = true
-                )
             }
             Spacer(modifier = Modifier.weight(1f))
             ButtonsGroupWithShade {
@@ -105,14 +109,8 @@ fun SetDuressPinIntroScreen(navigation: HSNavigation) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 16.dp, end = 16.dp),
-                    title = stringResource(R.string.Button_Continue),
-                    onClick = {
-                        if (viewModel.shouldShowSelectAccounts) {
-                            navigation.slideFromRight(SetDuressPinSelectAccountsPage())
-                        } else {
-                            navigation.slideFromRight(SetDuressPinPage(null))
-                        }
-                    },
+                    title = stringResource(Res.string.Button_Continue),
+                    onClick = onContinueClick,
                 )
             }
         }
@@ -120,10 +118,10 @@ fun SetDuressPinIntroScreen(navigation: HSNavigation) {
 }
 
 @Composable
-private fun NotesCell(icon: Painter, title: String, description: String, borderTop: Boolean = false) {
+private fun NotesCell(note: DuressNote, borderTop: Boolean) {
     Box {
         if (borderTop) {
-            Divider(
+            HorizontalDivider(
                 thickness = 1.dp,
                 color = ComposeAppTheme.colors.borderDivider,
                 modifier = Modifier.align(Alignment.TopCenter)
@@ -135,17 +133,39 @@ private fun NotesCell(icon: Painter, title: String, description: String, borderT
         ) {
             Icon(
                 modifier = Modifier.size(24.dp),
-                painter = icon,
+                painter = painterResource(note.icon),
                 tint = ComposeAppTheme.colors.brandDefault,
                 contentDescription = null,
             )
             HSpacer(width = 16.dp)
             Column {
-                body_leah(text = title)
+                body_leah(text = stringResource(note.title))
                 VSpacer(height = 1.dp)
-                subhead2_grey(text = description)
+                subhead2_grey(text = stringResource(note.description))
             }
         }
     }
 }
 
+@Preview
+@Composable
+private fun SetDuressPinIntroScreenPreview() {
+    ComposeAppTheme {
+        SetDuressPinIntroScreen(
+            wording = DuressWording(
+                introDescription = Res.string.DuressPin_Description,
+                introNotes = listOf(
+                    DuressNote(
+                        Res.drawable.ic_edit_24,
+                        Res.string.DuressPin_Notes_PasscodeChange_Title,
+                        Res.string.DuressPin_Notes_PasscodeChange_Description,
+                    )
+                ),
+                termsWarning = Res.string.AdvancedSecurity_Terms_Warning,
+                termsCheckboxes = Res.array.AdvancedSecurity_Terms_Checkboxes,
+            ),
+            onContinueClick = {},
+            onBack = {},
+        )
+    }
+}

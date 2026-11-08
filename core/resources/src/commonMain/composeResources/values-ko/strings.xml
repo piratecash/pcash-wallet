@@ -2247,6 +2247,7 @@
     <string name="desktop_change_password_current_hint">현재 비밀번호</string>
     <string name="desktop_change_password_new_hint">새 비밀번호</string>
     <string name="desktop_change_password_failed">비밀번호를 저장할 수 없습니다. 현재 비밀번호는 계속 사용할 수 있습니다</string>
+    <string name="desktop_change_password_in_use">이미 사용 중인 비밀번호입니다</string>
     <string name="desktop_change_password_corrupted">키 파일이 손상되었습니다. 앱이 잠기면 로그인할 수 없게 됩니다. 모든 복구 문구의 백업을 저장하세요.</string>
     <string name="desktop_change_password_success">비밀번호가 변경되었습니다</string>
     <string name="desktop_security_lock_now">지금 잠금</string>
@@ -2355,4 +2356,23 @@
     <string name="evm_node_request_failed">네트워크 노드가 요청을 처리하지 못했습니다. 다시 시도하거나 블록 체인 설정에서 다른 소스를 선택하세요.\n\n노드 응답: %1$s</string>
     <string name="desktop_transfer_password">보내기 전 비밀번호</string>
     <string name="desktop_transfer_password_description">자산을 보낼 때마다 앱 비밀번호를 요청하여, 앱이 잠금 해제된 상태에서 누군가 컴퓨터에 접근하더라도 자산을 보호합니다.</string>
+    <string name="desktop_unlock_legacy_format">이전 버전의 앱에서 만든 데이터라 열 수 없습니다</string>
+    <string name="desktop_duress_password_set">긴급 상황 모드 설정</string>
+    <string name="desktop_duress_password_edit">긴급 상황 비밀번호 수정</string>
+    <string name="desktop_duress_password_disable">긴급 상황 비밀번호 비활성화</string>
+    <string name="desktop_duress_password_description">이 모드에서는 앱 비밀번호를 여러 개 설정할 수 있으며, 특정 비밀번호로 열면 지정한 지갑만 표시됩니다. 강압이나 위협 상황에서 선택한 지갑을 안전하게 지키기 위해 만들어졌습니다.</string>
+    <string name="desktop_duress_password_note_change_title">비밀번호 변경</string>
+    <string name="desktop_duress_password_note_change_description">긴급 상황 모드에서 비밀번호를 변경하면 해당 모드의 현재 비밀번호도 함께 변경됩니다.</string>
+    <string name="desktop_duress_password_title">긴급 상황 비밀번호</string>
+    <string name="desktop_duress_password_set_description">긴급 상황 모드의 비밀번호를 설정하세요</string>
+    <string name="desktop_duress_password_edit_description">긴급 상황 모드의 새 비밀번호를 입력하세요</string>
+    <string name="desktop_hidden_wallet_password_title">숨겨진 지갑 비밀번호</string>
+    <string name="desktop_hidden_wallet_password_description">숨겨진 지갑의 비밀번호를 만드세요</string>
+    <string name="desktop_hidden_wallet_password_terms_warning">전체 지갑에서는 이 지갑이 보이지 않으며, 비밀번호를 잊어버려도 시드 문구로 지갑에 다시 접근할 수 있습니다.</string>
+    <string-array name="desktop_hidden_wallet_password_terms">
+        <item>사용자는 이 지갑이 다른 지갑 목록에 표시되지 않는다는 점을 이해합니다.</item>
+        <item>사용자는 비밀번호를 잊어버리더라도 시드 문구를 알면 지갑을 복구할 수 있다는 점을 이해합니다.</item>
+    </string-array>
+    <string name="desktop_levels_limit_reached">단계 한도에 도달했습니다. 더 이상 비밀번호를 추가할 수 없습니다</string>
+    <string name="desktop_password_save_failed">비밀번호를 저장할 수 없습니다. 다시 시도하세요</string>
 </resources>
