@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -18,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import cash.p.terminal.modules.balance.BalanceViewItem2
 import cash.p.terminal.modules.balance.ui.BalanceCardInner
 import cash.p.terminal.modules.balance.ui.BalanceCardSubtitleType
+import cash.p.terminal.modules.coin.overview.ui.Loading
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.ui.compose.components.ListEmptyView
@@ -54,7 +56,9 @@ internal fun TokenSelectScreen(
             )
         }
     ) { paddingValues ->
-        if (uiState.noItems) {
+        if (uiState.isLoading) {
+            Loading(Modifier.padding(paddingValues))
+        } else if (uiState.noItems) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()

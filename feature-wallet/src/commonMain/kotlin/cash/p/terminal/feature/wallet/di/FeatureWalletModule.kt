@@ -606,7 +606,7 @@ val featureWalletModule = module {
     viewModel { (wallet: Wallet) -> activateTokenViewModel(wallet) }
     viewModel { (activeAccount: Account, fullCoin: FullCoin) -> NetworkSelectViewModel(activeAccount, fullCoin, get()) }
     viewModel { (activeAccount: Account) ->
-        ReceiveTokenSelectViewModel(get(), activeAccount, FullCoinsProvider(get(), activeAccount), get())
+        ReceiveTokenSelectViewModel(get(), activeAccount, FullCoinsProvider(get(), activeAccount, get()), get())
     }
     factoryOf(::ResolveTransactionItemUseCase)
     factoryOf(::GetRestoreHeightForWalletUseCase)

@@ -16,6 +16,7 @@ import cash.p.terminal.wallet.models.CoinPrice
 import cash.p.terminal.manager.IConnectivityManager
 import cash.p.terminal.wallet.useCases.IRemoveMoneroWalletFilesUseCase
 import io.reactivex.subjects.PublishSubject
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -73,6 +74,8 @@ class DefaultBalanceService private constructor(
     // Replace CopyOnWriteArrayList with StateFlow
     private val _balanceItemsState = MutableStateFlow<List<BalanceItem>>(emptyList())
     override val balanceItemsFlow = _balanceItemsState.asStateFlow()
+
+    private val walletsLoaded = CompletableDeferred<Unit>()
 
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
 
@@ -210,7 +213,10 @@ class DefaultBalanceService private constructor(
                 )
             }
         }
+        walletsLoaded.complete(Unit)
     }
+
+    suspend fun awaitWalletsLoaded() = walletsLoaded.await()
 
     override suspend fun refresh() {
         xRateRepository.refresh()

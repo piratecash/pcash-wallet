@@ -3,6 +3,7 @@ package cash.p.terminal.modules.receive.ui
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,8 +25,11 @@ import cash.p.terminal.core.iconPlaceholder
 import cash.p.terminal.wallet.imageUrl
 import cash.p.terminal.modules.receive.viewmodels.CoinForReceiveType
 import cash.p.terminal.modules.receive.viewmodels.ReceiveTokenSelectViewModel
+import cash.p.terminal.modules.coin.overview.ui.Loading
+import cash.p.terminal.ui_compose.components.HSCircularProgressIndicator
 import cash.p.terminal.ui_compose.components.HsImage
 import cash.p.terminal.ui_compose.components.RowUniversal
+import cash.p.terminal.ui.compose.components.ListEmptyView
 import cash.p.terminal.ui.compose.components.SearchBar
 import cash.p.terminal.ui_compose.components.SectionUniversalItem
 import cash.p.terminal.ui_compose.components.VSpacer
@@ -38,6 +43,8 @@ import org.jetbrains.compose.resources.DrawableResource
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.Balance_Receive
 import cash.p.terminal.resources.Balance_ReceiveHint_Search
+import cash.p.terminal.resources.EmptyResults
+import cash.p.terminal.resources.ic_not_found
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -50,7 +57,8 @@ fun ReceiveTokenSelectScreen(
     onBackPress: () -> Unit,
 ) {
     val viewModel = koinViewModel<ReceiveTokenSelectViewModel> { parametersOf(activeAccount) }
-    val fullCoins = viewModel.uiState.fullCoins
+    val uiState = viewModel.uiState
+    val fullCoins = uiState.fullCoins
     val coroutineScope = rememberCoroutineScope()
     val hud = rememberHudMessenger()
 
@@ -68,6 +76,18 @@ fun ReceiveTokenSelectScreen(
             )
         }
     ) { paddingValues ->
+        if (uiState.isLoading) {
+            Loading(Modifier.padding(paddingValues))
+            return@Scaffold
+        }
+        if (fullCoins.isEmpty()) {
+            ListEmptyView(
+                text = stringResource(Res.string.EmptyResults),
+                icon = Res.drawable.ic_not_found,
+                paddingValues = paddingValues,
+            )
+            return@Scaffold
+        }
         LazyColumn(contentPadding = paddingValues) {
             item {
                 VSpacer(12.dp)
@@ -75,6 +95,9 @@ fun ReceiveTokenSelectScreen(
             itemsIndexed(fullCoins) { index, fullCoin ->
                 val coin = fullCoin.coin
                 val lastItem = index == fullCoins.size - 1
+                if (index == fullCoins.size - BOTTOM_OFFSET) {
+                    LaunchedEffect(fullCoins, uiState.hasMore) { viewModel.onBottomReached() }
+                }
                 SectionUniversalItem(borderTop = true, borderBottom = lastItem) {
                     ReceiveCoin(
                         coinName = coin.name,
@@ -110,12 +133,26 @@ fun ReceiveTokenSelectScreen(
                     )
                 }
             }
+            if (uiState.hasMore) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        HSCircularProgressIndicator()
+                    }
+                }
+            }
             item {
                 VSpacer(32.dp)
             }
         }
     }
 }
+
+private const val BOTTOM_OFFSET = 4
 
 @Composable
 fun ReceiveCoin(
