@@ -64,6 +64,7 @@ class AdapterManagerTest {
     private lateinit var restoreModeUpdatedSubject: PublishSubject<BlockchainType>
     private lateinit var adapterManager: AdapterManager
     private val pendingBalanceCalculator = mockk<PendingBalanceCalculator>(relaxed = true)
+    private val moneroKitWrapper = mockk<MoneroKitWrapper>(relaxed = true)
 
     @Before
     fun setUp() {
@@ -86,6 +87,7 @@ class AdapterManagerTest {
             },
             evmBlockchainManager = mockk(relaxed = true) {
                 every { allBlockchains } returns emptyList()
+                every { getBlockchain(any<Token>()) } returns null
             },
             solanaKitManager = mockk(relaxed = true) {
                 every { kitStoppedObservable } returns Observable.never()
@@ -96,6 +98,7 @@ class AdapterManagerTest {
             },
             moneroKitManager = mockk(relaxed = true) {
                 every { kitStoppedObservable } returns Observable.never()
+                every { moneroKitWrapper } returns this@AdapterManagerTest.moneroKitWrapper
             },
             stellarKitManager = mockk(relaxed = true),
             thorchainKitManagers = mockk(relaxed = true) {
@@ -178,6 +181,24 @@ class AdapterManagerTest {
         adapterManager.refreshByWallet(wallet)
         advanceUntilIdle()
         coVerify(exactly = 1) { adapter.refresh() }
+    }
+
+    @Test
+    fun refresh_unattendedMonero_syncsUnattendedWithoutUserRefresh() = testScope.runTest {
+        val wallet = wallet("xmr", BlockchainType.Monero, TokenType.Native)
+        val adapter = mockk<IAdapter>(relaxed = true)
+        coEvery { adapterFactory.getAdapterOrNull(wallet, any()) } returns adapter
+        activeWalletsFlow.value = listOf(wallet)
+        adapterManager.startAdapterManager()
+        advanceUntilIdle()
+
+        adapterManager.refresh(attended = false)
+        adapterManager.refreshByWallet(wallet, attended = false)
+        advanceUntilIdle()
+
+        coVerify(exactly = 0) { adapter.refresh() }
+        coVerify(exactly = 0) { moneroKitWrapper.refresh() }
+        coVerify(exactly = 2) { moneroKitWrapper.syncUnattended() }
     }
 
     @Test

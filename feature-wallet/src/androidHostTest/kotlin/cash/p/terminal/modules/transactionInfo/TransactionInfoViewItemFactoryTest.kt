@@ -20,6 +20,7 @@ import cash.p.terminal.core.managers.AddressMetadataManager
 import cash.p.terminal.core.managers.EvmKitWrapper
 import cash.p.terminal.entities.transactionrecords.LiquidityOperation
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
+import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
 import cash.p.terminal.entities.transactionrecords.ton.TonTransactionRecord
 import io.horizontalsystems.tonkit.models.Event
 import cash.p.terminal.entities.transactionrecords.evm.EvmTransactionRecord
@@ -102,6 +103,8 @@ import cash.p.terminal.resources.transaction_info_delegation_contract
 import cash.p.terminal.resources.transaction_info_delegation_warning
 import cash.p.terminal.resources.transaction_info_executed_amount
 import cash.p.terminal.resources.transaction_info_initiator
+import cash.p.terminal.resources.transaction_info_replaced_by_transaction
+import cash.p.terminal.resources.transaction_info_replaces_transaction
 import cash.p.terminal.resources.transaction_swap_status_confirming
 import cash.p.terminal.resources.transaction_swap_status_unknown
 import cash.p.terminal.resources.transactions_account_delegation_revoke
@@ -1170,6 +1173,78 @@ class TransactionInfoViewItemFactoryTest {
     ).getViewItemSections(transactionInfoItem(record).copy(
         lastBlockInfo = LastBlockInfo(height = 1_000), hideAmount = hideAmount,
     )).flatten()
+
+    @Test
+    fun getBitcoinSectionItems_supersededRecord_showsReplacedByRowWithoutDoubleSpend() {
+        val items = bitcoinSectionItems(bitcoinRecord(replacedByHash = "winner", conflictingHash = "winner", ownReplacementConflict = true))
+
+        val hash = items.filterIsInstance<TransactionInfoViewItem.TransactionHash>().single()
+        assertEquals("winner", hash.transactionHash)
+        assertSame(Res.string.transaction_info_replaced_by_transaction, hash.title)
+        assertEquals(false, items.any { it is TransactionInfoViewItem.DoubleSpend })
+    }
+
+    @Test
+    fun getBitcoinSectionItems_winnerRecord_showsReplacesRowWithoutDoubleSpend() {
+        val items = bitcoinSectionItems(bitcoinRecord(replacesHash = "root", conflictingHash = "root", ownReplacementConflict = true))
+
+        val hash = items.filterIsInstance<TransactionInfoViewItem.TransactionHash>().single()
+        assertEquals("root", hash.transactionHash)
+        assertSame(Res.string.transaction_info_replaces_transaction, hash.title)
+        assertEquals(false, items.any { it is TransactionInfoViewItem.DoubleSpend })
+    }
+
+    @Test
+    fun getBitcoinSectionItems_winnerWithForeignConflict_showsReplacesRowAndDoubleSpend() {
+        val items = bitcoinSectionItems(bitcoinRecord(replacesHash = "root", conflictingHash = "foreign"))
+
+        assertEquals("root", items.filterIsInstance<TransactionInfoViewItem.TransactionHash>().single().transactionHash)
+        assertEquals("foreign", items.filterIsInstance<TransactionInfoViewItem.DoubleSpend>().single().conflictingHash)
+    }
+
+    @Test
+    fun getBitcoinSectionItems_plainConflictWithoutChain_showsDoubleSpendOnly() {
+        val items = bitcoinSectionItems(bitcoinRecord(conflictingHash = "other"))
+
+        assertEquals("other", items.filterIsInstance<TransactionInfoViewItem.DoubleSpend>().single().conflictingHash)
+        assertEquals(false, items.any { it is TransactionInfoViewItem.TransactionHash })
+    }
+
+    private fun bitcoinSectionItems(record: BitcoinTransactionRecord) =
+        TransactionViewItemFactoryHelper.getBitcoinSectionItems(record, lastBlockInfo = null)
+
+    private fun bitcoinRecord(
+        conflictingHash: String? = null,
+        replacedByHash: String? = null,
+        replacesHash: String? = null,
+        ownReplacementConflict: Boolean = false,
+    ): BitcoinTransactionRecord {
+        val token = pendingRecord("to").token
+        return BitcoinTransactionRecord(
+            token = token,
+            amount = BigDecimal.ONE,
+            to = listOf("to"),
+            from = "from",
+            changeAddresses = null,
+            uid = "uid",
+            transactionHash = "hash",
+            transactionIndex = 0,
+            blockHeight = null,
+            confirmationsThreshold = 1,
+            timestamp = 1_000L,
+            failed = false,
+            memo = null,
+            source = TransactionSource(token.blockchain, mockk<Account>(relaxed = true), null),
+            transactionRecordType = TransactionRecordType.BITCOIN_OUTGOING,
+            fee = null,
+            lockInfo = null,
+            conflictingHash = conflictingHash,
+            showRawTransaction = false,
+            replacedByHash = replacedByHash,
+            replacesHash = replacesHash,
+            ownReplacementConflict = ownReplacementConflict,
+        )
+    }
 
     private fun transactionInfoItem(
         record: TransactionRecord,

@@ -59,6 +59,7 @@
     <string name="trezor_not_initialized_description">Dieser Trezor ist noch nicht eingerichtet. Schließen Sie die Einrichtung auf dem Gerät ab und verbinden Sie es erneut.</string>
     <string name="trezor_not_initialized_cta">Einrichtungsanleitung</string>
     <string name="trezor_connect_failed">Verbindung mit Trezor fehlgeschlagen.</string>
+    <string name="hardware_connect_device_to_sync">Verbinden Sie das Gerät zur Synchronisierung</string>
     <string name="Button_Activate">Aktivieren</string>
     <string name="activation_required_dialog_description">Um %1$s zu erhalten, müssen Sie den Token aktivieren. Das Stellar-Netzwerk verlangt für jeden Token eine Vertrauenslinie (Trustline). Ohne sie kann Ihre Wallet %2$s nicht empfangen — die Transaktion wird abgelehnt und die Gelder werden nicht zugestellt.</string>
     <string name="activate_you_activate">Sie aktivieren</string>
@@ -767,6 +768,8 @@
     <string name="TransactionInfo_Date">Datum</string>
     <string name="transaction_info_sync_source">Sync-Quelle</string>
     <string name="TransactionInfo_Id">Transaktion ID</string>
+    <string name="transaction_info_replaces_transaction">Ersetzt Transaktion</string>
+    <string name="transaction_info_replaced_by_transaction">Ersetzt durch Transaktion</string>
     <string name="TransactionInfo_Service">Dienst</string>
     <string name="TransactionInfo_RawTransaction">Rohdaten der Transaktion</string>
     <string name="TransactionInfo_ContactName">Kontaktname</string>
@@ -1437,6 +1440,7 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="Tor_Connection_Disable">Tor deaktivieren</string>
     <string name="Tor_Alert_Title">Internet</string>
     <string name="TorPage_Connecting">Tor wird verbunden…</string>
+    <string name="TorPage_ConnectingProgress">Tor wird verbunden… %1$d%</string>
     <string name="TorPage_Failed">Fehler beim Verbinden von Tor</string>
     <string name="Tor_TorIsActive">Tor ist aktiv</string>
     <!--Coin Page-->

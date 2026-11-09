@@ -21,6 +21,7 @@ import cash.p.terminal.core.managers.BeamSessionOwner
 import cash.p.terminal.core.managers.BtcBlockchainManager
 import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.MoneroHardwareGateway
+import cash.p.terminal.core.managers.TrezorAttachments
 import cash.p.terminal.core.managers.MoneroKitManager
 import cash.p.terminal.shared.desktop.vault.DesktopBeamKitDatabaseKeyProvider
 import cash.p.terminal.wallet.AccountDeletionPreflight
@@ -693,6 +694,7 @@ class DesktopKoinGraphTest {
             ZcashKeyExporter::class,
             ZcashDbMarker::class,
             MoneroHardwareGateway::class,
+            TrezorAttachments::class,
             AddressLabelManager::class,
             BalancePlatformActions::class,
             ChartIndicatorManager::class,

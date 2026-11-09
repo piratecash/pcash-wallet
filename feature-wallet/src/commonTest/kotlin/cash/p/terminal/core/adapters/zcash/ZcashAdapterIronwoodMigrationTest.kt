@@ -76,6 +76,24 @@ class ZcashAdapterIronwoodMigrationTest : ZcashAdapterTestFixture() {
     }
 
     @Test
+    fun getTransactions_outgoingTransaction_amountExcludesFee() = runTest(dispatcher) {
+        startAdapter()
+
+        val record = publishTransaction(value = -(SENT + FEE), totalReceived = 0)
+
+        assertEquals(SENT.convertZatoshiToZec().negate(), record.mainValue.decimalValue)
+    }
+
+    @Test
+    fun getTransactions_outgoingFeeNotKnownYet_amountIsTheNetSpend() = runTest(dispatcher) {
+        startAdapter()
+
+        val record = publishTransaction(value = -SENT, totalReceived = 0, fee = 0L)
+
+        assertEquals(SENT.convertZatoshiToZec().negate(), record.mainValue.decimalValue)
+    }
+
+    @Test
     fun getTransactions_migrationRememberedByAPreviousProcess_amountIsTotalReceived() =
         runTest(dispatcher) {
             ZcashIronwoodMigrationRegistry(localStorage)
@@ -200,6 +218,19 @@ class ZcashAdapterIronwoodMigrationTest : ZcashAdapterTestFixture() {
         }
 
     @Test
+    fun proposeIronwoodMigration_afterTheRateBoundary_chargesTwoActionsPerStepAtTheNewRate() =
+        runTest(dispatcher) {
+            stubMigrationStatus(MigrationPhase.MIGRATING, standardNotes = 3)
+            startMigratableAdapter()
+            emitSessionSyncState(SyncState.Syncing(current = 1, target = RATE_BOUNDARY_TARGET))
+            advanceUntilIdle()
+
+            val proposal = adapter.proposeIronwoodMigration()
+
+            assertEquals((3 * 2 * REDUCED_FEE_PER_ACTION).convertZatoshiToZec(), proposal.fee)
+        }
+
+    @Test
     fun proposeIronwoodMigration_phaseComplete_throwsLocalizedException() = runTest(dispatcher) {
         stubMigrationStatus(MigrationPhase.COMPLETE, standardNotes = 0)
         startMigratableAdapter()
@@ -301,6 +332,7 @@ class ZcashAdapterIronwoodMigrationTest : ZcashAdapterTestFixture() {
     private suspend fun TestScope.publishTransaction(
         value: Long,
         totalReceived: Long,
+        fee: Long = FEE,
     ): BitcoinTransactionRecord {
         emitSessionTransactions(
             listOf(
@@ -311,7 +343,7 @@ class ZcashAdapterIronwoodMigrationTest : ZcashAdapterTestFixture() {
                     time = 1_700_000_000L,
                     value = value,
                     memo = null,
-                    fee = FEE,
+                    fee = fee,
                     totalReceived = totalReceived,
                     isChange = false,
                     recipient = null,
@@ -339,6 +371,7 @@ class ZcashAdapterIronwoodMigrationTest : ZcashAdapterTestFixture() {
         const val MIGRATION_TXID =
             "b7c4a1f0d3e2b5a698877665544332211ffeeddccbbaa99887766554433221100"
         const val MIGRATED = 1_000_000_000L
+        const val SENT = 10_000L
         const val FEE = 15_000L
         const val ORCHARD_AVAILABLE = 500_000L
         const val MINERS_FEE = 10_000L

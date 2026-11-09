@@ -57,6 +57,8 @@ import cash.p.terminal.resources.TransactionInfo_From
 import cash.p.terminal.resources.TransactionInfo_HistoricalRate
 import cash.p.terminal.resources.TransactionInfo_LockedUntil
 import cash.p.terminal.resources.TransactionInfo_Memo
+import cash.p.terminal.resources.transaction_info_replaced_by_transaction
+import cash.p.terminal.resources.transaction_info_replaces_transaction
 import cash.p.terminal.resources.TransactionInfo_Price
 import cash.p.terminal.resources.TransactionInfo_PriceImpact
 import cash.p.terminal.resources.TransactionInfo_RecipientHash
@@ -628,7 +630,13 @@ object TransactionViewItemFactoryHelper {
     ): List<TransactionInfoViewItem> {
         val items: MutableList<TransactionInfoViewItem> = mutableListOf()
 
-        transaction.conflictingHash?.let { conflictingHash ->
+        transaction.replacedByHash?.let {
+            items.add(TransactionInfoViewItem.TransactionHash(it, Res.string.transaction_info_replaced_by_transaction))
+        }
+        transaction.replacesHash?.let {
+            items.add(TransactionInfoViewItem.TransactionHash(it, Res.string.transaction_info_replaces_transaction))
+        }
+        transaction.conflictingHash?.takeIf { !transaction.ownReplacementConflict }?.let { conflictingHash ->
             items.add(
                 getDoubleSpendViewItem(
                     transaction.transactionHash,
