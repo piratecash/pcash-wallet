@@ -1442,6 +1442,7 @@
     <string name="Tor_Connection_Disable">토르 비활성화</string>
     <string name="Tor_Alert_Title">인터넷</string>
     <string name="TorPage_Connecting">토르 연결 중…</string>
+    <string name="TorPage_ConnectingProgress">토르 연결 중… %1$d%</string>
     <string name="TorPage_Failed">Tor 연결 실패</string>
     <string name="Tor_TorIsActive">Tor 활성화</string>
     <!--Coin Page-->

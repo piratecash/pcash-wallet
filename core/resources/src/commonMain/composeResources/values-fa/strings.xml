@@ -1446,6 +1446,7 @@
     <string name="Tor_Connection_Disable">Tor را غیرفعال کنید</string>
     <string name="Tor_Alert_Title">اینترنت</string>
     <string name="TorPage_Connecting">Connecting Tor…</string>
+    <string name="TorPage_ConnectingProgress">در حال اتصال Tor… %1$d%</string>
     <string name="TorPage_Failed">Failed to Connect Tor</string>
     <string name="Tor_TorIsActive">Tor is active</string>
     <!--Coin Page-->

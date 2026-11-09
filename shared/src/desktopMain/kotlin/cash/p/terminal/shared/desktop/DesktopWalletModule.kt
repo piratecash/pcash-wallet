@@ -45,6 +45,7 @@ import cash.p.terminal.core.adapters.zcash.session.ZcashDbKeyProvider
 import cash.p.terminal.shared.desktop.vault.DesktopZcashDbKeyProvider
 import cash.p.terminal.wallet.FallbackAddressProvider
 import cash.p.terminal.core.storage.AccountsStorage
+import cash.p.terminal.core.tor.TorSyncState
 import cash.p.terminal.core.storage.AppDatabaseProvider
 import cash.p.terminal.core.storage.BlockchainSettingsStorage
 import cash.p.terminal.core.storage.EnabledWalletsStorage
@@ -99,6 +100,9 @@ import com.m2049r.xmrwallet.service.MoneroWalletService
 import io.horizontalsystems.core.ISystemInfoManager
 import io.horizontalsystems.core.IThirdKeyboard
 import io.horizontalsystems.hdwalletkit.Mnemonic
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
@@ -195,6 +199,7 @@ internal val desktopWalletModule = module {
     singleOf(::DesktopZcashDbKeyProvider) bind ZcashDbKeyProvider::class
     singleOf(::DesktopBeamKitDatabaseKeyProvider) bind BeamKitDatabaseKeyProvider::class
     single<NonFatalReporter> { DesktopNonFatalReporter }
+    single<TorSyncState> { DesktopTorSyncState }
     // The TON fallback address provider stays in the Android app; desktop has none for TON.
     single<FallbackAddressProvider> { get<ZcashFallbackAddressProvider>() }
 }
@@ -203,4 +208,10 @@ internal val desktopWalletModule = module {
 private object DesktopNoTrezorAttachments : TrezorAttachments {
     override val attached = emptyFlow<Unit>()
     override val detached = emptyFlow<Unit>()
+}
+
+/** Desktop has no Tor. */
+private object DesktopTorSyncState : TorSyncState {
+    override val syncErrorsHidden: StateFlow<Boolean> = MutableStateFlow(false).asStateFlow()
+    override suspend fun requestNewCircuits() = Unit
 }

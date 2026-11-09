@@ -1440,6 +1440,7 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="Tor_Connection_Disable">Désactiver Tor</string>
     <string name="Tor_Alert_Title">Internet</string>
     <string name="TorPage_Connecting">Connexion à Tor…</string>
+    <string name="TorPage_ConnectingProgress">Connexion à Tor… %1$d%</string>
     <string name="TorPage_Failed">Impossible de connecter Tor</string>
     <string name="Tor_TorIsActive">Tor est actif</string>
     <!--Coin Page-->
