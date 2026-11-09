@@ -526,6 +526,7 @@
     <!--TonConnect-->
     <string name="TonConnect_NewConnect">Нове підключення</string>
     <string name="TonConnect_Error_InvalidUrl">Недійсна URL-адреса</string>
+    <string name="ton_connect_request_expired">Час на підтвердження минув. Повторіть операцію на сайті.</string>
     <string name="TonConnect_Unnamed">Без назви</string>
     <string name="TonConnect_Wallet">Гаманець</string>
     <string name="TonConnect_ChooseWallet">Виберіть гаманець</string>

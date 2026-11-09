@@ -546,6 +546,7 @@
     <!--TonConnect-->
     <string name="TonConnect_NewConnect">새 연결</string>
     <string name="TonConnect_Error_InvalidUrl">잘못된 URL 주소</string>
+    <string name="ton_connect_request_expired">확인 시간이 만료되었습니다. 웹사이트에서 작업을 다시 진행해 주세요.</string>
     <string name="TonConnect_Unnamed">이름 없음</string>
     <string name="TonConnect_Wallet">지갑</string>
     <string name="TonConnect_ChooseWallet">지갑 선택</string>

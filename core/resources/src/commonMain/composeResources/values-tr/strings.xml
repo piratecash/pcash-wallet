@@ -546,6 +546,7 @@
     <!--TonConnect-->
     <string name="TonConnect_NewConnect">Yeni Bağlantı</string>
     <string name="TonConnect_Error_InvalidUrl">Geçersiz URL Adresi</string>
+    <string name="ton_connect_request_expired">Onay süresi doldu. İşlemi web sitesinde tekrarlayın.</string>
     <string name="TonConnect_Unnamed">İsimsiz</string>
     <string name="TonConnect_Wallet">Cüzdan</string>
     <string name="TonConnect_ChooseWallet">Cüzdan Seçin</string>

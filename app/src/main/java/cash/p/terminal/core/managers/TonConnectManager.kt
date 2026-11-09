@@ -48,7 +48,8 @@ class TonConnectManager(
     private val _kitState = MutableStateFlow<TonConnectKit?>(null)
     val kitState: StateFlow<TonConnectKit?> = _kitState.asStateFlow()
 
-    val transactionSigner = TonKit.getTransactionSigner(TonKit.getTonApi(Network.MainNet, SharedAppConfig.tonApiKeys))
+    private val tonApi = TonKit.getTonApi(Network.MainNet, SharedAppConfig.tonApiKeys)
+    val transactionSigner = TonKit.getTransactionSigner(tonApi)
 
     val sendRequestFlow: Flow<SignTransaction> =
         kitState.flatMapLatest { it?.sendRequestFlow ?: emptyFlow() }
@@ -96,6 +97,16 @@ class TonConnectManager(
                 }
             }
         }
+    }
+
+    /** Chain time decides whether a message is accepted; null when it cannot be fetched. */
+    suspend fun networkTimeSeconds(): Long? = try {
+        tonApi.getRawTime().toLong()
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        logger.w(e) { "Failed to fetch TON network time" }
+        null
     }
 
     private fun removeDatabaseKey() {

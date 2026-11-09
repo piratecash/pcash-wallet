@@ -541,6 +541,7 @@
     <!--TonConnect-->
     <string name="TonConnect_NewConnect">Nueva conexión</string>
     <string name="TonConnect_Error_InvalidUrl">Dirección URL no válida</string>
+    <string name="ton_connect_request_expired">El tiempo para confirmar ha expirado. Repite la operación en el sitio web.</string>
     <string name="TonConnect_Unnamed">Sin nombre</string>
     <string name="TonConnect_Wallet">Billetera</string>
     <string name="TonConnect_ChooseWallet">Elegir billetera</string>

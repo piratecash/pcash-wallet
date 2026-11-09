@@ -546,6 +546,7 @@
     <!--TonConnect-->
     <string name="TonConnect_NewConnect">اتصال جدید</string>
     <string name="TonConnect_Error_InvalidUrl">آدرس URL نامعتبر</string>
+    <string name="ton_connect_request_expired">مهلت تأیید به پایان رسیده است. عملیات را در وب‌سایت تکرار کنید.</string>
     <string name="TonConnect_Unnamed">بدون نام</string>
     <string name="TonConnect_Wallet">کیف پول</string>
     <string name="TonConnect_ChooseWallet">انتخاب کیف پول</string>
