@@ -11,6 +11,7 @@ import cash.p.terminal.core.EvmError
 import cash.p.terminal.core.OfflineBroadcastMetadata
 import cash.p.terminal.core.OfflineTransactionAdapter
 import cash.p.terminal.core.managers.OfflineSignedTransactionRepository
+import cash.p.terminal.core.adapters.zcash.toBroadcastResult
 import cash.p.terminal.core.managers.PendingTransactionRegistrar
 import cash.p.terminal.core.managers.OfflineTransactionPayloadEncoder
 import cash.p.terminal.entities.DecodedOfflineTransaction
@@ -34,6 +35,7 @@ import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.useCases.WalletUseCase
+import cash.p.zcash.BroadcastResult
 import io.horizontalsystems.core.DispatcherProvider
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.Hud_Text_NoInternet
@@ -68,6 +70,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -612,6 +615,38 @@ class OfflineBroadcastViewModelTest {
         assertTrue(viewModel.uiState.result is OfflineBroadcastResult.Success)
         coVerify { adapter.broadcastRawTransaction("deadbeefdeadbeefdead", broadcastMetadata) }
         coVerify { repository.markBroadcasted("account-id", ZCASH_TX_HASH, ZCASH_TX_HASH) }
+    }
+
+    @Test
+    fun onBroadcast_zcashNodeReleasedTheInputs_dropsThePendingRow() = runTest(dispatcher) {
+        broadcastZcashRejection(BroadcastResult(errorCode = -25, message = "refused", inputsReleased = true))
+
+        coVerify(exactly = 1) { pendingRegistrar.deleteFailed("draft") }
+    }
+
+    @Test
+    fun onBroadcast_zcashNodeKeptTheInputs_keepsThePendingRow() = runTest(dispatcher) {
+        broadcastZcashRejection(BroadcastResult(errorCode = -25, message = "refused", inputsReleased = false))
+
+        coVerify(exactly = 0) { pendingRegistrar.deleteFailed(any()) }
+    }
+
+    private fun TestScope.broadcastZcashRejection(rejection: BroadcastResult) {
+        setActiveWallets(listOf(zcashWallet))
+        every { payloadEncoder.decode(any()) } returns decoded(blockchainUid = "zcash", txHash = ZCASH_TX_HASH)
+        every { marketKit.blockchain("zcash") } returns zcash
+        coEvery { pendingRegistrar.register(any()) } returns "draft"
+        val adapter = mockk<TestOfflineTransactionAdapter>()
+        coEvery { adapter.broadcastRawTransaction(any(), any()) } answers { rejection.toBroadcastResult(ZCASH_TX_HASH) }
+        coEvery { adapterManager.awaitAdapterForWallet<IAdapter>(any(), any()) } returns adapter
+
+        val viewModel = createViewModel()
+        viewModel.prefillAndAdvance("pcash:tx:v1:payload")
+        advanceUntilIdle()
+        viewModel.onPrimaryAction()
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.result is OfflineBroadcastResult.Error)
     }
 
     @Test
