@@ -50,6 +50,7 @@
     <string name="trezor_not_initialized_description">This Trezor is not set up yet. Complete setup on the device, then reconnect it.</string>
     <string name="trezor_not_initialized_cta">Setup guide</string>
     <string name="trezor_connect_failed">Couldn\u0027t connect to Trezor.</string>
+    <string name="hardware_connect_device_to_sync">Connect the device to sync</string>
     <string name="Button_Restore">Import</string>
     <string name="Button_Reset">Reset</string>
     <string name="Button_Understand">I Understand</string>

@@ -35,8 +35,24 @@ class TokenNotSyncedSectionTest {
         assertEquals(1, retryCount)
     }
 
+    @Test
+    fun tokenNotSyncedSection_hasTransactions_showsLastKnownDescription() {
+        setContent(showRetry = true, hasTransactions = true)
+
+        composeTestRule.onNodeWithText(LAST_KNOWN_DESCRIPTION).assertExists()
+    }
+
+    @Test
+    fun tokenNotSyncedSection_noTransactions_hidesLastKnownDescription() {
+        setContent(showRetry = true, hasTransactions = false)
+
+        composeTestRule.onNodeWithText("Data is not synchronized.").assertExists()
+        composeTestRule.onNodeWithText(LAST_KNOWN_DESCRIPTION).assertDoesNotExist()
+    }
+
     private fun setContent(
         showRetry: Boolean,
+        hasTransactions: Boolean = true,
         onRetry: () -> Unit = {},
     ) {
         composeTestRule.setContent {
@@ -45,8 +61,14 @@ class TokenNotSyncedSectionTest {
                     onBlockchainStatusClick = {},
                     onRetry = onRetry,
                     showRetry = showRetry,
+                    hasTransactions = hasTransactions,
                 )
             }
         }
+    }
+
+    private companion object {
+        const val LAST_KNOWN_DESCRIPTION =
+            "Showing the last known transactions. The information may be out of date."
     }
 }
