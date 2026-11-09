@@ -13,7 +13,9 @@ interface IAdapterManager {
     val walletBalanceUpdatedFlow: SharedFlow<Wallet>
 
     fun startAdapterManager()
-    suspend fun refresh()
+
+    /** [attended] = false is an automatic refresh: it must never prompt a hardware wallet. */
+    suspend fun refresh(attended: Boolean = true)
 
     /**
      * Wait for adapter for the given wallet to be available
@@ -28,7 +30,7 @@ interface IAdapterManager {
     fun getBalanceAdapterForWallet(wallet: Wallet): IBalanceAdapter?
     fun getReceiveAdapterForWallet(wallet: Wallet): IReceiveAdapter?
     fun refreshAdapters(wallets: List<Wallet>)
-    fun refreshByWallet(wallet: Wallet)
+    fun refreshByWallet(wallet: Wallet, attended: Boolean = true)
     suspend fun stopAdapters(accountIds: List<String>) = Unit
     suspend fun stopAdapters(accountIds: List<String>, blockchainType: BlockchainType) = Unit
 

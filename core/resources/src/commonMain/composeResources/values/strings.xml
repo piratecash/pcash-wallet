@@ -50,6 +50,7 @@
     <string name="trezor_not_initialized_description">This Trezor is not set up yet. Complete setup on the device, then reconnect it.</string>
     <string name="trezor_not_initialized_cta">Setup guide</string>
     <string name="trezor_connect_failed">Couldn\u0027t connect to Trezor.</string>
+    <string name="hardware_connect_device_to_sync">Connect the device to sync</string>
     <string name="Button_Restore">Import</string>
     <string name="Button_Reset">Reset</string>
     <string name="Button_Understand">I Understand</string>
@@ -793,6 +794,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="Swap_Price">Price</string>
     <string name="Swap_AvailableBalance">Available Balance</string>
     <string name="swap_insufficient_fee_balance">The current %1$s balance is lower than the amount required to process this transaction, including the transaction fee.</string>
+    <string name="insufficient_balance_required_available">Not enough %1$s. This transaction needs at least %2$s including network fees; available %3$s.</string>
     <string name="fee_warning_low_balance">Balance is lower than necessary. You might pay up to %1$s in fees.</string>
     <string name="swap_balance_for_fees">Balance for Fees</string>
     <string name="Swap_PriceImpact">Price Impact</string>
@@ -1000,6 +1002,8 @@ Proceed only if you\u0027re sure.</string>
     <string name="TransactionInfo_Date">Date</string>
     <string name="transaction_info_sync_source">Sync Source</string>
     <string name="TransactionInfo_Id">ID</string>
+    <string name="transaction_info_replaces_transaction">Replaces transaction</string>
+    <string name="transaction_info_replaced_by_transaction">Replaced by transaction</string>
     <string name="TransactionInfo_Service">Service</string>
     <string name="TransactionInfo_RawTransaction">Raw Transaction</string>
     <string name="TransactionInfo_ContactName">Contact Name</string>
@@ -1024,6 +1028,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="TransactionInfo_Price">Price</string>
     <string name="TransactionInfo_AnnouncedAmount">Announced Amount</string>
     <string name="transaction_info_executed_amount">Executed Amount</string>
+    <string name="swap_result_pending_info">The value will be available once the swap is completed</string>
     <string name="TransactionInfo_PriceImpact">Price Impact</string>
     <string name="swap_duration">Swap time</string>
     <string name="swap_duration_approximate">~%1$s</string>
@@ -1876,6 +1881,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="Tor_Connection_Disable">Disable Tor</string>
     <string name="Tor_Alert_Title">Internet</string>
     <string name="TorPage_Connecting">Connecting Tor…</string>
+    <string name="TorPage_ConnectingProgress">Connecting Tor… %1$d%</string>
     <string name="TorPage_Failed">Failed to Connect Tor</string>
     <string name="Tor_TorIsActive">Tor is active</string>
 

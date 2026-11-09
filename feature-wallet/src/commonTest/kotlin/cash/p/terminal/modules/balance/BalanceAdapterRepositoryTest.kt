@@ -17,7 +17,9 @@ import cash.p.terminal.core.managers.BeamSessionOwner
 import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.core.managers.PendingBalanceCalculator
 import cash.p.terminal.core.managers.TronKitWrapper
+import cash.p.terminal.core.tor.TorSyncState
 import cash.p.terminal.wallet.AdapterState
+import cash.p.terminal.wallet.AdapterStoppedException
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.IAdapter
@@ -36,7 +38,10 @@ import io.horizontalsystems.tronkit.models.AccountStatus
 import io.horizontalsystems.tronkit.models.Address
 import io.horizontalsystems.tronkit.transaction.Signer
 import io.mockk.coEvery
+import io.mockk.coVerifyOrder
 import io.mockk.every
+import io.mockk.just
+import io.mockk.runs
 import io.mockk.mockk
 import io.mockk.verify
 import io.reactivex.Flowable
@@ -57,6 +62,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.io.IOException
 import java.math.BigDecimal
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -75,6 +81,11 @@ class BalanceAdapterRepositoryTest {
     }
     private val platformOperationSupport = mockk<PlatformOperationSupport> {
         every { supports(any()) } returns true
+    }
+    private val syncErrorsHidden = MutableStateFlow(false)
+    private val torSyncState = mockk<TorSyncState> {
+        every { syncErrorsHidden } returns this@BalanceAdapterRepositoryTest.syncErrorsHidden
+        coEvery { requestNewCircuits() } just runs
     }
 
     @Before
@@ -170,6 +181,96 @@ class BalanceAdapterRepositoryTest {
             val state = repository.state(testWallet)
 
             assertTrue((state as AdapterState.NotSynced).error is NotSupportedOnPlatformException)
+        } finally {
+            repository.clear()
+        }
+    }
+
+    @Test
+    fun state_notSyncedWhileHidden_returnsConnecting() = runTest(dispatcher) {
+        stubBalanceState(AdapterState.NotSynced(IOException("connection refused")))
+        val repository = createRepository()
+        try {
+            syncErrorsHidden.value = true
+            assertEquals(AdapterState.Connecting, repository.state(testWallet))
+
+            syncErrorsHidden.value = false
+            assertTrue(repository.state(testWallet) is AdapterState.NotSynced)
+        } finally {
+            repository.clear()
+        }
+    }
+
+    @Test
+    fun transactionsSyncState_notSyncedWhileHidden_returnsConnecting() = runTest(dispatcher) {
+        every { adapterManager.getBalanceAdapterForWallet(testWallet) } returns mockk<IBalanceAdapter>(relaxed = true) {
+            every { balanceState } returns AdapterState.Synced
+            every { transactionsSyncState } returns AdapterState.NotSynced(IOException("connection refused"))
+        }
+        syncErrorsHidden.value = true
+        val repository = createRepository()
+        try {
+            assertEquals(AdapterState.Connecting, repository.transactionsSyncState(testWallet))
+        } finally {
+            repository.clear()
+        }
+    }
+
+    @Test
+    fun state_adapterStoppedWhileHidden_returnsNotSynced() = runTest(dispatcher) {
+        stubBalanceState(AdapterState.NotSynced(AdapterStoppedException()))
+        syncErrorsHidden.value = true
+        val repository = createRepository()
+        try {
+            val state = repository.state(testWallet)
+
+            assertTrue((state as AdapterState.NotSynced).error is AdapterStoppedException)
+        } finally {
+            repository.clear()
+        }
+    }
+
+    @Test
+    fun state_unsupportedOnPlatformWhileHidden_returnsNotSupported() = runTest(dispatcher) {
+        every { platformChainSupport.isSupported(testWallet) } returns false
+        syncErrorsHidden.value = true
+        val repository = createRepository()
+        try {
+            val state = repository.state(testWallet)
+
+            assertTrue((state as AdapterState.NotSynced).error is NotSupportedOnPlatformException)
+        } finally {
+            repository.clear()
+        }
+    }
+
+    @Test
+    fun updatesObservable_syncErrorsHiddenChanges_emitsForAllWallets() = runTest(dispatcher) {
+        val wallet1 = mockk<Wallet>(relaxed = true)
+        val wallet2 = mockk<Wallet>(relaxed = true)
+        val repository = createRepository()
+        repository.setWallet(listOf(wallet1, wallet2))
+        val testObserver = repository.updatesObservable.test()
+        try {
+            syncErrorsHidden.value = true
+
+            assertEquals(listOf(wallet1, wallet2), testObserver.values())
+        } finally {
+            testObserver.dispose()
+            repository.clear()
+        }
+    }
+
+    @Test
+    fun refresh_requestsNewCircuitsFirst() = runTest(dispatcher) {
+        val repository = createRepository()
+        try {
+            repository.refresh()
+
+            coVerifyOrder {
+                torSyncState.requestNewCircuits()
+                adapterManager.refresh()
+            }
         } finally {
             repository.clear()
         }
@@ -332,6 +433,7 @@ class BalanceAdapterRepositoryTest {
             pendingBalanceCalculator,
             platformChainSupport,
             platformOperationSupport,
+            torSyncState,
             TestDispatcherProvider(dispatcher, testScope),
         )
         try {
@@ -393,6 +495,7 @@ class BalanceAdapterRepositoryTest {
             pendingBalanceCalculator,
             platformChainSupport,
             platformOperationSupport,
+            torSyncState,
             TestDispatcherProvider(dispatcher, testScope),
         )
         try {
@@ -511,12 +614,19 @@ class BalanceAdapterRepositoryTest {
         return manager
     }
 
+    private fun stubBalanceState(state: AdapterState) {
+        every { adapterManager.getBalanceAdapterForWallet(testWallet) } returns mockk<IBalanceAdapter>(relaxed = true) {
+            every { balanceState } returns state
+        }
+    }
+
     private fun createRepository() = BalanceAdapterRepository(
         adapterManager,
         balanceCache,
         pendingBalanceCalculator,
         platformChainSupport,
         platformOperationSupport,
+        torSyncState,
         TestDispatcherProvider(dispatcher, testScope)
     )
 }

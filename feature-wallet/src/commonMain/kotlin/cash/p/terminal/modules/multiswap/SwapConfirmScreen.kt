@@ -511,6 +511,8 @@ private fun SwapConfirmFeeInfo(
         insufficientFeeBalance = hasFeeProblem,
         onBalanceClicked = onToggleHideBalance,
         feeWarningData = inlineFeeWarningData,
+        // Services put the caution message in the title.
+        insufficientFeeText = uiState.feeCaution?.title,
     )
 }
 

@@ -26,10 +26,12 @@ import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAdapterManager
+import cash.p.terminal.wallet.IBalanceAdapter
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.WalletFactory
+import cash.p.terminal.wallet.entities.BalanceData
 import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
@@ -55,6 +57,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -440,6 +443,54 @@ class SendTonViewModelTest : KoinTest {
         assertFalse(viewModel.offlineSignSupported)
     }
 
+    @Test
+    fun createState_jettonRequiredTonAboveBalance_exposesRequiredTonAndKeepsCanBeSend() = runTest(dispatcher) {
+        val viewModel = createJettonViewModelWithTonBalance(BigDecimal("0.05"))
+
+        assertEquals(JETTON_REQUIRED_TON, viewModel.uiState.requiredTon)
+        assertEquals(BigDecimal("0.01"), viewModel.uiState.fee)
+        assertTrue(viewModel.uiState.canBeSend)
+    }
+
+    @Test
+    fun isInsufficientFeeBalance_jettonTonBalanceBetweenFeeAndRequiredTon_returnsTrue() = runTest(dispatcher) {
+        val viewModel = createJettonViewModelWithTonBalance(BigDecimal("0.05"))
+
+        assertTrue(viewModel.isInsufficientFeeBalance(viewModel.uiState.requiredTon))
+    }
+
+    @Test
+    fun isInsufficientFeeBalance_jettonTonBalanceAboveRequiredTon_returnsFalse() = runTest(dispatcher) {
+        val viewModel = createJettonViewModelWithTonBalance(BigDecimal("0.1"))
+
+        assertFalse(viewModel.isInsufficientFeeBalance(viewModel.uiState.requiredTon))
+    }
+
+    @Test
+    fun isInsufficientFeeBalance_nativeTonWithoutBalance_returnsFalse() = runTest(dispatcher) {
+        every { adapterManager.getAdjustedBalanceDataForToken(tonToken) } returns BalanceData(BigDecimal.ZERO)
+        feeStateFlow.value = createFeeState(requiredTon = JETTON_REQUIRED_TON)
+        val viewModel = createViewModel()
+        viewModel.onEnterAddress(address)
+        viewModel.onEnterAmount(amount)
+        advanceUntilIdle()
+
+        assertFalse(viewModel.isInsufficientFeeBalance(viewModel.uiState.requiredTon))
+    }
+
+    private fun TestScope.createJettonViewModelWithTonBalance(tonBalance: BigDecimal): SendTonViewModel {
+        // BaseSendViewModel yields before reading feeToken; an unconfined Main would not suspend there.
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        every { adapterManager.getAdjustedBalanceDataForToken(tonToken) } returns BalanceData(tonBalance)
+        every { adapterManager.getAdapterForToken<IBalanceAdapter>(tonToken) } returns null
+        feeStateFlow.value = createFeeState(requiredTon = JETTON_REQUIRED_TON)
+        val viewModel = createViewModel(wallet = createWallet(jettonToken()), feeToken = tonToken)
+        viewModel.onEnterAddress(address)
+        viewModel.onEnterAmount(amount)
+        advanceUntilIdle()
+        return viewModel
+    }
+
     private fun createViewModel(
         wallet: Wallet = this.wallet,
         feeToken: Token = tonToken,
@@ -487,11 +538,14 @@ class SendTonViewModelTest : KoinTest {
         canBeSend = canBeSend,
     )
 
-    private fun createFeeState() = SendTonFeeService.State(
-        feeStatus = FeeStatus.Success(BigDecimal("0.01")),
+    private fun createFeeState(
+        fee: BigDecimal = BigDecimal("0.01"),
+        requiredTon: BigDecimal = fee,
+    ) = SendTonFeeService.State(
+        feeStatus = FeeStatus.Success(fee, requiredTon),
         inProgress = false,
         quote = TonFeeQuote(
-            fee = BigDecimal("0.01"),
+            fee = fee,
             amount = amount,
             address = friendlyAddress,
             memo = null,
@@ -522,5 +576,6 @@ class SendTonViewModelTest : KoinTest {
         const val TON_MESSAGE_HASH = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
         const val ANCHOR_UNIX_TIME = 1_700_000_000L
         const val OFFLINE_TX_TTL_SECONDS = 6 * 60 * 60L
+        val JETTON_REQUIRED_TON = BigDecimal("0.075")
     }
 }

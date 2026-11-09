@@ -3,6 +3,7 @@ package cash.p.terminal.modules.balance.token
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.adapters.BaseTronAdapter
 import cash.p.terminal.core.managers.PendingBalanceCalculator
+import cash.p.terminal.core.tor.TorSyncState
 import cash.p.terminal.modules.balance.BalanceAdapterRepository
 import cash.p.terminal.modules.balance.DefaultBalanceXRateRepository
 import cash.p.terminal.wallet.IAdapter
@@ -68,6 +69,9 @@ class TokenBalanceServiceTest {
             every { isSupported(any<Wallet>()) } returns true
         },
         mockk<PlatformOperationSupport>(relaxed = true),
+        mockk<TorSyncState>(relaxed = true) {
+            every { syncErrorsHidden } returns MutableStateFlow(false)
+        },
         TestDispatcherProvider(Dispatchers.Unconfined, repositoryScope),
     )
     private val xRateRepository = mockk<DefaultBalanceXRateRepository>(relaxed = true) {

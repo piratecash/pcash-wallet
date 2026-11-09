@@ -146,18 +146,54 @@ class ZcashAdapterFeeRecalculationTest : ZcashAdapterTestFixture() {
     }
 
     @Test
-    fun fee_stillTheDefaultMinersFee_isRecalculatedOnResync() = runTest(dispatcher) {
+    fun fee_actualFeeEqualsTheOldDefault_isNotRecalculatedOnResync() = runTest(dispatcher) {
         feeFor = { MINERS_FEE_ZAT }
         startSyncedAdapter()
         emitBalance(orchard = 100_000_000)
         assertEquals(1, plannedAmounts.size)
 
-        // While the published fee is still the default one, the balance is not enough to conclude
-        // the fee is current: ZIP-317 also depends on the proposal target height, which changes at
-        // NU6.3 activation without touching any balance field.
         resync()
 
-        assertEquals(2, plannedAmounts.size)
+        assertEquals(1, plannedAmounts.size)
+    }
+
+    @Test
+    fun fee_nextBlockCrossesTheRateBoundary_isRecalculatedWithoutABalanceChange() = runTest(dispatcher) {
+        feeFor = { 15_000L }
+        startSyncedAdapter()
+        syncTo(RATE_BOUNDARY_TARGET - 2)
+        emitBalance(orchard = 100_000_000)
+        assertFeeEquals(15_000L)
+        plannedAmounts.clear()
+
+        feeFor = { 3_000L }
+        syncTo(RATE_BOUNDARY_TARGET - 1)
+
+        assertEquals(listOf(100_000_000L), plannedAmounts)
+        assertFeeEquals(3_000L)
+    }
+
+    @Test
+    fun fee_newBlockAtTheSameRate_isNotRecalculated() = runTest(dispatcher) {
+        feeFor = { 15_000L }
+        startSyncedAdapter()
+        syncTo(RATE_BOUNDARY_TARGET - 3)
+        emitBalance(orchard = 100_000_000)
+        plannedAmounts.clear()
+
+        syncTo(RATE_BOUNDARY_TARGET - 2)
+
+        assertEquals(emptyList<Long>(), plannedAmounts)
+    }
+
+    @Test
+    fun fee_zeroBalanceAfterTheRateBoundary_isTwoActionsAtTheNewRate() = runTest(dispatcher) {
+        startSyncedAdapter()
+        syncTo(RATE_BOUNDARY_TARGET)
+
+        emitBalance(orchard = 0)
+
+        assertFeeEquals(2 * REDUCED_FEE_PER_ACTION)
     }
 
     @Test
@@ -286,6 +322,14 @@ class ZcashAdapterFeeRecalculationTest : ZcashAdapterTestFixture() {
     /** Cycles the sync state Syncing -> Synced without touching the balance. */
     private fun TestScope.resync() {
         emitSessionSyncState(SyncState.Syncing(current = 1, target = 2))
+        advanceUntilIdle()
+        emitSessionSyncState(SyncState.Synced)
+        advanceUntilIdle()
+    }
+
+    /** A new block: the sync passes through Syncing with the new tip as its target. */
+    private fun TestScope.syncTo(tip: Int) {
+        emitSessionSyncState(SyncState.Syncing(current = tip - 1, target = tip))
         advanceUntilIdle()
         emitSessionSyncState(SyncState.Synced)
         advanceUntilIdle()

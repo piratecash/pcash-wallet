@@ -54,7 +54,21 @@ interface ISendZcashAdapter : IBalanceAdapter, OfflineTransactionAdapter<SignedO
     suspend fun validate(address: String): ZcashAdapter.ZCashAddressType
     /** Returns the txid of the broadcast transaction. */
     suspend fun send(amount: BigDecimal, address: String, memo: String): String
+    /** What [send] would charge. */
+    suspend fun estimateFee(amount: BigDecimal, address: String, memo: String): ZcashFeeEstimate
+    /** What [address] receives from the whole balance; null when it cannot be planned right now. */
+    suspend fun maxSendable(address: String, memo: String): BigDecimal?
     suspend fun getOwnAddresses(): List<String>
+}
+
+sealed interface ZcashFeeEstimate {
+    data class Planned(val fee: BigDecimal) : ZcashFeeEstimate
+
+    /** No selection of notes covers the amount and its fee, so [ISendZcashAdapter.send] would refuse it too. */
+    data object InsufficientBalance : ZcashFeeEstimate
+
+    /** The plan failed for another reason, e.g. no server. */
+    data object Unavailable : ZcashFeeEstimate
 }
 
 interface ITransactionsAdapter {
@@ -386,10 +400,14 @@ interface IMoneroReceiveAdapter : IReceiveAdapter, IMoneroHardwareWalletAdapter 
     suspend fun displayAddressOnDevice(addressIndex: Int)
 }
 
+/** [requiredTon] is all TON the transaction debits: the attached value plus every fee. */
+data class TonFeeEstimate(val fee: BigDecimal, val requiredTon: BigDecimal)
+
 interface ISendTonAdapter : IBalanceAdapter {
     suspend fun send(amount: BigDecimal, address: FriendlyAddress, memo: String?)
     suspend fun sendWithPayload(amount: BigInteger, address: String, payload: String)
-    suspend fun estimateFee(amount: BigDecimal, address: FriendlyAddress, memo: String?) : BigDecimal
+    suspend fun estimateFee(amount: BigDecimal, address: FriendlyAddress, memo: String?): TonFeeEstimate
+    suspend fun estimateFeeWithPayload(amount: BigInteger, address: String, payload: String): TonFeeEstimate
     suspend fun fetchOfflineAnchor(): TonOfflineAnchor
 }
 

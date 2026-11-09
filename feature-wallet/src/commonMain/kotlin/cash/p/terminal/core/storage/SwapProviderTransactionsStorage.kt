@@ -172,6 +172,13 @@ class SwapProviderTransactionsStorage(
     fun setOutgoingRecordUid(date: Long, outgoingRecordUid: String) =
         dao.setOutgoingRecordUid(date, outgoingRecordUid)
 
+    fun relinkOutgoingRecord(
+        date: Long,
+        outgoingRecordUid: String,
+        transactionId: String,
+        depositTransactionHash: String?
+    ) = dao.relinkOutgoingRecord(date, outgoingRecordUid, transactionId, depositTransactionHash)
+
     fun updateStatusFields(
         date: Long,
         status: String,

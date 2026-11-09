@@ -1,7 +1,9 @@
 package cash.p.terminal.modules.transactions
 
 import cash.p.terminal.network.changenow.domain.entity.TransactionStatusEnum
+import java.math.BigDecimal
 
+fun BigDecimal?.positiveOrNull(): BigDecimal? = this?.takeIf { it > BigDecimal.ZERO }
 
 fun TransactionStatusEnum?.toUniversalStatus() = when (this) {
     null,

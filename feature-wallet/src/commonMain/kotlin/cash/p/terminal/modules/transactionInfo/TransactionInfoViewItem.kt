@@ -13,7 +13,9 @@ import io.horizontalsystems.core.entities.BlockchainType
 import java.util.Date
 import org.jetbrains.compose.resources.DrawableResource
 import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.TransactionInfo_Id
 import cash.p.terminal.resources.ic_language
+import org.jetbrains.compose.resources.StringResource
 
 sealed class TransactionInfoViewItem {
     class Transaction(val leftValue: String, val rightValue: String, val icon: DrawableResource?) :
@@ -41,6 +43,8 @@ sealed class TransactionInfoViewItem {
 
     class Value(val title: String, val value: String) : TransactionInfoViewItem()
 
+    class AwaitingSwapResult(val title: String) : TransactionInfoViewItem()
+
     class ValueClickable(val title: String, val value: String) : TransactionInfoViewItem()
 
     class ValueColored(val title: String, val value: String, val color: ColorName) :
@@ -60,7 +64,10 @@ sealed class TransactionInfoViewItem {
 
     class ContactItem(val contact: Contact) : TransactionInfoViewItem()
 
-    class TransactionHash(val transactionHash: String) : TransactionInfoViewItem()
+    class TransactionHash(
+        val transactionHash: String,
+        val title: StringResource = Res.string.TransactionInfo_Id,
+    ) : TransactionInfoViewItem()
 
     class Explorer(
         val title: String,

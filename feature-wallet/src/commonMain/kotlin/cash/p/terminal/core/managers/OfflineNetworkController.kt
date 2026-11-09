@@ -90,7 +90,7 @@ class OfflineNetworkController(
 
             BlockchainType.Monero ->
                 isDisconnected(
-                    moneroKitManager.currentAccount, account, moneroKitManager.moneroKitWrapper?.isNetworkOnline,
+                    moneroKitManager.currentAccount, account, moneroKitManager.moneroKitWrapper?.isNetworkEnabled,
                 )
 
             BlockchainType.Thorchain,

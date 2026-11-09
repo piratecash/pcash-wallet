@@ -966,7 +966,8 @@ class TokenBalanceViewModel(
         connectivityManager.isConnected.value -> BalanceViewModel.SyncError.Dialog(
             viewItem.wallet,
             viewItem.errorMessage,
-            viewItem.syncErrorBlockedByProvider
+            viewItem.syncErrorBlockedByProvider,
+            viewItem.syncErrorFromDevice
         )
 
         else -> BalanceViewModel.SyncError.NetworkNotAvailable()

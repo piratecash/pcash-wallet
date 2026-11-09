@@ -43,6 +43,7 @@
     <string name="trezor_not_initialized_description">Цей Trezor ще не налаштований. Завершіть налаштування на пристрої та підключіть його знову.</string>
     <string name="trezor_not_initialized_cta">Інструкція з налаштування</string>
     <string name="trezor_connect_failed">Не вдалося підключитися до Trezor.</string>
+    <string name="hardware_connect_device_to_sync">Підключіть пристрій для синхронізації</string>
     <string name="Button_Restore">Імпорт</string>
     <string name="Button_Reset">Скинути</string>
     <string name="Button_Understand">Я розумію</string>
@@ -586,6 +587,7 @@
     <string name="Swap_Price">Ціна</string>
     <string name="Swap_AvailableBalance">Доступний баланс</string>
     <string name="swap_insufficient_fee_balance">Поточний баланс %1$s нижчий за суму, необхідну для проведення цієї транзакції, включаючи комісію.</string>
+    <string name="insufficient_balance_required_available">Недостатньо %1$s. Для цієї транзакції потрібно щонайменше %2$s з урахуванням комісій мережі, доступно %3$s.</string>
     <string name="fee_warning_low_balance">Баланс нижчий за необхідний рівень. Комісія може становити до %1$s.</string>
     <string name="swap_balance_for_fees">Баланс для комісій</string>
     <string name="fee">Комісія</string>
@@ -752,6 +754,8 @@
     <string name="TransactionInfo_Date">Дата</string>
     <string name="transaction_info_sync_source">Джерело синхронізації</string>
     <string name="TransactionInfo_Id">ID Транзакції</string>
+    <string name="transaction_info_replaces_transaction">Замінює транзакцію</string>
+    <string name="transaction_info_replaced_by_transaction">Замінена транзакцією</string>
     <string name="TransactionInfo_Service">Сервіс</string>
     <string name="TransactionInfo_RawTransaction">Непідтверджена транзакція</string>
     <string name="TransactionInfo_ContactName">Ім\u0027я контакту</string>
@@ -769,6 +773,7 @@
     <string name="TransactionInfo_HistoricalRate">Історичний курс</string>
     <string name="TransactionInfo_AnnouncedAmount">Оголошена сума</string>
     <string name="transaction_info_executed_amount">Виконана сума</string>
+    <string name="swap_result_pending_info">Значення буде доступне після завершення обміну</string>
     <string name="TransactionInfo_PriceImpact">Вплив на ціну</string>
     <string name="swap_duration">Час обміну</string>
     <string name="swap_duration_approximate">~%1$s</string>
@@ -1447,6 +1452,7 @@
     <string name="Tor_Connection_Disable">Вимкнути Tor</string>
     <string name="Tor_Alert_Title">Доступ до Інтернету</string>
     <string name="TorPage_Connecting">Підключення Tor…</string>
+    <string name="TorPage_ConnectingProgress">Підключення Tor… %1$d%</string>
     <string name="TorPage_Failed">Не вдалося підключитися до Tor</string>
     <string name="Tor_TorIsActive">Tor активний</string>
     <!--Coin Page-->

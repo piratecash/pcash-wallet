@@ -68,6 +68,10 @@ private const val MINED_HEIGHT = 2_500_000
 private const val BROADCAST_HEIGHT = 3_428_200
 private val RAW = byteArrayOf(1, 2, 3)
 private val ACCEPTED = BroadcastResult(errorCode = 0, message = TXID)
+private val RELEASED = BroadcastResult(errorCode = -25, message = "refused", inputsReleased = true)
+private val KEPT = BroadcastResult(errorCode = -26, message = "refused", inputsReleased = false)
+private val RESERVED_BALANCE = PoolBalance(mapOf(Pool.ORCHARD to Balance(available = 1)))
+private val RELEASED_BALANCE = PoolBalance(mapOf(Pool.ORCHARD to Balance(available = 2)))
 private const val CLEANUP_MS = 1_000L
 private const val SERVER_URL = "https://zec.rocks:443"
 private const val CREDENTIAL_MESSAGE =
@@ -484,6 +488,39 @@ class ZcashSessionTest {
             wallet.balance(DB_ACCOUNT_ID, any())
             wallet.broadcast(DB_ACCOUNT_ID, RAW, BROADCAST_HEIGHT, false)
         }
+    }
+
+    @Test
+    fun broadcastReserved_nodeReleasedTheInputs_publishesTheSpendableBalanceAgain() = runTest {
+        val session = session()
+        coEvery { wallet.balance(any(), any()) } returnsMany listOf(RESERVED_BALANCE, RELEASED_BALANCE)
+        coEvery { wallet.broadcast(any(), any(), any(), any()) } returns RELEASED
+
+        session.broadcastReserved(RAW, BROADCAST_HEIGHT, requireOwnInputs = true)
+
+        assertEquals(RELEASED_BALANCE, session.state.value.balance)
+    }
+
+    @Test
+    fun broadcastReserved_nodeKeptTheInputs_doesNotReadTheStateAgain() = runTest {
+        val session = session()
+        coEvery { wallet.balance(any(), any()) } returnsMany listOf(RESERVED_BALANCE, RELEASED_BALANCE)
+        coEvery { wallet.broadcast(any(), any(), any(), any()) } returns KEPT
+
+        session.broadcastReserved(RAW, BROADCAST_HEIGHT, requireOwnInputs = true)
+
+        assertEquals(RESERVED_BALANCE, session.state.value.balance)
+    }
+
+    @Test
+    fun broadcastReserved_readAfterReleaseFails_stillReturnsTheVerdictOfTheNode() = runTest {
+        val session = session()
+        coEvery { wallet.balance(any(), any()) } returns RESERVED_BALANCE andThenThrows ZcashException("db")
+        coEvery { wallet.broadcast(any(), any(), any(), any()) } returns RELEASED
+
+        val result = session.broadcastReserved(RAW, BROADCAST_HEIGHT, requireOwnInputs = true)
+
+        assertEquals(ZcashSessionResult.Success(RELEASED), result)
     }
 
     @Test

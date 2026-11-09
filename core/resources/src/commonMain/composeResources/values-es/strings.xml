@@ -59,6 +59,7 @@
     <string name="trezor_not_initialized_description">Este Trezor aún no está configurado. Completa la configuración en el dispositivo y vuelve a conectarlo.</string>
     <string name="trezor_not_initialized_cta">Guía de configuración</string>
     <string name="trezor_connect_failed">No se pudo conectar con Trezor.</string>
+    <string name="hardware_connect_device_to_sync">Conecta el dispositivo para sincronizar</string>
     <string name="Button_Activate">Activar</string>
     <string name="activation_required_dialog_description">Para recibir %1$s, debe activar el token. La red Stellar requiere establecer una línea de confianza (trustline) para cada token. Sin ella, su monedero no podrá recibir %2$s: la transacción será rechazada y los fondos no serán entregados.</string>
     <string name="activate_you_activate">Usted activa</string>
@@ -603,6 +604,7 @@
     <string name="Swap_Price">Precio</string>
     <string name="Swap_AvailableBalance">Saldo disponible</string>
     <string name="swap_insufficient_fee_balance">El saldo actual de %1$s es inferior al monto requerido para procesar esta transacción, incluida la comisión.</string>
+    <string name="insufficient_balance_required_available">No hay suficiente %1$s. Esta transacción requiere al menos %2$s incluyendo las comisiones de red; disponible %3$s.</string>
     <string name="fee_warning_low_balance">El saldo es menor de lo necesario. Podrías pagar hasta %1$s en comisiones.</string>
     <string name="swap_balance_for_fees">Saldo para comisiones</string>
     <string name="fee">Comisión</string>
@@ -763,6 +765,8 @@
     <string name="TransactionInfo_Date">Fecha</string>
     <string name="transaction_info_sync_source">Fuente de sincronización</string>
     <string name="TransactionInfo_Id">ID</string>
+    <string name="transaction_info_replaces_transaction">Reemplaza la transacción</string>
+    <string name="transaction_info_replaced_by_transaction">Reemplazada por la transacción</string>
     <string name="TransactionInfo_Service">Servicio</string>
     <string name="TransactionInfo_RawTransaction">Transacción sin procesar</string>
     <string name="TransactionInfo_ContactName">Nombre de contacto</string>
@@ -780,6 +784,7 @@
     <string name="TransactionInfo_HistoricalRate">Estado histórico</string>
     <string name="TransactionInfo_AnnouncedAmount">Monto anunciado</string>
     <string name="transaction_info_executed_amount">Monto ejecutado</string>
+    <string name="swap_result_pending_info">El valor estará disponible cuando se complete la permuta</string>
     <string name="TransactionInfo_PriceImpact">Impacto en el precio</string>
     <string name="swap_duration">Duración de la permuta</string>
     <string name="swap_duration_approximate">~%1$s</string>
@@ -1431,6 +1436,7 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="Tor_Connection_Disable">Desactivar Tor</string>
     <string name="Tor_Alert_Title">Internet</string>
     <string name="TorPage_Connecting">Conectando Tor…</string>
+    <string name="TorPage_ConnectingProgress">Conectando Tor… %1$d%</string>
     <string name="TorPage_Failed">Error al conectar Tor</string>
     <string name="Tor_TorIsActive">Tor está activo</string>
     <!--Coin Page-->

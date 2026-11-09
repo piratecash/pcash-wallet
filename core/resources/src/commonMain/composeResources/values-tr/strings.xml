@@ -59,6 +59,7 @@
     <string name="trezor_not_initialized_description">Bu Trezor henüz kurulmadı. Kurulumu cihazda tamamlayın ve yeniden bağlayın.</string>
     <string name="trezor_not_initialized_cta">Kurulum kılavuzu</string>
     <string name="trezor_connect_failed">Trezor\u0027a bağlanılamadı.</string>
+    <string name="hardware_connect_device_to_sync">Senkronize etmek için cihazı bağlayın</string>
     <string name="Button_Activate">Etkinleştir</string>
     <string name="activation_required_dialog_description">%1$s almak için tokeni etkinleştirmeniz gerekir. Stellar ağı her token için bir güven hattı (trustline) kurulmasını gerektirir. Bu olmadan cüzdanınız %2$s alamaz — işlem reddedilir ve fonlar teslim edilmez.</string>
     <string name="activate_you_activate">Etkinleştirdiğiniz</string>
@@ -608,6 +609,7 @@
     <string name="Swap_Price">Fiyat</string>
     <string name="Swap_AvailableBalance">Mevcut Bakiye</string>
     <string name="swap_insufficient_fee_balance">Mevcut %1$s bakiyesi, işlem ücreti dahil bu işlemi gerçekleştirmek için gereken tutardan düşüktür.</string>
+    <string name="insufficient_balance_required_available">Yeterli %1$s yok. Bu işlem, ağ ücretleri dahil en az %2$s gerektiriyor; kullanılabilir bakiye %3$s.</string>
     <string name="fee_warning_low_balance">Bakiye gerekli seviyenin altında. Ücretler %1$s\u0027ye kadar çıkabilir.</string>
     <string name="swap_balance_for_fees">Ücretler için bakiye</string>
     <string name="fee">Ücret</string>
@@ -768,6 +770,8 @@
     <string name="TransactionInfo_Date">Tarih</string>
     <string name="transaction_info_sync_source">Senkronizasyon kaynağı</string>
     <string name="TransactionInfo_Id">Kimlik</string>
+    <string name="transaction_info_replaces_transaction">Şu işlemin yerine geçer</string>
+    <string name="transaction_info_replaced_by_transaction">Şu işlemle değiştirildi</string>
     <string name="TransactionInfo_Service">Hizmet</string>
     <string name="TransactionInfo_RawTransaction">Ham işlem</string>
     <string name="TransactionInfo_ContactName">Kişi Adı</string>
@@ -785,6 +789,7 @@
     <string name="TransactionInfo_HistoricalRate">Geçmiş Kur</string>
     <string name="TransactionInfo_AnnouncedAmount">Duyurulan miktar</string>
     <string name="transaction_info_executed_amount">Gerçekleşen miktar</string>
+    <string name="swap_result_pending_info">Değer takas tamamlandıktan sonra kullanılabilir olacak</string>
     <string name="TransactionInfo_PriceImpact">Fiyat etkisi</string>
     <string name="swap_duration">Takas süresi</string>
     <string name="swap_duration_approximate">~%1$s</string>
@@ -1441,6 +1446,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="Tor_Connection_Disable">Tor\u0027u devre dışı bırak</string>
     <string name="Tor_Alert_Title">İnternet</string>
     <string name="TorPage_Connecting">Tor Bağlanıyor…</string>
+    <string name="TorPage_ConnectingProgress">Tor Bağlanıyor… %1$d%</string>
     <string name="TorPage_Failed">Tor bağlanılamadı</string>
     <string name="Tor_TorIsActive">Tor aktif</string>
     <!--Coin Page-->
