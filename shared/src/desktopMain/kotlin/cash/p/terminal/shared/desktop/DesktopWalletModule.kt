@@ -44,6 +44,7 @@ import cash.p.terminal.core.managers.SolanaRpcSourceManager
 import cash.p.terminal.core.managers.StellarKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.TonKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.TronKitDatabaseKeyProvider
+import cash.p.terminal.core.managers.TrezorAttachments
 import cash.p.terminal.core.providers.AddressResolutionConfig
 import cash.p.terminal.core.providers.ZcashFallbackAddressProvider
 import cash.p.terminal.core.NonFatalReporter
@@ -55,6 +56,7 @@ import cash.p.terminal.core.storage.StorageRouter
 import cash.p.terminal.core.storage.sessionLevel
 import io.horizontalsystems.core.logger.LogScope
 import io.horizontalsystems.core.storage.LogsDao
+import cash.p.terminal.core.tor.TorSyncState
 import cash.p.terminal.core.storage.BlockchainSettingsStorage
 import cash.p.terminal.core.storage.EnabledWalletsStorage
 import cash.p.terminal.core.storage.EvmSyncSourceStorage
@@ -114,6 +116,10 @@ import cash.p.terminal.wallet.useCases.ScanToAddUseCase
 import io.horizontalsystems.core.ISystemInfoManager
 import io.horizontalsystems.core.IThirdKeyboard
 import io.horizontalsystems.hdwalletkit.Mnemonic
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.qualifier.named
@@ -186,6 +192,7 @@ internal val desktopWalletModule = module {
     single<TonHardwareSigners> { DesktopNoHardwareSigners }
     single<ZcashHardwareSigners> { DesktopNoHardwareSigners }
     single<MoneroHardwareGateway> { DesktopNoHardwareSigners }
+    single<TrezorAttachments> { DesktopNoTrezorAttachments }
     single<PlatformAccountDataCleaner> { DesktopPlatformAccountDataCleaner }
     singleOf(::DesktopPinStateInfo) bind PinStateInfo::class
     singleOf(::DesktopHiddenWalletEntry)
@@ -230,6 +237,19 @@ internal val desktopWalletModule = module {
     singleOf(::DesktopZcashDbKeyProvider) bind ZcashDbKeyProvider::class
     singleOf(::DesktopBeamKitDatabaseKeyProvider) bind BeamKitDatabaseKeyProvider::class
     single<NonFatalReporter> { DesktopNonFatalReporter }
+    single<TorSyncState> { DesktopTorSyncState }
     // The TON fallback address provider stays in the Android app; desktop has none for TON.
     single<FallbackAddressProvider> { get<ZcashFallbackAddressProvider>() }
+}
+
+/** Desktop has no Trezor accounts, so nothing is ever plugged in for them. */
+private object DesktopNoTrezorAttachments : TrezorAttachments {
+    override val attached = emptyFlow<Unit>()
+    override val detached = emptyFlow<Unit>()
+}
+
+/** Desktop has no Tor. */
+private object DesktopTorSyncState : TorSyncState {
+    override val syncErrorsHidden: StateFlow<Boolean> = MutableStateFlow(false).asStateFlow()
+    override suspend fun requestNewCircuits() = Unit
 }

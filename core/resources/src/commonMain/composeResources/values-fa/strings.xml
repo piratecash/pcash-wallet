@@ -59,6 +59,7 @@
     <string name="trezor_not_initialized_description">این Trezor هنوز راه‌اندازی نشده است. راه‌اندازی را روی دستگاه کامل کنید و دوباره آن را وصل کنید.</string>
     <string name="trezor_not_initialized_cta">راهنمای راه‌اندازی</string>
     <string name="trezor_connect_failed">اتصال به Trezor برقرار نشد.</string>
+    <string name="hardware_connect_device_to_sync">برای همگام‌سازی، دستگاه را وصل کنید</string>
     <string name="Button_Activate">فعال‌سازی</string>
     <string name="activation_required_dialog_description">برای دریافت %1$s باید توکن را فعال کنید. شبکه Stellar برای هر توکن به ایجاد خط اعتماد (trustline) نیاز دارد. بدون آن، کیف پول شما نمی‌تواند %2$s را دریافت کند — تراکنش رد می‌شود و وجوه تحویل داده نمی‌شوند.</string>
     <string name="activate_you_activate">شما فعال می‌کنید</string>
@@ -769,6 +770,8 @@
     <string name="TransactionInfo_Date">تاریخ</string>
     <string name="transaction_info_sync_source">منبع همگام‌سازی</string>
     <string name="TransactionInfo_Id">شناسه</string>
+    <string name="transaction_info_replaces_transaction">جایگزین تراکنش</string>
+    <string name="transaction_info_replaced_by_transaction">جایگزین‌شده با تراکنش</string>
     <string name="TransactionInfo_Service">خدمات</string>
     <string name="TransactionInfo_RawTransaction">تراکنش خام</string>
     <string name="TransactionInfo_ContactName">Contact Name</string>
@@ -1445,6 +1448,7 @@
     <string name="Tor_Connection_Disable">Tor را غیرفعال کنید</string>
     <string name="Tor_Alert_Title">اینترنت</string>
     <string name="TorPage_Connecting">Connecting Tor…</string>
+    <string name="TorPage_ConnectingProgress">در حال اتصال Tor… %1$d%</string>
     <string name="TorPage_Failed">Failed to Connect Tor</string>
     <string name="Tor_TorIsActive">Tor is active</string>
     <!--Coin Page-->

@@ -75,6 +75,11 @@ class PendingMultiSwapStorage(
             router.forEachAccount { pendingMultiSwapDao().setLeg1InfoRecordUid(id, recordUid) }
         }
 
+    suspend fun moveLeg1RecordUid(fromUids: List<String>, toUid: String) =
+        withContext(dispatcherProvider.io) {
+            router.forEachAccount { pendingMultiSwapDao().moveLeg1RecordUid(fromUids, toUid) }
+        }
+
     suspend fun delete(id: String) = withContext(dispatcherProvider.io) {
         router.forEachAccount { pendingMultiSwapDao().delete(id) }
     }

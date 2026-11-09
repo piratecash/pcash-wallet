@@ -6,12 +6,16 @@ import cash.p.terminal.trezorkit.client.TrezorSessionId
 import cash.p.terminal.trezorkit.TrezorUsbDisconnectedException
 import cash.p.terminal.trezorkit.TrezorUsbOperationTimeoutException
 import cash.p.terminal.trezorkit.TrezorUsbShortPacketException
+import cash.p.terminal.trezorkit.protocol.DecodedMessage
 import cash.p.terminal.trezorkit.protocol.FramingCodec
+import cash.p.terminal.trezorkit.protocol.FramingDecoder
+import cash.p.terminal.trezorkit.protocol.TrezorPromptPolicy
 import cash.p.terminal.trezorkit.transport.TrezorRawUsbChannel
 import cash.p.terminal.trezorkit.transport.TrezorUsbCoordinator
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.IAccountManager
 import com.google.protobuf.ByteString
 import com.piratecash.monero.signer.ExternalSignerException
 import com.piratecash.monero.signer.ExternalSignerRegistration
@@ -21,6 +25,7 @@ import com.satoshilabs.trezor.lib.protobuf.TrezorMessage.MessageType
 import com.satoshilabs.trezor.lib.protobuf.TrezorMessageBitcoin.PublicKey
 import com.satoshilabs.trezor.lib.protobuf.TrezorMessageCommon.HDNodeType
 import com.satoshilabs.trezor.lib.protobuf.TrezorMessageManagement.Features
+import com.satoshilabs.trezor.lib.protobuf.TrezorMessageManagement.Initialize
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -35,6 +40,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -61,6 +68,7 @@ class MoneroTrezorOperationGatewayTest {
             coordinator = coordinator,
             readiness = mockk(),
             dispatcherProvider = TestDispatcherProvider(dispatcher, CoroutineScope(dispatcher)),
+            accountManager = knownAccounts(),
         )
 
         val actual = assertFailsWith<CancellationException> {
@@ -83,6 +91,7 @@ class MoneroTrezorOperationGatewayTest {
             coordinator = coordinator,
             readiness = mockk(),
             dispatcherProvider = TestDispatcherProvider(dispatcher, CoroutineScope(dispatcher)),
+            accountManager = knownAccounts(),
         )
 
         val error = assertFailsWith<HardwareWalletOperationException> {
@@ -106,6 +115,7 @@ class MoneroTrezorOperationGatewayTest {
             coordinator = coordinator,
             readiness = mockk(),
             dispatcherProvider = TestDispatcherProvider(dispatcher, CoroutineScope(dispatcher)),
+            accountManager = knownAccounts(),
         )
 
         val error = assertFailsWith<HardwareWalletOperationException> {
@@ -131,6 +141,7 @@ class MoneroTrezorOperationGatewayTest {
             coordinator = coordinator,
             readiness = mockk(),
             dispatcherProvider = TestDispatcherProvider(dispatcher, CoroutineScope(dispatcher)),
+            accountManager = knownAccounts(),
         )
 
         val actual = assertFailsWith<MoneroDeviceWalletOwnershipRetainedException> {
@@ -151,6 +162,7 @@ class MoneroTrezorOperationGatewayTest {
             coordinator,
             readiness,
             TestDispatcherProvider(dispatcher, CoroutineScope(dispatcher)),
+            knownAccounts(),
         )
 
         val result = gateway.execute(legacyAccount()) { it }
@@ -180,6 +192,7 @@ class MoneroTrezorOperationGatewayTest {
             coordinator(scriptedChannel(LIVE_WALLET_KEY, NEWEST_SESSION_ID)),
             readiness,
             TestDispatcherProvider(dispatcher, CoroutineScope(dispatcher)),
+            knownAccounts(),
         )
 
         val result = gateway.execute(legacyAccount()) { it }
@@ -215,6 +228,7 @@ class MoneroTrezorOperationGatewayTest {
             coordinator,
             readiness,
             TestDispatcherProvider(dispatcher, CoroutineScope(dispatcher)),
+            knownAccounts(),
         )
         var blockInvoked = false
 
@@ -323,6 +337,7 @@ class MoneroTrezorOperationGatewayTest {
             coordinator(channel),
             mockk(),
             TestDispatcherProvider(Dispatchers.IO, CoroutineScope(Dispatchers.IO)),
+            knownAccounts(),
         )
         val operation = launch(start = CoroutineStart.UNDISPATCHED) {
             gateway.execute { "unused" }
@@ -358,6 +373,284 @@ class MoneroTrezorOperationGatewayTest {
         )
     }
 
+    @Test
+    fun executeUnattended_noConfirmedSession_failsWithoutOpeningDevice() = runTest {
+        val coordinator = mockk<TrezorUsbCoordinator>()
+        val gateway = gateway(coordinator, readiness())
+
+        val error = assertFailsWith<HardwareWalletOperationException> {
+            gateway.executeUnattended(legacyAccount()) { it }
+        }
+
+        assertEquals(HardwareWalletErrorCode.PendingDeviceVerification, error.error)
+        coVerify(exactly = 0) { coordinator.withRawChannel<String>(any()) }
+        coVerify(exactly = 0) { coordinator.withPermittedRawChannel<String>(any()) }
+    }
+
+    @Test
+    fun executeUnattended_confirmedSession_resumesItOverPermittedChannel() = runTest {
+        val unattendedChannel = scriptedChannel(LIVE_WALLET_KEY)
+        val coordinator = coordinator(scriptedChannel(LIVE_WALLET_KEY), unattendedChannel)
+        val gateway = gateway(coordinator, readiness())
+        gateway.execute(legacyAccount()) { it }
+        gateway.markLiveRefreshConfirmed(legacyAccount())
+
+        val result = gateway.executeUnattended(legacyAccount()) { it }
+
+        assertEquals(LIVE_WALLET_KEY, result)
+        val initialize = unattendedChannel.writtenMessages().first()
+        assertEquals(MessageType.MessageType_Initialize_VALUE, initialize.msgType)
+        assertTrue(Initialize.parseFrom(initialize.payload).sessionId.toByteArray().contentEquals(SESSION_ID))
+        coVerify(exactly = 1) { coordinator.withRawChannel<String>(any()) }
+    }
+
+    @Test
+    fun executeUnattended_lockedDevice_failsBeforeWalletKeyAndNeedsNewConfirmation() = runTest {
+        val unattendedChannel = scriptedChannel(LIVE_WALLET_KEY, unlocked = false)
+        val gateway = gateway(coordinator(scriptedChannel(LIVE_WALLET_KEY), unattendedChannel), readiness())
+        gateway.execute(legacyAccount()) { it }
+        gateway.markLiveRefreshConfirmed(legacyAccount())
+
+        val locked = assertFailsWith<HardwareWalletOperationException> {
+            gateway.executeUnattended(legacyAccount()) { it }
+        }
+        val next = assertFailsWith<HardwareWalletOperationException> {
+            gateway.executeUnattended(legacyAccount()) { it }
+        }
+
+        assertEquals(HardwareWalletErrorCode.PendingDeviceVerification, locked.error)
+        assertEquals(HardwareWalletErrorCode.PendingDeviceVerification, next.error)
+        assertFalse(unattendedChannel.requestedWalletKey())
+    }
+
+    @Test
+    fun executeUnattended_resumedSessionIdDiffers_failsBeforeWalletKey() = runTest {
+        val unattendedChannel = scriptedChannel(LIVE_WALLET_KEY, sessionId = NEWEST_SESSION_ID)
+        val gateway = gateway(coordinator(scriptedChannel(LIVE_WALLET_KEY), unattendedChannel), readiness())
+        gateway.execute(legacyAccount()) { it }
+        gateway.markLiveRefreshConfirmed(legacyAccount())
+
+        val error = assertFailsWith<HardwareWalletOperationException> {
+            gateway.executeUnattended(legacyAccount()) { it }
+        }
+
+        assertEquals(HardwareWalletErrorCode.PendingDeviceVerification, error.error)
+        assertFalse(unattendedChannel.requestedWalletKey())
+    }
+
+    @Test
+    fun retainSessions_trezorDetached_needsNewConfirmation() = runTest {
+        val coordinator = coordinator(scriptedChannel(LIVE_WALLET_KEY))
+        val gateway = gateway(coordinator, readiness())
+        gateway.execute(legacyAccount()) { it }
+        gateway.markLiveRefreshConfirmed(legacyAccount())
+
+        gateway.retainSessions(emptySet())
+
+        val error = assertFailsWith<HardwareWalletOperationException> {
+            gateway.executeUnattended(legacyAccount()) { it }
+        }
+        assertEquals(HardwareWalletErrorCode.PendingDeviceVerification, error.error)
+        coVerify(exactly = 0) { coordinator.withPermittedRawChannel<String>(any()) }
+    }
+
+    @Test
+    fun retainSessions_otherAccountDeleted_keepsRemainingSession() = runTest {
+        val deleted = legacyAccount().copy(id = "deleted-account")
+        val coordinator = queuedCoordinator(*Array(3) { scriptedChannel(LIVE_WALLET_KEY) })
+        val gateway = gateway(coordinator, readiness())
+        listOf(legacyAccount(), deleted).forEach { account ->
+            gateway.execute(account) { it }
+            gateway.markLiveRefreshConfirmed(account)
+        }
+
+        gateway.retainSessions(setOf(ACCOUNT_ID))
+
+        assertEquals(LIVE_WALLET_KEY, gateway.executeUnattended(legacyAccount()) { it })
+        val error = assertFailsWith<HardwareWalletOperationException> {
+            gateway.executeUnattended(deleted) { it }
+        }
+        assertEquals(HardwareWalletErrorCode.PendingDeviceVerification, error.error)
+    }
+
+    @Test
+    fun executeUnattended_accountDeletedDuringVerification_keepsNoSession() = runTest {
+        val deleted = mutableSetOf<String>()
+        val readiness = readiness()
+        val nextAttended = scriptedChannel(LIVE_WALLET_KEY)
+        val coordinator = queuedCoordinator(
+            scriptedChannel(LIVE_WALLET_KEY),
+            scriptedChannel(LIVE_WALLET_KEY),
+            nextAttended,
+        )
+        val gateway = gateway(coordinator, readiness, knownAccounts(deleted))
+        gateway.execute(legacyAccount()) { it }
+        gateway.markLiveRefreshConfirmed(legacyAccount())
+        coEvery { readiness.requireWallet(any(), any()) } answers {
+            deleted += ACCOUNT_ID
+            gateway.retainSessions(emptySet())
+        }
+
+        gateway.executeUnattended(legacyAccount()) { it }
+        gateway.execute(legacyAccount()) { it }
+
+        val initialize = nextAttended.writtenMessages().first()
+        assertTrue(Initialize.parseFrom(initialize.payload).sessionId.isEmpty)
+    }
+
+    @Test
+    fun executeUnattended_accountDeletedAfterPresenceCheck_keepsNoSession() = runTest {
+        val nextAttended = scriptedChannel(LIVE_WALLET_KEY)
+        val coordinator = queuedCoordinator(
+            scriptedChannel(LIVE_WALLET_KEY),
+            scriptedChannel(LIVE_WALLET_KEY),
+            nextAttended,
+        )
+        lateinit var gateway: MoneroTrezorOperationGateway
+        var deleteOnNextLookup = false
+        var deleted = false
+        // The deletion and its wipe land after remember's presence check, before its map is published.
+        val accountManager = mockk<IAccountManager> {
+            every { account(any()) } answers {
+                if (deleteOnNextLookup) {
+                    deleteOnNextLookup = false
+                    deleted = true
+                    gateway.retainSessions(emptySet())
+                    legacyAccount()
+                } else {
+                    legacyAccount().takeUnless { deleted }
+                }
+            }
+        }
+        gateway = gateway(coordinator, readiness(), accountManager)
+        gateway.execute(legacyAccount()) { it }
+        gateway.markLiveRefreshConfirmed(legacyAccount())
+        deleteOnNextLookup = true
+
+        gateway.executeUnattended(legacyAccount()) { it }
+        gateway.execute(legacyAccount()) { it }
+
+        val initialize = nextAttended.writtenMessages().first()
+        assertTrue(Initialize.parseFrom(initialize.payload).sessionId.isEmpty)
+    }
+
+    @Test
+    fun execute_accountDeletedThenOtherSessionForgotten_keepsNoSession() = runTest {
+        val other = legacyAccount().copy(id = "other-account")
+        val unplugged = mockk<TrezorRawUsbChannel>(relaxed = true) {
+            every { writePacket(any()) } throws ExternalSignerException(HardwareWalletErrorCode.Disconnected, "gone")
+        }
+        val nextAttended = scriptedChannel(LIVE_WALLET_KEY)
+        val coordinator = queuedCoordinator(scriptedChannel(LIVE_WALLET_KEY), unplugged, nextAttended)
+        lateinit var gateway: MoneroTrezorOperationGateway
+        var deleteOnNextLookup = true
+        var deleted = false
+        // After remember's presence check: delete + retain, then another account's forget re-publishes an empty map.
+        val accountManager = mockk<IAccountManager> {
+            every { account(any()) } answers {
+                if (deleteOnNextLookup) {
+                    deleteOnNextLookup = false
+                    deleted = true
+                    gateway.retainSessions(emptySet())
+                    val forgotten = runBlocking {
+                        assertFailsWith<HardwareWalletOperationException> { gateway.execute(other) { it } }
+                    }
+                    assertEquals(HardwareWalletErrorCode.Disconnected, forgotten.error)
+                    legacyAccount()
+                } else {
+                    legacyAccount().takeUnless { deleted }
+                }
+            }
+        }
+        gateway = gateway(coordinator, readiness(), accountManager)
+
+        gateway.execute(legacyAccount()) { it }
+        gateway.execute(legacyAccount()) { it }
+
+        val initialize = nextAttended.writtenMessages().first()
+        assertTrue(Initialize.parseFrom(initialize.payload).sessionId.isEmpty)
+    }
+
+    @Test
+    fun executeUnattended_afterSessionEndingFailure_needsNewConfirmation() = runTest {
+        listOf(HardwareWalletErrorCode.Disconnected, HardwareWalletErrorCode.WrongDevice).forEach { code ->
+            val coordinator = coordinator(scriptedChannel(LIVE_WALLET_KEY))
+            val gateway = gateway(coordinator, readiness())
+            gateway.execute(legacyAccount()) { it }
+            gateway.markLiveRefreshConfirmed(legacyAccount())
+            coEvery { coordinator.withRawChannel<String>(any()) } throws ExternalSignerException(code, "ended")
+            assertFailsWith<HardwareWalletOperationException> { gateway.execute(legacyAccount()) { it } }
+
+            val error = assertFailsWith<HardwareWalletOperationException> {
+                gateway.executeUnattended(legacyAccount()) { it }
+            }
+
+            assertEquals(HardwareWalletErrorCode.PendingDeviceVerification, error.error)
+            coVerify(exactly = 0) { coordinator.withPermittedRawChannel<String>(any()) }
+        }
+    }
+
+    @Test
+    fun externalSignerChannel_unattendedDevicePrompt_cancelsItAndFails() {
+        listOf(
+            MessageType.MessageType_ButtonRequest_VALUE,
+            MessageType.MessageType_PinMatrixRequest_VALUE,
+            MessageType.MessageType_PassphraseRequest_VALUE,
+        ).forEach { prompt ->
+            val raw = ScriptedRawChannel(
+                FramingCodec.encode(prompt, ByteArray(0)) +
+                    FramingCodec.encode(MessageType.MessageType_Failure_VALUE, ByteArray(0)),
+            )
+
+            val error = assertFailsWith<ExternalSignerException> {
+                TrezorExternalSignerChannel(raw, TrezorPromptPolicy.Unattended).readPacket(0)
+            }
+
+            assertEquals(HardwareWalletErrorCode.PendingDeviceVerification, error.hardwareErrorCode)
+            assertEquals(listOf(MessageType.MessageType_Cancel_VALUE), raw.writtenMessages().map { it.msgType })
+        }
+    }
+
+    @Test
+    fun externalSignerChannel_interactiveDevicePrompt_passesThrough() {
+        val prompt = FramingCodec.encode(MessageType.MessageType_ButtonRequest_VALUE, ByteArray(0))
+        val raw = ScriptedRawChannel(prompt)
+
+        val packet = TrezorExternalSignerChannel(raw).readPacket(0)
+
+        assertTrue(packet.contentEquals(prompt.single()))
+        assertTrue(raw.writtenMessages().isEmpty())
+    }
+
+    private fun TestScope.gateway(
+        coordinator: TrezorUsbCoordinator,
+        readiness: MoneroTrezorReadiness,
+        accountManager: IAccountManager = knownAccounts(),
+    ) = UnconfinedTestDispatcher(testScheduler).let { dispatcher ->
+        MoneroTrezorOperationGateway(
+            coordinator,
+            readiness,
+            TestDispatcherProvider(dispatcher, CoroutineScope(dispatcher)),
+            accountManager,
+        )
+    }
+
+    private fun knownAccounts(deleted: Set<String> = emptySet()) = mockk<IAccountManager> {
+        every { account(any()) } answers { legacyAccount().copy(id = firstArg()).takeUnless { it.id in deleted } }
+    }
+
+    private fun queuedCoordinator(vararg channels: TrezorRawUsbChannel): TrezorUsbCoordinator {
+        val queue = ArrayDeque(channels.toList())
+        return mockk {
+            coEvery { withRawChannel<String>(any()) } coAnswers {
+                firstArg<suspend (TrezorRawUsbChannel) -> String>().invoke(queue.removeFirst())
+            }
+            coEvery { withPermittedRawChannel<String>(any()) } coAnswers {
+                firstArg<suspend (TrezorRawUsbChannel) -> String>().invoke(queue.removeFirst())
+            }
+        }
+    }
+
     private fun assertChannelFailure(
         cause: Exception,
         expected: HardwareWalletErrorCode,
@@ -385,9 +678,13 @@ class MoneroTrezorOperationGatewayTest {
 
     private fun coordinator(
         channel: TrezorRawUsbChannel,
+        permittedChannel: TrezorRawUsbChannel? = null,
     ) = mockk<TrezorUsbCoordinator> {
         coEvery { withRawChannel<String>(any()) } coAnswers {
             firstArg<suspend (TrezorRawUsbChannel) -> String>().invoke(channel)
+        }
+        coEvery { withPermittedRawChannel<String>(any()) } coAnswers {
+            firstArg<suspend (TrezorRawUsbChannel) -> String>().invoke(checkNotNull(permittedChannel))
         }
     }
 
@@ -395,15 +692,17 @@ class MoneroTrezorOperationGatewayTest {
         sessionId: TrezorSessionId = TrezorSessionId(SESSION_ID),
     ) = mockk<MoneroTrezorReadiness> {
         every { requireLive(any<TrezorFeatures>(), any()) } answers { firstArg() }
-        every { requireSession(any()) } returns sessionId
+        every { requireSession(any()) } returns sessionId andThenAnswer { TrezorSessionId(SESSION_ID) }
         coEvery { requireWallet(any(), any()) } just Runs
     }
 
     private fun scriptedChannel(
         walletKey: String,
         extraFeaturesSessionId: ByteArray? = null,
-    ): TrezorRawUsbChannel {
-        val responses = featuresResponse(SESSION_ID)
+        unlocked: Boolean = true,
+        sessionId: ByteArray = SESSION_ID,
+    ): ScriptedRawChannel {
+        val responses = featuresResponse(sessionId, unlocked)
         extraFeaturesSessionId?.let { responses += featuresResponse(it) }
         val publicKey = PublicKey.newBuilder()
             .setXpub(walletKey)
@@ -421,8 +720,9 @@ class MoneroTrezorOperationGatewayTest {
         return ScriptedRawChannel(responses)
     }
 
-    private fun featuresResponse(sessionId: ByteArray): MutableList<ByteArray> {
+    private fun featuresResponse(sessionId: ByteArray, unlocked: Boolean = true): MutableList<ByteArray> {
         val features = Features.newBuilder()
+            .setUnlocked(unlocked)
             .setDeviceId("device-id")
             .setInternalModel("T3T1")
             .setMajorVersion(2)
@@ -471,8 +771,19 @@ class MoneroTrezorOperationGatewayTest {
         responses: List<ByteArray>,
     ) : TrezorRawUsbChannel {
         private val responses = ArrayDeque(responses)
+        private val written = mutableListOf<ByteArray>()
 
-        override fun writePacket(packet: ByteArray) = Unit
+        fun writtenMessages(): List<DecodedMessage> {
+            val decoder = FramingDecoder()
+            return written.mapNotNull(decoder::offer)
+        }
+
+        fun requestedWalletKey(): Boolean =
+            writtenMessages().any { it.msgType == MessageType.MessageType_GetPublicKey_VALUE }
+
+        override fun writePacket(packet: ByteArray) {
+            written += packet
+        }
 
         override fun readPacket(): ByteArray = responses.removeFirst()
 

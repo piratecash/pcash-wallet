@@ -174,12 +174,13 @@ class AdapterManager(
         requestInitAdapters(walletManager.activeWallets)
     }
 
-    override suspend fun refresh() {
+    override suspend fun refresh(attended: Boolean) {
         val pausedChains = pausedChains()
 
         val adaptersRefresh = coroutineScope.launch {
             adaptersMap.forEach { (wallet, adapter) ->
-                if (!wallet.isNetworkPaused()) adapter.refresh()
+                // An unattended Monero sync runs once below for all its wallets
+                if (!wallet.isNetworkPaused() && (attended || !wallet.isMonero)) adapter.refresh()
             }
         }
 
@@ -193,7 +194,7 @@ class AdapterManager(
         if (BlockchainType.Ton !in pausedChains) {
             tonKitManager.startedKitsFlow.value.values.forEach { it.tonKit.refresh() }
         }
-        if (BlockchainType.Monero !in pausedChains) moneroKitManager.moneroKitWrapper?.refresh()
+        if (BlockchainType.Monero !in pausedChains) refreshMonero(attended)
         if (BlockchainType.Stellar !in pausedChains) stellarKitManager.stellarKitWrapper?.stellarKit?.refresh()
         thorchainKitManagers.all
             .filter { it.blockchainType !in pausedChains }
@@ -450,19 +451,29 @@ class AdapterManager(
         return constructed.size
     }
 
-    override fun refreshByWallet(wallet: Wallet) {
+    override fun refreshByWallet(wallet: Wallet, attended: Boolean) {
         if (wallet.isNetworkPaused()) return
 
         val blockchain = evmBlockchainManager.getBlockchain(wallet.token)
 
         if (blockchain != null) {
             evmBlockchainManager.getEvmKitManager(blockchain.type).evmKitWrapper?.evmKit?.refresh()
+        } else if (wallet.isMonero && !attended) {
+            coroutineScope.launch { refreshMonero(attended = false) }
         } else {
             coroutineScope.launch {
                 adaptersMap[wallet]?.refresh()
             }
         }
     }
+
+    private suspend fun refreshMonero(attended: Boolean) {
+        val wrapper = moneroKitManager.moneroKitWrapper ?: return
+        if (attended) wrapper.refresh() else wrapper.syncUnattended()
+    }
+
+    private val Wallet.isMonero: Boolean
+        get() = token.blockchainType == BlockchainType.Monero
 
     override suspend fun stopAdapters(accountIds: List<String>) {
         val accountIdSet = accountIds.toSet()

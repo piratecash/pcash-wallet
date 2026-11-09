@@ -822,6 +822,12 @@ class LocalStorageManager(
         default = true
     )
 
+    override var bitcoinReplacementLinks: Set<String>
+        get() = preferences.getStringSet("bitcoinReplacementLinks", setOf()) ?: setOf()
+        set(value) {
+            preferences.edit { putStringSet("bitcoinReplacementLinks", value) }
+        }
+
     override var showChangelogAfterUpdate by preferences.delegate(
         key = "showChangelogOnUpdate",
         default = true

@@ -59,6 +59,7 @@
     <string name="trezor_not_initialized_description">Esta Trezor ainda não está configurada. Conclua a configuração no dispositivo e ligue-a novamente.</string>
     <string name="trezor_not_initialized_cta">Guia de configuração</string>
     <string name="trezor_connect_failed">Não foi possível conectar ao Trezor.</string>
+    <string name="hardware_connect_device_to_sync">Conecte o dispositivo para sincronizar</string>
     <string name="Button_Activate">Ativar</string>
     <string name="activation_required_dialog_description">Para receber %1$s, tem de ativar o token. A rede Stellar exige o estabelecimento de uma linha de confiança (trustline) para cada token. Sem ela, a sua carteira não pode receber %2$s — a transação será rejeitada e os fundos não serão entregues.</string>
     <string name="activate_you_activate">Vai ativar</string>
@@ -769,6 +770,8 @@
     <string name="TransactionInfo_Date">Data</string>
     <string name="transaction_info_sync_source">Fonte de sincronização</string>
     <string name="TransactionInfo_Id">ID</string>
+    <string name="transaction_info_replaces_transaction">Substitui a transação</string>
+    <string name="transaction_info_replaced_by_transaction">Substituída pela transação</string>
     <string name="TransactionInfo_Service">Serviço</string>
     <string name="TransactionInfo_RawTransaction">Transação bruta</string>
     <string name="TransactionInfo_ContactName">Nome do Contato</string>
@@ -1441,6 +1444,7 @@
     <string name="Tor_Connection_Disable">Desativar Tor</string>
     <string name="Tor_Alert_Title">Internet</string>
     <string name="TorPage_Connecting">Conectando Tor…</string>
+    <string name="TorPage_ConnectingProgress">Conectando Tor… %1$d%</string>
     <string name="TorPage_Failed">Falha ao conectar Tor</string>
     <string name="Tor_TorIsActive">Tor está ativo</string>
     <!--Coin Page-->

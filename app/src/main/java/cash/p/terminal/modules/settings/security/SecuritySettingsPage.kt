@@ -412,14 +412,16 @@ private fun SecurityCenterScreen(
                 onValueChanged = onEnableSaveAccessCodeForHardwareWallet
             )
 
-            DuressPasscodeBlock(
-                securitySettingsViewModel,
-                navigation
-            )
-            InfoText(
-                text = stringResource(R.string.SettingsSecurity_DuressPinDescription),
-                paddingBottom = 32.dp
-            )
+            if (uiState.duressAvailable) {
+                DuressPasscodeBlock(
+                    securitySettingsViewModel,
+                    navigation
+                )
+                InfoText(
+                    text = stringResource(R.string.SettingsSecurity_DuressPinDescription),
+                    paddingBottom = 32.dp
+                )
+            }
 
             SystemPinBlock(
                 isPinRequired = uiState.isSystemPinRequired,

@@ -4,6 +4,7 @@ import cash.p.terminal.trezor.domain.TrezorMoneroAdmissionFailure
 import cash.p.terminal.trezor.domain.TrezorMoneroAdmissionPolicy
 import cash.p.terminal.trezor.domain.TrezorAccountIdentityValidator
 import cash.p.terminal.trezorkit.TrezorCancelledException
+import cash.p.terminal.trezorkit.TrezorInteractionRequiredException
 import cash.p.terminal.trezorkit.TrezorNotInitializedException
 import cash.p.terminal.trezorkit.TrezorUsbAcquireTimeoutException
 import cash.p.terminal.trezorkit.TrezorUsbDeviceNotFoundException
@@ -89,6 +90,7 @@ internal class MoneroTrezorReadiness(
 internal fun Throwable.hardwareWalletErrorCode(): HardwareWalletErrorCode =
     when (this) {
         is TrezorCancelledException -> HardwareWalletErrorCode.Cancelled
+        is TrezorInteractionRequiredException -> HardwareWalletErrorCode.PendingDeviceVerification
         is TrezorUsbDeviceNotFoundException -> HardwareWalletErrorCode.DeviceNotFound
         is TrezorUsbPermissionDeniedException -> HardwareWalletErrorCode.PermissionDenied
         is TrezorUsbOpenFailedException -> HardwareWalletErrorCode.UsbOpenFailed

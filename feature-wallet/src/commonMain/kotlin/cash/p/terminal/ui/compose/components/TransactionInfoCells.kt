@@ -8,6 +8,7 @@ import cash.p.terminal.ui_compose.components.openOrNotifyUnsupported
 import cash.p.terminal.ui_compose.components.rememberHudMessenger
 import cash.p.terminal.ui_compose.components.rememberTextShare
 import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.StringResource
 import org.koin.compose.koinInject
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearOutSlowInEasing
@@ -858,7 +859,10 @@ fun TransactionInfoRbfCell(
 
 
 @Composable
-fun TransactionInfoTransactionHashCell(transactionHash: String) {
+fun TransactionInfoTransactionHashCell(
+    transactionHash: String,
+    title: StringResource = Res.string.TransactionInfo_Id,
+) {
     val copyWithHud = rememberCopyWithHud()
     val textShare = rememberTextShare()
 
@@ -866,7 +870,7 @@ fun TransactionInfoTransactionHashCell(transactionHash: String) {
         modifier = Modifier.padding(horizontal = 16.dp),
     ) {
         subhead2_grey(
-            text = stringResource(Res.string.TransactionInfo_Id),
+            text = stringResource(title),
             modifier = Modifier.padding(end = 16.dp)
         )
         Row(

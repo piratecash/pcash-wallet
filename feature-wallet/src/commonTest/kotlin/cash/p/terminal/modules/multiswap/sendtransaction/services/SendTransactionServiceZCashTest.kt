@@ -2,6 +2,7 @@ package cash.p.terminal.modules.multiswap.sendtransaction.services
 
 import cash.p.terminal.core.ISendZcashAdapter
 import cash.p.terminal.core.TestDispatcherProvider
+import cash.p.terminal.core.ZcashFeeEstimate
 import cash.p.terminal.core.adapters.zcash.ZcashAdapter
 import cash.p.terminal.core.managers.PendingTransactionRegistrar
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionData
@@ -13,6 +14,10 @@ import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.useCases.WalletUseCase
+import cash.p.terminal.core.ethereum.CautionViewItem
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.Swap_ErrorInsufficientBalance
+import cash.p.terminal.strings.helpers.TranslatableString
 import io.horizontalsystems.bitcoincore.storage.UtxoFilters
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.DispatcherProvider
@@ -24,12 +29,14 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -100,6 +107,8 @@ class SendTransactionServiceZCashTest : KoinTest {
         every { adapter.maxSpendableBalance } returns BigDecimal("100")
         every { adapter.fee } returns MutableStateFlow(BigDecimal.ZERO)
         every { adapter.balanceUpdatedFlow } returns emptyFlow()
+        coEvery { adapter.estimateFee(any(), any(), any()) } returns ZcashFeeEstimate.Unavailable
+        coEvery { adapter.maxSendable(any(), any()) } returns null
 
         coEvery { walletUseCase.createWalletIfNotExists(any()) } returns testWallet
         coEvery { adapterManager.awaitAdapterForWallet<ISendZcashAdapter>(any(), any()) } returns adapter
@@ -151,6 +160,64 @@ class SendTransactionServiceZCashTest : KoinTest {
         assertTrue(service.stateFlow.value.cautions.isEmpty())
     }
 
+    @Test
+    fun networkFee_amountAndAddressKnown_isTheEstimateForThem() = runTest(dispatcher) {
+        coEvery { adapter.validate(any()) } returns ZcashAdapter.ZCashAddressType.Transparent
+        coEvery { adapter.estimateFee(BigDecimal("1"), "t1valid", "") } returns ZcashFeeEstimate.Planned(ESTIMATED_FEE)
+
+        val service = startedService(address = "t1valid")
+
+        assertEquals(ESTIMATED_FEE, service.stateFlow.value.networkFee?.primary?.coinValue?.value)
+    }
+
+    @Test
+    fun availableBalance_addressKnown_isTheMaximumForIt() = runTest(dispatcher) {
+        coEvery { adapter.validate(any()) } returns ZcashAdapter.ZCashAddressType.Transparent
+        coEvery { adapter.maxSendable("t1valid", "") } returns BigDecimal("150")
+
+        val service = startedService(address = "t1valid")
+
+        assertEquals(BigDecimal("150"), service.stateFlow.value.availableBalance)
+    }
+
+    @Test
+    fun sendable_estimateInFlight_isFalseUntilItArrives() = runTest(dispatcher) {
+        coEvery { adapter.validate(any()) } returns ZcashAdapter.ZCashAddressType.Transparent
+        val estimate = CompletableDeferred<ZcashFeeEstimate>()
+        coEvery { adapter.estimateFee(any(), any(), any()) } coAnswers { estimate.await() }
+
+        val service = startedService(address = "t1valid")
+        assertFalse(service.stateFlow.value.sendable)
+
+        estimate.complete(ZcashFeeEstimate.Planned(ESTIMATED_FEE))
+        settle()
+
+        assertTrue(service.stateFlow.value.sendable)
+    }
+
+    @Test
+    fun sendable_noFeasiblePlanForTheAmount_isFalseWithTheInsufficientBalanceError() = runTest(dispatcher) {
+        coEvery { adapter.validate(any()) } returns ZcashAdapter.ZCashAddressType.Transparent
+        coEvery { adapter.estimateFee(any(), any(), any()) } returns ZcashFeeEstimate.InsufficientBalance
+
+        val service = startedService(address = "t1valid")
+
+        assertFalse(service.stateFlow.value.sendable)
+        val caution = service.stateFlow.value.cautions.single()
+        assertEquals(CautionViewItem.Type.Error, caution.type)
+        assertEquals(TranslatableString.ResString(Res.string.Swap_ErrorInsufficientBalance).toString(), caution.title)
+    }
+
+    @Test
+    fun sendable_otherPlanningFailure_staysOpenWithoutACaution() = runTest(dispatcher) {
+        coEvery { adapter.validate(any()) } returns ZcashAdapter.ZCashAddressType.Transparent
+
+        val service = startedService(address = "t1valid")
+
+        assertTrue(service.stateFlow.value.sendable)
+        assertTrue(service.stateFlow.value.cautions.isEmpty())
+    }
+
     private fun createService() = SendTransactionServiceZCash(testToken)
 
     private fun sendData(amount: BigDecimal, address: String) = SendTransactionData.Btc(
@@ -167,6 +234,16 @@ class SendTransactionServiceZCashTest : KoinTest {
     private suspend fun TestScope.startedService(address: String) = createService().apply {
         start(backgroundScope)
         setSendTransactionData(sendData(amount = BigDecimal("1"), address = address))
-        advanceUntilIdle()
+        settle()
+    }
+
+    /** The quote runs in backgroundScope, which advanceUntilIdle does not wait for. */
+    private fun TestScope.settle() {
+        advanceTimeBy(5_000)
+        runCurrent()
+    }
+
+    private companion object {
+        val ESTIMATED_FEE: BigDecimal = BigDecimal("0.00015")
     }
 }

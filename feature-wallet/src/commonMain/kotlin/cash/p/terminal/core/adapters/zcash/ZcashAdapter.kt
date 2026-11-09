@@ -10,6 +10,7 @@ import cash.p.terminal.core.OfflineSignRequest
 import cash.p.terminal.core.OfflineZcashSignRequest
 import cash.p.terminal.core.SignedOfflineZcashTransaction
 import cash.p.terminal.core.UnsupportedAccountException
+import cash.p.terminal.core.ZcashFeeEstimate
 import cash.p.terminal.core.adapters.zcash.server.ZcashServerSelector
 import cash.p.terminal.core.adapters.zcash.session.ZcashDiscoveryState
 import cash.p.terminal.core.adapters.zcash.session.ZcashSession
@@ -64,6 +65,7 @@ import cash.p.terminal.wallet.entities.TokenType.AddressSpecType
 import cash.p.zcash.Addresses
 import cash.p.zcash.Balance
 import cash.p.zcash.BroadcastResult
+import cash.p.zcash.MaxSendable
 import cash.p.zcash.MigrationEvent
 import cash.p.zcash.MigrationPhase
 import cash.p.zcash.MigrationStatus
@@ -273,6 +275,12 @@ class ZcashAdapter(
 
     /** A payment from this wallet spends from these pools only; shielding always spends transparent. */
     private val sourcePools: PoolSet = addressSpecTyped.pools()
+
+    private val sendOptions = PaymentOptions(sourcePools = sourcePools, hardwareSigning = isTrezorAccount)
+
+    // A Trezor account can only sign a transparent bundle, so a UA recipient must be paid
+    // into its transparent receiver rather than a shielded one.
+    private val recipientPools = if (isTrezorAccount) PoolSet.of(Pool.TRANSPARENT) else null
 
     private val balance: Balance
         get() = poolBalance?.forSpec(addressSpecTyped) ?: Balance()
@@ -619,51 +627,53 @@ class ZcashAdapter(
 
     private val _fee: MutableStateFlow<BigDecimal> = MutableStateFlow(MINERS_FEE)
 
-    /** Balance the published [_fee] was calculated for; null until one is published. */
-    private var feeBalance: PoolBalance? = null
+    private data class FeeKey(val balance: PoolBalance, val feePerAction: Long)
+
+    /** What the published [_fee] was calculated for; null until one is published. */
+    private var feeKey: FeeKey? = null
     private var feeGeneration = 0L
     override val fee: StateFlow<BigDecimal> = _fee.asStateFlow()
 
     /**
      * Under ZIP-317 the fee depends on which pools and how many notes are spent, and after NU6.3
      * activation funds move between Orchard and Ironwood without changing the total — so the fee
-     * follows the balance, not the first sync. [feeBalance] is the balance the published fee was
-     * calculated for: a repeated `Synced` on the same balance costs nothing, while a calculation
-     * that failed is not remembered as done.
+     * follows the balance, not the first sync. [feeKey] is what the published fee was calculated
+     * for: a repeated `Synced` on the same key costs nothing, while a calculation that failed is
+     * not remembered as done.
      *
-     * While the published fee is still the default one the balance is not enough to conclude the
-     * fee is current — ZIP-317 also depends on the proposal target height, which changes at NU6.3
-     * activation without touching any balance field — so it is recalculated on every trigger
-     * until a real fee is known.
+     * The rate is part of the key because ZIP 2009 changes it at a height, without touching any
+     * balance field.
      */
     private suspend fun recalculateFeeOnChange(session: ZcashSession) {
         coroutineScope {
             var calculation: Job? = null
             session.state.collect { state ->
                 if (state.syncState !is SyncState.Synced) return@collect
-                val balance = state.balance
+                val key = FeeKey(state.balance, feePerActionAfter(state.latestHeight) ?: return@collect)
                 val generation = sessionMutex.withLock {
-                    if (balance == feeBalance && _fee.value != MINERS_FEE) null
-                    else ++feeGeneration
+                    if (key == feeKey) null else ++feeGeneration
                 } ?: return@collect
                 calculation?.cancel()
-                calculation = launch { publishFee(session, balance, generation) }
+                calculation = launch { publishFee(session, key, generation) }
             }
         }
     }
 
+    private suspend fun feePerActionAfter(height: Int): Long? =
+        tryOrNull { walletOrNull { zcash, _ -> zcash.feePerAction(height + 1) } }
+
     /** Cancelling a planning call in flight is not guaranteed, so a superseded fee is dropped. */
     private suspend fun publishFee(
         session: ZcashSession,
-        balance: PoolBalance,
+        key: FeeKey,
         generation: Long,
     ) {
-        val fee = calculateFee(balance.forSpec(addressSpecTyped).available) ?: return
+        val fee = calculateFee(key.balance.forSpec(addressSpecTyped).available, key.feePerAction) ?: return
         sessionMutex.withLock {
             if (this@ZcashAdapter.session !== session || feeGeneration != generation) return@withLock
-            if (session.state.value.balance != balance) return@withLock
+            if (session.state.value.balance != key.balance) return@withLock
             _fee.value = fee
-            feeBalance = balance
+            feeKey = key
         }
     }
 
@@ -671,8 +681,8 @@ class ZcashAdapter(
      * The fee of spending the whole balance: `recipientPaysFee` keeps that plan solvable, so one
      * planning pass answers what the old probe searched for by stepping the amount down.
      */
-    private suspend fun calculateFee(available: Long): BigDecimal? {
-        if (available <= 0) return MINERS_FEE
+    private suspend fun calculateFee(available: Long, feePerAction: Long): BigDecimal? {
+        if (available <= 0) return (MIN_ACTIONS * feePerAction).convertZatoshiToZec()
         val donateAddress = SharedAppConfig.donateAddresses[BlockchainType.Zcash] ?: return null
         return tryOrNull {
             walletOrNull { zcash, id ->
@@ -725,32 +735,75 @@ class ZcashAdapter(
         memo: String,
     ): String {
         zcashLogger.d { "Send started" }
-        val recipient = beforeBroadcast { recipient(amount, address, memo) }
-        return broadcastSigned(
-            listOf(recipient),
-            PaymentOptions(sourcePools = sourcePools, hardwareSigning = isTrezorAccount),
-        )
+        return broadcastSigned { zcash, id -> zcash.preparePayment(id, amount, address, memo) }
     }
+
+    override suspend fun estimateFee(amount: BigDecimal, address: String, memo: String): ZcashFeeEstimate = try {
+        walletOrNull { zcash, id ->
+            val prepared = zcash.preparePayment(id, amount, address, memo)
+            ZcashFeeEstimate.Planned(zcash.plan(prepared).fee.convertZatoshiToZec())
+        } ?: ZcashFeeEstimate.Unavailable
+    } catch (e: CancellationException) {
+        throw e
+    } catch (_: LocalizedException) {
+        ZcashFeeEstimate.InsufficientBalance
+    } catch (e: Throwable) {
+        zcashLogger.d { "Fee estimate failed error=${e.zcashErrorName}" }
+        ZcashFeeEstimate.Unavailable
+    }
+
+    override suspend fun maxSendable(address: String, memo: String): BigDecimal? = walletOrNull { zcash, id ->
+        zcash.maxSendableOrNull(id, address, memo.takeIf { it.isNotBlank() })?.amount?.convertZatoshiToZec()
+    }
+
+    /**
+     * A plain plan for the maximum may leave a note behind, so it is sent as amount + fee paid by the
+     * recipient. The SDK charges its own fee on that form: only the same fee delivers exactly [amount].
+     */
+    private suspend fun ZcashWallet.preparePayment(
+        account: Int,
+        amount: BigDecimal,
+        address: String,
+        memo: String,
+    ): PreparedTransaction {
+        val recipient = recipient(amount, address, memo)
+        val max = maxSendableOrNull(account, address, recipient.memo)
+        if (max != null && max.amount > 0 && max.amount == recipient.amount) {
+            val sweep = prepareOrInsufficient(
+                account,
+                listOf(recipient.copy(amount = max.amount + max.fee)),
+                sendOptions.copy(recipientPaysFee = true),
+            )
+            if (plan(sweep).fee == max.fee) return sweep
+        }
+        return prepareOrInsufficient(account, listOf(recipient), sendOptions)
+    }
+
+    /** Spending every note can fail where spending some would not, so this never blocks a send. */
+    private suspend fun ZcashWallet.maxSendableOrNull(account: Int, address: String, memo: String?): MaxSendable? =
+        try {
+            maxSendable(account, address, memo, sendOptions, recipientPools)
+        } catch (e: ZcashException) {
+            zcashLogger.d { "Max sendable failed error=${e.zcashErrorName}" }
+            null
+        }
 
     /**
      * Builds, signs and broadcasts in separate steps so a failure that provably precedes the
      * broadcast is marked as such: only then may the caller drop its pending row. A failure on the
      * broadcast itself, cancellation included, stays unmarked — the bytes may already be out.
      */
-    private suspend fun broadcastSigned(
-        recipients: List<Recipient>,
-        options: PaymentOptions,
-    ): String {
+    private suspend fun broadcastSigned(prepare: suspend (ZcashWallet, Int) -> PreparedTransaction): String {
         val (raw, height) = beforeBroadcast {
             requireWallet { zcash, id ->
-                val prepared = zcash.prepareOrInsufficient(id, recipients, options)
+                val prepared = prepare(zcash, id)
                 val height = zcash.plan(prepared).height
                 zcash.extract(signer.sign(zcash, id, prepared)) to height
             }
         }
         val result = broadcastReserved(raw, height, requireOwnInputs = true)
-        check(result.accepted) { "Broadcast rejected (${result.errorCode}): ${result.message}" }
-        return result.message
+        if (result.accepted) return result.message
+        throw result.rejection(IllegalStateException("Broadcast rejected (${result.errorCode}): ${result.message}"))
     }
 
     /** The native layer reports every planning failure as [ZcashException], message included. */
@@ -784,13 +837,8 @@ class ZcashAdapter(
 
     override suspend fun signOffline(request: OfflineSignRequest): SignedOfflineZcashTransaction {
         require(request is OfflineZcashSignRequest) { "OfflineZcashSignRequest is required" }
-        val recipient = recipient(request.amount, request.address, request.memo)
         return requireWallet { zcash, id ->
-            val prepared = zcash.prepareOrInsufficient(
-                account = id,
-                recipients = listOf(recipient),
-                options = PaymentOptions(sourcePools = sourcePools, hardwareSigning = isTrezorAccount),
-            )
+            val prepared = zcash.preparePayment(id, request.amount, request.address, request.memo)
             val fee = zcash.plan(prepared).fee
             val raw = zcash.extract(signer.sign(zcash, id, prepared))
             SignedOfflineZcashTransaction(
@@ -827,9 +875,7 @@ class ZcashAdapter(
             address = address,
             amount = amount.convertZecToZatoshi(),
             memo = memo.takeIf { it.isNotBlank() },
-            // A Trezor account can only sign a transparent bundle, so a UA recipient must be paid
-            // into its transparent receiver rather than a shielded one.
-            pools = if (isTrezorAccount) PoolSet.of(Pool.TRANSPARENT) else null,
+            pools = recipientPools,
         )
     }
 
@@ -846,14 +892,17 @@ class ZcashAdapter(
         ShieldingTarget(address = shielded, amount = transparent)
     }
 
-    suspend fun proposeShielding(target: ShieldingTarget): String = broadcastSigned(
-        recipients = listOf(Recipient(address = target.address, amount = target.amount)),
-        options = PaymentOptions(
-            sourcePools = PoolSet.of(Pool.TRANSPARENT),
-            recipientPaysFee = true,
-            confirmations = SHIELDING_CONFIRMATIONS,
-        ),
-    )
+    suspend fun proposeShielding(target: ShieldingTarget): String = broadcastSigned { zcash, id ->
+        zcash.prepareOrInsufficient(
+            id,
+            recipients = listOf(Recipient(address = target.address, amount = target.amount)),
+            options = PaymentOptions(
+                sourcePools = PoolSet.of(Pool.TRANSPARENT),
+                recipientPaysFee = true,
+                confirmations = SHIELDING_CONFIRMATIONS,
+            ),
+        )
+    }
 
     override suspend fun generateOneTimeAddress(): String? = try {
         transparentAddressMutex.withLock {
@@ -913,11 +962,14 @@ class ZcashAdapter(
         val available = checkNotNull(poolBalance?.get(Pool.ORCHARD)?.available?.takeIf { it > 0 }) {
             "No spendable Orchard balance"
         }
-        val steps = requireWallet { zcash, id -> zcash.migrationStatus(id) }.remainingSteps()
+        val (status, feePerAction) = requireWallet { zcash, id ->
+            zcash.migrationStatus(id) to zcash.feePerAction(latestHeight + 1)
+        }
+        val steps = status.remainingSteps()
         // A zero-step proposal would leave the Migrate button enabled for a migration that
         // plans nothing.
         if (steps == 0L) throw LocalizedException(Res.string.zcash_migration_error_nothing_to_migrate)
-        val fee = steps * MINERS_FEE_ZATOSHI
+        val fee = steps * MIN_ACTIONS * feePerAction
         return IronwoodMigrationProposal(
             amount = (available - fee).coerceAtLeast(0).convertZatoshiToZec(),
             fee = fee.convertZatoshiToZec(),
@@ -1013,11 +1065,11 @@ class ZcashAdapter(
         val isIronwoodMigration = !transaction.isIncoming &&
             ironwoodMigrations.contains(wallet.account.id, transaction.txid)
         // A migration keeps the funds in the wallet, so the moved amount is what was received
-        // back rather than the net change of the balance. Everything else takes the SDK's signed
-        // value as it is: negative when funds leave.
+        // back rather than the net change of the balance. Everything else excludes the fee from
+        // an actual send; a fee-only transaction (e.g. Shield Funds) keeps its net spend.
         val amount = when {
             isIronwoodMigration -> transaction.totalReceived.convertZatoshiToZec()
-            else -> transaction.value.convertZatoshiToZec()
+            else -> transaction.amountWithoutFee.convertZatoshiToZec()
         }
         return BitcoinTransactionRecord(
             token = wallet.token,
@@ -1049,6 +1101,10 @@ class ZcashAdapter(
             isIronwoodMigration = isIronwoodMigration,
         )
     }
+
+    /** The SDK's value counts the fee when funds leave; a transaction that only pays the fee keeps it. */
+    private val Transaction.amountWithoutFee: Long
+        get() = (value + fee).takeIf { it < 0 } ?: value
 
     // endregion
 
@@ -1098,6 +1154,9 @@ class ZcashAdapter(
 
         private const val NO_FEASIBLE_SELECTION = "No feasible note selection found"
 
+        /** ZIP-317 charges at least this many actions for any transaction. */
+        private const val MIN_ACTIONS = 2
+
         private const val MINERS_FEE_ZATOSHI = 10_000L
         val MINERS_FEE: BigDecimal = MINERS_FEE_ZATOSHI.convertZatoshiToZec()
     }
@@ -1142,8 +1201,12 @@ internal fun BroadcastResult.toBroadcastResult(txHash: String): BroadcastRawTran
         status = BroadcastRawTransactionStatus.AlreadyKnown,
     )
 
-    else -> throw ZcashException("Zcash raw transaction broadcast failed ($errorCode): $message")
+    else -> throw rejection(ZcashException("Zcash raw transaction broadcast failed ($errorCode): $message"))
 }
+
+/** Only released inputs prove the transaction is dead, so that its pending row may go. */
+private fun BroadcastResult.rejection(failure: Exception): Exception =
+    if (inputsReleased) NotBroadcastException(failure) else failure
 
 internal fun zcashRestartDelayFor(attempt: Int, baseMs: Long, maxMs: Long): Long =
     (baseMs shl attempt.coerceAtMost(3)).coerceAtMost(maxMs)

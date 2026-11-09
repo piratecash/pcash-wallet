@@ -188,6 +188,15 @@ class SwapProviderTransactionsStorage(
     fun setOutgoingRecordUid(date: Long, outgoingRecordUid: String) =
         router.forEachAccount { swapProviderTransactionsDao().setOutgoingRecordUid(date, outgoingRecordUid) }
 
+    fun relinkOutgoingRecord(
+        date: Long,
+        outgoingRecordUid: String,
+        transactionId: String,
+        depositTransactionHash: String?
+    ) = router.forEachAccount {
+        swapProviderTransactionsDao().relinkOutgoingRecord(date, outgoingRecordUid, transactionId, depositTransactionHash)
+    }
+
     fun updateStatusFields(
         date: Long,
         status: String,

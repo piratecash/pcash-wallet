@@ -3,6 +3,7 @@ package cash.p.terminal.feature.wallet.di
 import cash.p.terminal.core.IAccountFactory
 import cash.p.terminal.core.IBackupManager
 import cash.p.terminal.core.ITermsManager
+import cash.p.terminal.core.adapters.BitcoinReplacementRegistry
 import cash.p.terminal.core.adapters.zcash.ZcashAddressDeriver
 import cash.p.terminal.core.adapters.zcash.ZcashKeyExporter
 import cash.p.terminal.core.factories.AccountFactory
@@ -255,6 +256,8 @@ import io.horizontalsystems.core.storage.LogsDao
 import cash.p.terminal.core.usecase.GetRestoreHeightForWalletUseCase
 import cash.p.terminal.core.usecase.RescanMoneroUseCase
 import cash.p.terminal.core.usecase.RescanZcashUseCase
+import cash.p.terminal.core.usecase.RecordBitcoinReplacementUseCase
+import cash.p.terminal.core.usecase.RelinkSwapToReplacementUseCase
 import cash.p.terminal.core.usecase.ResolveTransactionItemUseCase
 import cash.p.terminal.modules.balance.BalanceAccountsViewModel
 import cash.p.terminal.modules.balance.BalanceAdapterRepository
@@ -432,6 +435,7 @@ val featureWalletModule = module {
     singleOf(::BeamOfflineOperations)
     singleOf(::PendingAccountProviderImpl) bind PendingAccountProvider::class
     singleOf(::ZcashIronwoodMigrationRegistry)
+    singleOf(::BitcoinReplacementRegistry)
     singleOf(::CoinManager) bind ICoinManager::class
     singleOf(::OfflineModeStorage)
     factoryOf(::SwapProviderTransactionsStorage)
@@ -578,7 +582,9 @@ val featureWalletModule = module {
     }
     viewModel { (provider: BlockchainStatusProvider) -> BlockchainStatusViewModel(provider, get(), get(), get()) }
     viewModel { (wallet: Wallet) ->
-        SyncErrorViewModel(SyncErrorService(wallet, get(), SharedAppConfig.reportEmail, get(), get(), get(), get()))
+        SyncErrorViewModel(
+            SyncErrorService(wallet, get(), SharedAppConfig.reportEmail, get(), get(), get(), get(), get(), get())
+        )
     }
     singleOf(::CheckAmlIncomingTransactionUseCase)
     singleOf(::AmlStatusManager)
@@ -618,6 +624,8 @@ val featureWalletModule = module {
         ReceiveTokenSelectViewModel(get(), activeAccount, FullCoinsProvider(get(), activeAccount), get())
     }
     factoryOf(::ResolveTransactionItemUseCase)
+    factoryOf(::RelinkSwapToReplacementUseCase)
+    factoryOf(::RecordBitcoinReplacementUseCase)
     factoryOf(::GetRestoreHeightForWalletUseCase)
     factoryOf(::RescanMoneroUseCase)
     factoryOf(::RescanZcashUseCase)

@@ -214,7 +214,7 @@ class OfflineNetworkControllerTest {
     fun pause_moneroMember_delegatesToMoneroKitManager() = runTest {
         val member = wallet(BlockchainType.Monero)
         adapterFor(member)
-        setOnline({ moneroKitManager.currentAccount }, { moneroKitManager.moneroKitWrapper?.isNetworkOnline })
+        setOnline({ moneroKitManager.currentAccount }, { moneroKitManager.moneroKitWrapper?.isNetworkEnabled })
 
         controller.pause(member)
 

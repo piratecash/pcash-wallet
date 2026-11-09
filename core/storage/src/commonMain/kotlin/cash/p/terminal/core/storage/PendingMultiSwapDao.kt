@@ -40,6 +40,14 @@ interface PendingMultiSwapDao {
     @Query("UPDATE PendingMultiSwap SET leg1InfoRecordUid = :recordUid WHERE id = :id AND leg1InfoRecordUid IS NULL")
     suspend fun setLeg1InfoRecordUid(id: String, recordUid: String)
 
+    @Query(
+        "UPDATE PendingMultiSwap SET " +
+                "leg1TransactionId = CASE WHEN leg1TransactionId IN (:fromUids) THEN :toUid ELSE leg1TransactionId END, " +
+                "leg1InfoRecordUid = CASE WHEN leg1InfoRecordUid IN (:fromUids) THEN :toUid ELSE leg1InfoRecordUid END " +
+                "WHERE leg1TransactionId IN (:fromUids) OR leg1InfoRecordUid IN (:fromUids)"
+    )
+    suspend fun moveLeg1RecordUid(fromUids: List<String>, toUid: String)
+
     @Query("DELETE FROM PendingMultiSwap WHERE id = :id")
     suspend fun delete(id: String)
 

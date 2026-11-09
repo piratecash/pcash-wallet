@@ -190,6 +190,88 @@ class PinComponentSecureResetLevelTest {
     }
 
     @Test
+    fun isDuressPinSet_hiddenWalletLevel_returnsFalse() {
+        pinComponent.setPin("1111")
+        pinComponent.setDuressPin("2222")
+        pinManager.store("3333", -1)
+
+        setUserLevel(-1)
+
+        assertFalse(pinComponent.isDuressAvailable())
+        assertFalse(pinComponent.isDuressPinSet())
+    }
+
+    @Test
+    fun disablePin_hiddenWalletLevel_keepsPinsAndAccounts() {
+        pinComponent.setPin("1111")
+        pinManager.store("3333", -1)
+        setUserLevel(-1)
+
+        assertFalse(pinComponent.canDisablePin())
+        pinComponent.disablePin()
+
+        assertEquals(0, pinManager.getPinLevel("1111"))
+        assertEquals(-1, pinManager.getPinLevel("3333"))
+        io.mockk.verify(exactly = 0) { userManager.disallowAccountsForDuress() }
+    }
+
+    @Test
+    fun nestedDuress_insideDuress_setsAndDisablesOnlyNextLevel() {
+        pinComponent.setPin("1111")
+        pinComponent.setDuressPin("2222")
+        setUserLevel(1)
+
+        assertTrue(pinComponent.isDuressAvailable())
+        pinComponent.setDuressPin("3333")
+        assertEquals(2, pinManager.getPinLevel("3333"))
+        assertTrue(pinComponent.isDuressPinSet())
+
+        pinComponent.disableDuressPin()
+
+        assertEquals(0, pinManager.getPinLevel("1111"))
+        assertEquals(1, pinManager.getPinLevel("2222"))
+        assertEquals(null, pinManager.getPinLevel("3333"))
+    }
+
+    @Test
+    fun setDuressPin_hiddenWalletLevel_throwsAndKeepsMainPin() {
+        pinComponent.setPin("1111")
+        pinManager.store("3333", -1)
+        setUserLevel(-1)
+
+        assertFailsWith<IllegalStateException> { pinComponent.setDuressPin("4444") }
+
+        assertEquals(0, pinManager.getPinLevel("1111"))
+        assertEquals(null, pinManager.getPinLevel("4444"))
+    }
+
+    @Test
+    fun disableDuressPin_hiddenWalletLevel_keepsPinsAndAccounts() {
+        pinComponent.setPin("1111")
+        pinComponent.setDuressPin("2222")
+        pinManager.store("3333", -1)
+        setUserLevel(-1)
+
+        pinComponent.disableDuressPin()
+
+        assertEquals(0, pinManager.getPinLevel("1111"))
+        assertEquals(1, pinManager.getPinLevel("2222"))
+        assertEquals(-1, pinManager.getPinLevel("3333"))
+        io.mockk.verify(exactly = 0) { userManager.disallowAccountsForDuress() }
+    }
+
+    @Test
+    fun setDuressPin_secondHiddenWalletLevel_keepsFirstHiddenWalletPin() {
+        pinManager.store("3333", -1)
+        pinManager.store("5555", -2)
+        setUserLevel(-2)
+
+        assertFailsWith<IllegalStateException> { pinComponent.setDuressPin("6666") }
+
+        assertEquals(-1, pinManager.getPinLevel("3333"))
+    }
+
+    @Test
     fun `secure reset pin promotes to primary pin on unlock`() = runTest(dispatcher) {
         setUserLevel(0)
         pinComponent.setPin("3333")

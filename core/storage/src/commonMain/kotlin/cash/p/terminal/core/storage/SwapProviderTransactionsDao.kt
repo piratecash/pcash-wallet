@@ -170,6 +170,17 @@ interface SwapProviderTransactionsDao {
     @Query("UPDATE SwapProviderTransaction SET outgoingRecordUid = :outgoingRecordUid WHERE date = :date")
     fun setOutgoingRecordUid(date: Long, outgoingRecordUid: String)
 
+    @Query(
+        "UPDATE SwapProviderTransaction SET outgoingRecordUid = :outgoingRecordUid, " +
+                "transactionId = :transactionId, depositTransactionHash = :depositTransactionHash WHERE date = :date"
+    )
+    fun relinkOutgoingRecord(
+        date: Long,
+        outgoingRecordUid: String,
+        transactionId: String,
+        depositTransactionHash: String?
+    )
+
     // A matched row already holds the blockchain amount; the caller's snapshot may predate the match.
     @Query(
         "UPDATE SwapProviderTransaction SET status = :status, " +

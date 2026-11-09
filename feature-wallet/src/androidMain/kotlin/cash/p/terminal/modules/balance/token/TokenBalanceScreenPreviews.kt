@@ -24,6 +24,7 @@ private fun TokenNotSyncedSectionPreview() {
             onBlockchainStatusClick = {},
             onRetry = {},
             showRetry = true,
+            hasTransactions = false,
         )
     }
 }
@@ -36,6 +37,7 @@ private fun TokenNotSyncedSectionSyncingPreview() {
             onBlockchainStatusClick = {},
             onRetry = {},
             showRetry = false,
+            hasTransactions = true,
         )
     }
 }
