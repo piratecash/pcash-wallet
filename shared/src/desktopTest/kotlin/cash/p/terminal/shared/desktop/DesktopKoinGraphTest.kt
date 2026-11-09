@@ -191,6 +191,9 @@ import cash.p.terminal.modules.manageaccount.safetyrules.SafetyRulesModule
 import cash.p.terminal.modules.manageaccount.safetyrules.SafetyRulesViewModel
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
 import cash.p.terminal.modules.manageaccounts.ManageAccountsViewModel
+import cash.p.terminal.modules.nft.NftCollectionSource
+import cash.p.terminal.modules.nft.NftCollectionsViewModel
+import cash.p.terminal.modules.nft.NftPreviewViewModel
 import cash.p.terminal.modules.market.SortingField
 import cash.p.terminal.modules.market.TopMarket
 import cash.p.terminal.modules.market.category.CoinCategoryMarketDataChartService
@@ -391,6 +394,8 @@ class DesktopKoinGraphTest {
                 definition<PassphraseTermsViewModel>(Array<String>::class),
                 definition<SafetyRulesViewModel>(SafetyRulesModule.SafetyRulesMode::class, List::class),
                 definition<ManageAccountsViewModel>(ManageAccountsModule.Mode::class),
+                definition<NftCollectionsViewModel>(NftCollectionSource::class),
+                definition<NftPreviewViewModel>(NftCollectionSource::class),
                 definition<WatchAddressViewModel>(AddressParserChain::class),
                 definition<SelectBlockchainsViewModel>(AccountType::class),
                 definition<BackupConfirmKeyViewModel>(IRandomProvider::class),

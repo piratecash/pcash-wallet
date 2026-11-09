@@ -2359,4 +2359,17 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="evm_node_request_failed">Der Netzwerkknoten konnte die Anfrage nicht verarbeiten. Versuchen Sie es erneut oder wählen Sie in den Blockchain-Einstellungen eine andere Quelle.\n\nAntwort des Knotens: %1$s</string>
     <string name="desktop_transfer_password">Passwort vor dem Senden</string>
     <string name="desktop_transfer_password_description">Vor jeder Überweisung wird das App-Passwort abgefragt. Das schützt Ihre Guthaben, falls jemand bei entsperrter App Zugriff auf Ihren Computer erhält.</string>
+
+    <!--NFT collections-->
+    <string name="nft_collections">Sammlungen</string>
+    <string name="nft_collection">NFT-Sammlung</string>
+    <string name="nft_show_all">Alle anzeigen</string>
+    <string name="nft_unverified">Nicht verifiziert</string>
+    <string name="nft_unnamed_collection">Unbenannte Sammlung</string>
+    <string name="nft_unnamed">Unbenanntes NFT</string>
+    <string name="nft_about_collection">Über die Sammlung</string>
+    <string name="nft_open_in_explorer">Im Explorer öffnen</string>
+    <string name="nft_details">Details</string>
+    <string name="nft_owner">Besitzer</string>
+    <string name="nft_empty_title">Hier erscheinen Ihre NFTs</string>
 </resources>

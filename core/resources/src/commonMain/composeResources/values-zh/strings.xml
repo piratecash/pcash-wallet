@@ -2346,4 +2346,17 @@
     <string name="evm_node_request_failed">网络节点无法处理该请求。请重试，或在区块链设置中选择其他来源。\n\n节点响应：%1$s</string>
     <string name="desktop_transfer_password">发送前输入密码</string>
     <string name="desktop_transfer_password_description">每次发送前都会要求输入应用密码，即使有人在应用未锁定时使用您的电脑，也能保护您的资产。</string>
+
+    <!--NFT collections-->
+    <string name="nft_collections">收藏集</string>
+    <string name="nft_collection">NFT 收藏集</string>
+    <string name="nft_show_all">显示全部</string>
+    <string name="nft_unverified">未验证</string>
+    <string name="nft_unnamed_collection">未命名收藏集</string>
+    <string name="nft_unnamed">未命名 NFT</string>
+    <string name="nft_about_collection">关于收藏集</string>
+    <string name="nft_open_in_explorer">在区块链浏览器中打开</string>
+    <string name="nft_details">详情</string>
+    <string name="nft_owner">所有者</string>
+    <string name="nft_empty_title">您的 NFT 将显示在这里</string>
 </resources>

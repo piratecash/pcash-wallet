@@ -69,7 +69,8 @@ class Migration_122_123Test {
         val database = buildAppDatabase(context)
         try {
             database.openHelper.readableDatabase.query(
-                "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name LIKE 'Nft%'"
+                "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name IN " +
+                    "('NftCollectionRecord', 'NftAssetRecord', 'NftMetadataSyncRecord', 'NftAssetBriefMetadataRecord')"
             ).use { cursor ->
                 cursor.moveToFirst()
                 assertEquals(0, cursor.getInt(0))

@@ -219,7 +219,7 @@ private const val PLACEHOLDER_CONTENT_TYPE = "token_balance_empty_placeholder"
 
 // Distinct type for the sticky header's Lazy key so it can never collide with the
 // transaction rows' String uid keys (an enum never equals a String).
-private enum class TokenBalanceLazyKey { SearchHeader }
+private enum class TokenBalanceLazyKey { NftSection, SearchHeader }
 
 @Composable
 fun TokenBalanceScreen(
@@ -234,6 +234,7 @@ fun TokenBalanceScreen(
     onRefresh: () -> Unit,
     onSettingsClick: () -> Unit,
     onGoOnline: () -> Unit,
+    nftSection: (@Composable () -> Unit)? = null,
 ) {
     val hud = rememberHudMessenger()
     val pages = koinInject<WalletSendPages>()
@@ -313,6 +314,7 @@ fun TokenBalanceScreen(
         onRefresh = onRefresh,
         onSettingsClick = onSettingsClick,
         onGoOnline = onGoOnline,
+        nftSection = nftSection,
     )
 
     if (showMoneroSendPreparation) {
@@ -361,6 +363,7 @@ internal fun TokenBalanceScreenContent(
     onRefresh: () -> Unit,
     onSettingsClick: () -> Unit,
     onGoOnline: () -> Unit,
+    nftSection: (@Composable () -> Unit)? = null,
 ) {
     val hud = rememberHudMessenger()
 
@@ -525,7 +528,8 @@ internal fun TokenBalanceScreenContent(
         val searchHeaderIndex = 1 +
                 (if (notSyncedSectionVisible) 1 else 0) +
                 (if (uiState.offlineSince != null) 1 else 0) +
-                (if (uiState.showAmlPromo) 1 else 0)
+                (if (uiState.showAmlPromo) 1 else 0) +
+                (if (nftSection != null) 1 else 0)
         LaunchedEffect(uiState.searchActive, searchHeaderIndex) {
             if (uiState.searchActive && listState.firstVisibleItemIndex < searchHeaderIndex) {
                 listState.animateScrollToItem(searchHeaderIndex)
@@ -593,6 +597,10 @@ internal fun TokenBalanceScreenContent(
                                 modifier = Modifier.padding(vertical = 12.dp)
                             )
                         }
+                    }
+
+                    nftSection?.let { section ->
+                        item(key = TokenBalanceLazyKey.NftSection) { section() }
                     }
 
                     // NAMED contentType argument: stickyHeader's first positional param is `key`,

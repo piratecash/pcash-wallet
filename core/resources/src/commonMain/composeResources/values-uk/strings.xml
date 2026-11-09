@@ -2524,4 +2524,17 @@
     <string name="evm_node_request_failed">Вузол мережі не зміг виконати запит. Повторіть спробу або виберіть інше джерело в налаштуваннях блокчейну.\n\nВідповідь вузла: %1$s</string>
     <string name="desktop_transfer_password">Пароль перед надсиланням</string>
     <string name="desktop_transfer_password_description">Перед кожним надсиланням запитується пароль застосунку. Це захистить ваші кошти, якщо хтось отримає доступ до комп’ютера з розблокованим застосунком.</string>
+
+    <!--NFT collections-->
+    <string name="nft_collections">Колекції</string>
+    <string name="nft_collection">NFT-колекція</string>
+    <string name="nft_show_all">Показати всі</string>
+    <string name="nft_unverified">Не перевірено</string>
+    <string name="nft_unnamed_collection">Колекція без назви</string>
+    <string name="nft_unnamed">NFT без назви</string>
+    <string name="nft_about_collection">Про колекцію</string>
+    <string name="nft_open_in_explorer">Відкрити в оглядачі</string>
+    <string name="nft_details">Деталі</string>
+    <string name="nft_owner">Власник</string>
+    <string name="nft_empty_title">Тут з’являться ваші NFT</string>
 </resources>

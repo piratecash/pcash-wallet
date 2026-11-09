@@ -2365,4 +2365,17 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="evm_node_request_failed">El nodo de la red no pudo procesar la solicitud. Inténtalo de nuevo o elige otra fuente en la configuración de Blockchain.\n\nRespuesta del nodo: %1$s</string>
     <string name="desktop_transfer_password">Contraseña antes de enviar</string>
     <string name="desktop_transfer_password_description">Se solicita la contraseña de la aplicación antes de cada envío, lo que protege tus activos si alguien accede a tu ordenador con la aplicación desbloqueada.</string>
+
+    <!--NFT collections-->
+    <string name="nft_collections">Colecciones</string>
+    <string name="nft_collection">Colección de NFT</string>
+    <string name="nft_show_all">Ver todo</string>
+    <string name="nft_unverified">Sin verificar</string>
+    <string name="nft_unnamed_collection">Colección sin nombre</string>
+    <string name="nft_unnamed">NFT sin nombre</string>
+    <string name="nft_about_collection">Sobre la colección</string>
+    <string name="nft_open_in_explorer">Abrir en el explorador</string>
+    <string name="nft_details">Detalles</string>
+    <string name="nft_owner">Propietario</string>
+    <string name="nft_empty_title">Aquí aparecerán tus NFT</string>
 </resources>

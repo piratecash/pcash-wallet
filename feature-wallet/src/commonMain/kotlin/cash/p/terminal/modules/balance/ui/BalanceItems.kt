@@ -46,11 +46,18 @@ import cash.p.terminal.modules.balance.TotalUIState
 import cash.p.terminal.modules.displayoptions.DisplayOptionsPage
 import cash.p.terminal.modules.manageaccount.dialogs.showBackupRequiredDialog
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
+import cash.p.terminal.modules.nft.NftCollectionPage
+import cash.p.terminal.modules.nft.NftCollectionSource
+import cash.p.terminal.modules.nft.NftCollectionsViewModel
+import cash.p.terminal.modules.nft.NftPreviewPage
+import cash.p.terminal.modules.nft.NftSectionTitle
+import cash.p.terminal.modules.nft.ui.NftCollectionsSection
 import cash.p.terminal.modules.receive.ui.ReceiveChooseCoinPage
 import cash.p.terminal.modules.restoreaccount.RestoreAccountPage
 import cash.p.terminal.modules.restoreaccount.restoreshamir.RestoreShamirPage
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.navigation.PageResumeEffect
 import cash.p.terminal.resources.AccountRecovery_MigrationRecommended
 import cash.p.terminal.resources.AccountRecovery_MigrationRequired
 import cash.p.terminal.resources.Balance_NoCoinsAlert
@@ -67,6 +74,7 @@ import cash.p.terminal.resources.ic_empty_wallet
 import cash.p.terminal.resources.ic_swap_24
 import cash.p.terminal.resources.multi_swap_unfinished
 import cash.p.terminal.resources.multi_swap_unfinished_plural
+import cash.p.terminal.resources.nft_collections
 import cash.p.terminal.resources.stacking
 import cash.p.terminal.resources.staking_details
 import cash.p.terminal.ui_compose.Select
@@ -87,6 +95,8 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -113,6 +123,9 @@ fun BalanceItems(
         }
     }
 
+    val nftViewModel: NftCollectionsViewModel = koinViewModel { parametersOf(NftCollectionSource.AllWallets) }
+    PageResumeEffect(onResume = nftViewModel::onResume, onPause = {})
+
     var revealedCardId by remember { mutableStateOf<Int?>(null) }
 
     val onClickSyncError: (BalanceViewItem2) -> Unit = remember {
@@ -134,7 +147,10 @@ fun BalanceItems(
 
     HSSwipeRefresh(
         refreshing = uiState.isRefreshing,
-        onRefresh = viewModel::onRefresh
+        onRefresh = {
+            viewModel.onRefresh()
+            nftViewModel.refresh()
+        }
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -337,6 +353,24 @@ fun BalanceItems(
                             onDisable.invoke(item)
                             revealedCardId = null
                         }
+                    )
+                }
+                item(key = "nft_collections") {
+                    val openAll = { navigation.slideFromRight(NftCollectionPage(NftCollectionSource.AllWallets)) }
+                    NftCollectionsSection(
+                        title = {
+                            NftSectionTitle(
+                                title = stringResource(Res.string.nft_collections),
+                                hidden = nftViewModel.uiState.hidden,
+                                onClick = openAll,
+                                gapAbove = 20.dp,
+                                trailingCount = nftViewModel.uiState.totalCount,
+                            )
+                        },
+                        items = nftViewModel.uiState.items,
+                        hidden = nftViewModel.uiState.hidden,
+                        onItemClick = { navigation.slideFromRight(NftPreviewPage(it, NftCollectionSource.AllWallets)) },
+                        onShowAll = openAll,
                     )
                 }
             }

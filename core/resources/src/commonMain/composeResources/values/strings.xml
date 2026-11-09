@@ -2784,4 +2784,17 @@ Proceed only if you\u0027re sure.</string>
     <string name="evm_node_request_failed">The network node could not process the request. Try again or choose another source in Blockchain settings.\n\nNode response: %1$s</string>
     <string name="desktop_transfer_password">Password before sending</string>
     <string name="desktop_transfer_password_description">The app password is asked before every transfer, protecting your assets if someone gets access to your computer while the app is unlocked.</string>
+
+    <!--NFT collections-->
+    <string name="nft_collections">Collections</string>
+    <string name="nft_collection">NFT collection</string>
+    <string name="nft_show_all">Show all</string>
+    <string name="nft_unverified">Unverified</string>
+    <string name="nft_unnamed_collection">Unnamed collection</string>
+    <string name="nft_unnamed">Unnamed NFT</string>
+    <string name="nft_about_collection">About collection</string>
+    <string name="nft_open_in_explorer">Open in explorer</string>
+    <string name="nft_details">Details</string>
+    <string name="nft_owner">Owner</string>
+    <string name="nft_empty_title">Your NFTs will appear here</string>
 </resources>

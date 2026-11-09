@@ -2368,4 +2368,17 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="evm_node_request_failed">Ağ düğümü isteği işleyemedi. Tekrar deneyin veya Blockchain Ayarları\'ndan başka bir kaynak seçin.\n\nDüğüm yanıtı: %1$s</string>
     <string name="desktop_transfer_password">Göndermeden önce şifre</string>
     <string name="desktop_transfer_password_description">Her gönderimden önce uygulama şifresi istenir. Böylece uygulamanın kilidi açıkken biri bilgisayarınıza erişirse varlıklarınız korunur.</string>
+
+    <!--NFT collections-->
+    <string name="nft_collections">Koleksiyonlar</string>
+    <string name="nft_collection">NFT koleksiyonu</string>
+    <string name="nft_show_all">Tümünü göster</string>
+    <string name="nft_unverified">Doğrulanmadı</string>
+    <string name="nft_unnamed_collection">Adsız koleksiyon</string>
+    <string name="nft_unnamed">Adsız NFT</string>
+    <string name="nft_about_collection">Koleksiyon hakkında</string>
+    <string name="nft_open_in_explorer">Gezginde aç</string>
+    <string name="nft_details">Ayrıntılar</string>
+    <string name="nft_owner">Sahip</string>
+    <string name="nft_empty_title">NFT\u0027leriniz burada görünecek</string>
 </resources>

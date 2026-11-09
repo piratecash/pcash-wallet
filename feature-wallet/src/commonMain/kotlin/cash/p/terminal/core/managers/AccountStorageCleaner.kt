@@ -1,5 +1,6 @@
 package cash.p.terminal.core.managers
 
+import cash.p.terminal.core.storage.NftItemStorage
 import cash.p.terminal.core.usecase.OfflineModeUseCase
 import kotlinx.coroutines.CancellationException
 import co.touchlab.kermit.Logger
@@ -10,6 +11,7 @@ private val logger = Logger.withTag("AccountStorageCleaner")
 class AccountStorageCleaner(
     private val locallyCreatedTransactionRepository: LocallyCreatedTransactionRepository,
     private val offlineModeUseCase: OfflineModeUseCase,
+    private val nftItemStorage: NftItemStorage,
 ) {
     /**
      * Every table is attempted, but the first failure is rethrown: the caller drops its
@@ -22,6 +24,9 @@ class AccountStorageCleaner(
             },
             failureOf("offline mode rows") {
                 offlineModeUseCase.forgetAccounts(accountIds)
+            },
+            failureOf("nft items") {
+                nftItemStorage.deleteByAccountIds(accountIds)
             },
         )
         failures.firstOrNull()?.let { throw it }

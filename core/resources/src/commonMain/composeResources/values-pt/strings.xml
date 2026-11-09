@@ -2373,4 +2373,17 @@
     <string name="evm_node_request_failed">O nó da rede não conseguiu processar o pedido. Tente novamente ou escolha outra fonte nas configurações da Blockchain.\n\nResposta do nó: %1$s</string>
     <string name="desktop_transfer_password">Senha antes de enviar</string>
     <string name="desktop_transfer_password_description">A senha da aplicação é pedida antes de cada envio, protegendo os seus ativos caso alguém aceda ao seu computador com a aplicação desbloqueada.</string>
+
+    <!--NFT collections-->
+    <string name="nft_collections">Coleções</string>
+    <string name="nft_collection">Coleção de NFT</string>
+    <string name="nft_show_all">Ver tudo</string>
+    <string name="nft_unverified">Não verificado</string>
+    <string name="nft_unnamed_collection">Coleção sem nome</string>
+    <string name="nft_unnamed">NFT sem nome</string>
+    <string name="nft_about_collection">Sobre a coleção</string>
+    <string name="nft_open_in_explorer">Abrir no explorador</string>
+    <string name="nft_details">Detalhes</string>
+    <string name="nft_owner">Proprietário</string>
+    <string name="nft_empty_title">Os seus NFT aparecerão aqui</string>
 </resources>

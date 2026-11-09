@@ -2371,4 +2371,17 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="evm_node_request_failed">Le nœud du réseau n\'a pas pu traiter la requête. Réessayez ou choisissez une autre source dans les paramètres de la Blockchain.\n\nRéponse du nœud : %1$s</string>
     <string name="desktop_transfer_password">Mot de passe avant l\u0027envoi</string>
     <string name="desktop_transfer_password_description">Le mot de passe de l\u0027application est demandé avant chaque envoi, ce qui protège vos actifs si quelqu\u0027un accède à votre ordinateur pendant que l\u0027application est déverrouillée.</string>
+
+    <!--NFT collections-->
+    <string name="nft_collections">Collections</string>
+    <string name="nft_collection">Collection NFT</string>
+    <string name="nft_show_all">Tout afficher</string>
+    <string name="nft_unverified">Non vérifié</string>
+    <string name="nft_unnamed_collection">Collection sans nom</string>
+    <string name="nft_unnamed">NFT sans nom</string>
+    <string name="nft_about_collection">À propos de la collection</string>
+    <string name="nft_open_in_explorer">Ouvrir dans l\u0027explorateur</string>
+    <string name="nft_details">Détails</string>
+    <string name="nft_owner">Propriétaire</string>
+    <string name="nft_empty_title">Vos NFT apparaîtront ici</string>
 </resources>

@@ -181,7 +181,8 @@ class DesktopStorageSessionTest {
         SqlCipherDriver(appDatabaseKey).use { driver ->
             driver.open(fixture.files.databaseFile.absolutePath).use { connection ->
                 connection.prepare(
-                    "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name LIKE 'Nft%'"
+                    "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name IN " +
+                        NFT_TABLES.joinToString(prefix = "(", postfix = ")") { "'$it'" }
                 ).use { statement ->
                     statement.step()
                     statement.getLong(0)

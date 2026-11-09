@@ -24,6 +24,9 @@ import cash.p.terminal.core.managers.TonAccountManager
 import cash.p.terminal.core.managers.TronAccountManager
 import cash.p.terminal.core.managers.WalletActivator
 import cash.p.terminal.core.managers.WordsManager
+import cash.p.terminal.core.nft.NftCollectionsRepository
+import cash.p.terminal.core.nft.NftProvider
+import cash.p.terminal.core.nft.TonNftProvider
 import cash.p.terminal.core.managers.ZcashBirthdayProvider
 import cash.p.terminal.core.providers.PredefinedBlockchainSettingsProvider
 import cash.p.terminal.core.providers.ZcashDatabaseFilesMarker
@@ -59,6 +62,8 @@ import cash.p.terminal.modules.createaccount.passphraseterms.PassphraseTermsView
 import cash.p.terminal.modules.importwallet.ImportWalletViewModel
 import cash.p.terminal.modules.intro.IntroViewModel
 import cash.p.terminal.modules.markdown.MarkdownViewModel
+import cash.p.terminal.modules.nft.NftCollectionsViewModel
+import cash.p.terminal.modules.nft.NftPreviewViewModel
 import cash.p.terminal.modules.manageaccount.ManageAccountViewModel
 import cash.p.terminal.modules.manageaccount.backupconfirmkey.BackupConfirmKeyViewModel
 import cash.p.terminal.modules.manageaccount.backupkey.BackupKeyViewModel
@@ -170,6 +175,7 @@ import cash.p.terminal.core.providers.FeeRateProvider
 import cash.p.terminal.core.providers.PendingAccountProvider
 import cash.p.terminal.core.providers.PendingAccountProviderImpl
 import cash.p.terminal.core.storage.LocallyCreatedTransactionStorage
+import cash.p.terminal.core.storage.NftItemStorage
 import cash.p.terminal.core.storage.OfflineModeStorage
 import cash.p.terminal.core.storage.PendingTransactionStorage
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
@@ -428,6 +434,9 @@ val featureWalletModule = module {
     singleOf(::ZcashIronwoodMigrationRegistry)
     singleOf(::CoinManager) bind ICoinManager::class
     singleOf(::OfflineModeStorage)
+    singleOf(::NftItemStorage)
+    singleOf(::TonNftProvider) bind NftProvider::class
+    single { NftCollectionsRepository(get(), getAll(), get(), get()) }
     factoryOf(::SwapProviderTransactionsStorage)
     factoryOf(::SwapTransactionMatcher)
     singleOf(::ContactsRepository)
@@ -489,6 +498,8 @@ val featureWalletModule = module {
     viewModel { (blockchain: Blockchain) -> AddRpcViewModel(blockchain, get()) }
 
     viewModel { (url: String) -> MarkdownViewModel(url, get(), get()) }
+    viewModel { params -> NftCollectionsViewModel(params.get(), get(), get(), get()) }
+    viewModel { params -> NftPreviewViewModel(params.get(), get()) }
     viewModelOf(::IntroViewModel)
     viewModelOf(::BackupAlertViewModel)
     viewModelOf(::CreateAdvancedAccountViewModel)

@@ -1,0 +1,147 @@
+package cash.p.terminal.core.nft
+
+import cash.p.terminal.core.managers.OfflineKey
+import cash.p.terminal.core.managers.OfflineModeManager
+import cash.p.terminal.core.managers.isNetworkPaused
+import cash.p.terminal.core.storage.NftItemStorage
+import cash.p.terminal.entities.NftItemRecord
+import cash.p.terminal.wallet.Wallet
+import co.touchlab.kermit.Logger
+import io.horizontalsystems.core.DispatcherProvider
+import io.horizontalsystems.core.entities.BlockchainType
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.TimeMark
+import kotlin.time.TimeSource
+
+private val logger = Logger.withTag("NftCollectionsRepository")
+
+private val REFRESH_THROTTLE = 30.seconds
+
+data class NftItemsState(val items: List<NftItemRecord>, val isLoaded: Boolean)
+
+class NftCollectionsRepository(
+    private val storage: NftItemStorage,
+    providers: List<NftProvider>,
+    private val offlineModeManager: OfflineModeManager,
+    private val dispatcherProvider: DispatcherProvider,
+) {
+    private val providersByType = providers.associateBy { it.blockchainType }
+    private val refreshMutex = Mutex()
+    private val fetchedAt = MutableStateFlow<Map<NftOwner, TimeMark>>(emptyMap())
+
+    // Room stays silent when an empty response lands on an empty cache; this publishes that completion.
+    private val fetchedOwners = fetchedAt.map { it.keys }.distinctUntilChanged()
+
+    suspend fun owners(wallets: List<Wallet>): Set<NftOwner> =
+        wallets.groupBy { it.account.id to it.token.blockchainType }
+            .flatMapTo(mutableSetOf()) { (key, group) ->
+                val (accountId, blockchainType) = key
+                providersByType[blockchainType]?.ownerAddresses(group).orEmpty()
+                    .map { NftOwner(accountId, blockchainType, it) }
+            }
+
+    suspend fun ownerFor(wallet: Wallet): NftOwner? = owners(listOf(wallet)).firstOrNull()
+
+    fun supportsSection(wallet: Wallet): Boolean =
+        providersByType[wallet.token.blockchainType]?.supportsSection(wallet) == true
+
+    fun networkTitle(blockchainType: BlockchainType): String? = providersByType[blockchainType]?.networkTitle
+
+    fun explorerUrl(blockchainType: BlockchainType, nftAddress: String): String? =
+        providersByType[blockchainType]?.explorerUrl(nftAddress)
+
+    fun changes(owner: NftOwner): Flow<NftChange> =
+        providersByType[owner.blockchainType]?.changes(owner.address) ?: emptyFlow()
+
+    /** Emits each time the owners' network goes from paused to available. */
+    fun networkResumed(owners: Set<NftOwner>): Flow<Unit> = owners.map { owner ->
+        val key = OfflineKey(owner.accountId, owner.blockchainType)
+        offlineModeManager.effectiveFlow
+            .map { key in it }
+            .distinctUntilChanged()
+            .drop(1)
+            .filter { paused -> !paused }
+            .map { }
+    }.merge()
+
+    /** All [owners] must belong to one account: it is the only account the query reads. */
+    fun itemsFlow(owners: Set<NftOwner>): Flow<NftItemsState> {
+        if (owners.isEmpty()) return flowOf(NftItemsState(emptyList(), isLoaded = true))
+
+        val rows = storage.observe(owners.first().accountId, owners.map { it.address })
+        return combine(rows, fetchedOwners) { records, fetched ->
+            val items = records.filter { it.owner in owners }.distinctBy { it.address }
+            NftItemsState(items, isLoaded = items.isNotEmpty() || owners.all { it in fetched })
+        }.flowOn(dispatcherProvider.default)
+    }
+
+    suspend fun refresh(owners: Set<NftOwner>, force: Boolean) = withContext(dispatcherProvider.io) {
+        refreshMutex.withLock {
+            owners.forEach { refreshOwner(it, force) }
+        }
+    }
+
+    private suspend fun refreshOwner(owner: NftOwner, force: Boolean) {
+        if (offlineModeManager.isNetworkPaused(owner.accountId, owner.blockchainType)) return
+        if (!force && isFetchedRecently(owner)) return
+        val provider = providersByType[owner.blockchainType] ?: return
+
+        try {
+            val drafts = provider.fetch(owner.address) ?: return
+            storage.replace(
+                owner.accountId,
+                owner.blockchainType,
+                owner.address,
+                drafts.mapIndexed { position, draft -> draft.toRecord(owner, position) },
+            )
+            // The account may have been erased while the request was in flight.
+            if (offlineModeManager.isForgotten(owner.accountId)) storage.deleteByAccountIds(listOf(owner.accountId))
+            fetchedAt.update { it + (owner to TimeSource.Monotonic.markNow()) }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            // A network failure's message can carry the request URL, and with it the address.
+            logger.w { "NFT refresh failed for ${owner.blockchainType.uid}: ${e::class.simpleName}" }
+        }
+    }
+
+    private fun isFetchedRecently(owner: NftOwner): Boolean =
+        fetchedAt.value[owner]?.let { it.elapsedNow() < REFRESH_THROTTLE } == true
+}
+
+internal val NftItemRecord.owner: NftOwner
+    get() = NftOwner(accountId, blockchainType, ownerAddress)
+
+private fun NftItemRecordDraft.toRecord(owner: NftOwner, position: Int) = NftItemRecord(
+    accountId = owner.accountId,
+    blockchainType = owner.blockchainType,
+    ownerAddress = owner.address,
+    address = address,
+    position = position,
+    name = name,
+    description = description,
+    realOwnerAddress = realOwnerAddress,
+    collectionAddress = collectionAddress,
+    collectionName = collectionName,
+    collectionDescription = collectionDescription,
+    trust = trust,
+    verified = verified,
+    imageUrl = imageUrl,
+    largeImageUrl = largeImageUrl,
+)
