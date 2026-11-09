@@ -567,7 +567,10 @@ fun TransactionInfoSection(
                     is TransactionInfoViewItem.TransactionHash -> {
                         if (viewItem.transactionHash.isNotEmpty()) {
                             add {
-                                TransactionInfoTransactionHashCell(transactionHash = viewItem.transactionHash)
+                                TransactionInfoTransactionHashCell(
+                                    transactionHash = viewItem.transactionHash,
+                                    title = viewItem.title,
+                                )
                             }
                         }
                     }

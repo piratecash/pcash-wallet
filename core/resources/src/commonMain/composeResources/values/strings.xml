@@ -1002,6 +1002,8 @@ Proceed only if you\u0027re sure.</string>
     <string name="TransactionInfo_Date">Date</string>
     <string name="transaction_info_sync_source">Sync Source</string>
     <string name="TransactionInfo_Id">ID</string>
+    <string name="transaction_info_replaces_transaction">Replaces transaction</string>
+    <string name="transaction_info_replaced_by_transaction">Replaced by transaction</string>
     <string name="TransactionInfo_Service">Service</string>
     <string name="TransactionInfo_RawTransaction">Raw Transaction</string>
     <string name="TransactionInfo_ContactName">Contact Name</string>

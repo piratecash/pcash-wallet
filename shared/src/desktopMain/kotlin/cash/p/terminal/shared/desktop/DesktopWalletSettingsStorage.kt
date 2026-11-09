@@ -99,6 +99,10 @@ class DesktopWalletSettingsStorage(private val store: DesktopSettingsStore) :
         get() = store.flag(RECIPIENT_ADDRESS_CONTRACT_CHECK) ?: true
         set(value) = store.setFlag(RECIPIENT_ADDRESS_CONTRACT_CHECK, value)
 
+    override var bitcoinReplacementLinks: Set<String>
+        get() = stringSet(BITCOIN_REPLACEMENT_LINKS)
+        set(value) = setStringSet(BITCOIN_REPLACEMENT_LINKS, value)
+
     override var amountInputType: AmountInputType?
         get() = store.string(AMOUNT_INPUT_TYPE).toEnumOrNull()
         set(value) = store.setString(AMOUNT_INPUT_TYPE, value?.name)
@@ -190,6 +194,7 @@ class DesktopWalletSettingsStorage(private val store: DesktopSettingsStore) :
         const val ADDRESS_POISONING_VIEW_MODE = "addressPoisoningViewMode"
         const val RECIPIENT_ADDRESS_BASE_CHECK = "recipientAddressBaseCheckEnabled"
         const val RECIPIENT_ADDRESS_CONTRACT_CHECK = "recipientAddressContractCheckEnabled"
+        const val BITCOIN_REPLACEMENT_LINKS = "bitcoinReplacementLinks"
         const val AMOUNT_INPUT_TYPE = "amountInputType"
         const val RBF_ENABLED = "rbfEnabled"
         const val UTXO_EXPERT_MODE = "utxoExpertModeEnabled"

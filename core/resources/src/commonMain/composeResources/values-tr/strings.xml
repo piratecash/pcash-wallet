@@ -770,6 +770,8 @@
     <string name="TransactionInfo_Date">Tarih</string>
     <string name="transaction_info_sync_source">Senkronizasyon kaynağı</string>
     <string name="TransactionInfo_Id">Kimlik</string>
+    <string name="transaction_info_replaces_transaction">Şu işlemin yerine geçer</string>
+    <string name="transaction_info_replaced_by_transaction">Şu işlemle değiştirildi</string>
     <string name="TransactionInfo_Service">Hizmet</string>
     <string name="TransactionInfo_RawTransaction">Ham işlem</string>
     <string name="TransactionInfo_ContactName">Kişi Adı</string>

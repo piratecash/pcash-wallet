@@ -29,6 +29,7 @@ internal fun Scope.resendBitcoinViewModel(
         xRateService = XRateService(get(), get<CurrencyManager>().baseCurrency),
         feeRateProvider = FeeRateProviderFactory.provider(adapter.wallet.token.blockchainType)!!,
         contactsRepo = get(),
-        offlineOperationGate = get()
+        offlineOperationGate = get(),
+        recordBitcoinReplacement = get()
     )
 }
