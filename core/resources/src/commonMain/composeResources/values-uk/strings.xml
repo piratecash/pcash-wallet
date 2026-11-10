@@ -1730,7 +1730,7 @@
     <string name="PinSet_ErrorFailedToSavePin">Під час збереження вашого коду сталася помилка. Повторіть спробу.</string>
     <string name="PinSet_ForBiometrics">Встановити секретний код для увімкнення біометричних даних</string>
     <string name="PinSet_ForDuress">Встановіть код для увімкнення режиму Duress</string>
-    <string name="pin_set_for_login_logging">Set a passcode to enable login logging</string>
+    <string name="pin_set_for_login_logging">Встановіть код для увімкнення журналу входу</string>
     <string name="pin_set_for_login_logging_passcode">Встановіть код для захисту журналу входу</string>
     <string name="confirm_pin_to_disable_login_logging_passcode">Введіть код для вимкнення журналу входу</string>
     <string name="pin_set_for_delete_all_contacts">Встановіть код для видалення всіх контактів</string>
@@ -2548,4 +2548,6 @@
     </string-array>
     <string name="desktop_levels_limit_reached">Досягнуто ліміт рівнів. Додати нові паролі неможливо</string>
     <string name="desktop_password_save_failed">Не вдалося зберегти пароль. Спробуйте ще раз</string>
+    <string name="tron_controlled_by_others_title">Цим акаунтом можуть керувати інші</string>
+    <string name="tron_controlled_by_others_warning">Права на цей акаунт змінено: ним можуть керувати інші ключі. Кошти, які ви на нього переведете, можуть вивести без вашої участі. Поповнюйте його, лише якщо знаєте, чиї це ключі.</string>
 </resources>

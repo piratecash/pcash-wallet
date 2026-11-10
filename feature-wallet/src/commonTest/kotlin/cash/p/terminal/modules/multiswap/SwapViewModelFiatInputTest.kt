@@ -7,7 +7,10 @@ import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import androidx.lifecycle.ViewModelStore
 import cash.p.terminal.core.ServiceStateFlow
+import cash.p.terminal.entities.Address
 import cash.p.terminal.modules.multiswap.exchange.ButtonState
+import cash.p.terminal.modules.multiswap.settings.ISwapSetting
+import cash.p.terminal.modules.multiswap.settings.SwapSettingRecipient
 import cash.p.terminal.modules.send.register
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
@@ -104,6 +107,10 @@ class SwapViewModelFiatInputTest {
     }
     private val networkAvailabilityService = mockk<NetworkAvailabilityService>(relaxed = true) {
         every { stateFlow } returns ServiceStateFlow(networkStateFlow.asSharedFlow())
+    }
+    private val tronAccountWarningStateFlow = MutableSharedFlow<Boolean>(replay = 1).also { it.tryEmit(false) }
+    private val tronAccountWarningService = mockk<SwapTronAccountWarningService>(relaxed = true) {
+        every { stateFlow } returns ServiceStateFlow(tronAccountWarningStateFlow.asSharedFlow())
     }
     private val marketKit = mockk<MarketKitWrapper>(relaxed = true)
     private val assetFiatRateService = mockk<AssetFiatRateService> {
@@ -408,6 +415,83 @@ class SwapViewModelFiatInputTest {
         assertNull(viewModel.multiSwapRouteInfoUiState(viewModel.uiState))
     }
 
+    @Test
+    fun tronAccountWarningState_flagSet_exposedInUiState() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        assertFalse(viewModel.uiState.tronAccountControlledByOthers)
+
+        tronAccountWarningStateFlow.emit(true)
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.tronAccountControlledByOthers)
+    }
+
+    @Test
+    fun quoteState_noQuoteRecipientStored_setsTargetWithoutCustomRecipient() = runTest(dispatcher) {
+        every { quoteService.swapSettings } returns recipientSettings
+
+        createViewModel()
+        advanceUntilIdle()
+
+        verify { tronAccountWarningService.setTarget(tokenOut, customRecipient = false) }
+    }
+
+    @Test
+    fun quoteState_quoteUsesRecipient_setsTargetWithCustomRecipient() = runTest(dispatcher) {
+        createViewModel()
+        quoteStateFlow.value = quoteStateFlow.value.copy(quote = quoteWithSettings(recipientSetting(recipientSettings)))
+        advanceUntilIdle()
+
+        verify { tronAccountWarningService.setTarget(tokenOut, customRecipient = true) }
+    }
+
+    @Test
+    fun quoteState_quoteHasEmptyRecipientSetting_setsTargetWithoutCustomRecipient() = runTest(dispatcher) {
+        createViewModel()
+        quoteStateFlow.value = quoteStateFlow.value.copy(quote = quoteWithSettings(recipientSetting(emptyMap())))
+        advanceUntilIdle()
+
+        verify(exactly = 0) { tronAccountWarningService.setTarget(any(), customRecipient = true) }
+    }
+
+    @Test
+    fun quoteState_providerIgnoresStoredRecipient_setsTargetWithoutCustomRecipient() = runTest(dispatcher) {
+        every { quoteService.swapSettings } returns recipientSettings
+
+        createViewModel()
+        quoteStateFlow.value = quoteStateFlow.value.copy(quote = quoteWithSettings())
+        advanceUntilIdle()
+
+        verify(exactly = 0) { tronAccountWarningService.setTarget(any(), customRecipient = true) }
+    }
+
+    @Test
+    fun quoteState_routeFirstLegUsesRecipientLastLegIgnoresIt_setsTargetWithoutCustomRecipient() =
+        runTest(dispatcher) {
+            val leg1 = quoteWithSettings(recipientSetting(recipientSettings))
+            val route = multiSwapRouteFixture().copy(selectedLeg1Quote = leg1, selectedLeg2Quote = quoteWithSettings())
+
+            createViewModel()
+            quoteStateFlow.value = quoteStateFlow.value.copy(quote = leg1, multiSwapRoute = route)
+            advanceUntilIdle()
+
+            verify(exactly = 0) { tronAccountWarningService.setTarget(any(), customRecipient = true) }
+        }
+
+    private val recipientSettings = mapOf("recipient" to Address("recipient-address"))
+
+    private fun recipientSetting(settings: Map<String, Any?>) = SwapSettingRecipient(settings, tokenOut)
+
+    private fun quoteWithSettings(vararg settings: ISwapSetting): SwapProviderQuote {
+        val swapQuote = mockk<ISwapQuote>(relaxed = true) {
+            every { this@mockk.settings } returns settings.toList()
+        }
+        return mockk<SwapProviderQuote>(relaxed = true) {
+            every { this@mockk.swapQuote } returns swapQuote
+        }
+    }
+
     private fun createViewModel(): SwapViewModel {
         return SwapViewModel(
             quoteService = quoteService,
@@ -418,6 +502,7 @@ class SwapViewModelFiatInputTest {
             fiatServiceOut = FiatService(assetFiatRateService, dispatcher),
             timerService = timerService,
             networkAvailabilityService = networkAvailabilityService,
+            tronAccountWarningService = tronAccountWarningService,
             marketKit = marketKit,
             tokenIn = null,
             tokenOut = null,

@@ -1750,7 +1750,7 @@
     <string name="PinSet_ErrorFailedToSavePin">При сохранении вашего кода произошла ошибка. Повторите попытку.</string>
     <string name="PinSet_ForBiometrics">Установить секретный код для включения биометрических данных</string>
     <string name="PinSet_ForDuress">Установите код для включения режима Duress</string>
-    <string name="pin_set_for_login_logging">Set a passcode to enable login logging</string>
+    <string name="pin_set_for_login_logging">Установите код для включения журнала входа</string>
     <string name="pin_set_for_login_logging_passcode">Установите код для защиты журнала входа</string>
     <string name="confirm_pin_to_disable_login_logging_passcode">Введите код для отключения журнала входа</string>
     <string name="pin_set_for_delete_all_contacts">Установите код для удаления всех контактов</string>
@@ -2573,4 +2573,6 @@
     </string-array>
     <string name="desktop_levels_limit_reached">Достигнут предел уровней. Новые пароли добавить нельзя</string>
     <string name="desktop_password_save_failed">Не удалось сохранить пароль. Попробуйте ещё раз</string>
+    <string name="tron_controlled_by_others_title">Аккаунтом могут управлять другие</string>
+    <string name="tron_controlled_by_others_warning">Права на этот аккаунт изменены: им могут управлять другие ключи. Средства, которые вы на него переведёте, могут вывести без вашего участия. Пополняйте его, только если знаете, чьи это ключи.</string>
 </resources>

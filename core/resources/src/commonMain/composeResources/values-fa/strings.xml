@@ -1747,7 +1747,7 @@
     <string name="login_logging_log_successful">ثبت ورودهای موفق</string>
     <string name="login_logging_log_unsuccessful">ثبت ورودهای ناموفق</string>
     <string name="login_logging_duress_mode">حالت اجبار</string>
-    <string name="login_logging_log_into_duress">ورود به حالت اجبار</string>
+    <string name="login_logging_log_into_duress">ثبت ورود به حالت اجبار</string>
     <string name="login_logging_send_notification">ارسال اعلان ورود</string>
     <string name="login_logging_delete_auth_data">حذف همه داده‌های احراز هویت</string>
     <string name="login_logging_delete_auth_data_description">این عملکرد همه داده‌های احراز هویت با عکس‌ها را هنگام ورود به حالت اجبار حذف می‌کند.</string>
@@ -1844,14 +1844,14 @@
     <string name="Unlock_Random">Random</string>
     <!--Set Pin-->
     <string name="PinSet_Title">تنظیم یک گذرواژه</string>
-    <string name="PinSet_Info">از کد عبور شما برای باز کردن کیف پول و ارسال پول استفاده می شود</string>
-    <string name="PinSet_Transactions_Hide">Set Passcode for \“Transactions Auto Hide\” mode</string>
+    <string name="PinSet_Info">از کد عبور شما برای باز کردن کیف پول استفاده می شود</string>
+    <string name="PinSet_Transactions_Hide">تنظیم رمز عبور برای حالت «پنهان‌سازی خودکار تراکنش‌ها»</string>
     <string name="PinSet_ConfirmInfo">تاييد</string>
     <string name="PinSet_ErrorPinsDontMatch">کد عبور مطابقت نداشت. دوباره امتحان کنید.</string>
     <string name="PinSet_ErrorFailedToSavePin">هنگام ذخیره کد عبور شما خطایی روی داد. لطفا دوباره تلاش کنید.</string>
     <string name="PinSet_ForBiometrics">Set a passcode to enable Biometrics</string>
     <string name="PinSet_ForDuress">Set a passcode to enable Duress Mode</string>
-    <string name="pin_set_for_login_logging">Set a passcode to enable login logging</string>
+    <string name="pin_set_for_login_logging">رمز عبور برای فعال کردن ثبت ورود تعیین کنید</string>
     <string name="pin_set_for_login_logging_passcode">رمز عبور برای محافظت از ثبت ورود تعیین کنید</string>
     <string name="confirm_pin_to_disable_login_logging_passcode">رمز عبور را برای غیرفعال کردن ثبت ورود وارد کنید</string>
     <string name="pin_set_for_delete_all_contacts">برای حذف همه مخاطبین یک رمز عبور تنظیم کنید</string>
@@ -2395,4 +2395,6 @@
     </string-array>
     <string name="desktop_levels_limit_reached">به سقف سطوح رسیده‌اید. نمی‌توان رمز عبور دیگری اضافه کرد</string>
     <string name="desktop_password_save_failed">ذخیره رمز عبور ممکن نشد. لطفاً دوباره تلاش کنید</string>
+    <string name="tron_controlled_by_others_title">ممکن است دیگران این حساب را کنترل کنند</string>
+    <string name="tron_controlled_by_others_warning">مجوزهای این حساب تغییر کرده است: ممکن است کلیدهای دیگری آن را کنترل کنند. وجوهی که به آن ارسال می‌کنید ممکن است بدون دخالت شما برداشت شوند. فقط در صورتی آن را شارژ کنید که بدانید این کلیدها متعلق به چه کسی است.</string>
 </resources>

@@ -14,6 +14,7 @@ import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAdapter
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IReceiveAdapter
+import cash.p.terminal.wallet.ReceiveAccountStatus
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.Coin
@@ -55,6 +56,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.beam_receive_regular_alert
+import cash.p.terminal.resources.tron_controlled_by_others_warning
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ReceiveAddressViewModelTest {
@@ -100,7 +102,7 @@ class ReceiveAddressViewModelTest {
         every { adapter.isMainNet } returns true
         every { adapter.isAddressHistorySupported } returns false
         every { adapter.usedAddresses(any()) } returns emptyList()
-        coEvery { adapter.isAddressActive(any()) } returns true
+        coEvery { adapter.accountStatus(any()) } returns ReceiveAccountStatus.Active
         // The default IReceiveAdapter behaviour every non-Zcash adapter keeps.
         every { adapter.freshReceiveAddressChanges } returns flowOf(Unit)
         coEvery { adapter.freshReceiveAddress() } returns ADAPTER_ADDRESS
@@ -169,9 +171,9 @@ class ReceiveAddressViewModelTest {
         }
 
     @Test
-    fun setData_isAddressActiveThrows_keepsSuccessAndAssumesActive() = runTest(dispatcher) {
+    fun setData_accountStatusThrows_keepsSuccessAndAssumesActive() = runTest(dispatcher) {
         every { adapterManager.getReceiveAdapterForWallet(wallet) } returns adapter
-        coEvery { adapter.isAddressActive(any()) } throws IllegalStateException("no network")
+        coEvery { adapter.accountStatus(any()) } throws IllegalStateException("no network")
 
         val viewModel = createViewModel()
         advanceUntilIdle()
@@ -182,15 +184,74 @@ class ReceiveAddressViewModelTest {
     }
 
     @Test
-    fun setData_isAddressActiveReturnsFalse_keepsSuccessAndShowsNotActive() = runTest(dispatcher) {
+    fun setData_accountNotActive_keepsSuccessAndShowsNotActive() = runTest(dispatcher) {
         every { adapterManager.getReceiveAdapterForWallet(wallet) } returns adapter
-        coEvery { adapter.isAddressActive(any()) } returns false
+        coEvery { adapter.accountStatus(any()) } returns ReceiveAccountStatus.NotActive
 
         val viewModel = createViewModel()
         advanceUntilIdle()
 
         assertEquals(ViewState.Success, viewModel.uiState.viewState)
         assertEquals(true, viewModel.uiState.showTronAlert)
+        assertEquals(listOf(ReceiveModule.AdditionalData.AccountNotActive), viewModel.uiState.additionalItems)
+        assertEquals(null, viewModel.uiState.alertText)
+    }
+
+    @Test
+    fun setData_accountControlledByOthers_showsWarningAlertWithoutNotActive() = runTest(dispatcher) {
+        every { adapterManager.getReceiveAdapterForWallet(wallet) } returns adapter
+        coEvery { adapter.accountStatus(any()) } returns ReceiveAccountStatus.ControlledByOthers
+
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        val alertText = viewModel.uiState.alertText as? ReceiveModule.AlertText.Normal
+        assertEquals(Translator.getString(Res.string.tron_controlled_by_others_warning), alertText?.content)
+        assertFalse(viewModel.uiState.showTronAlert)
+        assertEquals(emptyList<ReceiveModule.AdditionalData>(), viewModel.uiState.additionalItems)
+    }
+
+    @Test
+    fun setData_checkFailsAfterControlledByOthers_keepsAlert() = runTest(dispatcher) {
+        every { adapterManager.getReceiveAdapterForWallet(wallet) } returns adapter
+        coEvery { adapter.accountStatus(any()) } returns
+            ReceiveAccountStatus.ControlledByOthers andThenThrows IllegalStateException("no network")
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        adaptersReady.onNext(emptyMap())
+        advanceUntilIdle()
+
+        coVerify(exactly = 2) { adapter.accountStatus(any()) }
+        val alertText = viewModel.uiState.alertText as? ReceiveModule.AlertText.Normal
+        assertEquals(Translator.getString(Res.string.tron_controlled_by_others_warning), alertText?.content)
+    }
+
+    @Test
+    fun setData_checkFailsAfterNotActive_dropsInactiveAlert() = runTest(dispatcher) {
+        every { adapterManager.getReceiveAdapterForWallet(wallet) } returns adapter
+        coEvery { adapter.accountStatus(any()) } returns
+            ReceiveAccountStatus.NotActive andThenThrows IllegalStateException("no network")
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.showTronAlert)
+
+        adaptersReady.onNext(emptyMap())
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.showTronAlert)
+    }
+
+    @Test
+    fun setData_accountActive_showsNoAccountWarnings() = runTest(dispatcher) {
+        every { adapterManager.getReceiveAdapterForWallet(wallet) } returns adapter
+
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        assertEquals(null, viewModel.uiState.alertText)
+        assertFalse(viewModel.uiState.showTronAlert)
+        assertEquals(emptyList<ReceiveModule.AdditionalData>(), viewModel.uiState.additionalItems)
     }
 
     @Test
@@ -359,8 +420,8 @@ class ReceiveAddressViewModelTest {
     @Test
     fun setData_calledAgainWhileTheFreshAddressIsBeingApplied_showsTheLaterRendersAddress() = runTest(dispatcher) {
         every { adapterManager.getReceiveAdapterForWallet(wallet) } returns adapter
-        val activation = CompletableDeferred<Boolean>()
-        coEvery { adapter.isAddressActive(VERIFIED_ADDRESS) } coAnswers { activation.await() }
+        val activation = CompletableDeferred<ReceiveAccountStatus>()
+        coEvery { adapter.accountStatus(VERIFIED_ADDRESS) } coAnswers { activation.await() }
         var callCount = 0
         coEvery { adapter.freshReceiveAddress() } coAnswers {
             if (++callCount == 1) VERIFIED_ADDRESS else awaitCancellation()
@@ -369,7 +430,7 @@ class ReceiveAddressViewModelTest {
         advanceUntilIdle()
 
         adaptersReady.onNext(emptyMap())
-        activation.complete(true)
+        activation.complete(ReceiveAccountStatus.Active)
         advanceUntilIdle()
 
         assertEquals(ADAPTER_ADDRESS, viewModel.uiState.address)
@@ -397,15 +458,15 @@ class ReceiveAddressViewModelTest {
     fun setData_activationCheckStillPending_publishesSuccessWithTheAddressAlreadyShown() = runTest(dispatcher) {
         Dispatchers.setMain(StandardTestDispatcher(dispatcher.scheduler))
         every { adapterManager.getReceiveAdapterForWallet(wallet) } returns adapter
-        val probe = CompletableDeferred<Boolean>()
-        coEvery { adapter.isAddressActive(any()) } coAnswers { probe.await() }
+        val probe = CompletableDeferred<ReceiveAccountStatus>()
+        coEvery { adapter.accountStatus(any()) } coAnswers { probe.await() }
         val viewModel = createViewModel()
 
         runCurrent()
         assertEquals(ViewState.Success, viewModel.uiState.viewState)
         assertEquals(ADAPTER_ADDRESS, viewModel.uiState.address)
 
-        probe.complete(false)
+        probe.complete(ReceiveAccountStatus.NotActive)
         advanceUntilIdle()
         assertTrue(viewModel.uiState.showTronAlert)
     }
@@ -452,7 +513,7 @@ class ReceiveAddressViewModelTest {
     @Test
     fun setData_calledAgainAfterAFailedActivationCheck_probesTheUnchangedAddressAgain() = runTest(dispatcher) {
         every { adapterManager.getReceiveAdapterForWallet(wallet) } returns adapter
-        coEvery { adapter.isAddressActive(any()) } throws IllegalStateException("no network") andThen false
+        coEvery { adapter.accountStatus(any()) } throws IllegalStateException("no network") andThen ReceiveAccountStatus.NotActive
         val viewModel = createViewModel()
         advanceUntilIdle()
         assertFalse(viewModel.uiState.showTronAlert)
@@ -768,6 +829,6 @@ class ReceiveAddressViewModelTest {
         createViewModel()
         advanceUntilIdle()
 
-        coVerify(exactly = 1) { adapter.isAddressActive(ADAPTER_ADDRESS) }
+        coVerify(exactly = 1) { adapter.accountStatus(ADAPTER_ADDRESS) }
     }
 }

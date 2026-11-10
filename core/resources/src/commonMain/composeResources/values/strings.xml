@@ -2190,7 +2190,7 @@ Proceed only if you\u0027re sure.</string>
     <!--Set Pin-->
     <string name="PinSet_Title">Create Passcode</string>
     <string name="PinSet_Info">Your passcode will be used to unlock your wallet</string>
-    <string name="PinSet_Transactions_Hide">Set Passcode for \“Transactions Auto Hide\” mode</string>
+    <string name="PinSet_Transactions_Hide">Set Passcode for “Transactions Auto Hide” mode</string>
     <string name="PinSet_ConfirmInfo">Confirm</string>
     <string name="PinSet_ErrorPinsDontMatch">Passcode did not match. Try again.</string>
     <string name="PinSet_ErrorFailedToSavePin">Error occurred while saving your passcode. Please, try again.</string>
@@ -2808,4 +2808,6 @@ Proceed only if you\u0027re sure.</string>
     </string-array>
     <string name="desktop_levels_limit_reached">The limit of levels is reached. No more passwords can be added</string>
     <string name="desktop_password_save_failed">Could not save the password. Please try again</string>
+    <string name="tron_controlled_by_others_title">Others may control this account</string>
+    <string name="tron_controlled_by_others_warning">The permissions on this account have been changed: other keys may control it. Funds you send to it can be withdrawn without your involvement. Top it up only if you know whose keys these are.</string>
 </resources>

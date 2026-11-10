@@ -126,6 +126,7 @@ import cash.p.terminal.modules.offline.OfflineOperationGate
 import androidx.annotation.Keep
 import kotlin.reflect.KClass
 import cash.p.terminal.resources.ic_attention_20
+import cash.p.terminal.resources.tron_controlled_by_others_warning
 import cash.p.terminal.resources.CoinPlatforms_Native
 import cash.p.terminal.resources.Hud_Text_NoInternet
 import cash.p.terminal.resources.Swap
@@ -772,6 +773,14 @@ private fun SwapWarnings(uiState: SwapUiState) {
             TextImportantWarning(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 text = it.getString(),
+                icon = Res.drawable.ic_attention_20,
+            )
+        }
+        if (uiState.tronAccountControlledByOthers) {
+            VSpacer(height = 12.dp)
+            TextImportantWarning(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                text = stringResource(Res.string.tron_controlled_by_others_warning),
                 icon = Res.drawable.ic_attention_20,
             )
         }
