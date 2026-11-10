@@ -2797,4 +2797,16 @@ Proceed only if you\u0027re sure.</string>
     <string name="nft_details">Details</string>
     <string name="nft_owner">Owner</string>
     <string name="nft_empty_title">Your NFTs will appear here</string>
+    <string name="nft_transfer_on_sale">The NFT is listed on a marketplace. To transfer it, remove it from sale</string>
+    <string name="nft_transfer_watch_only">Watch-only wallets cannot transfer NFTs</string>
+    <string name="nft_transfer_not_owner">This wallet no longer owns this NFT</string>
+    <string name="nft_transfer_check_failed">Could not check whether this NFT can be transferred. Try again later</string>
+    <string name="nft_transfer_title">Transfer NFT</string>
+    <string name="nft_transfer_recipient_hint">Address or .ton domain</string>
+    <string name="nft_transfer_address_found">Address found: %1$s</string>
+    <string name="nft_transfer_comment_label">Comment (optional)</string>
+    <string name="nft_transfer_comment_hint">Visible to everyone on the blockchain</string>
+    <string name="nft_transfer_ton_balance">TON balance</string>
+    <string name="nft_transfer_domain_warning">After the transfer, the domain will be unlinked from your wallet. Transfers to %1$s will go to the new owner. Renewing the domain will be up to them.</string>
+    <string name="send_confirmation_domain">Domain</string>
 </resources>

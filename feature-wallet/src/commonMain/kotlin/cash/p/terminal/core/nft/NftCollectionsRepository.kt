@@ -121,6 +121,20 @@ class NftCollectionsRepository(
         }
     }
 
+    /** Null when the state cannot be read now: the network is paused, there is no source or the request failed. */
+    suspend fun liveState(owner: NftOwner, nftAddress: String): NftLiveState? = withContext(dispatcherProvider.io) {
+        if (offlineModeManager.isNetworkPaused(owner.accountId, owner.blockchainType)) return@withContext null
+        try {
+            providersByType[owner.blockchainType]?.liveState(owner.address, nftAddress)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            // A network failure's message can carry the request URL, and with it the address.
+            logger.w { "NFT live state failed for ${owner.blockchainType.uid}: ${e::class.simpleName}" }
+            null
+        }
+    }
+
     private fun isFetchedRecently(owner: NftOwner): Boolean =
         fetchedAt.value[owner]?.let { it.elapsedNow() < REFRESH_THROTTLE } == true
 }

@@ -34,14 +34,20 @@ import cash.p.terminal.modules.nft.ui.displayName
 import cash.p.terminal.modules.nft.ui.previewNftItem
 import cash.p.terminal.resources.AddToken_AddressOrSymbol
 import cash.p.terminal.resources.Balance_Network
+import cash.p.terminal.resources.Button_Send
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.ic_nft_verified_16
 import cash.p.terminal.resources.nft_about_collection
 import cash.p.terminal.resources.nft_details
 import cash.p.terminal.resources.nft_open_in_explorer
 import cash.p.terminal.resources.nft_owner
+import cash.p.terminal.resources.nft_transfer_check_failed
+import cash.p.terminal.resources.nft_transfer_not_owner
+import cash.p.terminal.resources.nft_transfer_on_sale
+import cash.p.terminal.resources.nft_transfer_watch_only
 import cash.p.terminal.resources.nft_unnamed_collection
 import cash.p.terminal.ui_compose.components.AppBar
+import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.HsDivider
 import cash.p.terminal.ui_compose.components.LocalUrlOpener
@@ -51,6 +57,7 @@ import cash.p.terminal.ui_compose.components.headline1_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.components.title3_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -65,6 +72,7 @@ internal fun NftPreviewScreen(
     networkTitle: String?,
     explorerUrl: String?,
     onArtworkClick: () -> Unit,
+    onSend: (NftTransferAvailability.Available) -> Unit,
     onBack: () -> Unit,
 ) {
     val name = item.displayName(uiState.hidden)
@@ -96,6 +104,7 @@ internal fun NftPreviewScreen(
                 if (!uiState.hidden) {
                     DetailsHeader(explorerUrl)
                     Details(item, networkTitle)
+                    TransferAction(uiState.transferAvailability, onSend)
                 }
             }
         }
@@ -103,10 +112,14 @@ internal fun NftPreviewScreen(
 }
 
 @Composable
-private fun Modifier.nftSection() = padding(horizontal = 16.dp)
-    .fillMaxWidth()
+private fun Modifier.nftSection() = padding(horizontal = 16.dp).nftCard()
+
+@Composable
+internal fun Modifier.nftCard() = fillMaxWidth()
     .clip(SectionShape)
     .border(1.dp, ComposeAppTheme.colors.borderDefault, SectionShape)
+
+internal fun String.shortNftAddress() = "${take(ADDRESS_EDGE_LENGTH)}…${takeLast(ADDRESS_EDGE_LENGTH)}"
 
 @Composable
 private fun NftImage(item: NftItemRecord, uiState: NftPreviewUiState, onClick: () -> Unit) {
@@ -205,9 +218,39 @@ private fun Details(item: NftItemRecord, networkTitle: String?) {
 @Composable
 private fun AddressRow(title: String, address: String) {
     val copyWithHud = rememberCopyWithHud()
-    val shortAddress = "${address.take(ADDRESS_EDGE_LENGTH)}…${address.takeLast(ADDRESS_EDGE_LENGTH)}"
-    TitleAndValueCell(title, shortAddress, Modifier.clickable { copyWithHud(address) })
+    TitleAndValueCell(title, address.shortNftAddress(), Modifier.clickable { copyWithHud(address) })
 }
+
+@Composable
+private fun TransferAction(
+    availability: NftTransferAvailability,
+    onSend: (NftTransferAvailability.Available) -> Unit,
+) {
+    if (availability is NftTransferAvailability.Hidden) return
+
+    Column(
+        modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        ButtonPrimaryYellow(
+            modifier = Modifier.fillMaxWidth(),
+            title = stringResource(Res.string.Button_Send),
+            enabled = availability is NftTransferAvailability.Available,
+            onClick = { (availability as? NftTransferAvailability.Available)?.let(onSend) },
+        )
+        if (availability is NftTransferAvailability.Unavailable) {
+            subhead2_grey(text = stringResource(availability.reason.message))
+        }
+    }
+}
+
+private val NftTransferUnavailableReason.message: StringResource
+    get() = when (this) {
+        NftTransferUnavailableReason.OnSale -> Res.string.nft_transfer_on_sale
+        NftTransferUnavailableReason.WatchOnly -> Res.string.nft_transfer_watch_only
+        NftTransferUnavailableReason.NotOwner -> Res.string.nft_transfer_not_owner
+        NftTransferUnavailableReason.CheckFailed -> Res.string.nft_transfer_check_failed
+    }
 
 private val previewItem = previewNftItem("EQBx").copy(
     description = "A rare cat that lives on the TON blockchain.",
@@ -217,14 +260,18 @@ private val previewItem = previewNftItem("EQBx").copy(
 )
 
 @Composable
-private fun PreviewContent(hidden: Boolean) {
+private fun PreviewContent(
+    hidden: Boolean,
+    availability: NftTransferAvailability = NftTransferAvailability.Loading,
+) {
     ComposeAppTheme {
         NftPreviewScreen(
             item = previewItem,
-            uiState = NftPreviewUiState(hidden = hidden, canReveal = hidden),
+            uiState = NftPreviewUiState(hidden = hidden, canReveal = hidden, transferAvailability = availability),
             networkTitle = "TON",
             explorerUrl = "https://tonviewer.com/nft/EQBx",
             onArtworkClick = {},
+            onSend = {},
             onBack = {},
         )
     }
@@ -237,3 +284,10 @@ private fun NftPreviewScreenPreview() = PreviewContent(hidden = false)
 @Preview
 @Composable
 private fun NftPreviewScreenHiddenPreview() = PreviewContent(hidden = true)
+
+@Preview
+@Composable
+private fun NftPreviewScreenOnSalePreview() = PreviewContent(
+    hidden = false,
+    availability = NftTransferAvailability.Unavailable(NftTransferUnavailableReason.OnSale),
+)

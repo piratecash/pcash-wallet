@@ -4,8 +4,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import cash.p.terminal.core.nft.NftCollectionsRepository
 import cash.p.terminal.entities.NftItemRecord
+import cash.p.terminal.modules.nft.transfer.NftTransferPage
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.navigation.PageResumeEffect
 import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.ui_compose.components.rememberHudMessenger
 import org.koin.compose.koinInject
@@ -23,6 +25,8 @@ class NftPreviewPage(
         val repository: NftCollectionsRepository = koinInject()
         val hud = rememberHudMessenger()
 
+        PageResumeEffect(onResume = { viewModel.onResume(item) }, onPause = {})
+
         NftPreviewScreen(
             item = item,
             uiState = viewModel.uiState,
@@ -32,6 +36,7 @@ class NftPreviewPage(
                 hud.vibrate()
                 viewModel.onToggleReveal()
             },
+            onSend = { navigation.slideFromRight(NftTransferPage(item, it.wallet, it.domain)) },
             onBack = navigation::navigateUpSafely,
         )
     }

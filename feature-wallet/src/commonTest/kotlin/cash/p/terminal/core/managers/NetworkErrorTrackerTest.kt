@@ -158,6 +158,22 @@ class NetworkErrorTrackerTest {
     }
 
     @Test
+    fun sanitizeNetworkUrl_percentEncodedNftAddress_masksWholeHash() {
+        val hash = "a1b2c3d4".repeat(8)
+
+        val sanitized = sanitizeNetworkUrl("https://tonapi.io/v2/nfts/0%3A$hash")
+
+        assertEquals("https://tonapi.io/v2/redacted/redacted", sanitized)
+    }
+
+    @Test
+    fun sanitizeNetworkUrl_shortPercentEncodedSegment_keepsSegment() {
+        val url = "https://example.com/assets/a%20b/logo.png"
+
+        assertEquals(url, sanitizeNetworkUrl(url))
+    }
+
+    @Test
     fun sanitizeDiagnosticText_keyTokenInsideUrlPath_redactsBoth() {
         val text = sanitizeDiagnosticText("GET https://user:pass@host.example/uview1qqqabc?x=1 failed")
 

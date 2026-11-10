@@ -2386,4 +2386,16 @@
     <string name="nft_details">Detalhes</string>
     <string name="nft_owner">Proprietário</string>
     <string name="nft_empty_title">Os seus NFT aparecerão aqui</string>
+    <string name="nft_transfer_on_sale">O NFT está listado num mercado. Para o transferir, retire-o de venda</string>
+    <string name="nft_transfer_watch_only">As carteiras só de visualização não podem transferir NFT</string>
+    <string name="nft_transfer_not_owner">Este NFT já não pertence a esta carteira</string>
+    <string name="nft_transfer_check_failed">Não foi possível verificar se este NFT pode ser transferido. Tente novamente mais tarde</string>
+    <string name="nft_transfer_title">Transferir NFT</string>
+    <string name="nft_transfer_recipient_hint">Endereço ou domínio .ton</string>
+    <string name="nft_transfer_address_found">Endereço encontrado: %1$s</string>
+    <string name="nft_transfer_comment_label">Comentário (opcional)</string>
+    <string name="nft_transfer_comment_hint">Ficará visível para todos na blockchain</string>
+    <string name="nft_transfer_ton_balance">Saldo de TON</string>
+    <string name="nft_transfer_domain_warning">Após a transferência, o domínio será desassociado da sua carteira. As transferências para %1$s irão para o novo proprietário. A renovação do domínio passará a caber a ele.</string>
+    <string name="send_confirmation_domain">Domínio</string>
 </resources>

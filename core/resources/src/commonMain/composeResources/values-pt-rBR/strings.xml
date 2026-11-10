@@ -2386,4 +2386,16 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="nft_details">Detalhes</string>
     <string name="nft_owner">Proprietário</string>
     <string name="nft_empty_title">Seus NFTs aparecerão aqui</string>
+    <string name="nft_transfer_on_sale">O NFT está listado em um marketplace. Para transferi-lo, remova-o da venda</string>
+    <string name="nft_transfer_watch_only">Carteiras somente de visualização não podem transferir NFTs</string>
+    <string name="nft_transfer_not_owner">Este NFT não pertence mais a esta carteira</string>
+    <string name="nft_transfer_check_failed">Não foi possível verificar se este NFT pode ser transferido. Tente novamente mais tarde</string>
+    <string name="nft_transfer_title">Transferir NFT</string>
+    <string name="nft_transfer_recipient_hint">Endereço ou domínio .ton</string>
+    <string name="nft_transfer_address_found">Endereço encontrado: %1$s</string>
+    <string name="nft_transfer_comment_label">Comentário (opcional)</string>
+    <string name="nft_transfer_comment_hint">Ficará visível para todos na blockchain</string>
+    <string name="nft_transfer_ton_balance">Saldo de TON</string>
+    <string name="nft_transfer_domain_warning">Após a transferência, o domínio será desvinculado da sua carteira. As transferências para %1$s irão para o novo proprietário. A renovação do domínio ficará por conta dele.</string>
+    <string name="send_confirmation_domain">Domínio</string>
 </resources>

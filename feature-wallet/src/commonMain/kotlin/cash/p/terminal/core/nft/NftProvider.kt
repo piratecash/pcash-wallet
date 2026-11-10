@@ -26,6 +26,8 @@ data class NftItemRecordDraft(
     val largeImageUrl: String?,
 )
 
+data class NftLiveState(val ownerAddress: String?, val isOnSale: Boolean, val domain: String?)
+
 interface NftProvider {
     val blockchainType: BlockchainType
     val networkTitle: String
@@ -37,4 +39,7 @@ interface NftProvider {
 
     /** Null means the source is not available now, which is not the same as owning nothing. */
     suspend fun fetch(address: String): List<NftItemRecordDraft>?
+
+    /** Reads the item from the network; null means the source is not available now. */
+    suspend fun liveState(ownerAddress: String, nftAddress: String): NftLiveState?
 }

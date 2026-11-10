@@ -179,7 +179,7 @@ private val SECRET_QUERY_PARAM =
     Regex("([?&](?:apikey|api_key|apiKey|key|token|secret|access_token)=)[^&#\\s]*", RegexOption.IGNORE_CASE)
 
 // A long opaque path segment (e.g. Infura/Alchemy key in the path) — redact it.
-private val SECRET_PATH_SEGMENT = Regex("/[A-Za-z0-9_-]{20,}")
+private val SECRET_PATH_SEGMENT = Regex("/[A-Za-z0-9_%-]{20,}")
 
 // The segment following a version prefix (`/v2/<key>`, `/v3/<key>`) is redacted regardless of
 // length — short custom-RPC keys would slip past the long-token rule otherwise.

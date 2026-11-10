@@ -395,6 +395,11 @@ interface ISendTonAdapter : IBalanceAdapter {
     suspend fun estimateFee(amount: BigDecimal, address: FriendlyAddress, memo: String?): TonFeeEstimate
     suspend fun estimateFeeWithPayload(amount: BigInteger, address: String, payload: String): TonFeeEstimate
     suspend fun fetchOfflineAnchor(): TonOfflineAnchor
+    suspend fun sendNftTransfer(nftAddress: String, address: FriendlyAddress, comment: String?)
+    suspend fun estimateNftTransferFee(nftAddress: String, address: FriendlyAddress, comment: String?): TonFeeEstimate
+
+    /** Blocking network call: run off the main thread. */
+    fun resolveDomain(domain: String): FriendlyAddress?
 }
 
 interface ISendMemoAdapter : IBalanceAdapter {

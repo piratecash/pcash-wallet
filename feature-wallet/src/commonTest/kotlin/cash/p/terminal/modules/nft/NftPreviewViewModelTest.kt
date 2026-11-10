@@ -1,8 +1,12 @@
 package cash.p.terminal.modules.nft
 
+import cash.p.terminal.entities.NftItemRecord
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,7 +36,47 @@ class NftPreviewViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun createViewModel() = NftPreviewViewModel(NftCollectionSource.AllWallets, hiddenManager)
+    private val availabilityProvider = mockk<NftTransferAvailabilityProvider>()
+    private val item = mockk<NftItemRecord>()
+
+    private fun createViewModel() =
+        NftPreviewViewModel(NftCollectionSource.AllWallets, hiddenManager, availabilityProvider)
+
+    @Test
+    fun onResume_checkCompletes_showsResult() {
+        val onSale = NftTransferAvailability.Unavailable(NftTransferUnavailableReason.OnSale)
+        coEvery { availabilityProvider.check(item) } returns onSale
+        val viewModel = createViewModel()
+
+        viewModel.onResume(item)
+
+        assertEquals(onSale, viewModel.uiState.transferAvailability)
+    }
+
+    @Test
+    fun onResume_secondResume_showsLoadingUntilNewResult() {
+        val gate = CompletableDeferred<NftTransferAvailability>()
+        coEvery { availabilityProvider.check(item) } returns NftTransferAvailability.Hidden coAndThen { gate.await() }
+        val viewModel = createViewModel()
+        viewModel.onResume(item)
+        assertEquals(NftTransferAvailability.Hidden, viewModel.uiState.transferAvailability)
+
+        viewModel.onResume(item)
+
+        assertEquals(NftTransferAvailability.Loading, viewModel.uiState.transferAvailability)
+        coVerify(exactly = 2) { availabilityProvider.check(item) }
+    }
+
+    @Test
+    fun hiddenFlow_changesAfterCheck_keepsTransferAvailability() {
+        coEvery { availabilityProvider.check(item) } returns NftTransferAvailability.Hidden
+        val viewModel = createViewModel()
+        viewModel.onResume(item)
+
+        hiddenState.value = false
+
+        assertEquals(NftTransferAvailability.Hidden, viewModel.uiState.transferAvailability)
+    }
 
     @Test
     fun init_balanceHidden_startsHiddenAndRevealable() {

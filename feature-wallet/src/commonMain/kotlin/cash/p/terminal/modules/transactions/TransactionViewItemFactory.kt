@@ -538,9 +538,10 @@ class TransactionViewItemFactory(
             )
 
             is TonTransactionRecord -> {
+                // An NFT quantity of 1 would otherwise match a provider swap of 1 TON.
                 tryConvertToUserSwapProviderViewItemSwap(
                     transactionItem = transactionItem,
-                    token = record.token,
+                    token = record.token.takeUnless { record.isNftOnly },
                     isIncoming = record.actions.singleOrNull()?.type is TonTransactionRecord.Action.Type.Receive,
                     matchedSwap = matchedSwap,
                     onChainProgress = progress,
@@ -786,7 +787,7 @@ class TransactionViewItemFactory(
                         mapped(actionType.to, record.blockchainType)
                     )
 
-                    primaryValue = getColoredValue(actionType.value, ColorName.Lucian)
+                    primaryValue = tonTransferColoredValue(actionType.value, ColorName.Lucian)
 
                     sentToSelf = actionType.sentToSelf
 
@@ -800,7 +801,7 @@ class TransactionViewItemFactory(
                         mapped(actionType.from, record.blockchainType)
                     )
 
-                    primaryValue = getColoredValue(actionType.value, ColorName.Remus)
+                    primaryValue = tonTransferColoredValue(actionType.value, ColorName.Remus)
                     iconX = singleValueIconType(actionType.value)
                 }
 
@@ -1289,6 +1290,9 @@ class TransactionViewItemFactory(
 
     private fun getSwapTitleStringRes(isFailed: Boolean): StringResource =
         if (isFailed) Res.string.transactions_swap_failed else Res.string.Transactions_Swap
+
+    private fun tonTransferColoredValue(value: TransactionValue, color: ColorName): ColoredValue =
+        if (value is TransactionValue.NftValue) ColoredValue(value.coinCode, color) else getColoredValue(value, color)
 
     private fun getColoredValue(
         value: Any,

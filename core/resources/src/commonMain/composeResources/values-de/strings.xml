@@ -2372,4 +2372,16 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="nft_details">Details</string>
     <string name="nft_owner">Besitzer</string>
     <string name="nft_empty_title">Hier erscheinen Ihre NFTs</string>
+    <string name="nft_transfer_on_sale">Das NFT ist auf einem Marktplatz gelistet. Nehmen Sie es aus dem Verkauf, um es zu übertragen</string>
+    <string name="nft_transfer_watch_only">Mit einer reinen Beobachtungs-Wallet können keine NFTs übertragen werden</string>
+    <string name="nft_transfer_not_owner">Dieses NFT gehört nicht mehr zu dieser Wallet</string>
+    <string name="nft_transfer_check_failed">Es konnte nicht geprüft werden, ob dieses NFT übertragen werden kann. Versuchen Sie es später erneut</string>
+    <string name="nft_transfer_title">NFT übertragen</string>
+    <string name="nft_transfer_recipient_hint">Adresse oder .ton-Domain</string>
+    <string name="nft_transfer_address_found">Adresse gefunden: %1$s</string>
+    <string name="nft_transfer_comment_label">Kommentar (optional)</string>
+    <string name="nft_transfer_comment_hint">Für alle in der Blockchain sichtbar</string>
+    <string name="nft_transfer_ton_balance">TON-Guthaben</string>
+    <string name="nft_transfer_domain_warning">Nach der Übertragung wird die Domain von deiner Wallet getrennt. Überweisungen an %1$s gehen an den neuen Eigentümer. Die Domain muss dann er verlängern.</string>
+    <string name="send_confirmation_domain">Domain</string>
 </resources>

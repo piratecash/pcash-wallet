@@ -12,6 +12,7 @@ import cash.p.terminal.wallet.entities.tonAsset
 import co.touchlab.kermit.Logger
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.entities.BlockchainType
+import io.horizontalsystems.tonkit.Address
 import io.horizontalsystems.tonkit.core.TonKit
 import io.horizontalsystems.tonkit.models.NftItem
 import io.horizontalsystems.tonkit.models.NftPreview
@@ -67,6 +68,11 @@ class TonNftProvider(
         tonKitManager.startedKitsFlow.value.kitOwnedBy(address)
             ?.nftItems()
             ?.mapNotNull { it.toDraftOrNull() }
+
+    override suspend fun liveState(ownerAddress: String, nftAddress: String): NftLiveState? =
+        tonKitManager.startedKitsFlow.value.kitOwnedBy(ownerAddress)
+            ?.nftItem(Address.parse(nftAddress))
+            ?.let { NftLiveState(it.ownerAddress, it.isOnSale, it.dns.sanitized(NAME_MAX_LENGTH)) }
 
     // The failure's message can carry the account id, so only its type is logged.
     private fun receiveAddressOrNull(account: Account, version: TonWalletVersion): String? = try {

@@ -16,6 +16,8 @@ import cash.p.terminal.wallet.IAdapter
 import cash.p.terminal.wallet.IBalanceAdapter
 import cash.p.terminal.wallet.IReceiveAdapter
 import com.tonapps.wallet.data.core.entity.SendRequestEntity
+import io.horizontalsystems.tonkit.Address
+import io.horizontalsystems.tonkit.FriendlyAddress
 import io.horizontalsystems.tonkit.models.Network
 import io.horizontalsystems.tonkit.models.RawMessageBroadcastMetadata
 import io.horizontalsystems.tonkit.models.RawMessageBroadcastStatus
@@ -50,6 +52,15 @@ abstract class BaseTonAdapter(
 
     suspend fun estimateFeeWithPayload(amount: BigInteger, address: String, payload: String): TonFeeEstimate =
         tonKit.estimateFee(payloadRequest(amount, address, payload)).toAppEstimate()
+
+    suspend fun sendNftTransfer(nftAddress: String, address: FriendlyAddress, comment: String?) {
+        tonKit.sendNftTransfer(Address.parse(nftAddress), address, comment)
+    }
+
+    suspend fun estimateNftTransferFee(nftAddress: String, address: FriendlyAddress, comment: String?): TonFeeEstimate =
+        tonKit.estimateNftTransferFee(Address.parse(nftAddress), address, comment).toAppEstimate()
+
+    fun resolveDomain(domain: String): FriendlyAddress? = tonKit.resolveDomain(domain)
 
     private fun payloadRequest(amount: BigInteger, address: String, payload: String) = SendRequestEntity(
         data = JSONObject().apply {

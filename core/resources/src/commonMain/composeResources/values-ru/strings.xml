@@ -2562,4 +2562,16 @@
     <string name="nft_details">Детали</string>
     <string name="nft_owner">Владелец</string>
     <string name="nft_empty_title">Здесь появятся ваши NFT</string>
+    <string name="nft_transfer_on_sale">NFT выставлен на маркетплейсе. Для передачи снимите с продажи</string>
+    <string name="nft_transfer_watch_only">С кошелька только для просмотра нельзя передать NFT</string>
+    <string name="nft_transfer_not_owner">Этот NFT больше не принадлежит кошельку</string>
+    <string name="nft_transfer_check_failed">Не удалось проверить, можно ли передать этот NFT. Попробуйте позже</string>
+    <string name="nft_transfer_title">Передача NFT</string>
+    <string name="nft_transfer_recipient_hint">Адрес или домен .ton</string>
+    <string name="nft_transfer_address_found">Адрес найден: %1$s</string>
+    <string name="nft_transfer_comment_label">Комментарий (необязательно)</string>
+    <string name="nft_transfer_comment_hint">Будет виден всем в блокчейне</string>
+    <string name="nft_transfer_ton_balance">Баланс TON</string>
+    <string name="nft_transfer_domain_warning">После передачи домен отвяжется от вашего кошелька. Переводы на %1$s пойдут новому владельцу. Продлевать домен придётся уже ему.</string>
+    <string name="send_confirmation_domain">Домен</string>
 </resources>

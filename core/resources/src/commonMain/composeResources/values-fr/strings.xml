@@ -2384,4 +2384,16 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="nft_details">Détails</string>
     <string name="nft_owner">Propriétaire</string>
     <string name="nft_empty_title">Vos NFT apparaîtront ici</string>
+    <string name="nft_transfer_on_sale">Ce NFT est en vente sur une place de marché. Pour le transférer, retirez-le de la vente</string>
+    <string name="nft_transfer_watch_only">Les portefeuilles en lecture seule ne peuvent pas transférer de NFT</string>
+    <string name="nft_transfer_not_owner">Ce portefeuille ne possède plus ce NFT</string>
+    <string name="nft_transfer_check_failed">Impossible de vérifier si ce NFT peut être transféré. Réessayez plus tard</string>
+    <string name="nft_transfer_title">Transférer le NFT</string>
+    <string name="nft_transfer_recipient_hint">Adresse ou domaine .ton</string>
+    <string name="nft_transfer_address_found">Adresse trouvée : %1$s</string>
+    <string name="nft_transfer_comment_label">Commentaire (facultatif)</string>
+    <string name="nft_transfer_comment_hint">Visible par tous sur la blockchain</string>
+    <string name="nft_transfer_ton_balance">Solde TON</string>
+    <string name="nft_transfer_domain_warning">Après le transfert, le domaine sera dissocié de votre portefeuille. Les transferts vers %1$s iront au nouveau propriétaire. C\u0027est lui qui devra renouveler le domaine.</string>
+    <string name="send_confirmation_domain">Domaine</string>
 </resources>

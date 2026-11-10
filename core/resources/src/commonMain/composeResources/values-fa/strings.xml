@@ -2384,4 +2384,16 @@
     <string name="nft_details">جزئیات</string>
     <string name="nft_owner">مالک</string>
     <string name="nft_empty_title">NFTهای شما اینجا نمایش داده می‌شوند</string>
+    <string name="nft_transfer_on_sale">این NFT در بازارگاه فهرست شده است. برای انتقال، آن را از فروش خارج کنید</string>
+    <string name="nft_transfer_watch_only">کیف پول‌های فقط مشاهده نمی‌توانند NFT انتقال دهند</string>
+    <string name="nft_transfer_not_owner">این NFT دیگر متعلق به این کیف پول نیست</string>
+    <string name="nft_transfer_check_failed">بررسی امکان انتقال این NFT انجام نشد. بعداً دوباره تلاش کنید</string>
+    <string name="nft_transfer_title">انتقال NFT</string>
+    <string name="nft_transfer_recipient_hint">آدرس یا دامنه .ton</string>
+    <string name="nft_transfer_address_found">آدرس پیدا شد: %1$s</string>
+    <string name="nft_transfer_comment_label">نظر (اختیاری)</string>
+    <string name="nft_transfer_comment_hint">برای همه در بلاک‌چین قابل مشاهده است</string>
+    <string name="nft_transfer_ton_balance">موجودی TON</string>
+    <string name="nft_transfer_domain_warning">پس از انتقال، دامنه از کیف پول شما جدا می‌شود. انتقال‌ها به %1$s به مالک جدید می‌رسد. تمدید دامنه بر عهده او خواهد بود.</string>
+    <string name="send_confirmation_domain">دامنه</string>
 </resources>

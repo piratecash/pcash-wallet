@@ -1,6 +1,7 @@
 package cash.p.terminal.modules.address
 
 import com.unstoppabledomains.resolution.Resolution
+import cash.p.terminal.core.ISendTonAdapter
 import cash.p.terminal.core.adapters.zcash.isValidZcashAddress
 import cash.p.terminal.entities.Address
 import cash.p.terminal.entities.BitcoinAddress
@@ -12,6 +13,7 @@ import io.horizontalsystems.ethereumkit.core.AddressValidator
 import io.horizontalsystems.ethereumkit.ens.EnsResolver
 import io.horizontalsystems.core.entities.BlockchainType
 import cash.p.terminal.wallet.entities.TokenQuery
+import cash.p.terminal.wallet.title
 import cash.p.terminal.wallet.entities.TokenType
 import com.m2049r.xmrwallet.model.Wallet
 import io.horizontalsystems.stellarkit.StellarKit
@@ -298,6 +300,20 @@ class AddressHandlerTron : IAddressHandler {
     override fun parseAddress(value: String): Address {
         val tronAddress = io.horizontalsystems.tronkit.models.Address.fromBase58(value)
         return Address(tronAddress.base58, blockchainType = blockchainType)
+    }
+}
+
+class AddressHandlerTonDns(private val adapter: ISendTonAdapter) : IAddressHandler {
+    override val blockchainType = BlockchainType.Ton
+
+    override fun isSupported(value: String) = value.endsWith(".ton", ignoreCase = true)
+
+    override fun parseAddress(value: String): Address {
+        val domain = value.lowercase()
+        val resolved = adapter.resolveDomain(domain)
+            ?: throw AddressValidationException.Invalid(Throwable("Domain is not resolved"), blockchainType.title)
+        val friendly = resolved.addrStd.toString(userFriendly = true, bounceable = resolved.isBounceable)
+        return Address(friendly, domain, blockchainType)
     }
 }
 

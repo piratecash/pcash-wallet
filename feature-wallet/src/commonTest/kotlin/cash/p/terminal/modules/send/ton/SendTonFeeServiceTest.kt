@@ -4,6 +4,7 @@ import cash.p.terminal.core.ISendTonAdapter
 import cash.p.terminal.core.TonFeeEstimate
 import io.horizontalsystems.tonkit.FriendlyAddress
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -50,10 +51,31 @@ class SendTonFeeServiceTest {
         assertEquals(BigDecimal.TEN, recovered.quote?.amount)
     }
 
-    private suspend fun awaitState(predicate: (SendTonFeeService.State) -> Boolean) =
-        withTimeout(TIMEOUT_MS) { service.stateFlow.first(predicate) }
+    @Test
+    fun estimateFee_nftEstimator_quotesNftTransferInsteadOfCoinSend() = runBlocking {
+        coEvery { adapter.estimateNftTransferFee(NFT, address, "hi") } returns estimate
+
+        SendTonFeeService(NftTransferFeeEstimator(adapter, NFT)).use { nftService ->
+            nftService.setTonAddress(address)
+            nftService.setMemo("hi")
+            nftService.setAmount(ATTACHED)
+
+            val state = awaitState(nftService) { it.feeStatus is FeeStatus.Success && !it.inProgress }
+
+            assertEquals(FeeStatus.Success(estimate.fee, estimate.requiredTon), state.feeStatus)
+            assertEquals(TonFeeQuote(estimate.fee, ATTACHED, address, "hi"), state.quote)
+        }
+        coVerify(exactly = 0) { adapter.estimateFee(any(), any(), any()) }
+    }
+
+    private suspend fun awaitState(
+        target: SendTonFeeService = service,
+        predicate: (SendTonFeeService.State) -> Boolean,
+    ) = withTimeout(TIMEOUT_MS) { target.stateFlow.first(predicate) }
 
     private companion object {
         const val TIMEOUT_MS = 10_000L
+        const val NFT = "nft-address"
+        val ATTACHED = BigDecimal("0.05")
     }
 }

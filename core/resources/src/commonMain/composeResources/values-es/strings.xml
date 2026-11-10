@@ -2378,4 +2378,16 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="nft_details">Detalles</string>
     <string name="nft_owner">Propietario</string>
     <string name="nft_empty_title">Aquí aparecerán tus NFT</string>
+    <string name="nft_transfer_on_sale">El NFT está publicado en un mercado. Para transferirlo, retíralo de la venta</string>
+    <string name="nft_transfer_watch_only">Las billeteras de solo lectura no pueden transferir NFT</string>
+    <string name="nft_transfer_not_owner">Este NFT ya no pertenece a esta billetera</string>
+    <string name="nft_transfer_check_failed">No se pudo comprobar si este NFT se puede transferir. Inténtalo más tarde</string>
+    <string name="nft_transfer_title">Transferir NFT</string>
+    <string name="nft_transfer_recipient_hint">Dirección o dominio .ton</string>
+    <string name="nft_transfer_address_found">Dirección encontrada: %1$s</string>
+    <string name="nft_transfer_comment_label">Comentario (opcional)</string>
+    <string name="nft_transfer_comment_hint">Será visible para todos en la blockchain</string>
+    <string name="nft_transfer_ton_balance">Saldo de TON</string>
+    <string name="nft_transfer_domain_warning">Tras la transferencia, el dominio se desvinculará de tu billetera. Las transferencias a %1$s irán al nuevo propietario. Renovar el dominio pasará a ser cosa suya.</string>
+    <string name="send_confirmation_domain">Dominio</string>
 </resources>

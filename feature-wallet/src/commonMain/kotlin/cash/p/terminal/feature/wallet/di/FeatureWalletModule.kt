@@ -64,6 +64,7 @@ import cash.p.terminal.modules.intro.IntroViewModel
 import cash.p.terminal.modules.markdown.MarkdownViewModel
 import cash.p.terminal.modules.nft.NftCollectionsViewModel
 import cash.p.terminal.modules.nft.NftPreviewViewModel
+import cash.p.terminal.modules.nft.NftTransferAvailabilityProvider
 import cash.p.terminal.modules.manageaccount.ManageAccountViewModel
 import cash.p.terminal.modules.manageaccount.backupconfirmkey.BackupConfirmKeyViewModel
 import cash.p.terminal.modules.manageaccount.backupkey.BackupKeyViewModel
@@ -303,6 +304,9 @@ import cash.p.terminal.core.ISendBitcoinAdapter
 import cash.p.terminal.core.utils.AddressUriParser
 import cash.p.terminal.entities.Address
 import cash.p.terminal.modules.address.AddressParserViewModel
+import cash.p.terminal.core.ISendTonAdapter
+import cash.p.terminal.modules.address.NftTransferAddressQualifier
+import cash.p.terminal.modules.address.nftTransferAddressViewModel
 import cash.p.terminal.modules.address.tokenAddressViewModel
 import cash.p.terminal.modules.amount.AmountInputViewModel2
 import cash.p.terminal.modules.amount.amountInputModeViewModel
@@ -437,6 +441,7 @@ val featureWalletModule = module {
     singleOf(::NftItemStorage)
     singleOf(::TonNftProvider) bind NftProvider::class
     single { NftCollectionsRepository(get(), getAll(), get(), get()) }
+    singleOf(::NftTransferAvailabilityProvider)
     factoryOf(::SwapProviderTransactionsStorage)
     factoryOf(::SwapTransactionMatcher)
     singleOf(::ContactsRepository)
@@ -499,7 +504,7 @@ val featureWalletModule = module {
 
     viewModel { (url: String) -> MarkdownViewModel(url, get(), get()) }
     viewModel { params -> NftCollectionsViewModel(params.get(), get(), get(), get()) }
-    viewModel { params -> NftPreviewViewModel(params.get(), get()) }
+    viewModel { params -> NftPreviewViewModel(params.get(), get(), get()) }
     viewModelOf(::IntroViewModel)
     viewModelOf(::BackupAlertViewModel)
     viewModelOf(::CreateAdvancedAccountViewModel)
@@ -669,6 +674,7 @@ val featureWalletModule = module {
     viewModel { (tokenQuery: TokenQuery, coinCode: String, initial: Address?) ->
         tokenAddressViewModel(tokenQuery, coinCode, initial)
     }
+    viewModel(NftTransferAddressQualifier) { (adapter: ISendTonAdapter) -> nftTransferAddressViewModel(adapter) }
     viewModel { params -> sendBitcoinViewModel(params[0], params[1], params[2], params[3]) }
     viewModel { params -> sendZCashViewModel(params[0], params[1], params[2], params[3]) }
     viewModel { params -> sendEvmViewModel(params[0], params[1], params[2], params[3]) }

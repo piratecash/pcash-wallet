@@ -2381,4 +2381,16 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="nft_details">Ayrıntılar</string>
     <string name="nft_owner">Sahip</string>
     <string name="nft_empty_title">NFT\u0027leriniz burada görünecek</string>
+    <string name="nft_transfer_on_sale">NFT bir pazar yerinde listelenmiş. Aktarmak için satıştan kaldırın</string>
+    <string name="nft_transfer_watch_only">Yalnızca izleme cüzdanları NFT aktaramaz</string>
+    <string name="nft_transfer_not_owner">Bu NFT artık bu cüzdana ait değil</string>
+    <string name="nft_transfer_check_failed">Bu NFT aktarılabilir mi kontrol edilemedi. Daha sonra tekrar deneyin</string>
+    <string name="nft_transfer_title">NFT aktar</string>
+    <string name="nft_transfer_recipient_hint">Adres veya .ton alan adı</string>
+    <string name="nft_transfer_address_found">Adres bulundu: %1$s</string>
+    <string name="nft_transfer_comment_label">Yorum (isteğe bağlı)</string>
+    <string name="nft_transfer_comment_hint">Blokzincirde herkes görebilir</string>
+    <string name="nft_transfer_ton_balance">TON bakiyesi</string>
+    <string name="nft_transfer_domain_warning">Aktarımdan sonra alan adının cüzdanınızla bağlantısı kesilir. %1$s adresine yapılan aktarımlar yeni sahibine gider. Alan adını yenilemek de ona düşer.</string>
+    <string name="send_confirmation_domain">Alan adı</string>
 </resources>
