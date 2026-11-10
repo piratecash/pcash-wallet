@@ -77,6 +77,11 @@ class PendingMultiSwapStorage(
             dao.setLeg1InfoRecordUid(id, recordUid)
         }
 
+    suspend fun moveLeg1RecordUid(fromUids: List<String>, toUid: String) =
+        withContext(dispatcherProvider.io) {
+            dao.moveLeg1RecordUid(fromUids, toUid)
+        }
+
     suspend fun delete(id: String) = withContext(dispatcherProvider.io) {
         dao.delete(id)
     }

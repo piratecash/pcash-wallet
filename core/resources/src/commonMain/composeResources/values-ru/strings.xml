@@ -807,6 +807,8 @@
     <string name="TransactionInfo_Date">Дата</string>
     <string name="transaction_info_sync_source">Источник синхронизации</string>
     <string name="TransactionInfo_Id">ID Транзакции</string>
+    <string name="transaction_info_replaces_transaction">Заменяет транзакцию</string>
+    <string name="transaction_info_replaced_by_transaction">Заменена транзакцией</string>
     <string name="TransactionInfo_Service">Сервис</string>
     <string name="TransactionInfo_RawTransaction">Неподтвержденная транзакция</string>
     <string name="TransactionInfo_ContactName">Имя контакта</string>
@@ -1503,6 +1505,7 @@
     <string name="Tor_Connection_Disable">Отключить Tor</string>
     <string name="Tor_Alert_Title">Доступ в интернет</string>
     <string name="TorPage_Connecting">Подключение Tor…</string>
+    <string name="TorPage_ConnectingProgress">Подключение Tor… %1$d%</string>
     <string name="TorPage_Failed">Не удалось подключиться к Tor</string>
     <string name="Tor_TorIsActive">Tor активен</string>
     <!--Coin Page-->

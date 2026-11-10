@@ -77,13 +77,17 @@ class PinComponent(
     override val isPinSet: Boolean
         get() = pinManager.isPinSet
 
-    override fun getDuressLevel(): Int {
-        val level = userManager.getUserLevel() + 1
+    override fun getDuressLevel(): Int =
+        checkNotNull(duressLevelOrNull()) { "Duress PIN is unavailable at user level ${userManager.getUserLevel()}" }
+
+    override fun isDuressAvailable(): Boolean = duressLevelOrNull() != null
+
+    private fun duressLevelOrNull(): Int? {
+        val userLevel = userManager.getUserLevel()
+        // Above a hidden wallet lies the main level or another hidden wallet, never a duress level
+        if (userLevel < 0) return null
         // Cap duress level to prevent reaching reserved levels
-        if (level >= PinLevels.SECURE_RESET) {
-            throw IllegalStateException("Cannot create duress PIN: too many duress levels")
-        }
-        return level
+        return (userLevel + 1).takeIf { it < PinLevels.SECURE_RESET }
     }
 
     override fun isUnique(pin: String, forDuress: Boolean): Boolean {
@@ -113,10 +117,14 @@ class PinComponent(
     }
 
     override fun isDuressPinSet(): Boolean {
-        return tryOrNull { pinManager.isPinSetForLevel(getDuressLevel()) } ?: false
+        return duressLevelOrNull()?.let(pinManager::isPinSetForLevel) ?: false
     }
 
+    // A hidden wallet is reachable only through its own PIN, so removing it would orphan the wallet
+    override fun canDisablePin(): Boolean = userManager.getUserLevel() >= 0
+
     override fun disablePin() {
+        if (!canDisablePin()) return
         pinManager.disablePin(userManager.getUserLevel())
         userManager.disallowAccountsForDuress()
     }

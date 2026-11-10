@@ -8,17 +8,15 @@ import cash.p.terminal.manager.ITorConnectionStatusUseCase.*
 import cash.p.terminal.manager.TorViewState
 import cash.p.terminal.modules.settings.security.tor.TorStatus
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 
 class TorConnectionStatusUseCase(
     private val torManager: ITorManager,
     private val connectivityManager: ConnectivityManager
 ): ITorConnectionStatusUseCase {
 
-    override val torViewState: Flow<TorViewState> = torManager.torStatusFlow
-        .map { torStatus ->
-            createTorViewState(torStatus)
-        }
+    override val torViewState: Flow<TorViewState> =
+        combine(torManager.torStatusFlow, torManager.bootstrapProgressFlow, ::createTorViewState)
 
     override fun restartTor(): RestartResult {
         return if (connectivityManager.isConnected.value) {
@@ -29,7 +27,7 @@ class TorConnectionStatusUseCase(
         }
     }
 
-    private fun createTorViewState(torStatus: TorStatus): TorViewState {
+    private fun createTorViewState(torStatus: TorStatus, bootstrapProgress: Int?): TorViewState {
         val isConnected = connectivityManager.isConnected.value
         val torIsActive = torStatus == TorStatus.Connected
         val showRetryButton = torStatus == TorStatus.Failed
@@ -45,7 +43,8 @@ class TorConnectionStatusUseCase(
             stateText = stateText,
             showRetryButton = showRetryButton,
             torIsActive = torIsActive,
-            showNetworkConnectionError = showNoNetworkConnectionError
+            showNetworkConnectionError = showNoNetworkConnectionError,
+            bootstrapProgress = bootstrapProgress
         )
     }
 }

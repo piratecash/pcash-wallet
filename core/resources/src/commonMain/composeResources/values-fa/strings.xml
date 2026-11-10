@@ -803,6 +803,8 @@
     <string name="TransactionInfo_Date">تاریخ</string>
     <string name="transaction_info_sync_source">منبع همگام‌سازی</string>
     <string name="TransactionInfo_Id">شناسه</string>
+    <string name="transaction_info_replaces_transaction">جایگزین تراکنش</string>
+    <string name="transaction_info_replaced_by_transaction">جایگزین‌شده با تراکنش</string>
     <string name="TransactionInfo_Service">خدمات</string>
     <string name="TransactionInfo_RawTransaction">تراکنش خام</string>
     <string name="TransactionInfo_ContactName">Contact Name</string>
@@ -1480,6 +1482,7 @@
     <string name="Tor_Connection_Disable">Tor را غیرفعال کنید</string>
     <string name="Tor_Alert_Title">اینترنت</string>
     <string name="TorPage_Connecting">Connecting Tor…</string>
+    <string name="TorPage_ConnectingProgress">در حال اتصال Tor… %1$d%</string>
     <string name="TorPage_Failed">Failed to Connect Tor</string>
     <string name="Tor_TorIsActive">Tor is active</string>
     <!--Coin Page-->

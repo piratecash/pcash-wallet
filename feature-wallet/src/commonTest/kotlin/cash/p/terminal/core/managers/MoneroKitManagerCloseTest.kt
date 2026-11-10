@@ -36,7 +36,7 @@ class MoneroKitManagerCloseTest : MoneroKitManagerTestFixture() {
         coVerify(exactly = 0) { next.start() }
         closing.complete(Unit)
         assertSame(next, switching.await())
-        coVerify(exactly = 1) { mockWrapper.close() }
+        coVerify(exactly = 1) { mockWrapper.release() }
     }
 
     @Test
@@ -77,10 +77,10 @@ class MoneroKitManagerCloseTest : MoneroKitManagerTestFixture() {
         launch { manager.startForPolling() }
         val switching = async { manager.getMoneroKitWrapper(otherAccount) }
 
-        coVerify(exactly = 0) { mockWrapper.close() }
+        coVerify(exactly = 0) { mockWrapper.release() }
         resumed.complete(true)
         switching.await()
-        coVerify(exactly = 1) { mockWrapper.close() }
+        coVerify(exactly = 1) { mockWrapper.release() }
     }
 
     @Test
@@ -93,7 +93,7 @@ class MoneroKitManagerCloseTest : MoneroKitManagerTestFixture() {
         assertSame(account, manager.currentAccount)
         clearMocks(mockWrapper, answers = false)
         networkAvailability.emit(true)
-        coVerify(exactly = 1) { mockWrapper.refresh() }
+        coVerify(exactly = 1) { mockWrapper.syncUnattended() }
 
         assertSame(next, manager.getMoneroKitWrapper(otherAccount))
         assertEquals(2, closeAttempts)
@@ -101,7 +101,7 @@ class MoneroKitManagerCloseTest : MoneroKitManagerTestFixture() {
 
     // The open wallet belongs to [account]; [close] stands in for its native close.
     private fun switchingManager(next: MoneroKitWrapper, close: suspend () -> Unit): MoneroKitManager {
-        coEvery { mockWrapper.close() } coAnswers { close() }
+        coEvery { mockWrapper.release() } coAnswers { close() }
         return createKitInstanceSpy(MutableStateFlow(BackgroundManagerState.EnterForeground), next).also {
             it.moneroKitWrapper = mockWrapper
             setField(it, "currentAccount", account)

@@ -50,6 +50,7 @@ import java.io.File
 import java.io.IOException
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 
 class ResetUseCaseTest {
     @get:Rule val temporaryFolder = TemporaryFolder()
@@ -252,6 +253,20 @@ class ResetUseCaseTest {
             preflight.finishExplicitReset()
         }
         verify { context.deleteDatabase("logging_database") }
+    }
+
+    @Test
+    fun invoke_torDataPresent_deletesTorServiceAndLegacyDataDirs() = runTest {
+        prepareFilePurge()
+        val torServiceDir = temporaryFolder.newFolder("app_TorService").also { File(it, "state").writeText("tor") }
+        val legacyDataDir = temporaryFolder.newFolder("app_data").also { File(it, "cached-certs").writeText("tor") }
+        every { context.getDir("TorService", Context.MODE_PRIVATE) } returns torServiceDir
+        every { context.getDir("data", Context.MODE_PRIVATE) } returns legacyDataDir
+
+        reset()()
+
+        assertFalse(torServiceDir.exists())
+        assertFalse(legacyDataDir.exists())
     }
 
     @Test

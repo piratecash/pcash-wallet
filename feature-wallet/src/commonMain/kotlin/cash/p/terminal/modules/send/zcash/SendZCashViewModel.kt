@@ -84,7 +84,7 @@ class SendZCashViewModel(
         )
     }
 
-    private val fee = adapter.fee
+    private val feeQuote = ZcashSendFeeQuote(adapter)
     private var amountState = amountService.stateFlow.value
     private var addressState = addressService.stateFlow.value
     private var memoState = memoService.stateFlow.value
@@ -116,12 +116,11 @@ class SendZCashViewModel(
         memoService.stateFlow.collectWith(viewModelScope) {
             handleUpdatedMemoState(it)
         }
-        adapter.balanceUpdatedFlow.collectWith(viewModelScope) {
-            updateAvailableBalance()
+        feeQuote.start(viewModelScope)
+        feeQuote.availableBalance.collectWith(viewModelScope) {
+            amountService.updateAvailableBalance(it)
         }
-        // The flow is hot: a maximum published before this subscription would be lost.
-        updateAvailableBalance()
-        fee.collectWith(viewModelScope) {
+        feeQuote.quote.collectWith(viewModelScope) {
             emitState()
         }
         viewModelScope.launch {
@@ -129,25 +128,31 @@ class SendZCashViewModel(
         }
     }
 
+    val confirmationSendEnabled: Boolean
+        get() = isEffectivelySynced && uiState.canBeSend
+
+    /** A sent transaction spends the balance, which must not read as an error on its own screen. */
+    val confirmationCaution: HSCaution?
+        get() = uiState.amountCaution.takeIf { sendResult == null || sendResult is SendResult.Failed }
+
     override fun createState(): SendZCashUiState {
         val poison = isAddressSuspicious(addressState.address?.hex)
+        val quote = feeQuote.quote.value
         return SendZCashUiState(
-            fee = fee.value,
+            fee = quote.fee,
             availableBalance = amountState.availableBalance,
             addressError = addressState.addressError,
-            amountCaution = amountState.amountCaution,
+            amountCaution = amountState.amountCaution
+                ?: zcashInsufficientBalanceCaution().takeIf { quote.insufficientBalance },
             memoIsAllowed = memoState.memoIsAllowed,
             canBeSend = amountState.canBeSend && addressState.canBeSend &&
+                quote.isCurrent && !quote.insufficientBalance &&
                 memoState.memo.fitsMemoBytes(memoMaxBytes) && (!poison || riskAccepted),
             showAddressInput = showAddressInput,
             address = addressState.address,
             isPoisonAddress = poison,
             riskAccepted = riskAccepted,
         )
-    }
-
-    private fun updateAvailableBalance() {
-        amountService.updateAvailableBalance(adapter.maxSpendableBalance)
     }
 
     fun onEnterAmount(amount: BigDecimal?) {
@@ -168,6 +173,7 @@ class SendZCashViewModel(
     private fun handleUpdatedAmountState(amountState: SendAmountService.State) {
         this.amountState = amountState
 
+        updateFeeQuote()
         emitState()
     }
 
@@ -178,14 +184,18 @@ class SendZCashViewModel(
             memoService.setAddress(it)
         }
 
+        updateFeeQuote()
         emitState()
     }
 
     private fun handleUpdatedMemoState(memoState: SendZCashMemoService.State) {
         this.memoState = memoState
 
+        updateFeeQuote()
         emitState()
     }
+
+    private fun updateFeeQuote() = feeQuote.update(amountState, addressState, memoState.memo)
 
     // The screen shows the recipient as the signing device will, so the user can compare the two.
     override fun getConfirmationData(): SendConfirmationData {
@@ -201,7 +211,7 @@ class SendZCashViewModel(
         ).firstOrNull()
         return SendConfirmationData(
             amount = decimalAmount,
-            fee = fee.value,
+            fee = feeQuote.quote.value.fee,
             address = address,
             contact = contact,
             coin = wallet.coin,
@@ -265,7 +275,7 @@ class SendZCashViewModel(
             val draft = adapterManager.zcashPendingDraft(
                 wallet = wallet,
                 amount = amount,
-                fee = fee.value,
+                fee = feeQuote.quote.value.fee,
                 toAddress = address.hex,
                 memo = memoState.memo,
                 availableBalance = amountState.availableBalance,

@@ -12,11 +12,26 @@ interface MoneroHardwareGateway {
     /** Verifies the device belongs to [account]; [block] receives the live wallet public key. */
     suspend fun <T> execute(account: Account, block: (String) -> T): T
 
-    /** [execute] for work nobody asked for: it never reaches the device while the app is in the background. */
+    /**
+     * [execute] for work nobody asked for: it must never prompt the user, on the phone or on the device.
+     * Ledger: it never reaches the device while the app is in the background.
+     */
     suspend fun <T> executeUnattended(account: Account, block: (String) -> T): T = execute(account, block)
 
-    /** [executeUnattended] that gives the device up to a user operation; throws LedgerSessionYieldedException. */
+    /**
+     * [executeUnattended] whose caller gives the device up when [isUserOperationWaiting].
+     * Ledger: gives the device up to a user operation by throwing LedgerSessionYieldedException.
+     */
     suspend fun <T> executeYielding(account: Account, block: (String) -> T): T = executeUnattended(account, block)
+
+    /** A user operation is waiting for the device that a running [executeYielding] block holds. */
+    val isUserOperationWaiting: Boolean get() = false
+
+    /** The device confirmed Live Refresh for [account] in the current session, so unattended work may resume it. */
+    fun markLiveRefreshConfirmed(account: Account) = Unit
+
+    /** Wipes the cached device sessions of every account not in [accountIds]. */
+    fun retainSessions(accountIds: Set<String>) = Unit
 }
 
 @OptIn(InternalCoroutinesApi::class)

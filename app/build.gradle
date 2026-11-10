@@ -563,7 +563,6 @@ dependencies {
     //Android Tor
     implementation libs.tor.android
 
-    api libs.android.shell
     api libs.portmapper
 
     implementation libs.google.play.app.update

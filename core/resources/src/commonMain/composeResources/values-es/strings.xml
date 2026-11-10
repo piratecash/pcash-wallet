@@ -798,6 +798,8 @@
     <string name="TransactionInfo_Date">Fecha</string>
     <string name="transaction_info_sync_source">Fuente de sincronización</string>
     <string name="TransactionInfo_Id">ID</string>
+    <string name="transaction_info_replaces_transaction">Reemplaza la transacción</string>
+    <string name="transaction_info_replaced_by_transaction">Reemplazada por la transacción</string>
     <string name="TransactionInfo_Service">Servicio</string>
     <string name="TransactionInfo_RawTransaction">Transacción sin procesar</string>
     <string name="TransactionInfo_ContactName">Nombre de contacto</string>
@@ -1468,6 +1470,7 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="Tor_Connection_Disable">Desactivar Tor</string>
     <string name="Tor_Alert_Title">Internet</string>
     <string name="TorPage_Connecting">Conectando Tor…</string>
+    <string name="TorPage_ConnectingProgress">Conectando Tor… %1$d%</string>
     <string name="TorPage_Failed">Error al conectar Tor</string>
     <string name="Tor_TorIsActive">Tor está activo</string>
     <!--Coin Page-->

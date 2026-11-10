@@ -22,6 +22,8 @@ interface IPinComponent {
     fun setPin(pin: String)
     fun setDuressPin(pin: String)
     fun getDuressLevel(): Int
+    fun isDuressAvailable(): Boolean
+    fun canDisablePin(): Boolean
     fun disablePin()
     fun disableDuressPin()
     fun isDuressPinSet(): Boolean

@@ -228,6 +228,9 @@ abstract class ZcashAdapterTestFixture {
         coEvery { zcashWallet.balance(any(), any()) } returns PoolBalance(emptyMap())
         coEvery { zcashWallet.transactions(any()) } returns emptyList()
         coEvery { zcashWallet.latestHeight() } returns 0
+        coEvery { zcashWallet.feePerAction(any()) } answers {
+            if (firstArg<Int>() < RATE_BOUNDARY_TARGET) LEGACY_FEE_PER_ACTION else REDUCED_FEE_PER_ACTION
+        }
         coEvery { zcashWallet.migrationStatus(any()) } returns MigrationStatus(
             phase = MigrationPhase.MIGRATING,
             standardNotes = 1,
@@ -329,6 +332,9 @@ abstract class ZcashAdapterTestFixture {
         const val ACCOUNT_ID = "test-account-id"
         const val DB_ACCOUNT_ID = 0
         const val BIRTHDAY = 2_000_000
+        const val RATE_BOUNDARY_TARGET = 3_590_000
+        const val LEGACY_FEE_PER_ACTION = 5_000L
+        const val REDUCED_FEE_PER_ACTION = 1_000L
     }
 }
 

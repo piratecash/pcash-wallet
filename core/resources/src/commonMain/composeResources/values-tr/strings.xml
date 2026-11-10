@@ -803,6 +803,8 @@
     <string name="TransactionInfo_Date">Tarih</string>
     <string name="transaction_info_sync_source">Senkronizasyon kaynağı</string>
     <string name="TransactionInfo_Id">Kimlik</string>
+    <string name="transaction_info_replaces_transaction">Şu işlemin yerine geçer</string>
+    <string name="transaction_info_replaced_by_transaction">Şu işlemle değiştirildi</string>
     <string name="TransactionInfo_Service">Hizmet</string>
     <string name="TransactionInfo_RawTransaction">Ham işlem</string>
     <string name="TransactionInfo_ContactName">Kişi Adı</string>
@@ -1478,6 +1480,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="Tor_Connection_Disable">Tor\u0027u devre dışı bırak</string>
     <string name="Tor_Alert_Title">İnternet</string>
     <string name="TorPage_Connecting">Tor Bağlanıyor…</string>
+    <string name="TorPage_ConnectingProgress">Tor Bağlanıyor… %1$d%</string>
     <string name="TorPage_Failed">Tor bağlanılamadı</string>
     <string name="Tor_TorIsActive">Tor aktif</string>
     <!--Coin Page-->

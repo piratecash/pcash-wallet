@@ -279,7 +279,9 @@ class ZcashSession internal constructor(
     ): ZcashSessionResult<BroadcastResult> = withOperation {
         reserveOrNotBroadcast(rawTransaction, requireOwnInputs)
         publishLocalState(readLocalState())
-        wallet.broadcast(dbAccountId, rawTransaction, height, requireOwnInputs)
+        wallet.broadcast(dbAccountId, rawTransaction, height, requireOwnInputs).also {
+            if (it.inputsReleased) readReportingFailure { publishLocalState(readLocalState()) }
+        }
     }
 
     private suspend fun reserveOrNotBroadcast(rawTransaction: ByteArray, requireOwnInputs: Boolean) = try {

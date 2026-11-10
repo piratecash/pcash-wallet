@@ -9,6 +9,10 @@ import android.net.Uri
 import android.os.Build
 import android.os.Parcelable
 import android.provider.DocumentsContract
+import android.view.Choreographer
+import android.view.View
+import android.view.ViewGroup
+import cash.p.terminal.R
 import cash.p.terminal.modules.main.MainActivity
 import cash.p.terminal.modules.main.MainModule
 import cash.p.terminal.wallet.entities.FullCoin
@@ -114,6 +118,16 @@ fun Activity.restartMain() {
 }
 
 fun Activity.fullRestart() {
-    MainModule.startAsNewTask(this)
-    exitProcess(0)
+    // Overlay, not setContentView: callers run inside composition, and detaching the ComposeView there throws
+    addContentView(
+        View(this).apply { setBackgroundResource(R.color.background_base) },
+        ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT),
+    )
+    // Two frames so the plain view is actually on screen instead of a frozen last frame while the process dies.
+    Choreographer.getInstance().postFrameCallback {
+        Choreographer.getInstance().postFrameCallback {
+            MainModule.startAsNewTask(this)
+            exitProcess(0)
+        }
+    }
 }

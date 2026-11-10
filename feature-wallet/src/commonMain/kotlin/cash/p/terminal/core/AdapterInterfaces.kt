@@ -56,7 +56,21 @@ interface ISendZcashAdapter : IBalanceAdapter, OfflineTransactionAdapter<SignedO
     fun addressShownOnDevice(address: String): String
     /** Returns the txid of the broadcast transaction. */
     suspend fun send(amount: BigDecimal, address: String, memo: String): String
+    /** What [send] would charge. */
+    suspend fun estimateFee(amount: BigDecimal, address: String, memo: String): ZcashFeeEstimate
+    /** What [address] receives from the whole balance; null when it cannot be planned right now. */
+    suspend fun maxSendable(address: String, memo: String): BigDecimal?
     suspend fun getOwnAddresses(): List<String>
+}
+
+sealed interface ZcashFeeEstimate {
+    data class Planned(val fee: BigDecimal) : ZcashFeeEstimate
+
+    /** No selection of notes covers the amount and its fee, so [ISendZcashAdapter.send] would refuse it too. */
+    data object InsufficientBalance : ZcashFeeEstimate
+
+    /** The plan failed for another reason, e.g. no server. */
+    data object Unavailable : ZcashFeeEstimate
 }
 
 interface ITransactionsAdapter {

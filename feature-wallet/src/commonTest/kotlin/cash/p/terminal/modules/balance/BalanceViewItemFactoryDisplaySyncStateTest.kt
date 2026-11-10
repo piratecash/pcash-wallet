@@ -19,10 +19,10 @@ import cash.p.terminal.resources.beam_restore_resolving_birthday
 import cash.p.terminal.resources.beam_restore_scanning_wallet_outputs
 import cash.p.terminal.resources.beam_restore_validating_snapshot
 import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.balance_sync_error_fixed_source
 import cash.p.terminal.resources.beam_locked_balance_info
 import cash.p.terminal.resources.hardware_connect_device_to_sync
 import cash.p.terminal.resources.ledger_monero_confirm_view_key
-import cash.p.terminal.resources.balance_sync_error_fixed_source
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.Wallet
@@ -34,9 +34,9 @@ import cash.p.terminal.wallet.zcashMnemonicAccount
 import cash.p.terminal.wallet.balance.BalanceItem
 import cash.p.terminal.wallet.balance.BalanceViewType
 import cash.p.terminal.wallet.entities.BalanceData
+import cash.p.terminal.wallet.policy.PlatformOperationSupport
 import com.piratecash.monero.signer.HardwareWalletErrorCode
 import com.piratecash.monero.signer.HardwareWalletOperationException
-import cash.p.terminal.wallet.policy.PlatformOperationSupport
 import io.horizontalsystems.core.IAppNumberFormatter
 import io.horizontalsystems.core.Translator
 import io.horizontalsystems.core.entities.Blockchain
@@ -204,30 +204,18 @@ class BalanceViewItemFactoryDisplaySyncStateTest {
     }
 
     @Test
-    fun viewItem_notSyncedDeviceErrors_marksFromDevice() {
+    fun viewItem_notSyncedHardwareWalletDeviceError_displaysConnectDeviceMessage() {
         listOf(
-            LedgerNotFoundException(),
             HardwareWalletOperationException(HardwareWalletErrorCode.DeviceNotFound, "usb device not found"),
-            HardwareWalletOperationException(HardwareWalletErrorCode.ViewKeyExportDenied, "denied"),
-        ).forEach { assertTrue(it.toString(), viewItemWithTxError(it).syncErrorFromDevice) }
-    }
-
-    @Test
-    fun viewItem_notSyncedNonDeviceErrors_doesNotMarkFromDevice() {
-        listOf(
-            HardwareWalletOperationException(HardwareWalletErrorCode.Network, "node"),
-            SocketTimeoutException(),
-        ).forEach { assertFalse(it.toString(), viewItemWithTxError(it).syncErrorFromDevice) }
-    }
-
-    @Test
-    fun viewItem_notSyncedHardwareDeviceError_displaysConnectDeviceHint() {
-        val error = HardwareWalletOperationException(HardwareWalletErrorCode.DeviceNotFound, "usb device not found")
-
-        assertEquals(
-            Translator.getString(Res.string.hardware_connect_device_to_sync),
-            viewItemWithTxError(error).errorMessage
-        )
+            HardwareWalletOperationException(HardwareWalletErrorCode.PermissionDenied, "usb permission denied"),
+            HardwareWalletOperationException(HardwareWalletErrorCode.Disconnected, "device disconnected"),
+        ).forEach { error ->
+            assertEquals(
+                error.toString(),
+                Translator.getString(Res.string.hardware_connect_device_to_sync),
+                viewItemWithTxError(error).errorMessage
+            )
+        }
     }
 
     @Test
@@ -249,13 +237,38 @@ class BalanceViewItemFactoryDisplaySyncStateTest {
     }
 
     @Test
-    fun viewItem_notSyncedHardwareWalletNodeUnreachable_displaysSourceError() {
+    fun viewItem_notSyncedHardwareWalletNodeUnreachable_displaysFixedSourceMessage() {
         val error = HardwareWalletOperationException(HardwareWalletErrorCode.Network, "daemon unreachable")
 
         assertEquals(
             Translator.getString(Res.string.balance_sync_error_fixed_source),
             viewItemWithTxError(error).errorMessage
         )
+    }
+
+    @Test
+    fun viewItem_notSyncedDeviceErrors_marksFromDevice() {
+        listOf(
+            LedgerNotFoundException(),
+            HardwareWalletOperationException(HardwareWalletErrorCode.DeviceNotFound, "usb device not found"),
+            HardwareWalletOperationException(HardwareWalletErrorCode.PendingDeviceVerification, "confirm on device"),
+            HardwareWalletOperationException(HardwareWalletErrorCode.ViewKeyExportDenied, "denied"),
+        ).forEach { assertTrue(it.toString(), viewItemWithTxError(it).syncErrorFromDevice) }
+    }
+
+    @Test
+    fun viewItem_notSyncedNonDeviceErrors_doesNotMarkFromDevice() {
+        listOf(
+            HardwareWalletOperationException(HardwareWalletErrorCode.Network, "node"),
+            SocketTimeoutException(),
+        ).forEach { assertFalse(it.toString(), viewItemWithTxError(it).syncErrorFromDevice) }
+    }
+
+    @Test
+    fun viewItem_notSyncedNonHardwareError_keepsOriginalMessage() {
+        val error = SocketTimeoutException("timeout")
+
+        assertEquals(error.message, viewItemWithTxError(error).errorMessage)
     }
 
     private fun httpException403() =

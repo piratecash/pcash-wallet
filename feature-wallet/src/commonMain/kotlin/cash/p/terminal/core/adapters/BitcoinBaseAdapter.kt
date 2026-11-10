@@ -84,6 +84,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.rx2.await
@@ -113,6 +114,9 @@ abstract class BitcoinBaseAdapter(
 
     private val offlineModeManager: OfflineModeManager
             by inject(OfflineModeManager::class.java)
+
+    private val replacementRegistry: BitcoinReplacementRegistry
+            by inject(BitcoinReplacementRegistry::class.java)
 
     private val pollingSessionCount = AtomicInteger(0)
 
@@ -212,8 +216,10 @@ abstract class BitcoinBaseAdapter(
     override val balanceStateUpdatedFlow: Flow<Unit>
         get() = adapterStateUpdatedSubject.toFlowable(BackpressureStrategy.BUFFER).asFlow()
 
-    override fun getTransactionsReloadSignalFlow(): Flow<Unit> =
-        transactionsReloadSubject.toFlowable(BackpressureStrategy.BUFFER).asFlow()
+    override fun getTransactionsReloadSignalFlow(): Flow<Unit> = merge(
+        transactionsReloadSubject.toFlowable(BackpressureStrategy.BUFFER).asFlow(),
+        replacementRegistry.changes,
+    )
 
     // Shared handler for the BitcoinCore.Listener onTransactionsDelete callback (e.g. a stuck
     // NEW transaction expiring). Each concrete adapter's Kit.Listener interface requires its own
@@ -356,17 +362,27 @@ abstract class BitcoinBaseAdapter(
         else -> emptyList<TransactionRecord>()
     }
 
+    // Records superseded by a replacement are hidden, so a page is refilled until it is full
+    // or the kit runs out: a short page tells the caller that everything is loaded.
     private suspend fun getTransactionsAsync(
         from: TransactionRecord?,
         limit: Int,
         transactionType: FilterTransactionType
     ): List<TransactionRecord> {
-        return try {
-            kit.transactions(from?.uid, getBitcoinTransactionTypeFilter(transactionType), limit)
-                .map { it.map { tx -> transactionRecord(tx) } }.await()
+        val filter = try {
+            getBitcoinTransactionTypeFilter(transactionType)
         } catch (e: UnsupportedFilterException) {
-            emptyList<TransactionRecord>()
+            return emptyList()
         }
+        val visible = mutableListOf<TransactionRecord>()
+        var cursorUid = from?.uid
+        do {
+            val count = limit - visible.size
+            val page = kit.transactions(cursorUid, filter, count).map { it.map(::transactionRecord) }.await()
+            visible += page.filter { it.replacedByHash == null }
+            cursorUid = page.lastOrNull()?.uid
+        } while (visible.size < limit && page.size == count)
+        return visible
     }
 
     private fun getBitcoinTransactionTypeFilter(transactionType: FilterTransactionType): TransactionFilterType? {
@@ -736,116 +752,87 @@ abstract class BitcoinBaseAdapter(
         }
         val memo = transaction.outputs.firstOrNull { it.memo != null }?.memo
 
-        return when (transaction.type) {
-            TransactionType.Incoming -> {
-                val to = transaction.outputs.filter { it.mine && !it.changeOutput }
-                    .mapNotNull { it.address }.distinct()
-                val change = transaction.outputs.filter { it.mine && it.changeOutput }
-                    .mapNotNull { it.address }.distinct()
-                BitcoinTransactionRecord(
-                    source = wallet.transactionSource,
-                    token = wallet.token,
-                    uid = transaction.uid,
-                    transactionHash = transaction.transactionHash,
-                    transactionIndex = transaction.transactionIndex,
-                    blockHeight = transaction.blockHeight,
-                    confirmationsThreshold = displayConfirmationsThreshold,
-                    timestamp = transaction.timestamp,
-                    fee = transaction.fee?.let {
-                        TransactionValue.CoinValue(
-                            wallet.token,
-                            satoshiToBTC(it)
-                        )
-                    },
-                    failed = transaction.status == TransactionStatus.INVALID,
-                    lockInfo = transactionLockInfo,
-                    conflictingHash = transaction.conflictingTxHash,
-                    showRawTransaction = transaction.status == TransactionStatus.NEW || transaction.status ==
-                            TransactionStatus.INVALID,
-                    amount = satoshiToBTC(transaction.amount),
-                    from = from,
-                    to = to,
-                    memo = memo,
-                    changeAddresses = change,
-                    transactionRecordType = TransactionRecordType.BITCOIN_INCOMING
-                )
-            }
+        val incoming = transaction.type == TransactionType.Incoming
+        // Outgoing lists every recipient; the other types list only our own outputs.
+        val outputs = transaction.outputs.filter { it.mine || transaction.type == TransactionType.Outgoing }
+        val replacement = replacementRole(transaction)
+        val amount = satoshiToBTC(transaction.amount)
 
-            TransactionType.Outgoing -> {
-                val to = transaction.outputs.filter { !it.changeOutput }
-                    .mapNotNull { it.address }.distinct()
-                val change = transaction.outputs.filter { it.changeOutput }
-                    .mapNotNull { it.address }.distinct()
-                BitcoinTransactionRecord(
-                    source = wallet.transactionSource,
-                    token = wallet.token,
-                    uid = transaction.uid,
-                    transactionHash = transaction.transactionHash,
-                    transactionIndex = transaction.transactionIndex,
-                    blockHeight = transaction.blockHeight,
-                    confirmationsThreshold = displayConfirmationsThreshold,
-                    timestamp = transaction.timestamp,
-                    fee = transaction.fee?.let {
-                        TransactionValue.CoinValue(
-                            wallet.token,
-                            satoshiToBTC(it)
-                        )
-                    },
-                    failed = transaction.status == TransactionStatus.INVALID,
-                    lockInfo = transactionLockInfo,
-                    conflictingHash = transaction.conflictingTxHash,
-                    showRawTransaction = transaction.status == TransactionStatus.NEW || transaction.status ==
-                            TransactionStatus.INVALID,
-                    amount = satoshiToBTC(transaction.amount).negate(),
-                    to = to,
-                    from = null,
-                    changeAddresses = change,
-                    sentToSelf = false,
-                    memo = memo,
-                    replaceable = transaction.replaceable,
-                    transactionRecordType = TransactionRecordType.BITCOIN_OUTGOING
-                )
-            }
+        return BitcoinTransactionRecord(
+            source = wallet.transactionSource,
+            token = wallet.token,
+            uid = transaction.uid,
+            transactionHash = transaction.transactionHash,
+            transactionIndex = transaction.transactionIndex,
+            blockHeight = transaction.blockHeight,
+            confirmationsThreshold = displayConfirmationsThreshold,
+            timestamp = transaction.timestamp,
+            fee = transaction.fee?.let { TransactionValue.CoinValue(wallet.token, satoshiToBTC(it)) },
+            failed = transaction.status == TransactionStatus.INVALID,
+            lockInfo = transactionLockInfo,
+            conflictingHash = transaction.conflictingTxHash,
+            showRawTransaction = transaction.status == TransactionStatus.NEW || transaction.status ==
+                    TransactionStatus.INVALID,
+            amount = if (incoming) amount else amount.negate(),
+            from = from.takeIf { incoming },
+            to = outputs.filter { !it.changeOutput }.mapNotNull { it.address }.distinct(),
+            changeAddresses = outputs.filter { it.changeOutput }.mapNotNull { it.address }.distinct(),
+            sentToSelf = transaction.type == TransactionType.SentToSelf,
+            memo = memo,
+            replaceable = !incoming && transaction.replaceable && replacement.replacedByHash == null,
+            transactionRecordType = if (incoming) {
+                TransactionRecordType.BITCOIN_INCOMING
+            } else {
+                TransactionRecordType.BITCOIN_OUTGOING
+            },
+            replacedByHash = replacement.replacedByHash,
+            replacesHash = replacement.replacesHash,
+            replacementChainUids = replacement.otherChainUids,
+            ownReplacementConflict = replacement.ownConflict,
+        )
+    }
 
-            TransactionType.SentToSelf -> {
-                val to = transaction.outputs.filter { it.mine && !it.changeOutput }
-                    .mapNotNull { it.address }.distinct()
-                val change = transaction.outputs.filter { it.mine && it.changeOutput }
-                    .mapNotNull { it.address }.distinct()
-                BitcoinTransactionRecord(
-                    source = wallet.transactionSource,
-                    token = wallet.token,
-                    uid = transaction.uid,
-                    transactionHash = transaction.transactionHash,
-                    transactionIndex = transaction.transactionIndex,
-                    blockHeight = transaction.blockHeight,
-                    confirmationsThreshold = displayConfirmationsThreshold,
-                    timestamp = transaction.timestamp,
-                    fee = transaction.fee?.let {
-                        TransactionValue.CoinValue(
-                            wallet.token,
-                            satoshiToBTC(it)
-                        )
-                    },
-                    failed = transaction.status == TransactionStatus.INVALID,
-                    lockInfo = transactionLockInfo,
-                    conflictingHash = transaction.conflictingTxHash,
-                    showRawTransaction = transaction.status == TransactionStatus.NEW || transaction.status ==
-                            TransactionStatus.INVALID,
-                    amount = satoshiToBTC(transaction.amount).negate(),
-                    to = to,
-                    from = null,
-                    changeAddresses = change,
-                    sentToSelf = true,
-                    memo = memo,
-                    replaceable = transaction.rbfEnabled &&
-                            transaction.blockHeight == null &&
-                            transaction.conflictingTxHash == null,
-                    transactionRecordType = TransactionRecordType.BITCOIN_OUTGOING
-                )
-            }
+    private fun replacementRole(transaction: TransactionInfo): BitcoinReplacementRole {
+        val chain = replacementRegistry.chainOf(
+            wallet.account.id,
+            wallet.token.blockchainType.uid,
+            transaction.transactionHash
+        ) ?: return replacedIncomingRole(transaction)
+        return chain.roleOf(transaction.transactionHash, transaction.uid, transaction.conflictingTxHash) { hash ->
+            val member = if (hash == transaction.transactionHash) transaction else kit.getTransaction(hash)
+            member.replacementState()
         }
+    }
 
+    /** Only the kit's conflict reveals a sender's speed-up here; anything but a full direct replacement stays visible. */
+    private fun replacedIncomingRole(transaction: TransactionInfo): BitcoinReplacementRole {
+        val winner = transaction.conflictingTxHash
+            ?.takeIf { transaction.type == TransactionType.Incoming }
+            ?.let(kit::getTransaction)
+            ?: return BitcoinReplacementRole()
+        val paidInFull = winner.type == TransactionType.Incoming &&
+            winner.conflictingTxHash == null &&
+            winner.amount >= transaction.amount &&
+            winner.spendsSameOutputAs(transaction)
+        return if (paidInFull) {
+            BitcoinReplacementRole(replacedByHash = winner.transactionHash, ownConflict = true)
+        } else {
+            BitcoinReplacementRole()
+        }
+    }
+
+    private fun TransactionInfo.spendsSameOutputAs(other: TransactionInfo): Boolean {
+        // The input table's key omits the transaction hash: a replacement with the same sequence overwrites the input.
+        if (other.inputs.isEmpty()) return other.status != TransactionStatus.INVALID
+        val spent = inputs.mapNotNullTo(mutableSetOf()) { it.spentOutput }
+        return other.inputs.any { it.spentOutput in spent }
+    }
+
+    // The kit looks a hash up only among valid transactions, so an invalidated one reads as absent.
+    private fun TransactionInfo?.replacementState() = when {
+        this == null || status == TransactionStatus.INVALID -> ReplacementMemberState.Dead
+        blockHeight != null -> ReplacementMemberState.Mined
+        else -> ReplacementMemberState.Alive
     }
 
     override val statusInfo: Map<String, Any>

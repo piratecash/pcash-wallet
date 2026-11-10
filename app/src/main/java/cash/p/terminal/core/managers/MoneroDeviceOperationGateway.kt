@@ -17,6 +17,13 @@ class MoneroDeviceOperationGateway(
     override suspend fun <T> executeYielding(account: Account, block: (String) -> T): T =
         gatewayFor(account).executeYielding(account, block)
 
+    override val isUserOperationWaiting: Boolean
+        get() = trezor.isUserOperationWaiting
+
+    override fun markLiveRefreshConfirmed(account: Account) = gatewayFor(account).markLiveRefreshConfirmed(account)
+
+    override fun retainSessions(accountIds: Set<String>) = trezor.retainSessions(accountIds)
+
     private fun gatewayFor(account: Account): MoneroHardwareGateway =
         if (account.type is AccountType.LedgerDevice) ledger else trezor
 }
