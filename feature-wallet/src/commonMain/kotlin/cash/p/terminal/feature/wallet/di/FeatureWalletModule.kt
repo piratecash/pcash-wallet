@@ -24,6 +24,7 @@ import cash.p.terminal.core.managers.TonAccountManager
 import cash.p.terminal.core.managers.TronAccountManager
 import cash.p.terminal.core.managers.WalletActivator
 import cash.p.terminal.core.managers.WordsManager
+import cash.p.terminal.core.nft.NftCollectionPrefsRepository
 import cash.p.terminal.core.nft.NftCollectionsRepository
 import cash.p.terminal.core.nft.NftProvider
 import cash.p.terminal.core.nft.TonNftProvider
@@ -64,9 +65,11 @@ import cash.p.terminal.modules.intro.IntroViewModel
 import cash.p.terminal.modules.markdown.MarkdownViewModel
 import cash.p.terminal.modules.nft.NftCollectionsViewModel
 import cash.p.terminal.modules.nft.NftPreviewViewModel
+import cash.p.terminal.modules.nft.manage.NftManageViewModel
 import cash.p.terminal.modules.nft.NftOwnerWalletResolver
 import cash.p.terminal.modules.nft.NftTransferAvailabilityProvider
 import cash.p.terminal.modules.nft.renew.NftDomainRenewViewModel
+import cash.p.terminal.modules.nft.burn.NftBurnViewModel
 import cash.p.terminal.modules.nft.renew.NftDomainRenewalViewModel
 import cash.p.terminal.modules.manageaccount.ManageAccountViewModel
 import cash.p.terminal.modules.manageaccount.backupconfirmkey.BackupConfirmKeyViewModel
@@ -179,6 +182,7 @@ import cash.p.terminal.core.providers.FeeRateProvider
 import cash.p.terminal.core.providers.PendingAccountProvider
 import cash.p.terminal.core.providers.PendingAccountProviderImpl
 import cash.p.terminal.core.storage.LocallyCreatedTransactionStorage
+import cash.p.terminal.core.storage.NftCollectionPrefStorage
 import cash.p.terminal.core.storage.NftItemStorage
 import cash.p.terminal.core.storage.OfflineModeStorage
 import cash.p.terminal.core.storage.PendingTransactionStorage
@@ -442,6 +446,8 @@ val featureWalletModule = module {
     singleOf(::CoinManager) bind ICoinManager::class
     singleOf(::OfflineModeStorage)
     singleOf(::NftItemStorage)
+    singleOf(::NftCollectionPrefStorage)
+    singleOf(::NftCollectionPrefsRepository)
     singleOf(::TonNftProvider) bind NftProvider::class
     single { NftCollectionsRepository(get(), getAll(), get(), get()) }
     singleOf(::NftOwnerWalletResolver)
@@ -507,13 +513,27 @@ val featureWalletModule = module {
     viewModel { (blockchain: Blockchain) -> AddRpcViewModel(blockchain, get()) }
 
     viewModel { (url: String) -> MarkdownViewModel(url, get(), get()) }
-    viewModel { params -> NftCollectionsViewModel(params.get(), get(), get(), get()) }
-    viewModel { params -> NftPreviewViewModel(params.get(), get(), get(), get()) }
+    viewModel { params -> NftCollectionsViewModel(params.get(), get(), get(), get(), get()) }
+    viewModel { params -> NftManageViewModel(params.get(), get(), get(), get(), get()) }
+    viewModel { params -> NftPreviewViewModel(params.get(), params.get(), get(), get(), get(), get()) }
     viewModelOf(::NftDomainRenewalViewModel)
     viewModel { params ->
         NftDomainRenewViewModel(
             domains = params.get(),
             namesRevealed = params.get(),
+            walletResolver = get(),
+            adapterManager = get(),
+            balanceHiddenManager = get(),
+            offlineOperationGate = get(),
+            xRateService = XRateService(get(), get<CurrencyManager>().baseCurrency),
+            dispatcherProvider = get(),
+        )
+    }
+    viewModel { params ->
+        NftBurnViewModel(
+            item = params[0],
+            domain = params[1],
+            namesRevealed = params[2],
             walletResolver = get(),
             adapterManager = get(),
             balanceHiddenManager = get(),

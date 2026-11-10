@@ -21,6 +21,7 @@ import cash.p.terminal.modules.nft.NftCollectionSource
 import cash.p.terminal.modules.nft.NftCollectionsViewModel
 import cash.p.terminal.modules.nft.NftPreviewPage
 import cash.p.terminal.modules.nft.NftSectionTitle
+import cash.p.terminal.modules.nft.manage.NftManagePage
 import cash.p.terminal.modules.nft.ui.NftCollectionsSection
 import cash.p.terminal.modules.offline.OfflineModeToggleViewModel
 import cash.p.terminal.modules.transactions.TransactionsViewModel
@@ -121,6 +122,8 @@ class TokenBalancePage(val input: Wallet) : HSPage() {
             hidden = state.hidden,
             onItemClick = { navigation.slideFromRight(NftPreviewPage(it, nftSource)) },
             onShowAll = openAll,
+            allCollectionsHidden = state.allCollectionsHidden,
+            onManage = { navigation.slideFromRight(NftManagePage(nftSource)) },
         )
     }
 

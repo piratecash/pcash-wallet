@@ -22,6 +22,7 @@ data class Colors(
     val statusError: Color,
     val statusSuccess20: Color,
     val statusWarning20: Color,
+    val statusError15: Color,
     val statusError20: Color,
     val statusSuccess50: Color,
     val statusWarning50: Color,

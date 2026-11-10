@@ -7,6 +7,7 @@ enum class NftTrust {
     Whitelist,
     Graylist,
     None,
+    Blacklist,
 }
 
 @Entity(primaryKeys = ["accountId", "blockchainType", "ownerAddress", "address"])

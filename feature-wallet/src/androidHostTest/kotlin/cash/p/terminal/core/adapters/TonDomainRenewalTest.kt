@@ -1,6 +1,6 @@
 package cash.p.terminal.core.adapters
 
-import cash.p.terminal.core.DomainRenewalResult
+import cash.p.terminal.core.NftBroadcastResult
 import cash.p.terminal.core.TonFeeEstimate
 import cash.p.terminal.core.managers.TonKitWrapper
 import com.tonapps.wallet.data.core.entity.SendRequestEntity
@@ -63,7 +63,7 @@ class TonDomainRenewalTest {
 
         val message = signed.single().messages.single()
         val bits = message.payload.bits
-        assertEquals(DomainRenewalResult(domains.take(1), error = null), result)
+        assertEquals(NftBroadcastResult(domains.take(1), error = null), result)
         assertEquals(domains.first(), message.addressValue)
         assertTrue(message.walletTransfer.bounceable)
         assertEquals(20_000_000L, message.amount)
@@ -85,7 +85,7 @@ class TonDomainRenewalTest {
         val result = createAdapter().renewDomains(domains)
 
         assertEquals(listOf(domains.take(4), domains.drop(4)), signed.map { it.addresses() })
-        assertEquals(DomainRenewalResult(domains, error = null), result)
+        assertEquals(NftBroadcastResult(domains, error = null), result)
     }
 
     @Test
@@ -153,7 +153,7 @@ class TonDomainRenewalTest {
 
         val result = adapter.renewDomains(domains)
 
-        assertEquals(DomainRenewalResult(domains, error = null), result)
+        assertEquals(NftBroadcastResult(domains, error = null), result)
         assertEquals(listOf<Int?>(7, 8), signedSeqnos)
         assertEquals(listOf(0L, 0L), sentAt)
     }

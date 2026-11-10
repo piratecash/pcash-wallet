@@ -1,11 +1,15 @@
 package cash.p.terminal.modules.nft
 
 import cash.p.terminal.core.nft.NftChange
+import cash.p.terminal.core.nft.NftCollectionPrefKey
+import cash.p.terminal.core.nft.NftCollectionPrefsRepository
 import cash.p.terminal.core.nft.NftCollectionsRepository
 import cash.p.terminal.core.nft.NftItemsState
 import cash.p.terminal.core.nft.NftOwner
+import cash.p.terminal.entities.NftCollectionPrefRecord
 import cash.p.terminal.entities.NftItemRecord
 import cash.p.terminal.entities.NftTrust
+import cash.p.terminal.entities.NftUserTrust
 import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.WalletFactory
@@ -51,6 +55,7 @@ class NftCollectionsViewModelTest {
     private val walletsFlow = MutableStateFlow(listOf(wallet))
     private val items = MutableStateFlow(NftItemsState(emptyList(), isLoaded = false))
     private val changes = MutableSharedFlow<NftChange>(extraBufferCapacity = 8)
+    private val prefs = MutableStateFlow<Map<NftCollectionPrefKey, NftCollectionPrefRecord>>(emptyMap())
 
     private val repository = mockk<NftCollectionsRepository> {
         coEvery { owners(listOf(wallet)) } returns setOf(owner)
@@ -62,6 +67,9 @@ class NftCollectionsViewModelTest {
         every { networkTitle(any()) } returns "TON"
         every { networkResumed(any()) } returns emptyFlow()
         coEvery { refresh(any(), any()) } just Runs
+    }
+    private val prefsRepository = mockk<NftCollectionPrefsRepository> {
+        every { prefsFlow(any()) } returns prefs
     }
     private val walletManager = mockk<IWalletManager> {
         every { activeWalletsFlow } returns walletsFlow
@@ -82,9 +90,13 @@ class NftCollectionsViewModelTest {
     }
 
     private fun createViewModel(source: NftCollectionSource = NftCollectionSource.AllWallets) =
-        NftCollectionsViewModel(source, repository, walletManager, hiddenManager)
+        NftCollectionsViewModel(source, repository, prefsRepository, walletManager, hiddenManager)
 
-    private fun record(address: String) = NftItemRecord(
+    private fun pref(address: String, hidden: Boolean = false, userTrust: NftUserTrust = NftUserTrust.None) =
+        NftCollectionPrefRecord(owner.accountId, owner.blockchainType, address, hidden, userTrust)
+            .let { NftCollectionPrefKey(it.blockchainType, it.collectionKey) to it }
+
+    private fun record(address: String, trust: NftTrust = NftTrust.Whitelist, collection: String? = null) = NftItemRecord(
         accountId = owner.accountId,
         blockchainType = owner.blockchainType,
         ownerAddress = owner.address,
@@ -93,10 +105,10 @@ class NftCollectionsViewModelTest {
         name = "NFT $address",
         description = null,
         realOwnerAddress = null,
-        collectionAddress = null,
+        collectionAddress = collection,
         collectionName = null,
         collectionDescription = null,
-        trust = NftTrust.Whitelist,
+        trust = trust,
         verified = false,
         imageUrl = null,
         largeImageUrl = null,
@@ -287,5 +299,84 @@ class NftCollectionsViewModelTest {
 
         assertEquals(listOf("a"), viewModel.uiState.items.map { it.address })
         assertFalse(viewModel.uiState.isLoading)
+    }
+
+    @Test
+    fun uiState_hiddenCollection_isNotListedButCounted() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        prefs.value = mapOf(pref("c1", hidden = true))
+
+        items.value = NftItemsState(
+            listOf(record("a", collection = "c1"), record("b", collection = "c1"), record("c")),
+            isLoaded = true,
+        )
+
+        assertEquals(listOf("c"), viewModel.uiState.items.map { it.address })
+        assertEquals(1, viewModel.uiState.hiddenCollectionsCount)
+        assertEquals(1, viewModel.uiState.totalCount)
+    }
+
+    @Test
+    fun uiState_blacklistAndUserSpam_areNotListedAndCountedAsCollections() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        prefs.value = mapOf(pref("c2", userTrust = NftUserTrust.Spam))
+
+        items.value = NftItemsState(
+            listOf(
+                record("a", NftTrust.Blacklist, "c1"),
+                record("b", NftTrust.Blacklist, "c1"),
+                record("c", collection = "c2"),
+                record("d"),
+            ),
+            isLoaded = true,
+        )
+
+        assertEquals(listOf("d"), viewModel.uiState.items.map { it.address })
+        assertEquals(2, viewModel.uiState.hiddenCollectionsCount)
+    }
+
+    @Test
+    fun uiState_blacklistWithUserTrust_isListedAsWhitelist() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        prefs.value = mapOf(pref("c1", userTrust = NftUserTrust.Trust))
+
+        items.value = NftItemsState(listOf(record("a", NftTrust.Blacklist, "c1")), isLoaded = true)
+
+        assertEquals(listOf(NftTrust.Whitelist), viewModel.uiState.items.map { it.trust })
+        assertEquals(0, viewModel.uiState.hiddenCollectionsCount)
+    }
+
+    @Test
+    fun uiState_everyCollectionHidden_isAllCollectionsHiddenNotEmpty() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        prefs.value = mapOf(pref("a", hidden = true))
+
+        items.value = NftItemsState(listOf(record("a")), isLoaded = true)
+
+        assertTrue(viewModel.uiState.allCollectionsHidden)
+        assertFalse(viewModel.uiState.isEmpty)
+    }
+
+    @Test
+    fun uiState_noNftsAtAll_isEmptyAndNotAllHidden() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+
+        items.value = NftItemsState(emptyList(), isLoaded = true)
+
+        assertTrue(viewModel.uiState.isEmpty)
+        assertFalse(viewModel.uiState.allCollectionsHidden)
+    }
+
+    @Test
+    fun uiState_hiddenCollectionShownAgain_returnsToList() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        prefs.value = mapOf(pref("a", hidden = true))
+        items.value = NftItemsState(listOf(record("a")), isLoaded = true)
+
+        prefs.value = mapOf(pref("a", hidden = false))
+
+        assertEquals(listOf("a"), viewModel.uiState.items.map { it.address })
+        assertEquals(0, viewModel.uiState.hiddenCollectionsCount)
+        assertFalse(viewModel.uiState.allCollectionsHidden)
     }
 }

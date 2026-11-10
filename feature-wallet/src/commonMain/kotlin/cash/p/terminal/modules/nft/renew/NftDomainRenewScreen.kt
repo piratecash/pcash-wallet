@@ -24,6 +24,7 @@ import cash.p.terminal.core.nft.NftDomainExpiry
 import cash.p.terminal.core.nft.NftOwner
 import cash.p.terminal.core.nft.domainExpiryLevel
 import cash.p.terminal.modules.nft.nftCard
+import cash.p.terminal.modules.nft.operation.NftOperationOutcome
 import cash.p.terminal.modules.nft.ui.HIDDEN_NAME
 import cash.p.terminal.modules.nft.ui.NftArtwork
 import cash.p.terminal.resources.FeeSettings_NetworkFee
@@ -203,7 +204,7 @@ private val previewTotals = NftDomainRenewUiState(
     fee = "≈ 0.06 TON · $0.30",
     insufficientBalance = null,
     canRenew = true,
-    outcome = RenewOutcome.Idle,
+    outcome = NftOperationOutcome.Idle,
 )
 
 @Composable

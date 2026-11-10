@@ -23,9 +23,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cash.p.terminal.entities.NftTrust
+import cash.p.terminal.resources.Contacts_ActionMore
+import cash.p.terminal.resources.ic_info_20
+import cash.p.terminal.resources.ic_more_24
+import cash.p.terminal.resources.nft_not_spam
+import cash.p.terminal.resources.nft_report_spam
+import cash.p.terminal.resources.nft_unverified
+import cash.p.terminal.resources.nft_unverified_nft
+import cash.p.terminal.strings.helpers.TranslatableString
+import cash.p.terminal.ui_compose.components.ButtonPrimaryRed
+import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.core.nft.NftDomainExpiry
 import cash.p.terminal.core.nft.owner
 import cash.p.terminal.entities.NftItemRecord
@@ -74,19 +87,26 @@ private const val ADDRESS_EDGE_LENGTH = 4
 
 internal class NftNetworkInfo(val title: String?, val explorerUrl: String?)
 
+internal class NftPreviewActions(
+    val onArtworkClick: () -> Unit,
+    val onSend: (NftTransferAvailability.Available) -> Unit,
+    val onRenew: (NftDomainExpiry) -> Unit,
+    val onMenu: () -> Unit,
+    val onReportSpam: () -> Unit,
+    val onNotSpam: () -> Unit,
+    val onBack: () -> Unit,
+)
+
 @Composable
 internal fun NftPreviewScreen(
     item: NftItemRecord,
     uiState: NftPreviewUiState,
     network: NftNetworkInfo,
-    onArtworkClick: () -> Unit,
-    onSend: (NftTransferAvailability.Available) -> Unit,
-    onRenew: (NftDomainExpiry) -> Unit,
-    onBack: () -> Unit,
+    actions: NftPreviewActions,
 ) {
     val name = item.displayName(uiState.hidden)
     Scaffold(
-        topBar = { AppBar(title = name, navigationIcon = { HsBackButton(onClick = onBack) }) },
+        topBar = { PreviewAppBar(name, uiState.showSpamPlate, actions.onMenu, actions.onBack) },
         containerColor = ComposeAppTheme.colors.backgroundBase,
     ) { paddingValues ->
         Box(
@@ -103,9 +123,10 @@ internal fun NftPreviewScreen(
                     .padding(bottom = 32.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
+                if (uiState.showSpamPlate) SpamPlate(actions.onReportSpam, actions.onNotSpam)
                 Column(Modifier.nftSection().background(ComposeAppTheme.colors.surfacePrimary)) {
-                    NftImage(item, uiState, onArtworkClick)
-                    Info(item, name, uiState.hidden)
+                    NftImage(item, uiState, actions.onArtworkClick)
+                    Info(item, name, uiState.hidden, uiState.showSpamPlate)
                     if (!uiState.hidden) {
                         item.collectionDescription?.takeIf { it.isNotBlank() }?.let { AboutCollection(it) }
                     }
@@ -113,10 +134,67 @@ internal fun NftPreviewScreen(
                 if (!uiState.hidden) {
                     DetailsHeader(network.explorerUrl)
                     Details(item, network.title, uiState.domainExpiry)
-                    TransferActions(uiState, onSend, onRenew)
+                    TransferActions(uiState, actions.onSend, actions.onRenew)
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun PreviewAppBar(name: String, unverified: Boolean, onMenu: () -> Unit, onBack: () -> Unit) {
+    AppBar(
+        title = {
+            Column {
+                title3_leah(text = name, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                if (unverified) UnverifiedCaption()
+            }
+        },
+        navigationIcon = { HsBackButton(onClick = onBack) },
+        menuItems = listOf(
+            MenuItem(
+                title = TranslatableString.PlainString(stringResource(Res.string.Contacts_ActionMore)),
+                icon = Res.drawable.ic_more_24,
+                tint = ComposeAppTheme.colors.brandDefault,
+                onClick = onMenu,
+            )
+        ),
+    )
+}
+
+@Composable
+private fun UnverifiedCaption() {
+    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = stringResource(Res.string.nft_unverified_nft),
+            style = ComposeAppTheme.typography.caption.copy(lineHeight = 16.sp),
+            color = ComposeAppTheme.colors.statusWarning,
+        )
+        Image(
+            painter = painterResource(Res.drawable.ic_info_20),
+            contentDescription = null,
+            modifier = Modifier.size(14.dp),
+            colorFilter = ColorFilter.tint(ComposeAppTheme.colors.statusWarning),
+        )
+    }
+}
+
+@Composable
+private fun SpamPlate(onReportSpam: () -> Unit, onNotSpam: () -> Unit) {
+    Row(
+        modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        ButtonPrimaryRed(
+            modifier = Modifier.weight(1f),
+            title = stringResource(Res.string.nft_report_spam),
+            onClick = onReportSpam,
+        )
+        ButtonPrimaryTransparent(
+            modifier = Modifier.weight(1f),
+            title = stringResource(Res.string.nft_not_spam),
+            onClick = onNotSpam,
+        )
     }
 }
 
@@ -148,14 +226,27 @@ private fun NftImage(item: NftItemRecord, uiState: NftPreviewUiState, onClick: (
 }
 
 @Composable
-private fun Info(item: NftItemRecord, name: String, hidden: Boolean) {
-    val collection = if (hidden) HIDDEN_COLLECTION else item.collectionName.takeUnless { it.isNullOrBlank() }
-        ?: stringResource(Res.string.nft_unnamed_collection)
+private fun Info(item: NftItemRecord, name: String, hidden: Boolean, unverified: Boolean) {
+    val collection = when {
+        hidden -> HIDDEN_COLLECTION
+        unverified -> stringResource(Res.string.nft_unverified)
+        else -> item.collectionName.takeUnless { it.isNullOrBlank() }
+            ?: stringResource(Res.string.nft_unnamed_collection)
+    }
 
     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         title3_leah(text = name)
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-            subhead2_grey(text = collection, modifier = Modifier.weight(1f, fill = false))
+            if (unverified && !hidden) {
+                Text(
+                    text = collection,
+                    modifier = Modifier.weight(1f, fill = false),
+                    style = ComposeAppTheme.typography.subhead2,
+                    color = ComposeAppTheme.colors.statusWarning,
+                )
+            } else {
+                subhead2_grey(text = collection, modifier = Modifier.weight(1f, fill = false))
+            }
             if (item.verified && !hidden) {
                 Image(
                     painter = painterResource(Res.drawable.ic_nft_verified_16),
@@ -288,6 +379,7 @@ private fun PreviewContent(
     hidden: Boolean,
     availability: NftTransferAvailability = NftTransferAvailability.Loading,
     domainExpiry: NftDomainExpiry? = null,
+    trust: NftTrust = NftTrust.Whitelist,
 ) {
     ComposeAppTheme {
         NftPreviewScreen(
@@ -297,12 +389,18 @@ private fun PreviewContent(
                 canReveal = hidden,
                 transferAvailability = availability,
                 domainExpiry = domainExpiry,
+                trust = trust,
             ),
             network = NftNetworkInfo(title = "TON", explorerUrl = "https://tonviewer.com/nft/EQBx"),
-            onArtworkClick = {},
-            onSend = {},
-            onRenew = {},
-            onBack = {},
+            actions = NftPreviewActions(
+                onArtworkClick = {},
+                onSend = {},
+                onRenew = {},
+                onMenu = {},
+                onReportSpam = {},
+                onNotSpam = {},
+                onBack = {},
+            ),
         )
     }
 }
@@ -352,4 +450,12 @@ private fun NftPreviewScreenRenewUrgentOnSalePreview() = PreviewContent(
     hidden = false,
     availability = NftTransferAvailability.Unavailable(NftTransferUnavailableReason.OnSale),
     domainExpiry = previewExpiry(5),
+)
+
+@Preview
+@Composable
+private fun NftPreviewScreenUnverifiedPreview() = PreviewContent(
+    hidden = false,
+    availability = NftTransferAvailability.Loading,
+    trust = NftTrust.None,
 )

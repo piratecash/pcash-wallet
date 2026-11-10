@@ -1,15 +1,17 @@
 package cash.p.terminal.modules.nft.renew
 
 import androidx.lifecycle.ViewModelStore
-import cash.p.terminal.core.DomainRenewalResult
 import cash.p.terminal.core.HardwareWalletSupport
 import cash.p.terminal.core.ISendTonAdapter
+import cash.p.terminal.core.NftBroadcastResult
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.TonFeeEstimate
 import cash.p.terminal.core.adapters.DomainRenewalTimeoutException
 import cash.p.terminal.core.nft.NftDomainExpiry
 import cash.p.terminal.core.nft.NftOwner
 import cash.p.terminal.modules.nft.NftOwnerWalletResolver
+import cash.p.terminal.modules.nft.operation.NftOperationOutcome
+import cash.p.terminal.modules.nft.operation.PREPARE_RETRY_INTERVAL
 import cash.p.terminal.modules.offline.OfflineOperationGate
 import cash.p.terminal.modules.send.register
 import cash.p.terminal.modules.xrate.XRateService
@@ -127,8 +129,8 @@ class NftDomainRenewViewModelTest {
         every { HardwareWalletSupport.isUserCancellation(any()) } answers { firstArg<Throwable>() === cancellation }
         givenEstimate(adapterA, fee = "0.01", required = "0.05")
         givenEstimate(adapterB, fee = "0.02", required = "0.04")
-        coEvery { adapterA.renewDomains(any()) } answers { DomainRenewalResult(firstArg(), error = null) }
-        coEvery { adapterB.renewDomains(any()) } answers { DomainRenewalResult(firstArg(), error = null) }
+        coEvery { adapterA.renewDomains(any()) } answers { NftBroadcastResult(firstArg(), error = null) }
+        coEvery { adapterB.renewDomains(any()) } answers { NftBroadcastResult(firstArg(), error = null) }
         startKoin { modules(module { single { numberFormatter } }) }
     }
 
@@ -319,19 +321,19 @@ class NftDomainRenewViewModelTest {
         viewModel.onRenew()
         advanceUntilIdle()
 
-        assertEquals(RenewOutcome.Done(sent = 2), viewModel.uiState.outcome)
+        assertEquals(NftOperationOutcome.Done(sent = 2), viewModel.uiState.outcome)
         coVerify(exactly = 1) { adapterA.renewDomains(listOf("a1", "a2")) }
     }
 
     @Test
     fun onRenew_secondOwnerFails_endedWithSentCountAndCaution() = runTest(dispatcher) {
-        coEvery { adapterB.renewDomains(any()) } returns DomainRenewalResult(emptyList(), IllegalStateException("boom"))
+        coEvery { adapterB.renewDomains(any()) } returns NftBroadcastResult(emptyList(), IllegalStateException("boom"))
         val viewModel = createViewModel(twoOwnerDomains)
 
         viewModel.onRenew()
         advanceUntilIdle()
 
-        val outcome = viewModel.uiState.outcome as RenewOutcome.Ended
+        val outcome = viewModel.uiState.outcome as NftOperationOutcome.Ended
         assertEquals(2, outcome.sent)
         assertEquals(3, outcome.total)
         assertEquals("boom", (outcome.caution.s as TranslatableString.PlainString).text)
@@ -339,26 +341,26 @@ class NftDomainRenewViewModelTest {
 
     @Test
     fun onRenew_firstOwnerFails_secondOwnerNotSent() = runTest(dispatcher) {
-        coEvery { adapterA.renewDomains(any()) } returns DomainRenewalResult(emptyList(), IllegalStateException("boom"))
+        coEvery { adapterA.renewDomains(any()) } returns NftBroadcastResult(emptyList(), IllegalStateException("boom"))
         val viewModel = createViewModel(twoOwnerDomains)
 
         viewModel.onRenew()
         advanceUntilIdle()
 
-        assertEquals(0, (viewModel.uiState.outcome as RenewOutcome.Ended).sent)
+        assertEquals(0, (viewModel.uiState.outcome as NftOperationOutcome.Ended).sent)
         coVerify(exactly = 0) { adapterB.renewDomains(any()) }
     }
 
     @Test
     fun onRenew_seqnoTimeoutAfterFirstChunk_endedWithBroadcastPart() = runTest(dispatcher) {
         coEvery { adapterA.renewDomains(any()) } returns
-            DomainRenewalResult(listOf("a1"), DomainRenewalTimeoutException())
+            NftBroadcastResult(listOf("a1"), DomainRenewalTimeoutException())
         val viewModel = createViewModel(twoOwnerDomains)
 
         viewModel.onRenew()
         advanceUntilIdle()
 
-        val outcome = viewModel.uiState.outcome as RenewOutcome.Ended
+        val outcome = viewModel.uiState.outcome as NftOperationOutcome.Ended
         assertEquals(1, outcome.sent)
         assertEquals(3, outcome.total)
         coVerify(exactly = 0) { adapterB.renewDomains(any()) }
@@ -366,26 +368,26 @@ class NftDomainRenewViewModelTest {
 
     @Test
     fun onRenew_deviceCancelOnFirstChunk_idleAndRenewAllowedAgain() = runTest(dispatcher) {
-        coEvery { adapterA.renewDomains(any()) } returns DomainRenewalResult(emptyList(), cancellation)
+        coEvery { adapterA.renewDomains(any()) } returns NftBroadcastResult(emptyList(), cancellation)
         val viewModel = createViewModel(listOf(domain(ownerA, "a1")))
 
         viewModel.onRenew()
         advanceUntilIdle()
 
-        assertEquals(RenewOutcome.Idle, viewModel.uiState.outcome)
+        assertEquals(NftOperationOutcome.Idle, viewModel.uiState.outcome)
         assertTrue(viewModel.uiState.canRenew)
 
-        coEvery { adapterA.renewDomains(any()) } answers { DomainRenewalResult(firstArg(), error = null) }
+        coEvery { adapterA.renewDomains(any()) } answers { NftBroadcastResult(firstArg(), error = null) }
         viewModel.onRenew()
         advanceUntilIdle()
 
-        assertEquals(RenewOutcome.Done(sent = 1), viewModel.uiState.outcome)
+        assertEquals(NftOperationOutcome.Done(sent = 1), viewModel.uiState.outcome)
         coVerify(exactly = 2) { adapterA.renewDomains(any()) }
     }
 
     @Test
     fun onRenew_deviceCancelAfterBroadcast_endedWithoutRetry() = runTest(dispatcher) {
-        coEvery { adapterB.renewDomains(any()) } returns DomainRenewalResult(emptyList(), cancellation)
+        coEvery { adapterB.renewDomains(any()) } returns NftBroadcastResult(emptyList(), cancellation)
         val viewModel = createViewModel(twoOwnerDomains)
 
         viewModel.onRenew()
@@ -393,7 +395,7 @@ class NftDomainRenewViewModelTest {
         viewModel.onRenew()
         advanceUntilIdle()
 
-        assertEquals(2, (viewModel.uiState.outcome as RenewOutcome.Ended).sent)
+        assertEquals(2, (viewModel.uiState.outcome as NftOperationOutcome.Ended).sent)
         assertFalse(viewModel.uiState.canRenew)
         coVerify(exactly = 1) { adapterA.renewDomains(any()) }
     }
@@ -419,7 +421,7 @@ class NftDomainRenewViewModelTest {
         advanceUntilIdle()
 
         assertEquals(listOf("a2.ton"), viewModel.uiState.domainNames)
-        assertEquals(RenewOutcome.Done(sent = 1), viewModel.uiState.outcome)
+        assertEquals(NftOperationOutcome.Done(sent = 1), viewModel.uiState.outcome)
         coVerify(exactly = 1) { adapterA.renewDomains(listOf("a2")) }
     }
 

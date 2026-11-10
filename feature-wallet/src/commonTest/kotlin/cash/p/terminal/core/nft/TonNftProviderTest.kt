@@ -55,15 +55,24 @@ class TonNftProviderTest {
     private val provider = TonNftProvider(tonKitManager, TestDispatcherProvider(dispatcher, TestScope(dispatcher)))
 
     @Test
-    fun fetch_blacklistedItem_isFiltered() = test {
+    fun fetch_blacklistedItem_isKeptAsBlacklist() = test {
         startKit(items = listOf(nft("bad", trust = KitNftTrust.BLACKLIST), nft("good")))
 
-        assertEquals(listOf("good"), provider.fetch(OWNER)?.map { it.address })
+        assertEquals(
+            listOf("bad" to NftTrust.Blacklist, "good" to NftTrust.Whitelist),
+            provider.fetch(OWNER)?.map { it.address to it.trust },
+        )
     }
 
     @Test
     fun fetch_hiddenRenderType_isFiltered() = test {
-        startKit(items = listOf(nft("hidden", renderType = "hidden"), nft("shown", renderType = "video")))
+        startKit(
+            items = listOf(
+                nft("hidden", renderType = "hidden"),
+                nft("hiddenBlacklisted", renderType = "hidden", trust = KitNftTrust.BLACKLIST),
+                nft("shown", renderType = "video"),
+            )
+        )
 
         assertEquals(listOf("shown"), provider.fetch(OWNER)?.map { it.address })
     }

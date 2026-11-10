@@ -10,6 +10,7 @@ import cash.p.terminal.entities.ActiveAccount
 import cash.p.terminal.entities.AddressLabel
 import cash.p.terminal.entities.BlockchainSettingRecord
 import cash.p.terminal.entities.EnabledWalletCache
+import cash.p.terminal.entities.NftCollectionPrefRecord
 import cash.p.terminal.entities.NftItemRecord
 import cash.p.terminal.entities.OfflineBlockchain
 import cash.p.terminal.entities.PoisonAddress
@@ -45,7 +46,7 @@ import io.horizontalsystems.core.storage.LogsDao
 const val APP_DATABASE_NAME = "db_p_cash"
 
 @Database(
-    version = 124,
+    version = 125,
     exportSchema = false,
     entities = [
         EnabledWallet::class,
@@ -79,7 +80,8 @@ const val APP_DATABASE_NAME = "db_p_cash"
         OfflineSignedTransactionEntity::class,
         OfflineBlockchain::class,
         StackingCache::class,
-        NftItemRecord::class
+        NftItemRecord::class,
+        NftCollectionPrefRecord::class
     ]
 )
 @TypeConverters(DatabaseConverters::class)
@@ -116,6 +118,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun offlineBlockchainDao(): OfflineBlockchainDao
     abstract fun stackingCacheDao(): StackingCacheDao
     abstract fun nftItemDao(): NftItemDao
+    abstract fun nftCollectionPrefDao(): NftCollectionPrefDao
 }
 
 @Suppress("KotlinNoActualForExpect")

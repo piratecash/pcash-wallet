@@ -55,6 +55,7 @@ import cash.p.terminal.modules.nft.renew.NftDomainRenewPage
 import cash.p.terminal.modules.nft.renew.NftDomainRenewalBanner
 import cash.p.terminal.modules.nft.renew.NftDomainRenewalViewModel
 import cash.p.terminal.modules.nft.renew.renewUntilText
+import cash.p.terminal.modules.nft.manage.NftManagePage
 import cash.p.terminal.modules.nft.ui.NftCollectionsSection
 import cash.p.terminal.modules.receive.ui.ReceiveChooseCoinPage
 import cash.p.terminal.modules.restoreaccount.RestoreAccountPage
@@ -394,6 +395,8 @@ fun BalanceItems(
                         hidden = nftViewModel.uiState.hidden,
                         onItemClick = { navigation.slideFromRight(NftPreviewPage(it, NftCollectionSource.AllWallets)) },
                         onShowAll = openAll,
+                        allCollectionsHidden = nftViewModel.uiState.allCollectionsHidden,
+                        onManage = { navigation.slideFromRight(NftManagePage(NftCollectionSource.AllWallets)) },
                         modifier = Modifier.padding(bottom = 16.dp),
                     )
                 }

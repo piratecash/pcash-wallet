@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,7 +32,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.entities.NftItemRecord
+import cash.p.terminal.modules.nft.ui.HIDDEN_COLLECTION
 import cash.p.terminal.modules.nft.ui.NftCard
+import cash.p.terminal.modules.nft.ui.NftHiddenEntryCell
 import cash.p.terminal.modules.nft.ui.previewNftItems
 import cash.p.terminal.resources.Balance_Network
 import cash.p.terminal.resources.Res
@@ -39,14 +42,20 @@ import cash.p.terminal.resources.hide_balance
 import cash.p.terminal.resources.ic_arrow_right
 import cash.p.terminal.resources.ic_eye_20
 import cash.p.terminal.resources.ic_eye_off
+import cash.p.terminal.resources.ic_manage_2_24
 import cash.p.terminal.resources.icon_24_nft_placeholder
 import cash.p.terminal.resources.nft_collections
 import cash.p.terminal.resources.nft_empty_title
+import cash.p.terminal.resources.nft_hidden_collections_count
+import cash.p.terminal.resources.nft_manage
+import cash.p.terminal.resources.nft_manage_title
+import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.compose.components.ListEmptyView
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.HSCircularProgressIndicator
 import cash.p.terminal.ui_compose.components.HSpacer
 import cash.p.terminal.ui_compose.components.HsBackButton
+import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.components.headline1_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.components.title3_leah
@@ -62,6 +71,7 @@ internal fun NftCollectionScreen(
     uiState: NftCollectionsUiState,
     onEyeClick: () -> Unit,
     onItemClick: (NftItemRecord) -> Unit,
+    onManage: () -> Unit,
     onBack: () -> Unit,
 ) {
     Scaffold(
@@ -74,6 +84,14 @@ internal fun NftCollectionScreen(
                     }
                 },
                 navigationIcon = { HsBackButton(onClick = onBack) },
+                menuItems = listOf(
+                    MenuItem(
+                        title = TranslatableString.ResString(Res.string.nft_manage_title),
+                        icon = Res.drawable.ic_manage_2_24,
+                        tint = ComposeAppTheme.colors.brandDefault,
+                        onClick = onManage,
+                    )
+                ),
             )
         },
         containerColor = ComposeAppTheme.colors.backgroundBase,
@@ -90,7 +108,7 @@ internal fun NftCollectionScreen(
                     icon = Res.drawable.icon_24_nft_placeholder,
                 )
 
-                else -> NftGrid(uiState, onItemClick)
+                else -> NftGrid(uiState, onItemClick, onManage)
             }
         }
     }
@@ -131,7 +149,11 @@ private fun HideBalanceRow(uiState: NftCollectionsUiState, onEyeClick: () -> Uni
 }
 
 @Composable
-private fun NftGrid(uiState: NftCollectionsUiState, onItemClick: (NftItemRecord) -> Unit) {
+private fun NftGrid(
+    uiState: NftCollectionsUiState,
+    onItemClick: (NftItemRecord) -> Unit,
+    onManage: () -> Unit,
+) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(NftCardMinWidth),
         contentPadding = PaddingValues(start = 16.dp, top = 4.dp, end = 16.dp, bottom = 8.dp),
@@ -141,7 +163,27 @@ private fun NftGrid(uiState: NftCollectionsUiState, onItemClick: (NftItemRecord)
         items(uiState.items, key = { it.address }) { item ->
             NftCard(item = item, hidden = uiState.hidden, onClick = { onItemClick(item) })
         }
+        if (uiState.hiddenCollectionsCount > 0) {
+            item(key = "hidden_collections", span = { GridItemSpan(maxLineSpan) }) {
+                HiddenCollectionsRow(uiState.hiddenCollectionsCount, uiState.hidden, onManage)
+            }
+        }
     }
+}
+
+@Composable
+private fun HiddenCollectionsRow(count: Int, hidden: Boolean, onManage: () -> Unit) {
+    NftHiddenEntryCell(
+        label = stringResource(
+            Res.string.nft_hidden_collections_count,
+            if (hidden) HIDDEN_COLLECTION else count.toString(),
+        ),
+        actionTitle = stringResource(Res.string.nft_manage),
+        onClick = onManage,
+        // The grid already spaces items by 8; the design puts this entry 12 below the cards.
+        modifier = Modifier.padding(top = 4.dp).height(48.dp),
+        showChevron = true,
+    )
 }
 
 /** Omitted while hidden, so the counter cannot reveal how many NFTs there are. */
@@ -202,7 +244,7 @@ private fun Modifier.centerPressBandOnTitle(gapAbove: Dp) = layout { measurable,
 @Composable
 private fun ScreenPreview(uiState: NftCollectionsUiState) {
     ComposeAppTheme {
-        NftCollectionScreen(uiState = uiState, onEyeClick = {}, onItemClick = {}, onBack = {})
+        NftCollectionScreen(uiState = uiState, onEyeClick = {}, onItemClick = {}, onManage = {}, onBack = {})
     }
 }
 
@@ -210,11 +252,15 @@ private fun previewState(
     count: Int = 12,
     hidden: Boolean = false,
     isLoading: Boolean = false,
+    hiddenCollectionsCount: Int = 0,
+    hasNfts: Boolean = count > 0,
 ) = NftCollectionsUiState(
     items = previewNftItems(count),
     isLoading = isLoading,
     hidden = hidden,
     networkTitle = "TON",
+    hiddenCollectionsCount = hiddenCollectionsCount,
+    hasNfts = hasNfts,
 )
 
 @Preview
@@ -232,3 +278,17 @@ private fun NftCollectionScreenLoadingPreview() = ScreenPreview(previewState(cou
 @Preview
 @Composable
 private fun NftCollectionScreenEmptyPreview() = ScreenPreview(previewState(count = 0))
+
+@Preview
+@Composable
+private fun NftCollectionScreenWithHiddenPreview() = ScreenPreview(previewState(hiddenCollectionsCount = 3))
+
+@Preview
+@Composable
+private fun NftCollectionScreenWithHiddenMaskedPreview() =
+    ScreenPreview(previewState(hidden = true, hiddenCollectionsCount = 3))
+
+@Preview
+@Composable
+private fun NftCollectionScreenAllHiddenPreview() =
+    ScreenPreview(previewState(count = 0, hiddenCollectionsCount = 3, hasNfts = true))

@@ -134,6 +134,7 @@ private class FakeAppDatabase(
     override fun offlineBlockchainDao() = unsupported()
     override fun stackingCacheDao() = unsupported()
     override fun nftItemDao() = unsupported()
+    override fun nftCollectionPrefDao() = unsupported()
 
     private fun unsupported(): Nothing = throw NotImplementedError()
     override fun createInvalidationTracker() = unsupported()

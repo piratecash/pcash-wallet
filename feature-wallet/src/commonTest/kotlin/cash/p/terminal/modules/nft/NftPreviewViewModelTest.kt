@@ -1,6 +1,13 @@
 package cash.p.terminal.modules.nft
 
+import cash.p.terminal.core.nft.NftCollectionPrefKey
+import cash.p.terminal.core.nft.NftCollectionPrefsRepository
 import cash.p.terminal.core.nft.NftCollectionsRepository
+import cash.p.terminal.core.nft.collectionKey
+import cash.p.terminal.core.nft.collectionPrefKey
+import cash.p.terminal.entities.NftCollectionPrefRecord
+import cash.p.terminal.entities.NftTrust
+import cash.p.terminal.entities.NftUserTrust
 import cash.p.terminal.core.nft.NftDomainExpiry
 import cash.p.terminal.core.nft.NftOwner
 import cash.p.terminal.modules.nft.ui.previewNftItem
@@ -11,6 +18,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -24,6 +32,8 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class NftPreviewViewModelTest {
@@ -50,11 +60,37 @@ class NftPreviewViewModelTest {
     private val expiryTriggers = MutableSharedFlow<Unit>()
     private val repository = mockk<NftCollectionsRepository> {
         every { domainExpiryTriggers(any()) } returns expiryTriggers
+        every { explorerUrl(any(), any()) } returns "https://tonviewer.com/nft/EQBx"
     }
-    private val item = previewNftItem("EQBx")
+    private val prefs = MutableStateFlow<Map<NftCollectionPrefKey, NftCollectionPrefRecord>>(emptyMap())
+    private val prefsRepository = mockk<NftCollectionPrefsRepository>(relaxed = true) {
+        every { prefsFlow(any()) } returns prefs
+    }
+    private var item = previewNftItem("EQBx")
 
-    private fun createViewModel() =
-        NftPreviewViewModel(NftCollectionSource.AllWallets, hiddenManager, availabilityProvider, repository)
+    private fun createViewModel() = NftPreviewViewModel(
+        NftCollectionSource.AllWallets, item, hiddenManager, availabilityProvider, repository, prefsRepository,
+    )
+
+    private fun pref(userTrust: NftUserTrust) = NftCollectionPrefRecord(
+        accountId = item.accountId,
+        blockchainType = item.blockchainType,
+        collectionKey = item.collectionKey,
+        hidden = false,
+        userTrust = userTrust,
+    )
+
+    private fun setPref(userTrust: NftUserTrust) {
+        prefs.value = mapOf(item.collectionPrefKey to pref(userTrust))
+    }
+
+    private fun viewModelWith(trust: NftTrust, availability: NftTransferAvailability? = null): NftPreviewViewModel {
+        item = previewNftItem("EQBx", trust = trust)
+        availability?.let { coEvery { availabilityProvider.check(item) } returns it }
+        return createViewModel().also { if (availability != null) it.onResume() }
+    }
+
+    private val available get() = NftTransferAvailability.Available(mockk<Wallet>(), null)
 
     private fun expiry(expiresAt: Long) = NftDomainExpiry(
         owner = NftOwner(item.accountId, BlockchainType.Ton, item.ownerAddress),
@@ -70,7 +106,7 @@ class NftPreviewViewModelTest {
         coEvery { availabilityProvider.check(item) } returns onSale
         val viewModel = createViewModel()
 
-        viewModel.onResume(item)
+        viewModel.onResume()
 
         assertEquals(onSale, viewModel.uiState.transferAvailability)
     }
@@ -80,10 +116,10 @@ class NftPreviewViewModelTest {
         val gate = CompletableDeferred<NftTransferAvailability>()
         coEvery { availabilityProvider.check(item) } returns NftTransferAvailability.Hidden coAndThen { gate.await() }
         val viewModel = createViewModel()
-        viewModel.onResume(item)
+        viewModel.onResume()
         assertEquals(NftTransferAvailability.Hidden, viewModel.uiState.transferAvailability)
 
-        viewModel.onResume(item)
+        viewModel.onResume()
 
         assertEquals(NftTransferAvailability.Loading, viewModel.uiState.transferAvailability)
         coVerify(exactly = 2) { availabilityProvider.check(item) }
@@ -93,7 +129,7 @@ class NftPreviewViewModelTest {
     fun hiddenFlow_changesAfterCheck_keepsTransferAvailability() {
         coEvery { availabilityProvider.check(item) } returns NftTransferAvailability.Hidden
         val viewModel = createViewModel()
-        viewModel.onResume(item)
+        viewModel.onResume()
 
         hiddenState.value = false
 
@@ -102,14 +138,14 @@ class NftPreviewViewModelTest {
 
     @Test
     fun init_balanceHidden_startsHiddenAndRevealable() {
-        assertEquals(NftPreviewUiState(hidden = true, canReveal = true), createViewModel().uiState)
+        assertFlags(createViewModel().uiState, hidden = true, canReveal = true)
     }
 
     @Test
     fun init_balanceVisible_nothingToReveal() {
         hiddenState.value = false
 
-        assertEquals(NftPreviewUiState(hidden = false, canReveal = false), createViewModel().uiState)
+        assertFlags(createViewModel().uiState, hidden = false, canReveal = false)
     }
 
     @Test
@@ -118,7 +154,7 @@ class NftPreviewViewModelTest {
 
         viewModel.onToggleReveal()
 
-        assertEquals(NftPreviewUiState(hidden = false, canReveal = true), viewModel.uiState)
+        assertFlags(viewModel.uiState, hidden = false, canReveal = true)
     }
 
     @Test
@@ -128,7 +164,7 @@ class NftPreviewViewModelTest {
         viewModel.onToggleReveal()
         viewModel.onToggleReveal()
 
-        assertEquals(NftPreviewUiState(hidden = true, canReveal = true), viewModel.uiState)
+        assertFlags(viewModel.uiState, hidden = true, canReveal = true)
     }
 
     @Test
@@ -139,7 +175,7 @@ class NftPreviewViewModelTest {
         hiddenState.value = false
         hiddenState.value = true
 
-        assertEquals(NftPreviewUiState(hidden = true, canReveal = true), viewModel.uiState)
+        assertFlags(viewModel.uiState, hidden = true, canReveal = true)
     }
 
     @Test
@@ -148,7 +184,7 @@ class NftPreviewViewModelTest {
         coEvery { availabilityProvider.domainExpiry(item) } returns known
         val viewModel = createViewModel()
 
-        viewModel.onResume(item)
+        viewModel.onResume()
 
         assertEquals(known, viewModel.uiState.domainExpiry)
     }
@@ -159,7 +195,7 @@ class NftPreviewViewModelTest {
         val after = expiry(1_000 + 31_536_000)
         coEvery { availabilityProvider.domainExpiry(item) } returns before andThen after
         val viewModel = createViewModel()
-        viewModel.onResume(item)
+        viewModel.onResume()
         assertEquals(before, viewModel.uiState.domainExpiry)
 
         expiryTriggers.emit(Unit)
@@ -174,7 +210,7 @@ class NftPreviewViewModelTest {
             NftTransferAvailability.Available(mockk<Wallet>(), null)
         coEvery { availabilityProvider.domainExpiry(item) } returns null andThen expiry(1_000)
         val viewModel = createViewModel()
-        viewModel.onResume(item)
+        viewModel.onResume()
 
         expiryTriggers.emit(Unit)
 
@@ -185,8 +221,8 @@ class NftPreviewViewModelTest {
     fun onResume_secondResume_stopsListeningToPreviousTriggers() = runTest(UnconfinedTestDispatcher()) {
         coEvery { availabilityProvider.domainExpiry(item) } returns expiry(1_000)
         val viewModel = createViewModel()
-        viewModel.onResume(item)
-        viewModel.onResume(item)
+        viewModel.onResume()
+        viewModel.onResume()
 
         expiryTriggers.emit(Unit)
 
@@ -234,6 +270,103 @@ class NftPreviewViewModelTest {
         listOf(NftTransferAvailability.Loading, onSale, notOwner, checkFailed).forEach {
             assertEquals(RenewButtonState.Disabled, stateWith(it).renewButton)
         }
+    }
+
+    private fun assertFlags(state: NftPreviewUiState, hidden: Boolean, canReveal: Boolean) {
+        assertEquals(hidden, state.hidden)
+        assertEquals(canReveal, state.canReveal)
+    }
+
+    @Test
+    fun menuActions_whitelist_copiesAddressAndCannotBurn() {
+        val viewModel = viewModelWith(NftTrust.Whitelist, available)
+
+        assertEquals(
+            listOf(NftAction.HideCollection, NftAction.OpenExplorer, NftAction.CopyAddress),
+            viewModel.uiState.menuActions,
+        )
+    }
+
+    @Test
+    fun menuActions_graylistAvailable_offersReportAndBurn() {
+        val viewModel = viewModelWith(NftTrust.Graylist, available)
+
+        assertEquals(
+            listOf(NftAction.HideCollection, NftAction.HideAndReport, NftAction.OpenExplorer, NftAction.Burn),
+            viewModel.uiState.menuActions,
+        )
+    }
+
+    @Test
+    fun menuActions_noneWithoutCollection_hidesTheNftItself() {
+        item = previewNftItem("EQBx", trust = NftTrust.None).copy(collectionAddress = null)
+
+        val actions = createViewModel().uiState.menuActions
+
+        assertEquals(NftAction.HideNft, actions.first())
+        assertFalse(NftAction.HideCollection in actions)
+    }
+
+    @Test
+    fun menuActions_trustOverrideOnNone_behavesLikeWhitelist() {
+        val viewModel = viewModelWith(NftTrust.None, available)
+
+        setPref(NftUserTrust.Trust)
+
+        assertEquals(
+            listOf(NftAction.HideCollection, NftAction.OpenExplorer, NftAction.CopyAddress),
+            viewModel.uiState.menuActions,
+        )
+    }
+
+    @Test
+    fun menuActions_unavailableOrLoadingTransfer_hasNoBurn() {
+        val onSale = NftTransferAvailability.Unavailable(NftTransferUnavailableReason.OnSale)
+
+        listOf(onSale, NftTransferAvailability.Loading, NftTransferAvailability.Hidden).forEach {
+            assertFalse(NftAction.Burn in viewModelWith(NftTrust.None, it).uiState.menuActions)
+        }
+    }
+
+    @Test
+    fun showSpamPlate_noneTrust_shownUntilNotSpamObserved() {
+        val viewModel = viewModelWith(NftTrust.None)
+        assertTrue(viewModel.uiState.showSpamPlate)
+
+        viewModel.onNotSpam()
+        setPref(NftUserTrust.Trust)
+
+        assertFalse(viewModel.uiState.showSpamPlate)
+        verify { prefsRepository.markNotSpam(item) }
+    }
+
+    @Test
+    fun showSpamPlate_graylistOrWhitelist_notShown() {
+        assertFalse(viewModelWith(NftTrust.Graylist).uiState.showSpamPlate)
+        assertFalse(viewModelWith(NftTrust.Whitelist).uiState.showSpamPlate)
+    }
+
+    @Test
+    fun onReportSpam_marksSpamAndDropsPlateAndReportAction() {
+        val viewModel = viewModelWith(NftTrust.None)
+
+        viewModel.onReportSpam()
+        setPref(NftUserTrust.Spam)
+
+        verify { prefsRepository.markSpam(item) }
+        assertFalse(viewModel.uiState.showSpamPlate)
+        assertFalse(NftAction.HideAndReport in viewModel.uiState.menuActions)
+    }
+
+    @Test
+    fun onHideAndOnUndoHide_writeToRepository() {
+        val viewModel = viewModelWith(NftTrust.Whitelist)
+
+        viewModel.onHide()
+        viewModel.onUndoHide()
+
+        verify { prefsRepository.setHidden(item, true) }
+        verify { prefsRepository.setHidden(item, false) }
     }
 
     private fun stateWith(availability: NftTransferAvailability) =

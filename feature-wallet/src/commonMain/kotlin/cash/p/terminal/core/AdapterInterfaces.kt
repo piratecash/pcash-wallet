@@ -393,7 +393,7 @@ data class TonFeeEstimate(val fee: BigDecimal, val requiredTon: BigDecimal)
  * [broadcast] holds the addresses whose transaction was handed to the node; [error] stopped the rest.
  * The outcome of the transaction that failed is unknown: the node may have accepted it.
  */
-data class DomainRenewalResult(val broadcast: List<String>, val error: Throwable?)
+data class NftBroadcastResult(val broadcast: List<String>, val error: Throwable?)
 
 interface ISendTonAdapter : IBalanceAdapter {
     suspend fun send(amount: BigDecimal, address: FriendlyAddress, memo: String?)
@@ -406,7 +406,7 @@ interface ISendTonAdapter : IBalanceAdapter {
     suspend fun estimateDomainRenewalFee(nftAddresses: List<String>): TonFeeEstimate
 
     /** Sends one renewal message per domain, batched per transaction; stops at the first failure. */
-    suspend fun renewDomains(nftAddresses: List<String>): DomainRenewalResult
+    suspend fun renewDomains(nftAddresses: List<String>): NftBroadcastResult
 
     /** Blocking network call: run off the main thread. */
     fun resolveDomain(domain: String): FriendlyAddress?

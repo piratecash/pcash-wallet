@@ -101,7 +101,6 @@ private fun TonKit.changes(): Flow<NftChange> = eventFlow(ALL_EVENTS)
 
 private fun NftItem.toDraftOrNull(): NftItemRecordDraft? {
     if (renderType == HIDDEN_RENDER_TYPE) return null
-    val appTrust = trust.toAppTrust() ?: return null
     return NftItemRecordDraft(
         address = address,
         name = name.sanitized(NAME_MAX_LENGTH),
@@ -110,7 +109,7 @@ private fun NftItem.toDraftOrNull(): NftItemRecordDraft? {
         collectionAddress = collection?.address,
         collectionName = collection?.name.sanitized(NAME_MAX_LENGTH),
         collectionDescription = collection?.description.sanitized(DESCRIPTION_MAX_LENGTH),
-        trust = appTrust,
+        trust = trust.toAppTrust(),
         verified = verified,
         imageUrl = previews.nearestSecureUrl(CARD_IMAGE_SIDE),
         largeImageUrl = previews.nearestSecureUrl(LARGE_IMAGE_SIDE),
@@ -129,11 +128,11 @@ private fun DnsExpiringItem.toDraftOrNull(): NftDomainDraft? {
     )
 }
 
-private fun KitNftTrust.toAppTrust(): NftTrust? = when (this) {
+private fun KitNftTrust.toAppTrust(): NftTrust = when (this) {
     KitNftTrust.WHITELIST -> NftTrust.Whitelist
     KitNftTrust.GRAYLIST -> NftTrust.Graylist
     KitNftTrust.NONE -> NftTrust.None
-    KitNftTrust.BLACKLIST -> null
+    KitNftTrust.BLACKLIST -> NftTrust.Blacklist
 }
 
 private fun String?.sanitized(maxLength: Int): String? =

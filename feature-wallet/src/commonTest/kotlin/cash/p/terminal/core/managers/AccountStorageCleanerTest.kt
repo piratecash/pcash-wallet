@@ -1,5 +1,6 @@
 package cash.p.terminal.core.managers
 
+import cash.p.terminal.core.nft.NftCollectionPrefsRepository
 import cash.p.terminal.core.storage.NftItemStorage
 import cash.p.terminal.core.usecase.OfflineModeUseCase
 import io.mockk.coEvery
@@ -17,8 +18,14 @@ class AccountStorageCleanerTest {
     private val offlineModeUseCase = mockk<OfflineModeUseCase>(relaxed = true)
 
     private val nftItemStorage = mockk<NftItemStorage>(relaxed = true)
+    private val nftCollectionPrefsRepository = mockk<NftCollectionPrefsRepository>(relaxed = true)
 
-    private val cleaner = AccountStorageCleaner(locallyCreatedTransactionRepository, offlineModeUseCase, nftItemStorage)
+    private val cleaner = AccountStorageCleaner(
+        locallyCreatedTransactionRepository,
+        offlineModeUseCase,
+        nftItemStorage,
+        nftCollectionPrefsRepository,
+    )
 
     @Test
     fun clearAccounts_allCleanersSucceed_clearsEveryTable() = runTest {
@@ -27,6 +34,7 @@ class AccountStorageCleanerTest {
         coVerify(exactly = 1) { locallyCreatedTransactionRepository.deleteByAccountIds(ACCOUNT_IDS) }
         coVerify(exactly = 1) { offlineModeUseCase.forgetAccounts(ACCOUNT_IDS) }
         coVerify(exactly = 1) { nftItemStorage.deleteByAccountIds(ACCOUNT_IDS) }
+        coVerify(exactly = 1) { nftCollectionPrefsRepository.deleteByAccountIds(ACCOUNT_IDS) }
     }
 
     @Test
@@ -40,6 +48,24 @@ class AccountStorageCleanerTest {
             thrown = e
         }
 
+        coVerify(exactly = 1) { offlineModeUseCase.forgetAccounts(ACCOUNT_IDS) }
+        coVerify(exactly = 1) { nftItemStorage.deleteByAccountIds(ACCOUNT_IDS) }
+        coVerify(exactly = 1) { nftCollectionPrefsRepository.deleteByAccountIds(ACCOUNT_IDS) }
+        assertNotNull(thrown)
+    }
+
+    @Test
+    fun clearAccounts_nftPrefsFail_clearsOtherTablesAndPropagatesFailure() = runTest {
+        coEvery { nftCollectionPrefsRepository.deleteByAccountIds(any()) } throws IOException("disk full")
+
+        var thrown: Throwable? = null
+        try {
+            cleaner.clearAccounts(ACCOUNT_IDS)
+        } catch (e: IOException) {
+            thrown = e
+        }
+
+        coVerify(exactly = 1) { locallyCreatedTransactionRepository.deleteByAccountIds(ACCOUNT_IDS) }
         coVerify(exactly = 1) { offlineModeUseCase.forgetAccounts(ACCOUNT_IDS) }
         coVerify(exactly = 1) { nftItemStorage.deleteByAccountIds(ACCOUNT_IDS) }
         assertNotNull(thrown)

@@ -3,6 +3,7 @@ package cash.p.terminal.modules.nft
 import androidx.compose.runtime.Composable
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.modules.nft.manage.NftManagePage
 import cash.p.terminal.navigation.PageResumeEffect
 import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.ui_compose.components.rememberHudMessenger
@@ -25,6 +26,7 @@ class NftCollectionPage(private val source: NftCollectionSource) : HSPage() {
                 viewModel.toggleHidden()
             },
             onItemClick = { navigation.slideFromRight(NftPreviewPage(it, source)) },
+            onManage = { navigation.slideFromRight(NftManagePage(source)) },
             onBack = navigation::navigateUpSafely,
         )
     }

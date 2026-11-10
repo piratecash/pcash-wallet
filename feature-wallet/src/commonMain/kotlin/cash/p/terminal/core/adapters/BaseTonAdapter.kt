@@ -2,7 +2,7 @@ package cash.p.terminal.core.adapters
 
 import cash.p.terminal.core.BroadcastRawTransactionResult
 import cash.p.terminal.core.BroadcastRawTransactionStatus
-import cash.p.terminal.core.DomainRenewalResult
+import cash.p.terminal.core.NftBroadcastResult
 import cash.p.terminal.core.OfflineBroadcastMetadata
 import cash.p.terminal.core.OfflineTransactionAdapter
 import cash.p.terminal.core.OfflineTransactionStatusAdapter
@@ -64,7 +64,7 @@ abstract class BaseTonAdapter(
             }
             .toAppEstimate()
 
-    suspend fun renewDomains(nftAddresses: List<String>): DomainRenewalResult {
+    suspend fun renewDomains(nftAddresses: List<String>): NftBroadcastResult {
         val broadcast = mutableListOf<String>()
         return try {
             val chunks = renewalChunks(nftAddresses)
@@ -77,11 +77,11 @@ abstract class BaseTonAdapter(
                 broadcast += chunk
                 previousSeqno = seqno
             }
-            DomainRenewalResult(broadcast, error = null)
+            NftBroadcastResult(broadcast, error = null)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            DomainRenewalResult(broadcast, error = e)
+            NftBroadcastResult(broadcast, error = e)
         }
     }
 

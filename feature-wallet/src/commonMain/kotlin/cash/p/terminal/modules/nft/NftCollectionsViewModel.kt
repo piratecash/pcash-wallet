@@ -6,10 +6,17 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cash.p.terminal.core.nft.NftChange
+import cash.p.terminal.core.nft.NftCollectionPrefKey
+import cash.p.terminal.core.nft.NftCollectionPrefsRepository
+import cash.p.terminal.core.nft.NftCollectionState
 import cash.p.terminal.core.nft.NftCollectionsRepository
 import cash.p.terminal.core.nft.NftItemsState
 import cash.p.terminal.core.nft.NftOwner
+import cash.p.terminal.core.nft.collectionPrefKey
+import cash.p.terminal.core.nft.nftCollectionState
 import cash.p.terminal.core.nft.owner
+import cash.p.terminal.core.nft.withUserTrust
+import cash.p.terminal.entities.NftCollectionPrefRecord
 import cash.p.terminal.entities.NftItemRecord
 import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
@@ -17,6 +24,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flatMapLatest
@@ -29,20 +37,40 @@ import kotlin.time.Duration.Companion.seconds
 
 private val NEW_EVENT_DEBOUNCE = 2.seconds
 
+/** [items] are the visible NFTs only; [hiddenCollectionsCount] counts hidden and spam collections. */
 data class NftCollectionsUiState(
     val items: List<NftItemRecord> = emptyList(),
     val isLoading: Boolean = true,
     val hidden: Boolean = false,
     val networkTitle: String? = null,
+    val hiddenCollectionsCount: Int = 0,
+    val hasNfts: Boolean = false,
 ) {
     val totalCount: Int get() = items.size
-    val isEmpty: Boolean get() = !isLoading && items.isEmpty()
+    val isEmpty: Boolean get() = !isLoading && !hasNfts
+    val allCollectionsHidden: Boolean get() = !isLoading && items.isEmpty() && hiddenCollectionsCount > 0
+}
+
+internal class NftItemsWithPrefs(
+    val state: NftItemsState,
+    val prefs: Map<NftCollectionPrefKey, NftCollectionPrefRecord>,
+)
+
+/** All owners belong to one account, so its preferences apply to every one of them. */
+internal fun observeItemsWithPrefs(
+    repository: NftCollectionsRepository,
+    prefsRepository: NftCollectionPrefsRepository,
+    owners: Set<NftOwner>,
+): Flow<NftItemsWithPrefs> {
+    val prefs = owners.firstOrNull()?.let { prefsRepository.prefsFlow(it.accountId) } ?: flowOf(emptyMap())
+    return combine(repository.itemsFlow(owners), prefs, ::NftItemsWithPrefs)
 }
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class NftCollectionsViewModel(
     private val source: NftCollectionSource,
     private val repository: NftCollectionsRepository,
+    private val prefsRepository: NftCollectionPrefsRepository,
     walletManager: IWalletManager,
     private val balanceHiddenManager: IBalanceHiddenManager,
 ) : ViewModel() {
@@ -57,11 +85,7 @@ class NftCollectionsViewModel(
         viewModelScope.launch {
             launch { hiddenFlow.collect { uiState = uiState.copy(hidden = it) } }
 
-            val wallets = when (source) {
-                NftCollectionSource.AllWallets -> walletManager.activeWalletsFlow
-                is NftCollectionSource.SingleWallet -> flowOf(listOf(source.wallet))
-            }
-            repository.ownersFlow(wallets)
+            repository.ownersFlow(source.walletsFlow(walletManager))
                 .onEach(::onOwnersChanged)
                 .flatMapLatest(::observe)
                 .collect()
@@ -85,13 +109,24 @@ class NftCollectionsViewModel(
     }
 
     private fun observe(owners: Set<NftOwner>): Flow<Any> = merge(
-        repository.itemsFlow(owners).onEach(::showItems),
+        observeItemsWithPrefs(repository, prefsRepository, owners).onEach(::showItems),
         refreshRequests(owners).onEach { force -> repository.refresh(owners, force) },
     )
 
-    private fun showItems(state: NftItemsState) {
-        uiState = uiState.copy(items = state.items, isLoading = !state.isLoaded)
+    private fun showItems(data: NftItemsWithPrefs) {
+        val (visible, notVisible) = data.state.items.partition {
+            it.collectionState(data) == NftCollectionState.Visible
+        }
+        uiState = uiState.copy(
+            items = visible.map { it.withUserTrust(data.prefs[it.collectionPrefKey]) },
+            isLoading = !data.state.isLoaded,
+            hiddenCollectionsCount = notVisible.distinctBy { it.collectionPrefKey }.size,
+            hasNfts = data.state.items.isNotEmpty(),
+        )
     }
+
+    private fun NftItemRecord.collectionState(data: NftItemsWithPrefs) =
+        nftCollectionState(trust, data.prefs[collectionPrefKey])
 
     /** Emits whether the refresh must bypass the repository throttle. */
     private fun refreshRequests(owners: Set<NftOwner>): Flow<Boolean> {

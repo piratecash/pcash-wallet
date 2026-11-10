@@ -1,5 +1,6 @@
 package cash.p.terminal.core.managers
 
+import cash.p.terminal.core.nft.NftCollectionPrefsRepository
 import cash.p.terminal.core.storage.NftItemStorage
 import cash.p.terminal.core.usecase.OfflineModeUseCase
 import kotlinx.coroutines.CancellationException
@@ -12,6 +13,7 @@ class AccountStorageCleaner(
     private val locallyCreatedTransactionRepository: LocallyCreatedTransactionRepository,
     private val offlineModeUseCase: OfflineModeUseCase,
     private val nftItemStorage: NftItemStorage,
+    private val nftCollectionPrefsRepository: NftCollectionPrefsRepository,
 ) {
     /**
      * Every table is attempted, but the first failure is rethrown: the caller drops its
@@ -27,6 +29,9 @@ class AccountStorageCleaner(
             },
             failureOf("nft items") {
                 nftItemStorage.deleteByAccountIds(accountIds)
+            },
+            failureOf("nft collection prefs") {
+                nftCollectionPrefsRepository.deleteByAccountIds(accountIds)
             },
         )
         failures.firstOrNull()?.let { throw it }
