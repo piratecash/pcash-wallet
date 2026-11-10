@@ -5,6 +5,8 @@ import cash.p.terminal.modules.address.AddressHandlerFactory
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.Tron_TokenPage_AddressNotActive_Info
 import cash.p.terminal.resources.Tron_TokenPage_AddressNotActive_Title
+import cash.p.terminal.resources.tron_controlled_by_others_title
+import cash.p.terminal.resources.tron_controlled_by_others_warning
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.balance.BalanceWarning
 import org.koin.core.scope.Scope
@@ -15,6 +17,11 @@ object BalanceModule {
             BalanceWarning.TronInactiveAccountWarning -> WarningText(
                 title = TranslatableString.ResString(Res.string.Tron_TokenPage_AddressNotActive_Title),
                 text = TranslatableString.ResString(Res.string.Tron_TokenPage_AddressNotActive_Info),
+            )
+
+            BalanceWarning.TronControlledByOthersWarning -> WarningText(
+                title = TranslatableString.ResString(Res.string.tron_controlled_by_others_title),
+                text = TranslatableString.ResString(Res.string.tron_controlled_by_others_warning),
             )
         }
 }

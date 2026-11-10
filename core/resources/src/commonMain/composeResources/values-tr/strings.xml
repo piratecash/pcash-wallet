@@ -2372,4 +2372,6 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="evm_node_request_failed">Ağ düğümü isteği işleyemedi. Tekrar deneyin veya Blockchain Ayarları\'ndan başka bir kaynak seçin.\n\nDüğüm yanıtı: %1$s</string>
     <string name="desktop_transfer_password">Göndermeden önce şifre</string>
     <string name="desktop_transfer_password_description">Her gönderimden önce uygulama şifresi istenir. Böylece uygulamanın kilidi açıkken biri bilgisayarınıza erişirse varlıklarınız korunur.</string>
+    <string name="tron_controlled_by_others_title">Bu hesabı başkaları kontrol edebilir</string>
+    <string name="tron_controlled_by_others_warning">Bu hesabın izinleri değiştirilmiş: başka anahtarlar hesabı kontrol edebilir. Hesaba gönderdiğiniz fonlar sizin haberiniz olmadan çekilebilir. Hesaba yalnızca bu anahtarların kime ait olduğunu biliyorsanız para yatırın.</string>
 </resources>

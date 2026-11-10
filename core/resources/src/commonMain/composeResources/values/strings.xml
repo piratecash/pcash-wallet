@@ -2788,4 +2788,6 @@ Proceed only if you\u0027re sure.</string>
     <string name="evm_node_request_failed">The network node could not process the request. Try again or choose another source in Blockchain settings.\n\nNode response: %1$s</string>
     <string name="desktop_transfer_password">Password before sending</string>
     <string name="desktop_transfer_password_description">The app password is asked before every transfer, protecting your assets if someone gets access to your computer while the app is unlocked.</string>
+    <string name="tron_controlled_by_others_title">Others may control this account</string>
+    <string name="tron_controlled_by_others_warning">The permissions on this account have been changed: other keys may control it. Funds you send to it can be withdrawn without your involvement. Top it up only if you know whose keys these are.</string>
 </resources>

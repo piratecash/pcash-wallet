@@ -2375,4 +2375,6 @@
     <string name="evm_node_request_failed">گره شبکه نتوانست درخواست را پردازش کند. دوباره تلاش کنید یا در تنظیمات بلاک‌چین منبع دیگری انتخاب کنید.\n\nپاسخ گره: %1$s</string>
     <string name="desktop_transfer_password">رمز عبور پیش از ارسال</string>
     <string name="desktop_transfer_password_description">پیش از هر ارسال، رمز عبور برنامه درخواست می‌شود تا اگر کسی هنگام باز بودن قفل برنامه به رایانهٔ شما دسترسی پیدا کند، دارایی‌هایتان محافظت شوند.</string>
+    <string name="tron_controlled_by_others_title">ممکن است دیگران این حساب را کنترل کنند</string>
+    <string name="tron_controlled_by_others_warning">مجوزهای این حساب تغییر کرده است: ممکن است کلیدهای دیگری آن را کنترل کنند. وجوهی که به آن ارسال می‌کنید ممکن است بدون دخالت شما برداشت شوند. فقط در صورتی آن را شارژ کنید که بدانید این کلیدها متعلق به چه کسی است.</string>
 </resources>
