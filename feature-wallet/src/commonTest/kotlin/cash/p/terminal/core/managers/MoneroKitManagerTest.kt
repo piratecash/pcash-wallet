@@ -103,6 +103,20 @@ class MoneroKitManagerTest : MoneroKitManagerTestFixture() {
             .invoke(manager, account)
     }
 
+    // Desktop binds no Ledger services at all.
+    @Test
+    fun createKitInstance_softwareAccountWithoutLedgerBindings_createsWrapper() {
+        stopKoin()
+        startKoin { modules(trezorBindings) }
+        val manager = createManager(MutableStateFlow(BackgroundManagerState.EnterForeground), wrapper = null)
+
+        val wrapper = MoneroKitManager::class.java.getDeclaredMethod("createKitInstance", Account::class.java)
+            .apply { isAccessible = true }
+            .invoke(manager, account) as MoneroKitWrapper
+
+        assertSame(account, wrapper.account)
+    }
+
     @Test
     fun enterBackground_idle_stopsAndSavesWallet() = testScope.runTest {
         every { backgroundKeepAliveManager.isKeepAlive(BlockchainType.Monero) } returns false
@@ -1121,27 +1135,30 @@ abstract class MoneroKitManagerTestFixture {
     protected val ledgerAttached = MutableSharedFlow<Unit>()
     protected val ledgerGateway = mockk<MoneroLedgerOperationGateway>(relaxed = true)
 
+    protected val trezorBindings = module {
+        single<TrezorAttachments> {
+            object : TrezorAttachments {
+                override val attached = trezorAttached
+                override val detached = trezorDetached
+            }
+        }
+        single { accountManager }
+        single { trezorGateway }
+    }
+
+    private val ledgerBindings = module {
+        single<LedgerAttachments> {
+            object : LedgerAttachments {
+                override val attached = ledgerAttached
+            }
+        }
+        single { ledgerGateway }
+        single { LedgerUserOperations() }
+    }
+
     @Before
     fun setUp() {
-        startKoin {
-            modules(module {
-                single<TrezorAttachments> {
-                    object : TrezorAttachments {
-                        override val attached = trezorAttached
-                        override val detached = trezorDetached
-                    }
-                }
-                single { accountManager }
-                single { trezorGateway }
-                single<LedgerAttachments> {
-                    object : LedgerAttachments {
-                        override val attached = ledgerAttached
-                    }
-                }
-                single { ledgerGateway }
-                single { LedgerUserOperations() }
-            })
-        }
+        startKoin { modules(trezorBindings, ledgerBindings) }
     }
 
     @After

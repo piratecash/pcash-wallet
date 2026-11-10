@@ -225,6 +225,7 @@ class MoneroKitManager(
     private fun createKitInstance(
         account: Account,
     ): MoneroKitWrapper {
+        val ledgerAccount = account.moneroDeviceProtocol == MoneroDeviceProtocol.Proxy
         return MoneroKitWrapper(
             moneroWalletService = moneroWalletService,
             restoreSettingsManager = restoreSettingsManager,
@@ -234,8 +235,8 @@ class MoneroKitManager(
             moneroHardwareGateway = moneroHardwareGateway,
             connectivityManager = connectivityManager,
             backgroundManager = backgroundManager,
-            ledgerUserOperations = ledgerUserOperations,
-            ledgerGateway = ledgerGateway,
+            ledgerUserOperations = if (ledgerAccount) ledgerUserOperations else null,
+            ledgerGateway = if (ledgerAccount) ledgerGateway else null,
         )
     }
 
@@ -790,8 +791,9 @@ class MoneroKitWrapper(
     private val moneroHardwareGateway: MoneroHardwareGateway,
     private val connectivityManager: IConnectivityManager,
     private val backgroundManager: IBackgroundManager,
-    private val ledgerUserOperations: LedgerUserOperations,
-    private val ledgerGateway: MoneroLedgerOperationGateway,
+    // Given only to a Ledger account: a platform without Ledger support binds neither.
+    private val ledgerUserOperations: LedgerUserOperations?,
+    private val ledgerGateway: MoneroLedgerOperationGateway?,
     private val walletHealthReader: MoneroWalletHealthReader =
         ServiceMoneroWalletHealthReader(moneroWalletService),
     private val daemonSelector: MoneroDaemonSelector = AutoMoneroDaemonSelector,
@@ -879,6 +881,8 @@ class MoneroKitWrapper(
     private val deviceProtocol = account.moneroDeviceProtocol
     private val coldProtocol = deviceProtocol == MoneroDeviceProtocol.Cold
     private val proxyProtocol = deviceProtocol == MoneroDeviceProtocol.Proxy
+    private val ledgerOperations get() = checkNotNull(ledgerUserOperations)
+    private val ledger get() = checkNotNull(ledgerGateway)
     val hardwareWallet: Boolean
         get() = deviceProtocol != MoneroDeviceProtocol.None
 
@@ -965,7 +969,7 @@ class MoneroKitWrapper(
                         return@withContext
                     }
 
-                    if (proxyProtocol && !ledgerGateway.isDevicePresent) throw LedgerNotFoundException()
+                    if (proxyProtocol && !ledger.isDevicePresent) throw LedgerNotFoundException()
 
                     daemonSelector.selectDaemon()
 
@@ -1014,11 +1018,11 @@ class MoneroKitWrapper(
 
     // Loading a Ledger wallet waits for the user to allow the view-key export on the device.
     private fun <T> awaitingViewKeyExport(open: () -> T): T {
-        ledgerUserOperations.beginViewKeyExport()
+        ledgerOperations.beginViewKeyExport()
         try {
             return open()
         } finally {
-            ledgerUserOperations.endViewKeyExport()
+            ledgerOperations.endViewKeyExport()
         }
     }
 
@@ -1193,7 +1197,7 @@ class MoneroKitWrapper(
                 try {
                     syncProxyWalletLeaseOwned()
                 } finally {
-                    deviceFailed = !ledgerGateway.isSessionIntact
+                    deviceFailed = !ledger.isSessionIntact
                 }
             }
         } catch (error: Exception) {
@@ -1239,7 +1243,7 @@ class MoneroKitWrapper(
     private fun onProxySyncPutOff(error: Exception, stateBefore: AdapterState) {
         activeReconciliationSession()?.let { setSyncStateForSession(it, stateBefore) }
         if (error is LedgerSessionYieldedException && passEarlyEnd != DevicePassEarlyEnd.Interruption) {
-            ledgerUserOperations.reportYielded(LEDGER_MONERO_APP)
+            ledgerOperations.reportYielded(LEDGER_MONERO_APP)
         }
     }
 
@@ -1321,7 +1325,7 @@ class MoneroKitWrapper(
      * height reaches the keys only after the cache, and only once a block proved the rescan from it began.
      */
     private fun storeProxyWallet(wallet: Wallet) {
-        ledgerGateway.requireIntactSession()
+        ledger.requireIntactSession()
         storeHardwareWallet(wallet, "Failed to store Monero Ledger wallet")
         if (wallet.restoreHeightProven()) {
             storeHardwareWallet(wallet, "Failed to store Monero Ledger wallet keys", withKeys = true)
@@ -1360,7 +1364,7 @@ class MoneroKitWrapper(
 
     private fun requestedLedgerEarlyEnd(): DevicePassEarlyEnd? = when {
         interruptionsWaiting.get() > 0 -> DevicePassEarlyEnd.Interruption
-        ledgerUserOperations.isActive -> DevicePassEarlyEnd.UserYield
+        ledgerOperations.isActive -> DevicePassEarlyEnd.UserYield
         checkpointRequested -> DevicePassEarlyEnd.Checkpoint
         else -> null
     }
@@ -2420,7 +2424,7 @@ class MoneroKitWrapper(
     // Marked before the lock, so a running Ledger sync gives the device up instead of finishing first.
     private suspend fun <T> withUserOperationLock(block: suspend () -> T): T =
         if (proxyProtocol) {
-            ledgerUserOperations.run { lifecycleMutex.withLock { block() } }
+            ledgerOperations.run { lifecycleMutex.withLock { block() } }
         } else {
             withInterruptingLock(block)
         }
