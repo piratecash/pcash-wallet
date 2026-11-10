@@ -1138,7 +1138,7 @@
     <string name="SettingsSecurity_DisablePin">Desativar Senha</string>
     <string name="SettingsSecurity_DeleteSeparatePasscode">Delete a Separate Passcode</string>
     <string name="SettingsSecurity_EditPin">Editar senha</string>
-    <string name="SettingsSecurity_SetDuressPin">Definir modo de dureza</string>
+    <string name="SettingsSecurity_SetDuressPin">Definir Modo de Coação</string>
     <string name="SettingsSecurity_EditDuressPin">Editar Senha do Modo Coação</string>
     <string name="SettingsSecurity_DisableDuressPin">Desabilitar senha de cobrança</string>
     <string name="SettingsSecurity_DuressPinDescription">Um modo especializado projetado para manter as carteiras selecionadas seguras sob coação.</string>
@@ -1158,11 +1158,11 @@
     <string name="SetDuressPin_Description">Defina uma senha para o modo de Coação</string>
     <string name="EditDuressPin_Title">Editar Senha do Modo Coação</string>
     <string name="EditDuressPin_Description">Defina uma senha para o modo de Coação</string>
-    <string name="DuressPin_Title">Modo de dureza</string>
+    <string name="DuressPin_Title">Modo de Coação</string>
     <string name="DuressPin_Description">Esta modalidade permite ao usuário configurar várias senhas de desbloqueio de aplicativos, onde uma senha desejada mostra apenas carteiras especificadas. Projetado para manter carteiras selecionadas seguras sob coação ou ameaças.</string>
     <string name="DuressPin_Notes">NOTAS</string>
     <string name="DuressPin_Notes_Biometrics_Title">Autenticação Biométrica</string>
-    <string name="DuressPin_Notes_Biometrics_Description">O recurso de Autenticação Biométrica funcionará para desbloquear o Modo Duche. Você pode desativar a Autenticação Biométrica para conveniência.</string>
+    <string name="DuressPin_Notes_Biometrics_Description">O recurso de Autenticação Biométrica funcionará para desbloquear o Modo de Coação. Você pode desativar a Autenticação Biométrica para conveniência.</string>
     <string name="DuressPin_Notes_PasscodeDisabling_Title">Desabilitação da Senha</string>
     <string name="DuressPin_Notes_PasscodeDisabling_Description">Desativar a senha no modo principal redefinirá automaticamente o Modo de Coação.</string>
     <string name="DuressPin_Notes_PasscodeChange_Title">Alteração de Senha</string>
@@ -1744,7 +1744,7 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="login_logging_log_successful">Registrar logins bem-sucedidos</string>
     <string name="login_logging_log_unsuccessful">Registrar logins malsucedidos</string>
     <string name="login_logging_duress_mode">MODO COAÇÃO</string>
-    <string name="login_logging_log_into_duress">Entrar em modo coação</string>
+    <string name="login_logging_log_into_duress">Registrar logins em modo coação</string>
     <string name="login_logging_send_notification">Enviar notificação de login</string>
     <string name="login_logging_delete_auth_data">Excluir todos os dados de autenticação</string>
     <string name="login_logging_delete_auth_data_description">Esta função exclui todos os dados de autenticação com fotos ao entrar em modo coação.</string>
@@ -1842,13 +1842,13 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <!--Set Pin-->
     <string name="PinSet_Title">Definir senha</string>
     <string name="PinSet_Info">Sua senha será usada para desbloquear sua carteira</string>
-    <string name="PinSet_Transactions_Hide">Set Passcode for \“Transactions Auto Hide\” mode</string>
+    <string name="PinSet_Transactions_Hide">Definir senha para o modo “Ocultar transações automaticamente”</string>
     <string name="PinSet_ConfirmInfo">Confirmar</string>
     <string name="PinSet_ErrorPinsDontMatch">Senhas não conferem. Tente novamente.</string>
-    <string name="PinSet_ErrorFailedToSavePin">Ocorreu um erro ao enviar a mensagem. Tente novamente.</string>
+    <string name="PinSet_ErrorFailedToSavePin">Ocorreu um erro ao salvar sua senha. Tente novamente.</string>
     <string name="PinSet_ForBiometrics">Definir uma senha para habilitar Biometria</string>
     <string name="PinSet_ForDuress">Defina uma senha para ativar o modo de Coação</string>
-    <string name="pin_set_for_login_logging">Set a passcode to enable login logging</string>
+    <string name="pin_set_for_login_logging">Definir senha para ativar o registro de login</string>
     <string name="pin_set_for_login_logging_passcode">Definir senha para proteger o registro de login</string>
     <string name="confirm_pin_to_disable_login_logging_passcode">Digite a senha para desativar o registro de login</string>
     <string name="pin_set_for_delete_all_contacts">Defina uma senha para excluir todos os contatos</string>
@@ -2022,7 +2022,7 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="auth_info_no_records">Ainda não há registros de autorização</string>
     <string name="send_sms_via_zec_title">Notificação de login</string>
     <string name="send_sms_enabled">Enviar notificação</string>
-    <string name="send_sms_via_zec_info">Notifica uma pessoa de confiança de que você foi forçado a abrir o aplicativo.\n\nQuando: apenas quando o aplicativo é desbloqueado digitando a senha do Modo de dureza. Um login normal, uma senha incorreta ou o desbloqueio por biometria não envia nada.\n\nO quê: uma transação de 0.0001 ZEC (mais a taxa de rede) da carteira escolhida para o endereço protegido (shielded) de Zcash do destinatário, com sua mensagem no memo. Não é um SMS: o destinatário lê a mensagem na carteira Zcash dele, não é necessário nenhum número de telefone.\n\nQuando chega: é enviada automaticamente em segundo plano logo após o login e geralmente chega ao destinatário em poucos minutos; a carteira pode precisar sincronizar primeiro, o que pode levar mais tempo.\n\nCusto: cada notificação custa 0.0001 ZEC mais a taxa. Se a carteira não tiver ZEC suficiente nesse momento, a notificação não é enviada nem reenviada — use o botão de teste para verificar se funciona.\n\nVocê pode desativar as notificações com o interruptor no topo desta tela.</string>
+    <string name="send_sms_via_zec_info">Notifica uma pessoa de confiança de que você foi forçado a abrir o aplicativo.\n\nQuando: apenas quando o aplicativo é desbloqueado digitando a senha do Modo de Coação. Um login normal, uma senha incorreta ou o desbloqueio por biometria não envia nada.\n\nO quê: uma transação de 0.0001 ZEC (mais a taxa de rede) da carteira escolhida para o endereço protegido (shielded) de Zcash do destinatário, com sua mensagem no memo. Não é um SMS: o destinatário lê a mensagem na carteira Zcash dele, não é necessário nenhum número de telefone.\n\nQuando chega: é enviada automaticamente em segundo plano logo após o login e geralmente chega ao destinatário em poucos minutos; a carteira pode precisar sincronizar primeiro, o que pode levar mais tempo.\n\nCusto: cada notificação custa 0.0001 ZEC mais a taxa. Se a carteira não tiver ZEC suficiente nesse momento, a notificação não é enviada nem reenviada — use o botão de teste para verificar se funciona.\n\nVocê pode desativar as notificações com o interruptor no topo desta tela.</string>
     <string name="send_sms_wallet_balance_hint">Certifique-se de que tem o valor necessário na carteira selecionada.</string>
     <string name="send_sms_syncing">Sincronizando para enviar…</string>
     <string name="send_sms_test_success">Sua mensagem foi enviada com sucesso.</string>

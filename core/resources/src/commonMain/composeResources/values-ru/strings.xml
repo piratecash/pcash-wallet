@@ -1750,7 +1750,7 @@
     <string name="PinSet_ErrorFailedToSavePin">При сохранении вашего кода произошла ошибка. Повторите попытку.</string>
     <string name="PinSet_ForBiometrics">Установить секретный код для включения биометрических данных</string>
     <string name="PinSet_ForDuress">Установите код для включения режима Duress</string>
-    <string name="pin_set_for_login_logging">Set a passcode to enable login logging</string>
+    <string name="pin_set_for_login_logging">Установите код для включения журнала входа</string>
     <string name="pin_set_for_login_logging_passcode">Установите код для защиты журнала входа</string>
     <string name="confirm_pin_to_disable_login_logging_passcode">Введите код для отключения журнала входа</string>
     <string name="pin_set_for_delete_all_contacts">Установите код для удаления всех контактов</string>

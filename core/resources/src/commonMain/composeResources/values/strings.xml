@@ -2190,7 +2190,7 @@ Proceed only if you\u0027re sure.</string>
     <!--Set Pin-->
     <string name="PinSet_Title">Create Passcode</string>
     <string name="PinSet_Info">Your passcode will be used to unlock your wallet</string>
-    <string name="PinSet_Transactions_Hide">Set Passcode for \“Transactions Auto Hide\” mode</string>
+    <string name="PinSet_Transactions_Hide">Set Passcode for “Transactions Auto Hide” mode</string>
     <string name="PinSet_ConfirmInfo">Confirm</string>
     <string name="PinSet_ErrorPinsDontMatch">Passcode did not match. Try again.</string>
     <string name="PinSet_ErrorFailedToSavePin">Error occurred while saving your passcode. Please, try again.</string>
