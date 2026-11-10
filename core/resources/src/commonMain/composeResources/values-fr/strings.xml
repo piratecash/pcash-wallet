@@ -2396,4 +2396,58 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="nft_transfer_ton_balance">Solde TON</string>
     <string name="nft_transfer_domain_warning">Après le transfert, le domaine sera dissocié de votre portefeuille. Les transferts vers %1$s iront au nouveau propriétaire. C\u0027est lui qui devra renouveler le domaine.</string>
     <string name="send_confirmation_domain">Domaine</string>
+
+    <!--NFT domain renewal-->
+    <string name="nft_domain_expires">Expire</string>
+    <plurals name="nft_domain_expires_in">
+        <item quantity="one">dans %1$d jour</item>
+        <item quantity="many">dans %1$d jours</item>
+        <item quantity="other">dans %1$d jours</item>
+    </plurals>
+    <string name="nft_transfer_domain_expires">Le domaine expire</string>
+    <string name="nft_domain_renew">Renouveler le domaine</string>
+    <string name="nft_domain_renew_title">Renouveler %1$s ?</string>
+    <plurals name="nft_domain_renew_title_many">
+        <item quantity="one">Renouveler %1$d domaine ?</item>
+        <item quantity="many">Renouveler %1$d domaines ?</item>
+        <item quantity="other">Renouveler %1$d domaines ?</item>
+    </plurals>
+    <string name="nft_domain_renew_body">Le domaine sera renouvelé pour un an, jusqu\u0027au %1$s. Le renouvellement est une transaction vers le contrat du domaine.</string>
+    <string name="nft_domain_renew_body_many">%1$s : renouvellement pour un an, jusqu\u0027au %2$s. Un message vers le contrat de chaque domaine.</string>
+    <string name="nft_domain_renew_cost">Coût</string>
+    <string name="nft_domain_renew_confirm">Renouveler</string>
+    <string name="nft_domain_renew_cancel">Annuler</string>
+    <string name="nft_domain_renewed">Domaine renouvelé jusqu\u0027au %1$s</string>
+    <plurals name="nft_domains_renewed">
+        <item quantity="one">%1$d domaine renouvelé jusqu\u0027au %2$s</item>
+        <item quantity="many">%1$d domaines renouvelés jusqu\u0027au %2$s</item>
+        <item quantity="other">%1$d domaines renouvelés jusqu\u0027au %2$s</item>
+    </plurals>
+    <string name="nft_domain_renew_partial">Renouvellements envoyés : %1$d sur %2$d. L\u0027envoi s\u0027est interrompu pour les autres ; les échéances seront mises à jour après confirmation du réseau.</string>
+    <plurals name="nft_domains_expiring_banner">
+        <item quantity="one">Vous avez %1$d domaine qui expire. Renouvelez-le jusqu\u0027au %2$s.</item>
+        <item quantity="many">Vous avez %1$d domaines qui expirent. Renouvelez-les tous jusqu\u0027au %2$s.</item>
+        <item quantity="other">Vous avez %1$d domaines qui expirent. Renouvelez-les tous jusqu\u0027au %2$s.</item>
+    </plurals>
+    <string name="nft_domains_expiring_banner_hidden">Vous avez des domaines qui expirent. Renouvelez-les tous jusqu\u0027au %1$s.</string>
+    <string name="nft_domain_renew_page_title">Renouvellement des domaines</string>
+    <string name="nft_domain_renew_info">Les domaines TON DNS doivent être renouvelés une fois par an. Le renouvellement est une transaction de 0,02 TON vers le contrat du domaine, plus les frais de réseau. Couleur de l\u0027échéance : blanc — plus de 30 jours, jaune — 30 jours ou moins, rouge — 7 jours ou moins.</string>
+    <plurals name="nft_domain_expires_row">
+        <item quantity="one">Expire dans %1$d jour</item>
+        <item quantity="many">Expire dans %1$d jours</item>
+        <item quantity="other">Expire dans %1$d jours</item>
+    </plurals>
+    <string name="nft_domain_on_sale_hint">Retirez le domaine de la vente pour le renouveler</string>
+    <string name="nft_domain_on_sale_badge">en vente</string>
+    <plurals name="nft_domain_renew_total">
+        <item quantity="one">Total pour %1$d domaine</item>
+        <item quantity="many">Total pour %1$d domaines</item>
+        <item quantity="other">Total pour %1$d domaines</item>
+    </plurals>
+    <plurals name="nft_domain_renew_selected">
+        <item quantity="one">Renouveler %1$d domaine jusqu\u0027au %2$s</item>
+        <item quantity="many">Renouveler %1$d domaines jusqu\u0027au %2$s</item>
+        <item quantity="other">Renouveler %1$d domaines jusqu\u0027au %2$s</item>
+    </plurals>
+    <string name="nft_domain_renew_select">Sélectionnez des domaines</string>
 </resources>

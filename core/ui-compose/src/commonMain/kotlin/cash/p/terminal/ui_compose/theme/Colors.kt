@@ -16,6 +16,7 @@ data class Colors(
     val controlActionBorder: Color,
     val controlTrack: Color,
     val brandDefault: Color,
+    val brandDefault15: Color,
     val statusSuccess: Color,
     val statusWarning: Color,
     val statusError: Color,

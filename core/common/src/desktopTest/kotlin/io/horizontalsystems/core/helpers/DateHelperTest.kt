@@ -71,6 +71,17 @@ class DateHelperTest {
     }
 
     @Test
+    fun formatDate_longDatePatternRuLocale_genitiveMonth() {
+        Locale.setDefault(Locale.forLanguageTag("ru"))
+        val renewUntil = Calendar.getInstance().apply {
+            clear()
+            set(2027, Calendar.MARCH, 14)
+        }.time
+
+        assertEquals("14 марта 2027", DateHelper.formatDate(renewUntil, "d MMMM yyyy"))
+    }
+
+    @Test
     fun isSameDay_sameCalendarDay_true() {
         assertTrue(DateHelper.isSameDay(date, Date(date.time + 60_000)))
     }

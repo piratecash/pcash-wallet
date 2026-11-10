@@ -58,6 +58,9 @@ class NftCollectionsRepository(
 
     suspend fun ownerFor(wallet: Wallet): NftOwner? = owners(listOf(wallet)).firstOrNull()
 
+    fun ownersFlow(wallets: Flow<List<Wallet>>): Flow<Set<NftOwner>> =
+        wallets.map { owners(it) }.distinctUntilChanged()
+
     fun supportsSection(wallet: Wallet): Boolean =
         providersByType[wallet.token.blockchainType]?.supportsSection(wallet) == true
 
@@ -122,18 +125,39 @@ class NftCollectionsRepository(
     }
 
     /** Null when the state cannot be read now: the network is paused, there is no source or the request failed. */
-    suspend fun liveState(owner: NftOwner, nftAddress: String): NftLiveState? = withContext(dispatcherProvider.io) {
-        if (offlineModeManager.isNetworkPaused(owner.accountId, owner.blockchainType)) return@withContext null
-        try {
-            providersByType[owner.blockchainType]?.liveState(owner.address, nftAddress)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            // A network failure's message can carry the request URL, and with it the address.
-            logger.w { "NFT live state failed for ${owner.blockchainType.uid}: ${e::class.simpleName}" }
-            null
+    suspend fun liveState(owner: NftOwner, nftAddress: String): NftLiveState? =
+        networkRead(owner, "live state") { liveState(owner.address, nftAddress) }
+
+    /** Sorted by expiry; null when no owner could be read now. */
+    suspend fun expiringDomains(owners: Set<NftOwner>, periodDays: Int): List<NftDomainExpiry>? {
+        val reads = owners.mapNotNull { owner ->
+            networkRead(owner, "domain expiry") { expiringDomains(owner.address, periodDays) }
+                ?.map { it.toExpiry(owner) }
         }
+        if (reads.isEmpty() && owners.isNotEmpty()) return null
+        return reads.flatten().sortedBy { it.expiresAt }
     }
+
+    /** Emits when the owners' domains may have changed: a kit started, a new event arrived or the network resumed. */
+    fun domainExpiryTriggers(owners: Set<NftOwner>): Flow<Unit> = merge(
+        owners.map(::changes).merge().map { },
+        networkResumed(owners),
+    )
+
+    private suspend fun <T> networkRead(owner: NftOwner, what: String, read: suspend NftProvider.() -> T?): T? =
+        withContext(dispatcherProvider.io) {
+            if (offlineModeManager.isNetworkPaused(owner.accountId, owner.blockchainType)) return@withContext null
+            val provider = providersByType[owner.blockchainType] ?: return@withContext null
+            try {
+                provider.read()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                // A network failure's message can carry the request URL, and with it the address.
+                logger.w { "NFT $what failed for ${owner.blockchainType.uid}: ${e::class.simpleName}" }
+                null
+            }
+        }
 
     private fun isFetchedRecently(owner: NftOwner): Boolean =
         fetchedAt.value[owner]?.let { it.elapsedNow() < REFRESH_THROTTLE } == true
@@ -141,6 +165,9 @@ class NftCollectionsRepository(
 
 internal val NftItemRecord.owner: NftOwner
     get() = NftOwner(accountId, blockchainType, ownerAddress)
+
+private fun NftDomainDraft.toExpiry(owner: NftOwner) =
+    NftDomainExpiry(owner, nftAddress, name, expiresAt, isOnSale, imageUrl)
 
 private fun NftItemRecordDraft.toRecord(owner: NftOwner, position: Int) = NftItemRecord(
     accountId = owner.accountId,

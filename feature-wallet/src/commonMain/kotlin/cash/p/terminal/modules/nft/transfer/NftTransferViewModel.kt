@@ -8,10 +8,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import cash.p.terminal.core.HSCaution
 import cash.p.terminal.core.HardwareWalletSupport
 import cash.p.terminal.core.ISendTonAdapter
-import cash.p.terminal.core.LocalizedException
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.managers.RecentAddressManager
 import cash.p.terminal.core.orHide
@@ -24,30 +22,33 @@ import cash.p.terminal.modules.memo.fitsMemoBytes
 import cash.p.terminal.modules.nft.shortNftAddress
 import cash.p.terminal.modules.send.BaseSendViewModel
 import cash.p.terminal.modules.send.SendResult
+import cash.p.terminal.modules.send.fee.feePrimaryText
+import cash.p.terminal.modules.send.fee.feeSecondaryText
 import cash.p.terminal.modules.send.fee.insufficientRequiredBalanceText
+import cash.p.terminal.modules.send.orHiddenBalanceText
+import cash.p.terminal.modules.send.toSendCaution
 import cash.p.terminal.modules.send.ton.FeeStatus
 import cash.p.terminal.modules.send.ton.NftTransferFeeEstimator
 import cash.p.terminal.modules.send.ton.SendTonAddressService
 import cash.p.terminal.modules.send.ton.SendTonFeeService
 import cash.p.terminal.modules.send.ton.TonFeeQuote
 import cash.p.terminal.modules.xrate.XRateService
-import cash.p.terminal.resources.Hud_Text_NoInternet
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.not_enough_ton_for_fee
 import cash.p.terminal.resources.send_memo_too_long
-import cash.p.terminal.resources.swap_insufficient_fee_balance
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.IAdapterManager
+import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import co.touchlab.kermit.Logger
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.entities.BlockchainType
+import io.horizontalsystems.core.entities.CurrencyValue
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.math.BigDecimal
-import java.net.UnknownHostException
 import kotlin.reflect.KClass
 
 internal val NFT_TRANSFER_ATTACHED = BigDecimal("0.05")
@@ -137,7 +138,7 @@ class NftTransferViewModel(
         riskAccepted = riskAccepted,
         comment = comment,
         commentError = commentError(),
-        fee = feeText(),
+        fee = approximateFeeText(feeToken, currentQuote?.fee, rate, balanceHidden),
         balance = CoinValue(wallet.token, availableBalance).getFormattedFull().orHide(balanceHidden),
         insufficientBalance = insufficientBalanceText(),
     )
@@ -182,7 +183,7 @@ class NftTransferViewModel(
             // The broadcast outcome is unknown, so this must not become a retryable failure.
             throw e
         } catch (e: Throwable) {
-            sendResult = if (HardwareWalletSupport.isUserCancellation(e)) null else SendResult.Failed(createCaution(e))
+            sendResult = if (HardwareWalletSupport.isUserCancellation(e)) null else SendResult.Failed(e.toSendCaution())
             return@withContext
         }
         sendResult = SendResult.Sent()
@@ -216,23 +217,8 @@ class NftTransferViewModel(
         )
     }
 
-    private fun feeText(): String {
-        val fee = currentQuote?.fee ?: return formatFeePrimary(null)
-        val secondary = formatFeeSecondary(fee, rate)
-        return listOf("≈ ${formatFeePrimary(fee)}", secondary)
-            .filter(String::isNotEmpty)
-            .joinToString(" · ")
-            .orHide(balanceHidden)
-    }
-
-    private fun insufficientBalanceText(): TranslatableString? {
-        val exact = exactInsufficientBalanceText() ?: return null
-        return if (balanceHidden) {
-            TranslatableString.ResString(Res.string.swap_insufficient_fee_balance, wallet.coin.code)
-        } else {
-            exact
-        }
-    }
+    private fun insufficientBalanceText(): TranslatableString? =
+        exactInsufficientBalanceText()?.orHiddenBalanceText(balanceHidden, wallet.coin.code)
 
     private fun exactInsufficientBalanceText(): TranslatableString? {
         if (feeState.feeStatus is FeeStatus.NoEnoughBalance) {
@@ -241,12 +227,20 @@ class NftTransferViewModel(
         val required = requiredTon?.takeIf { it > availableBalance } ?: return null
         return insufficientRequiredBalanceText(required, availableBalance, wallet.token)
     }
+}
 
-    private fun createCaution(error: Throwable) = when (error) {
-        is UnknownHostException -> HSCaution(TranslatableString.ResString(Res.string.Hud_Text_NoInternet))
-        is LocalizedException -> HSCaution(TranslatableString.ResString(error.errorTextRes))
-        else -> HSCaution(TranslatableString.PlainString(error.message ?: ""))
-    }
+/** "≈ 0.01 TON · $0.05"; the fiat part is dropped without a rate. */
+internal fun approximateFeeText(
+    feeToken: Token?,
+    fee: BigDecimal?,
+    rate: CurrencyValue?,
+    balanceHidden: Boolean,
+): String {
+    if (fee == null) return feePrimaryText(feeToken, null)
+    return listOf("≈ ${feePrimaryText(feeToken, fee)}", feeSecondaryText(fee, rate))
+        .filter(String::isNotEmpty)
+        .joinToString(" · ")
+        .orHide(balanceHidden)
 }
 
 data class NftTransferUiState(

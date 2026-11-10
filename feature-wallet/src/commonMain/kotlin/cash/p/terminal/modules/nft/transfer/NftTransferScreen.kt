@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cash.p.terminal.entities.NftItemRecord
 import cash.p.terminal.modules.nft.nftCard
+import cash.p.terminal.modules.nft.renew.DomainExpiryRow
 import cash.p.terminal.modules.nft.ui.NftArtwork
 import cash.p.terminal.modules.nft.ui.displayName
 import cash.p.terminal.modules.nft.ui.previewNftItem
@@ -37,6 +38,7 @@ import cash.p.terminal.resources.ic_checkmark_20
 import cash.p.terminal.resources.nft_transfer_address_found
 import cash.p.terminal.resources.nft_transfer_comment_hint
 import cash.p.terminal.resources.nft_transfer_comment_label
+import cash.p.terminal.resources.nft_transfer_domain_expires
 import cash.p.terminal.resources.nft_transfer_domain_warning
 import cash.p.terminal.resources.nft_transfer_title
 import cash.p.terminal.resources.nft_transfer_ton_balance
@@ -70,6 +72,7 @@ internal class NftTransferScreenActions(
 internal fun NftTransferScreen(
     item: NftItemRecord,
     nftDomain: String?,
+    expiryDaysLeft: Int?,
     uiState: NftTransferUiState,
     canContinue: Boolean,
     recipientInput: @Composable () -> Unit,
@@ -94,6 +97,7 @@ internal fun NftTransferScreen(
                 modifier = Modifier.weight(1f),
                 item = item,
                 nftDomain = nftDomain,
+                expiryDaysLeft = expiryDaysLeft,
                 uiState = uiState,
                 recipientInput = recipientInput,
                 actions = actions,
@@ -114,6 +118,7 @@ internal fun NftTransferScreen(
 private fun TransferForm(
     item: NftItemRecord,
     nftDomain: String?,
+    expiryDaysLeft: Int?,
     uiState: NftTransferUiState,
     recipientInput: @Composable () -> Unit,
     actions: NftTransferScreenActions,
@@ -134,7 +139,7 @@ private fun TransferForm(
         )
         RecipientBlock(uiState, recipientInput, actions.onRiskAcceptedChange)
         CommentBlock(uiState, actions.onCommentChange)
-        Summary(uiState)
+        Summary(uiState, expiryDaysLeft)
         uiState.insufficientBalance?.let { TextImportantError(text = it.getString()) }
         nftDomain?.let {
             TextImportantWarningInline(text = stringResource(Res.string.nft_transfer_domain_warning, it))
@@ -235,15 +240,17 @@ private fun CommentBlock(uiState: NftTransferUiState, onCommentChange: (String) 
 }
 
 @Composable
-private fun Summary(uiState: NftTransferUiState) {
+private fun Summary(uiState: NftTransferUiState, expiryDaysLeft: Int?) {
+    val expiresTitle = stringResource(Res.string.nft_transfer_domain_expires)
     val rows = listOf(
         stringResource(Res.string.TonConnect_Wallet) to uiState.walletLabel,
         stringResource(Res.string.FeeSettings_NetworkFee) to uiState.fee,
         stringResource(Res.string.nft_transfer_ton_balance) to uiState.balance,
     )
     Column(Modifier.nftCard()) {
+        expiryDaysLeft?.let { SectionUniversalItem { DomainExpiryRow(expiresTitle, it) } }
         rows.forEachIndexed { index, (title, value) ->
-            SectionUniversalItem(borderTop = index != 0) {
+            SectionUniversalItem(borderTop = index != 0 || expiryDaysLeft != null) {
                 TitleAndValueCell(title = title, value = value, minHeight = 48.dp)
             }
         }
@@ -268,12 +275,14 @@ private fun PreviewContent(
     uiState: NftTransferUiState,
     recipient: String = "",
     nftDomain: String? = null,
+    expiryDaysLeft: Int? = null,
     canContinue: Boolean = false,
 ) {
     ComposeAppTheme {
         NftTransferScreen(
             item = previewNftItem("EQBx"),
             nftDomain = nftDomain,
+            expiryDaysLeft = expiryDaysLeft,
             uiState = uiState,
             canContinue = canContinue,
             recipientInput = { FormsInput(initial = recipient, hint = "Address or .ton domain", onValueChange = {}) },
@@ -305,6 +314,7 @@ private fun NftTransferScreenDomainPreview() = PreviewContent(
     uiState = previewState.copy(recipientDomain = "alex.ton", fee = "≈ 0.05 TON · $0.25"),
     recipient = "alex.ton",
     nftDomain = "piratecash.ton",
+    expiryDaysLeft = 12,
     canContinue = true,
 )
 

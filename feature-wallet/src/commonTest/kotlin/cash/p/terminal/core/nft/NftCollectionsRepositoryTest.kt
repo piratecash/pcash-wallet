@@ -9,6 +9,9 @@ import cash.p.terminal.entities.NftTrust
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
+import co.touchlab.kermit.LogWriter
+import co.touchlab.kermit.Logger
+import co.touchlab.kermit.Severity
 import io.horizontalsystems.core.entities.BlockchainType
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -19,6 +22,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
@@ -29,6 +33,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withTimeout
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlin.test.assertFailsWith
@@ -274,6 +279,81 @@ class NftCollectionsRepositoryTest {
     }
 
     @Test
+    fun expiringDomains_networkPaused_returnsNullWithoutRequest() = test {
+        every { offlineModeManager.isNetworkPaused(KEY) } returns true
+
+        assertNull(repository.expiringDomains(setOf(OWNER), 30))
+        coVerify(exactly = 0) { provider.expiringDomains(any(), any()) }
+    }
+
+    @Test
+    fun expiringDomains_requestFails_returnsNullAndLogsOnlyExceptionType() = test {
+        coEvery { provider.expiringDomains(ADDRESS, 30) } throws IllegalStateException("https://tonapi/$ADDRESS")
+        val logs = CapturingLogWriter()
+        val previousWriters = Logger.config.logWriterList
+        Logger.setLogWriters(logs)
+        val result = try {
+            repository.expiringDomains(setOf(OWNER), 30)
+        } finally {
+            Logger.setLogWriters(previousWriters)
+        }
+
+        assertNull(result)
+        assertEquals(listOf("NFT domain expiry failed for the-open-network: IllegalStateException"), logs.messages)
+    }
+
+    @Test
+    fun expiringDomains_requestCancelled_rethrows() = test {
+        coEvery { provider.expiringDomains(ADDRESS, 30) } throws CancellationException()
+
+        assertFailsWith<CancellationException> { repository.expiringDomains(setOf(OWNER), 30) }
+    }
+
+    @Test
+    fun expiringDomains_twoOwners_mergedAndSortedByExpiry() = test {
+        coEvery { provider.expiringDomains(ADDRESS, 30) } returns listOf(domain("a3", 300), domain("a1", 100))
+        coEvery { provider.expiringDomains(OTHER_ADDRESS, 30) } returns listOf(domain("b2", 200))
+
+        val result = repository.expiringDomains(setOf(OWNER, OTHER_OWNER), 30)
+
+        assertEquals(listOf("a1", "b2", "a3"), result?.map { it.nftAddress })
+        assertEquals(listOf(OWNER, OTHER_OWNER, OWNER), result?.map { it.owner })
+    }
+
+    @Test
+    fun expiringDomains_oneOwnerFails_returnsOtherOwnerDomains() = test {
+        coEvery { provider.expiringDomains(ADDRESS, 30) } throws IllegalStateException("boom")
+        coEvery { provider.expiringDomains(OTHER_ADDRESS, 30) } returns listOf(domain("b", 200))
+
+        assertEquals(
+            listOf(NftDomainExpiry(OTHER_OWNER, "b", "b.ton", 200, false)),
+            repository.expiringDomains(setOf(OWNER, OTHER_OWNER), 30),
+        )
+    }
+
+    @Test
+    fun expiringDomains_allOwnersUnavailable_returnsNull() = test {
+        coEvery { provider.expiringDomains(any(), 30) } returns null
+
+        assertNull(repository.expiringDomains(setOf(OWNER, OTHER_OWNER), 30))
+    }
+
+    @Test
+    fun domainExpiryTriggers_kitAppearedNewEventAndNetworkResume_eachEmit() = test {
+        val changes = MutableSharedFlow<NftChange>()
+        every { provider.changes(ADDRESS) } returns changes
+        paused.value = setOf(KEY)
+        val emissions = mutableListOf<Unit>()
+        backgroundScope.launch { repository.domainExpiryTriggers(setOf(OWNER)).toList(emissions) }
+
+        changes.emit(NftChange.KitAppeared)
+        changes.emit(NftChange.NewEvent)
+        paused.value = emptySet()
+
+        assertEquals(3, emissions.size)
+    }
+
+    @Test
     fun owners_walletsOfOneChain_buildsOwnersWithAccount() = test {
         val wallet = wallet()
         coEvery { provider.ownerAddresses(listOf(wallet)) } returns setOf(ADDRESS)
@@ -322,6 +402,8 @@ class NftCollectionsRepositoryTest {
         }
     }
 
+    private fun domain(address: String, expiresAt: Long) = NftDomainDraft(address, "$address.ton", expiresAt, false)
+
     private fun draft(address: String) = NftItemRecordDraft(
         address = address,
         name = null,
@@ -358,6 +440,14 @@ class NftCollectionsRepositoryTest {
         imageUrl = null,
         largeImageUrl = null,
     )
+
+    private class CapturingLogWriter : LogWriter() {
+        val messages = mutableListOf<String>()
+
+        override fun log(severity: Severity, message: String, tag: String, throwable: Throwable?) {
+            messages += message
+        }
+    }
 
     private companion object {
         const val ACCOUNT_ID = "account-id"

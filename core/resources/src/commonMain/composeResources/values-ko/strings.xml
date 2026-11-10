@@ -2380,4 +2380,44 @@
     <string name="nft_transfer_ton_balance">TON 잔액</string>
     <string name="nft_transfer_domain_warning">전송 후 도메인은 회원님의 지갑에서 연결 해제됩니다. %1$s(으)로 보내는 금액은 새 소유자에게 전달됩니다. 도메인 갱신은 새 소유자가 해야 합니다.</string>
     <string name="send_confirmation_domain">도메인</string>
+
+    <!--NFT domain renewal-->
+    <string name="nft_domain_expires">만료</string>
+    <plurals name="nft_domain_expires_in">
+        <item quantity="other">%1$d일 후</item>
+    </plurals>
+    <string name="nft_transfer_domain_expires">도메인 만료</string>
+    <string name="nft_domain_renew">도메인 갱신</string>
+    <string name="nft_domain_renew_title">%1$s을(를) 갱신할까요?</string>
+    <plurals name="nft_domain_renew_title_many">
+        <item quantity="other">도메인 %1$d개를 갱신할까요?</item>
+    </plurals>
+    <string name="nft_domain_renew_body">도메인이 1년 연장되어 %1$s까지 유효합니다. 갱신은 도메인 컨트랙트로 보내는 트랜잭션입니다.</string>
+    <string name="nft_domain_renew_body_many">%1$s — 1년 연장, %2$s까지. 각 도메인 컨트랙트로 메시지 하나씩 전송됩니다.</string>
+    <string name="nft_domain_renew_cost">비용</string>
+    <string name="nft_domain_renew_confirm">갱신</string>
+    <string name="nft_domain_renew_cancel">취소</string>
+    <string name="nft_domain_renewed">도메인이 %1$s까지 갱신되었습니다</string>
+    <plurals name="nft_domains_renewed">
+        <item quantity="other">도메인 %1$d개가 %2$s까지 갱신되었습니다</item>
+    </plurals>
+    <string name="nft_domain_renew_partial">갱신 전송: %1$d/%2$d건. 나머지는 전송이 중단되었으며, 네트워크 확인 후 만료일이 업데이트됩니다.</string>
+    <plurals name="nft_domains_expiring_banner">
+        <item quantity="other">만료 예정 도메인이 %1$d개 있습니다. %2$s까지 모두 갱신하세요.</item>
+    </plurals>
+    <string name="nft_domains_expiring_banner_hidden">만료 예정 도메인이 있습니다. %1$s까지 모두 갱신하세요.</string>
+    <string name="nft_domain_renew_page_title">도메인 갱신</string>
+    <string name="nft_domain_renew_info">TON DNS 도메인은 1년에 한 번 갱신해야 합니다. 갱신은 도메인 컨트랙트로 보내는 0.02 TON 트랜잭션이며 네트워크 수수료가 추가됩니다. 만료 색상: 흰색 — 30일 초과, 노란색 — 30일 이하, 빨간색 — 7일 이하.</string>
+    <plurals name="nft_domain_expires_row">
+        <item quantity="other">%1$d일 후 만료</item>
+    </plurals>
+    <string name="nft_domain_on_sale_hint">갱신하려면 판매를 해제하세요</string>
+    <string name="nft_domain_on_sale_badge">판매 중</string>
+    <plurals name="nft_domain_renew_total">
+        <item quantity="other">도메인 %1$d개 합계</item>
+    </plurals>
+    <plurals name="nft_domain_renew_selected">
+        <item quantity="other">도메인 %1$d개를 %2$s까지 갱신</item>
+    </plurals>
+    <string name="nft_domain_renew_select">도메인을 선택하세요</string>
 </resources>

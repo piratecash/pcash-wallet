@@ -13,6 +13,7 @@ import cash.p.terminal.wallet.entities.TonWalletVersion
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.tonkit.Address
 import io.horizontalsystems.tonkit.core.TonKit
+import io.horizontalsystems.tonkit.models.DnsExpiringItem
 import io.horizontalsystems.tonkit.models.EventInfo
 import io.horizontalsystems.tonkit.models.NftCollection
 import io.horizontalsystems.tonkit.models.NftItem
@@ -207,6 +208,59 @@ class TonNftProviderTest {
     }
 
     @Test
+    fun expiringDomains_kitItems_mapsAddressNameExpiryAndSaleState() = test {
+        startKit(
+            items = emptyList(),
+            domains = listOf(
+                DnsExpiringItem(100, "free.ton", nft("free-nft")),
+                DnsExpiringItem(200, "sold.ton", nft("sold-nft", isOnSale = true)),
+            ),
+        )
+
+        assertEquals(
+            listOf(NftDomainDraft("free-nft", "free.ton", 100, false), NftDomainDraft("sold-nft", "sold.ton", 200, true)),
+            provider.expiringDomains(OWNER, 30),
+        )
+    }
+
+    @Test
+    fun expiringDomains_itemWithoutNft_isSkipped() = test {
+        startKit(
+            items = emptyList(),
+            domains = listOf(DnsExpiringItem(100, "lost.ton", null), DnsExpiringItem(200, "kept.ton", nft("kept"))),
+        )
+
+        assertEquals(listOf("kept"), provider.expiringDomains(OWNER, 30)?.map { it.nftAddress })
+    }
+
+    @Test
+    fun expiringDomains_untrustedName_isSanitizedAndBlankSkipped() = test {
+        startKit(
+            items = emptyList(),
+            domains = listOf(
+                DnsExpiringItem(100, "pi‮rate\n.ton", nft("a")),
+                DnsExpiringItem(200, " ‮\n ", nft("b")),
+            ),
+        )
+
+        assertEquals(listOf("pi rate .ton"), provider.expiringDomains(OWNER, 30)?.map { it.name })
+    }
+
+    @Test
+    fun expiringDomains_periodDays_isPassedToKit() = test {
+        val kit = startKit(items = emptyList())
+
+        provider.expiringDomains(OWNER, 366)
+
+        coVerify { kit.dnsExpiring(366) }
+    }
+
+    @Test
+    fun expiringDomains_noStartedKit_returnsNull() = test {
+        assertNull(provider.expiringDomains(OWNER, 30))
+    }
+
+    @Test
     fun ownerAddresses_walletsOfSameVersion_derivesOnce() = test {
         val account = mockk<Account>()
         every { tonKitManager.getReceiveAddress(account, TonWalletVersion.V4R2) } returns OWNER
@@ -311,10 +365,12 @@ class TonNftProviderTest {
         address: String = OWNER,
         version: TonWalletVersion = TonWalletVersion.V4R2,
         events: Flow<EventInfo> = emptyFlow(),
+        domains: List<DnsExpiringItem> = emptyList(),
     ): TonKit {
         val kit = mockk<TonKit> {
             every { receiveAddress } returns Address.parse(address)
             coEvery { nftItems(any()) } returns items
+            coEvery { dnsExpiring(any()) } returns domains
             every { eventFlow(TagQuery(null, null, null, null)) } returns events
         }
         kits.value = kits.value + (version to TonKitWrapper(kit, mockk(), version))
@@ -340,6 +396,7 @@ class TonNftProviderTest {
         collection: NftCollection? = null,
         previews: List<NftPreview> = emptyList(),
         verified: Boolean = false,
+        isOnSale: Boolean = false,
     ) = NftItem(
         address = address,
         ownerAddress = null,
@@ -350,7 +407,7 @@ class TonNftProviderTest {
         verified = verified,
         collection = collection,
         previews = previews,
-        isOnSale = false,
+        isOnSale = isOnSale,
         dns = null,
         buttons = emptyList(),
         lottie = null,

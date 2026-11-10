@@ -34,7 +34,7 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.core.entities.BlockchainType
 import org.jetbrains.compose.resources.stringResource
 
-private const val HIDDEN_NAME = "****"
+internal const val HIDDEN_NAME = "****"
 internal const val HIDDEN_COLLECTION = "***"
 
 @Composable

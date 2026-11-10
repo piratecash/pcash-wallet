@@ -26,11 +26,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cash.p.terminal.core.nft.NftDomainExpiry
+import cash.p.terminal.core.nft.owner
 import cash.p.terminal.entities.NftItemRecord
 import cash.p.terminal.modules.manageaccount.ui.rememberCopyWithHud
 import cash.p.terminal.modules.nft.ui.HIDDEN_COLLECTION
 import cash.p.terminal.modules.nft.ui.NftArtwork
 import cash.p.terminal.modules.nft.ui.displayName
+import cash.p.terminal.modules.nft.renew.DomainExpiryRow
+import cash.p.terminal.modules.nft.renew.rememberDaysLeft
 import cash.p.terminal.modules.nft.ui.previewNftItem
 import cash.p.terminal.resources.AddToken_AddressOrSymbol
 import cash.p.terminal.resources.Balance_Network
@@ -39,6 +43,8 @@ import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.ic_nft_verified_16
 import cash.p.terminal.resources.nft_about_collection
 import cash.p.terminal.resources.nft_details
+import cash.p.terminal.resources.nft_domain_expires
+import cash.p.terminal.resources.nft_domain_renew
 import cash.p.terminal.resources.nft_open_in_explorer
 import cash.p.terminal.resources.nft_owner
 import cash.p.terminal.resources.nft_transfer_check_failed
@@ -47,6 +53,7 @@ import cash.p.terminal.resources.nft_transfer_on_sale
 import cash.p.terminal.resources.nft_transfer_watch_only
 import cash.p.terminal.resources.nft_unnamed_collection
 import cash.p.terminal.ui_compose.components.AppBar
+import cash.p.terminal.ui_compose.components.ButtonPrimaryTransparent
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.HsDivider
@@ -65,14 +72,16 @@ private val MaxContentWidth = 560.dp
 private val SectionShape = RoundedCornerShape(12.dp)
 private const val ADDRESS_EDGE_LENGTH = 4
 
+internal class NftNetworkInfo(val title: String?, val explorerUrl: String?)
+
 @Composable
 internal fun NftPreviewScreen(
     item: NftItemRecord,
     uiState: NftPreviewUiState,
-    networkTitle: String?,
-    explorerUrl: String?,
+    network: NftNetworkInfo,
     onArtworkClick: () -> Unit,
     onSend: (NftTransferAvailability.Available) -> Unit,
+    onRenew: (NftDomainExpiry) -> Unit,
     onBack: () -> Unit,
 ) {
     val name = item.displayName(uiState.hidden)
@@ -102,9 +111,9 @@ internal fun NftPreviewScreen(
                     }
                 }
                 if (!uiState.hidden) {
-                    DetailsHeader(explorerUrl)
-                    Details(item, networkTitle)
-                    TransferAction(uiState.transferAvailability, onSend)
+                    DetailsHeader(network.explorerUrl)
+                    Details(item, network.title, uiState.domainExpiry)
+                    TransferActions(uiState, onSend, onRenew)
                 }
             }
         }
@@ -199,12 +208,15 @@ private fun DetailsHeader(explorerUrl: String?) {
 }
 
 @Composable
-private fun Details(item: NftItemRecord, networkTitle: String?) {
+private fun Details(item: NftItemRecord, networkTitle: String?, domainExpiry: NftDomainExpiry?) {
     val ownerTitle = stringResource(Res.string.nft_owner)
     val contractTitle = stringResource(Res.string.AddToken_AddressOrSymbol)
     val networkLabel = stringResource(Res.string.Balance_Network)
 
+    val expiresTitle = stringResource(Res.string.nft_domain_expires)
+
     val rows = buildList<@Composable () -> Unit> {
+        domainExpiry?.let { add { DomainExpiryRow(expiresTitle, it.rememberDaysLeft()) } }
         item.realOwnerAddress?.let { add { AddressRow(ownerTitle, it) } }
         add { AddressRow(contractTitle, item.address) }
         networkTitle?.let { add { TitleAndValueCell(title = networkLabel, value = it) } }
@@ -222,22 +234,34 @@ private fun AddressRow(title: String, address: String) {
 }
 
 @Composable
-private fun TransferAction(
-    availability: NftTransferAvailability,
+private fun TransferActions(
+    uiState: NftPreviewUiState,
     onSend: (NftTransferAvailability.Available) -> Unit,
+    onRenew: (NftDomainExpiry) -> Unit,
 ) {
+    val availability = uiState.transferAvailability
     if (availability is NftTransferAvailability.Hidden) return
 
     Column(
         modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        ButtonPrimaryYellow(
-            modifier = Modifier.fillMaxWidth(),
-            title = stringResource(Res.string.Button_Send),
-            enabled = availability is NftTransferAvailability.Available,
-            onClick = { (availability as? NftTransferAvailability.Available)?.let(onSend) },
-        )
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            ButtonPrimaryYellow(
+                modifier = Modifier.fillMaxWidth(),
+                title = stringResource(Res.string.Button_Send),
+                enabled = availability is NftTransferAvailability.Available,
+                onClick = { (availability as? NftTransferAvailability.Available)?.let(onSend) },
+            )
+            if (uiState.renewButton != RenewButtonState.Hidden) {
+                ButtonPrimaryTransparent(
+                    modifier = Modifier.fillMaxWidth(),
+                    title = stringResource(Res.string.nft_domain_renew),
+                    enabled = uiState.renewButton == RenewButtonState.Enabled,
+                    onClick = { uiState.domainExpiry?.let(onRenew) },
+                )
+            }
+        }
         if (availability is NftTransferAvailability.Unavailable) {
             subhead2_grey(text = stringResource(availability.reason.message))
         }
@@ -263,15 +287,21 @@ private val previewItem = previewNftItem("EQBx").copy(
 private fun PreviewContent(
     hidden: Boolean,
     availability: NftTransferAvailability = NftTransferAvailability.Loading,
+    domainExpiry: NftDomainExpiry? = null,
 ) {
     ComposeAppTheme {
         NftPreviewScreen(
             item = previewItem,
-            uiState = NftPreviewUiState(hidden = hidden, canReveal = hidden, transferAvailability = availability),
-            networkTitle = "TON",
-            explorerUrl = "https://tonviewer.com/nft/EQBx",
+            uiState = NftPreviewUiState(
+                hidden = hidden,
+                canReveal = hidden,
+                transferAvailability = availability,
+                domainExpiry = domainExpiry,
+            ),
+            network = NftNetworkInfo(title = "TON", explorerUrl = "https://tonviewer.com/nft/EQBx"),
             onArtworkClick = {},
             onSend = {},
+            onRenew = {},
             onBack = {},
         )
     }
@@ -290,4 +320,36 @@ private fun NftPreviewScreenHiddenPreview() = PreviewContent(hidden = true)
 private fun NftPreviewScreenOnSalePreview() = PreviewContent(
     hidden = false,
     availability = NftTransferAvailability.Unavailable(NftTransferUnavailableReason.OnSale),
+)
+
+private fun previewExpiry(daysLeft: Long) = NftDomainExpiry(
+    owner = previewNftItem("EQBx").owner,
+    nftAddress = "EQBx",
+    name = "piratecash.ton",
+    expiresAt = System.currentTimeMillis() / 1000 + daysLeft * 86_400 + 3_600,
+    isOnSale = false,
+)
+
+@Preview
+@Composable
+private fun NftPreviewScreenRenewNormalPreview() = PreviewContent(
+    hidden = false,
+    availability = NftTransferAvailability.Loading,
+    domainExpiry = previewExpiry(203),
+)
+
+@Preview
+@Composable
+private fun NftPreviewScreenRenewSoonPreview() = PreviewContent(
+    hidden = false,
+    availability = NftTransferAvailability.Loading,
+    domainExpiry = previewExpiry(12),
+)
+
+@Preview
+@Composable
+private fun NftPreviewScreenRenewUrgentOnSalePreview() = PreviewContent(
+    hidden = false,
+    availability = NftTransferAvailability.Unavailable(NftTransferUnavailableReason.OnSale),
+    domainExpiry = previewExpiry(5),
 )

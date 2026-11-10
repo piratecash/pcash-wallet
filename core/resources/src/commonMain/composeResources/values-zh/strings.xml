@@ -2371,4 +2371,44 @@
     <string name="nft_transfer_ton_balance">TON 余额</string>
     <string name="nft_transfer_domain_warning">转移后，该域名将与您的钱包解除绑定。发往 %1$s 的转账将到达新所有者。域名续费也将由新所有者负责。</string>
     <string name="send_confirmation_domain">域名</string>
+
+    <!--NFT domain renewal-->
+    <string name="nft_domain_expires">到期</string>
+    <plurals name="nft_domain_expires_in">
+        <item quantity="other">%1$d 天后</item>
+    </plurals>
+    <string name="nft_transfer_domain_expires">域名到期</string>
+    <string name="nft_domain_renew">续费域名</string>
+    <string name="nft_domain_renew_title">续费 %1$s？</string>
+    <plurals name="nft_domain_renew_title_many">
+        <item quantity="other">续费 %1$d 个域名？</item>
+    </plurals>
+    <string name="nft_domain_renew_body">域名将续费一年，至 %1$s。续费是发送到域名合约的一笔交易。</string>
+    <string name="nft_domain_renew_body_many">%1$s — 续费一年，至 %2$s。向每个域名的合约发送一条消息。</string>
+    <string name="nft_domain_renew_cost">费用</string>
+    <string name="nft_domain_renew_confirm">续费</string>
+    <string name="nft_domain_renew_cancel">取消</string>
+    <string name="nft_domain_renewed">域名已续费至 %1$s</string>
+    <plurals name="nft_domains_renewed">
+        <item quantity="other">已将 %1$d 个域名续费至 %2$s</item>
+    </plurals>
+    <string name="nft_domain_renew_partial">已发送续费：%1$d/%2$d。其余发送已中断，网络确认后到期时间将更新。</string>
+    <plurals name="nft_domains_expiring_banner">
+        <item quantity="other">您有 %1$d 个域名即将到期。请将全部域名续费至 %2$s。</item>
+    </plurals>
+    <string name="nft_domains_expiring_banner_hidden">您有域名即将到期。请将全部域名续费至 %1$s。</string>
+    <string name="nft_domain_renew_page_title">域名续费</string>
+    <string name="nft_domain_renew_info">TON DNS 域名需每年续费一次。续费是向域名合约发送的一笔 0.02 TON 交易，另加网络手续费。到期颜色：白色——超过 30 天，黄色——30 天及以内，红色——7 天及以内。</string>
+    <plurals name="nft_domain_expires_row">
+        <item quantity="other">%1$d 天后到期</item>
+    </plurals>
+    <string name="nft_domain_on_sale_hint">取消出售后才能续费</string>
+    <string name="nft_domain_on_sale_badge">出售中</string>
+    <plurals name="nft_domain_renew_total">
+        <item quantity="other">%1$d 个域名合计</item>
+    </plurals>
+    <plurals name="nft_domain_renew_selected">
+        <item quantity="other">将 %1$d 个域名续费至 %2$s</item>
+    </plurals>
+    <string name="nft_domain_renew_select">请选择域名</string>
 </resources>

@@ -7,6 +7,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.core.ISendTonAdapter
 import cash.p.terminal.core.getKoinInstance
+import cash.p.terminal.core.nft.NftDomainExpiry
 import cash.p.terminal.entities.Address
 import cash.p.terminal.entities.NftItemRecord
 import cash.p.terminal.modules.address.AddressViewModel
@@ -14,6 +15,7 @@ import cash.p.terminal.modules.address.HSAddressInput
 import cash.p.terminal.feature.wallet.rememberTransferAction
 import cash.p.terminal.modules.address.NftTransferAddressQualifier
 import cash.p.terminal.modules.nft.NftPreviewPage
+import cash.p.terminal.modules.nft.renew.rememberDaysLeft
 import cash.p.terminal.modules.send.SendResult
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
@@ -33,6 +35,7 @@ class NftTransferPage(
     private val item: NftItemRecord,
     private val wallet: Wallet,
     private val domain: String?,
+    private val domainExpiry: NftDomainExpiry?,
 ) : HSPage() {
 
     @Composable
@@ -66,6 +69,7 @@ class NftTransferPage(
         NftTransferScreen(
             item = item,
             nftDomain = domain,
+            expiryDaysLeft = domainExpiry?.rememberDaysLeft(),
             uiState = uiState,
             canContinue = viewModel.canContinue,
             recipientInput = { RecipientInput(navigation, adapter, uiState, viewModel::onEnterAddress) },

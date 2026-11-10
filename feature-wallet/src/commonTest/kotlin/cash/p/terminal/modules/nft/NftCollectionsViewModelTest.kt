@@ -55,6 +55,7 @@ class NftCollectionsViewModelTest {
     private val repository = mockk<NftCollectionsRepository> {
         coEvery { owners(listOf(wallet)) } returns setOf(owner)
         coEvery { owners(emptyList()) } returns setOf(otherOwner)
+        every { ownersFlow(any()) } answers { callOriginal() }
         every { itemsFlow(any()) } returns items
         every { changes(owner) } returns changes
         every { changes(otherOwner) } returns MutableSharedFlow()

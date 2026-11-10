@@ -1,9 +1,10 @@
 package cash.p.terminal.modules.nft
 
+import cash.p.terminal.core.nft.DOMAIN_EXPIRY_LOOKUP_DAYS
 import cash.p.terminal.core.nft.NftCollectionsRepository
-import cash.p.terminal.core.nft.NftOwner
+import cash.p.terminal.core.nft.NftDomainExpiry
+import cash.p.terminal.core.nft.owner
 import cash.p.terminal.entities.NftItemRecord
-import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.supportsTonConnect
 
@@ -20,11 +21,12 @@ sealed interface NftTransferAvailability {
 }
 
 class NftTransferAvailabilityProvider(
-    private val walletManager: IWalletManager,
+    private val walletResolver: NftOwnerWalletResolver,
     private val repository: NftCollectionsRepository,
 ) {
     suspend fun check(item: NftItemRecord): NftTransferAvailability {
-        val (wallet, owner) = ownerWallet(item) ?: return NftTransferAvailability.Hidden
+        val owner = item.owner
+        val wallet = walletResolver.wallet(owner) ?: return NftTransferAvailability.Hidden
         if (wallet.account.isWatchAccount) return unavailable(NftTransferUnavailableReason.WatchOnly)
         if (!wallet.account.supportsTonConnect()) return NftTransferAvailability.Hidden
 
@@ -37,12 +39,12 @@ class NftTransferAvailabilityProvider(
         }
     }
 
-    private suspend fun ownerWallet(item: NftItemRecord): Pair<Wallet, NftOwner>? = walletManager.activeWallets
-        .filter { it.account.id == item.accountId && it.token.blockchainType == item.blockchainType }
-        .filter(repository::supportsSection)
-        .firstNotNullOfOrNull { wallet ->
-            repository.ownerFor(wallet)?.takeIf { it.address == item.ownerAddress }?.let { wallet to it }
-        }
+    /** Null when the item is not a domain that expires or the expiry cannot be read now. */
+    suspend fun domainExpiry(item: NftItemRecord): NftDomainExpiry? {
+        val owner = item.owner
+        return repository.expiringDomains(setOf(owner), DOMAIN_EXPIRY_LOOKUP_DAYS)
+            ?.firstOrNull { it.nftAddress == item.address }
+    }
 
     private fun unavailable(reason: NftTransferUnavailableReason) = NftTransferAvailability.Unavailable(reason)
 }

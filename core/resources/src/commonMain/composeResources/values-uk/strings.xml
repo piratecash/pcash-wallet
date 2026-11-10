@@ -2549,4 +2549,65 @@
     <string name="nft_transfer_ton_balance">Баланс TON</string>
     <string name="nft_transfer_domain_warning">Після передачі домен відв’яжеться від вашого гаманця. Перекази на %1$s надходитимуть новому власнику. Подовжувати домен доведеться вже йому.</string>
     <string name="send_confirmation_domain">Домен</string>
+
+    <!--NFT domain renewal-->
+    <string name="nft_domain_expires">Спливає</string>
+    <plurals name="nft_domain_expires_in">
+        <item quantity="one">через %1$d дн.</item>
+        <item quantity="few">через %1$d дн.</item>
+        <item quantity="many">через %1$d дн.</item>
+        <item quantity="other">через %1$d дн.</item>
+    </plurals>
+    <string name="nft_transfer_domain_expires">Домен спливає</string>
+    <string name="nft_domain_renew">Подовжити домен</string>
+    <string name="nft_domain_renew_title">Подовжити %1$s?</string>
+    <plurals name="nft_domain_renew_title_many">
+        <item quantity="one">Подовжити %1$d домен?</item>
+        <item quantity="few">Подовжити %1$d домени?</item>
+        <item quantity="many">Подовжити %1$d доменів?</item>
+        <item quantity="other">Подовжити %1$d доменів?</item>
+    </plurals>
+    <string name="nft_domain_renew_body">Домен буде подовжено на рік, до %1$s. Подовження — транзакція на контракт домену.</string>
+    <string name="nft_domain_renew_body_many">%1$s — подовження на рік, до %2$s. Одне повідомлення на контракт кожного домену.</string>
+    <string name="nft_domain_renew_cost">Вартість</string>
+    <string name="nft_domain_renew_confirm">Подовжити</string>
+    <string name="nft_domain_renew_cancel">Скасувати</string>
+    <string name="nft_domain_renewed">Домен подовжено до %1$s</string>
+    <plurals name="nft_domains_renewed">
+        <item quantity="one">Подовжено %1$d домен до %2$s</item>
+        <item quantity="few">Подовжено %1$d домени до %2$s</item>
+        <item quantity="many">Подовжено %1$d доменів до %2$s</item>
+        <item quantity="other">Подовжено %1$d доменів до %2$s</item>
+    </plurals>
+    <string name="nft_domain_renew_partial">Надіслано подовжень: %1$d з %2$d. Для решти надсилання перервалося, терміни оновляться після підтвердження мережі.</string>
+    <plurals name="nft_domains_expiring_banner">
+        <item quantity="one">У вас %1$d домен спливає. Подовжіть його до %2$s.</item>
+        <item quantity="few">У вас %1$d домени спливають. Подовжіть усі до %2$s.</item>
+        <item quantity="many">У вас %1$d доменів спливають. Подовжіть усі до %2$s.</item>
+        <item quantity="other">У вас %1$d доменів спливають. Подовжіть усі до %2$s.</item>
+    </plurals>
+    <string name="nft_domains_expiring_banner_hidden">У вас спливають домени. Подовжіть усі до %1$s.</string>
+    <string name="nft_domain_renew_page_title">Подовження доменів</string>
+    <string name="nft_domain_renew_info">Домени TON DNS потрібно подовжувати раз на рік. Подовження — транзакція 0,02 TON на контракт домену плюс комісія мережі. Колір терміну: білий — понад 30 днів, жовтий — 30 днів і менше, червоний — 7 днів і менше.</string>
+    <plurals name="nft_domain_expires_row">
+        <item quantity="one">Спливає через %1$d дн.</item>
+        <item quantity="few">Спливає через %1$d дн.</item>
+        <item quantity="many">Спливає через %1$d дн.</item>
+        <item quantity="other">Спливає через %1$d дн.</item>
+    </plurals>
+    <string name="nft_domain_on_sale_hint">Зніміть із продажу, щоб подовжити</string>
+    <string name="nft_domain_on_sale_badge">у продажу</string>
+    <plurals name="nft_domain_renew_total">
+        <item quantity="one">Разом за %1$d домен</item>
+        <item quantity="few">Разом за %1$d домени</item>
+        <item quantity="many">Разом за %1$d доменів</item>
+        <item quantity="other">Разом за %1$d доменів</item>
+    </plurals>
+    <plurals name="nft_domain_renew_selected">
+        <item quantity="one">Подовжити %1$d домен до %2$s</item>
+        <item quantity="few">Подовжити %1$d домени до %2$s</item>
+        <item quantity="many">Подовжити %1$d доменів до %2$s</item>
+        <item quantity="other">Подовжити %1$d доменів до %2$s</item>
+    </plurals>
+    <string name="nft_domain_renew_select">Оберіть домени</string>
 </resources>

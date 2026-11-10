@@ -28,6 +28,14 @@ data class NftItemRecordDraft(
 
 data class NftLiveState(val ownerAddress: String?, val isOnSale: Boolean, val domain: String?)
 
+data class NftDomainDraft(
+    val nftAddress: String,
+    val name: String,
+    val expiresAt: Long,
+    val isOnSale: Boolean,
+    val imageUrl: String? = null,
+)
+
 interface NftProvider {
     val blockchainType: BlockchainType
     val networkTitle: String
@@ -42,4 +50,7 @@ interface NftProvider {
 
     /** Reads the item from the network; null means the source is not available now. */
     suspend fun liveState(ownerAddress: String, nftAddress: String): NftLiveState?
+
+    /** Domains expiring within [periodDays], read from the network; null means the source is not available now. */
+    suspend fun expiringDomains(ownerAddress: String, periodDays: Int): List<NftDomainDraft>?
 }

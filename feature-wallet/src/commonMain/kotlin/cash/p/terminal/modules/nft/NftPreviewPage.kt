@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import cash.p.terminal.core.nft.NftCollectionsRepository
 import cash.p.terminal.entities.NftItemRecord
+import cash.p.terminal.modules.nft.renew.rememberDomainRenewal
 import cash.p.terminal.modules.nft.transfer.NftTransferPage
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
@@ -24,19 +25,31 @@ class NftPreviewPage(
         val viewModel: NftPreviewViewModel = koinViewModel { parametersOf(source) }
         val repository: NftCollectionsRepository = koinInject()
         val hud = rememberHudMessenger()
+        val uiState = viewModel.uiState
+        val renewDomain = navigation.rememberDomainRenewal(
+            namesRevealed = uiState.canReveal && !uiState.hidden,
+            onFinish = { viewModel.onResume(item) },
+        )
 
         PageResumeEffect(onResume = { viewModel.onResume(item) }, onPause = {})
 
         NftPreviewScreen(
             item = item,
-            uiState = viewModel.uiState,
-            networkTitle = remember(item) { repository.networkTitle(item.blockchainType) },
-            explorerUrl = remember(item) { repository.explorerUrl(item.blockchainType, item.address) },
+            uiState = uiState,
+            network = remember(item) {
+                NftNetworkInfo(
+                    title = repository.networkTitle(item.blockchainType),
+                    explorerUrl = repository.explorerUrl(item.blockchainType, item.address),
+                )
+            },
             onArtworkClick = {
                 hud.vibrate()
                 viewModel.onToggleReveal()
             },
-            onSend = { navigation.slideFromRight(NftTransferPage(item, it.wallet, it.domain)) },
+            onSend = {
+                navigation.slideFromRight(NftTransferPage(item, it.wallet, it.domain, viewModel.uiState.domainExpiry))
+            },
+            onRenew = { renewDomain(listOf(it)) },
             onBack = navigation::navigateUpSafely,
         )
     }

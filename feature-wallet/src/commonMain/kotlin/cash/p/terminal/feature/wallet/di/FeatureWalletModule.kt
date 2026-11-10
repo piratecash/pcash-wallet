@@ -64,7 +64,10 @@ import cash.p.terminal.modules.intro.IntroViewModel
 import cash.p.terminal.modules.markdown.MarkdownViewModel
 import cash.p.terminal.modules.nft.NftCollectionsViewModel
 import cash.p.terminal.modules.nft.NftPreviewViewModel
+import cash.p.terminal.modules.nft.NftOwnerWalletResolver
 import cash.p.terminal.modules.nft.NftTransferAvailabilityProvider
+import cash.p.terminal.modules.nft.renew.NftDomainRenewViewModel
+import cash.p.terminal.modules.nft.renew.NftDomainRenewalViewModel
 import cash.p.terminal.modules.manageaccount.ManageAccountViewModel
 import cash.p.terminal.modules.manageaccount.backupconfirmkey.BackupConfirmKeyViewModel
 import cash.p.terminal.modules.manageaccount.backupkey.BackupKeyViewModel
@@ -441,6 +444,7 @@ val featureWalletModule = module {
     singleOf(::NftItemStorage)
     singleOf(::TonNftProvider) bind NftProvider::class
     single { NftCollectionsRepository(get(), getAll(), get(), get()) }
+    singleOf(::NftOwnerWalletResolver)
     singleOf(::NftTransferAvailabilityProvider)
     factoryOf(::SwapProviderTransactionsStorage)
     factoryOf(::SwapTransactionMatcher)
@@ -504,7 +508,20 @@ val featureWalletModule = module {
 
     viewModel { (url: String) -> MarkdownViewModel(url, get(), get()) }
     viewModel { params -> NftCollectionsViewModel(params.get(), get(), get(), get()) }
-    viewModel { params -> NftPreviewViewModel(params.get(), get(), get()) }
+    viewModel { params -> NftPreviewViewModel(params.get(), get(), get(), get()) }
+    viewModelOf(::NftDomainRenewalViewModel)
+    viewModel { params ->
+        NftDomainRenewViewModel(
+            domains = params.get(),
+            namesRevealed = params.get(),
+            walletResolver = get(),
+            adapterManager = get(),
+            balanceHiddenManager = get(),
+            offlineOperationGate = get(),
+            xRateService = XRateService(get(), get<CurrencyManager>().baseCurrency),
+            dispatcherProvider = get(),
+        )
+    }
     viewModelOf(::IntroViewModel)
     viewModelOf(::BackupAlertViewModel)
     viewModelOf(::CreateAdvancedAccountViewModel)

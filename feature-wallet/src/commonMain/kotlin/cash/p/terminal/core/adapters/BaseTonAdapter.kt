@@ -2,6 +2,7 @@ package cash.p.terminal.core.adapters
 
 import cash.p.terminal.core.BroadcastRawTransactionResult
 import cash.p.terminal.core.BroadcastRawTransactionStatus
+import cash.p.terminal.core.DomainRenewalResult
 import cash.p.terminal.core.OfflineBroadcastMetadata
 import cash.p.terminal.core.OfflineTransactionAdapter
 import cash.p.terminal.core.OfflineTransactionStatusAdapter
@@ -18,10 +19,12 @@ import cash.p.terminal.wallet.IReceiveAdapter
 import com.tonapps.wallet.data.core.entity.SendRequestEntity
 import io.horizontalsystems.tonkit.Address
 import io.horizontalsystems.tonkit.FriendlyAddress
+import io.horizontalsystems.tonkit.core.TonWallet
 import io.horizontalsystems.tonkit.models.Network
 import io.horizontalsystems.tonkit.models.RawMessageBroadcastMetadata
 import io.horizontalsystems.tonkit.models.RawMessageBroadcastStatus
 import io.horizontalsystems.tonkit.models.TonFeeEstimate as KitTonFeeEstimate
+import kotlinx.coroutines.CancellationException
 import org.json.JSONArray
 import org.json.JSONObject
 import java.math.BigDecimal
@@ -47,11 +50,40 @@ abstract class BaseTonAdapter(
     // IReceiveAdapter
 
     suspend fun sendWithPayloadBoc(amount: BigInteger, address: String, payload: String) {
-        tonKit.send(tonKit.sign(payloadRequest(amount, address, payload), tonKitWrapper.tonWallet))
+        signAndSend(singlePayloadRequest(amount, address, payload))
     }
 
     suspend fun estimateFeeWithPayload(amount: BigInteger, address: String, payload: String): TonFeeEstimate =
-        tonKit.estimateFee(payloadRequest(amount, address, payload)).toAppEstimate()
+        tonKit.estimateFee(singlePayloadRequest(amount, address, payload)).toAppEstimate()
+
+    suspend fun estimateDomainRenewalFee(nftAddresses: List<String>): TonFeeEstimate =
+        renewalChunks(nftAddresses)
+            .map { tonKit.estimateFee(domainRenewalRequest(it)) }
+            .fold(KitTonFeeEstimate(fee = BigInteger.ZERO, totalDebit = BigInteger.ZERO)) { total, chunk ->
+                KitTonFeeEstimate(fee = total.fee + chunk.fee, totalDebit = total.totalDebit + chunk.totalDebit)
+            }
+            .toAppEstimate()
+
+    suspend fun renewDomains(nftAddresses: List<String>): DomainRenewalResult {
+        val broadcast = mutableListOf<String>()
+        return try {
+            val chunks = renewalChunks(nftAddresses)
+            var previousSeqno: Int? = null
+            chunks.forEach { chunk ->
+                previousSeqno?.let { tonKit.awaitSeqnoAbove(it) }
+                // Signing with the seqno read here tells the next chunk exactly which value to wait past.
+                val seqno = if (chunks.size > 1) tonKit.getAccountSeqno() else null
+                signAndSend(domainRenewalRequest(chunk), seqno)
+                broadcast += chunk
+                previousSeqno = seqno
+            }
+            DomainRenewalResult(broadcast, error = null)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            DomainRenewalResult(broadcast, error = e)
+        }
+    }
 
     suspend fun sendNftTransfer(nftAddress: String, address: FriendlyAddress, comment: String?) {
         tonKit.sendNftTransfer(Address.parse(nftAddress), address, comment)
@@ -62,15 +94,39 @@ abstract class BaseTonAdapter(
 
     fun resolveDomain(domain: String): FriendlyAddress? = tonKit.resolveDomain(domain)
 
-    private fun payloadRequest(amount: BigInteger, address: String, payload: String) = SendRequestEntity(
+    private suspend fun signAndSend(request: SendRequestEntity, seqno: Int? = null) {
+        tonKit.send(tonKit.sign(request, tonKitWrapper.tonWallet, seqno))
+    }
+
+    private fun renewalChunks(nftAddresses: List<String>): List<List<String>> =
+        nftAddresses.chunked(renewalBatchSize())
+
+    private fun renewalBatchSize(): Int = when (val wallet = tonKitWrapper.tonWallet) {
+        // The device signs exactly one message per transaction.
+        is TonWallet.ExternalSigner -> 1
+        is TonWallet.FullAccess -> wallet.maxMessages(tonKit.network)
+        is TonWallet.WatchOnly -> error("Watch-only wallet cannot renew domains")
+    }
+
+    private fun domainRenewalRequest(nftAddresses: List<String>): SendRequestEntity {
+        val payload = domainRenewalPayload(queryId = System.currentTimeMillis())
+        return payloadRequest(nftAddresses.map { PayloadMessage(it, DOMAIN_RENEW_AMOUNT, payload) })
+    }
+
+    private fun singlePayloadRequest(amount: BigInteger, address: String, payload: String) =
+        payloadRequest(listOf(PayloadMessage(address, amount, payload)))
+
+    private fun payloadRequest(messages: List<PayloadMessage>) = SendRequestEntity(
         data = JSONObject().apply {
             put("valid_until", System.currentTimeMillis() / 1000 + 300)
             put("messages", JSONArray().apply {
-                put(JSONObject().apply {
-                    put("address", address)
-                    put("amount", amount.toString())
-                    put("payload", payload)
-                })
+                messages.forEach { message ->
+                    put(JSONObject().apply {
+                        put("address", message.address)
+                        put("amount", message.amount.toString())
+                        put("payload", message.payload)
+                    })
+                }
             })
         },
         tonConnectRequestId = "id",
@@ -121,6 +177,8 @@ abstract class BaseTonAdapter(
 }
 
 private const val TON_DECIMALS = 9
+
+private class PayloadMessage(val address: String, val amount: BigInteger, val payload: String)
 
 private fun OfflineBroadcastMetadata.Ton.toTonMetadata() = RawMessageBroadcastMetadata(
     validUntil = validUntil,

@@ -185,6 +185,9 @@ private val SECRET_PATH_SEGMENT = Regex("/[A-Za-z0-9_%-]{20,}")
 // length — short custom-RPC keys would slip past the long-token rule otherwise.
 private val VERSION_PREFIXED_SEGMENT = Regex("/(v\\d+)/[^/?#\\s]+", RegexOption.IGNORE_CASE)
 
+// Raw TON account address (`0:<64 hex>`, `-1:<64 hex>`), e.g. in TonAPI paths.
+private val TON_RAW_ADDRESS = Regex("(?<!\\w)-?\\d+:[0-9a-fA-F]{64}(?!\\w)")
+
 private val ZCASH_KEY_TOKEN =
     Regex("(?:uview|zxview|zview|zxsk|secret-extended-key-)[0-9a-z]+", RegexOption.IGNORE_CASE)
 
@@ -200,12 +203,14 @@ fun AppLogger.warningSanitized(message: String, error: Throwable, separator: Str
 /**
  * Redacts credentials that can appear in network URLs before they are stored/logged/reported:
  * userinfo (`user:pass@`), secret query params (apikey/token/…), long opaque path segments, and the
- * segment after a version prefix (Infura `/v3/<key>`, Alchemy `/v2/<key>`, including short keys).
+ * segment after a version prefix (Infura `/v3/<key>`, Alchemy `/v2/<key>`, including short keys), and
+ * raw TON account addresses (`0:<hex>`).
  * String-based (no parse) so a malformed URL never leaks.
  */
 fun sanitizeNetworkUrl(url: String): String =
     url
         .replace(URL_USERINFO, "://")
+        .replace(TON_RAW_ADDRESS, REDACTED)
         .replace(SECRET_QUERY_PARAM) { "${it.groupValues[1]}$REDACTED" }
         .replace(SECRET_PATH_SEGMENT, "/$REDACTED")
         .replace(VERSION_PREFIXED_SEGMENT) { "/${it.groupValues[1]}/$REDACTED" }

@@ -18,7 +18,6 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -62,9 +61,7 @@ class NftCollectionsViewModel(
                 NftCollectionSource.AllWallets -> walletManager.activeWalletsFlow
                 is NftCollectionSource.SingleWallet -> flowOf(listOf(source.wallet))
             }
-            wallets
-                .map { repository.owners(it) }
-                .distinctUntilChanged()
+            repository.ownersFlow(wallets)
                 .onEach(::onOwnersChanged)
                 .flatMapLatest(::observe)
                 .collect()

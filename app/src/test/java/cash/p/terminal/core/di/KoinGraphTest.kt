@@ -64,6 +64,7 @@ import cash.p.terminal.modules.manageaccounts.ManageAccountsViewModel
 import cash.p.terminal.modules.nft.NftCollectionSource
 import cash.p.terminal.modules.nft.NftCollectionsViewModel
 import cash.p.terminal.modules.nft.NftPreviewViewModel
+import cash.p.terminal.modules.nft.renew.NftDomainRenewViewModel
 import cash.p.terminal.modules.address.AddressParserChain
 import cash.p.terminal.modules.watchaddress.WatchAddressViewModel
 import cash.p.terminal.modules.watchaddress.selectblockchains.SelectBlockchainsViewModel
@@ -266,6 +267,7 @@ class KoinGraphTest : KoinTest {
             definition<ManageAccountsViewModel>(ManageAccountsModule.Mode::class),
             definition<NftCollectionsViewModel>(NftCollectionSource::class),
             definition<NftPreviewViewModel>(NftCollectionSource::class),
+            definition<NftDomainRenewViewModel>(List::class, Boolean::class),
             definition<ConnectMiniAppViewModel>(ConnectMiniAppDeeplinkInput::class),
             definition<BlockchainStatusViewModel>(BlockchainStatusProvider::class),
             definition<SwapSelectCoinViewModel>(Token::class, Account::class),

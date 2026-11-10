@@ -2393,4 +2393,51 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="nft_transfer_ton_balance">TON bakiyesi</string>
     <string name="nft_transfer_domain_warning">Aktarımdan sonra alan adının cüzdanınızla bağlantısı kesilir. %1$s adresine yapılan aktarımlar yeni sahibine gider. Alan adını yenilemek de ona düşer.</string>
     <string name="send_confirmation_domain">Alan adı</string>
+
+    <!--NFT domain renewal-->
+    <string name="nft_domain_expires">Bitiş</string>
+    <plurals name="nft_domain_expires_in">
+        <item quantity="one">%1$d gün sonra</item>
+        <item quantity="other">%1$d gün sonra</item>
+    </plurals>
+    <string name="nft_transfer_domain_expires">Alan adının süresi doluyor</string>
+    <string name="nft_domain_renew">Alan adını yenile</string>
+    <string name="nft_domain_renew_title">%1$s yenilensin mi?</string>
+    <plurals name="nft_domain_renew_title_many">
+        <item quantity="one">%1$d alan adı yenilensin mi?</item>
+        <item quantity="other">%1$d alan adı yenilensin mi?</item>
+    </plurals>
+    <string name="nft_domain_renew_body">Alan adı bir yıl uzatılacak, bitiş tarihi: %1$s. Yenileme, alan adı sözleşmesine yapılan bir işlemdir.</string>
+    <string name="nft_domain_renew_body_many">%1$s — bir yıl uzatma, bitiş tarihi: %2$s. Her alan adının sözleşmesine tek mesaj.</string>
+    <string name="nft_domain_renew_cost">Maliyet</string>
+    <string name="nft_domain_renew_confirm">Yenile</string>
+    <string name="nft_domain_renew_cancel">İptal</string>
+    <string name="nft_domain_renewed">Alan adı %1$s tarihine kadar yenilendi</string>
+    <plurals name="nft_domains_renewed">
+        <item quantity="one">%1$d alan adı %2$s tarihine kadar yenilendi</item>
+        <item quantity="other">%1$d alan adı %2$s tarihine kadar yenilendi</item>
+    </plurals>
+    <string name="nft_domain_renew_partial">Gönderilen yenilemeler: %1$d / %2$d. Kalanlar için gönderim durdu; süreler ağ onayından sonra güncellenecek.</string>
+    <plurals name="nft_domains_expiring_banner">
+        <item quantity="one">%1$d alan adınızın süresi doluyor. %2$s tarihine kadar yenileyin.</item>
+        <item quantity="other">%1$d alan adınızın süresi doluyor. Hepsini %2$s tarihine kadar yenileyin.</item>
+    </plurals>
+    <string name="nft_domains_expiring_banner_hidden">Süresi dolan alan adlarınız var. Hepsini %1$s tarihine kadar yenileyin.</string>
+    <string name="nft_domain_renew_page_title">Alan adı yenileme</string>
+    <string name="nft_domain_renew_info">TON DNS alan adları yılda bir kez yenilenmelidir. Yenileme, alan adı sözleşmesine yapılan 0,02 TON tutarında bir işlemdir ve ağ ücreti eklenir. Süre rengi: beyaz — 30 günden fazla, sarı — 30 gün veya daha az, kırmızı — 7 gün veya daha az.</string>
+    <plurals name="nft_domain_expires_row">
+        <item quantity="one">%1$d gün sonra bitiyor</item>
+        <item quantity="other">%1$d gün sonra bitiyor</item>
+    </plurals>
+    <string name="nft_domain_on_sale_hint">Yenilemek için alan adını satıştan kaldırın</string>
+    <string name="nft_domain_on_sale_badge">satışta</string>
+    <plurals name="nft_domain_renew_total">
+        <item quantity="one">%1$d alan adı için toplam</item>
+        <item quantity="other">%1$d alan adı için toplam</item>
+    </plurals>
+    <plurals name="nft_domain_renew_selected">
+        <item quantity="one">%1$d alan adını %2$s tarihine kadar yenile</item>
+        <item quantity="other">%1$d alan adını %2$s tarihine kadar yenile</item>
+    </plurals>
+    <string name="nft_domain_renew_select">Alan adlarını seçin</string>
 </resources>

@@ -14,6 +14,7 @@ import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.tonkit.Address
 import io.horizontalsystems.tonkit.core.TonKit
+import io.horizontalsystems.tonkit.models.DnsExpiringItem
 import io.horizontalsystems.tonkit.models.NftItem
 import io.horizontalsystems.tonkit.models.NftPreview
 import io.horizontalsystems.tonkit.models.TagQuery
@@ -74,6 +75,11 @@ class TonNftProvider(
             ?.nftItem(Address.parse(nftAddress))
             ?.let { NftLiveState(it.ownerAddress, it.isOnSale, it.dns.sanitized(NAME_MAX_LENGTH)) }
 
+    override suspend fun expiringDomains(ownerAddress: String, periodDays: Int): List<NftDomainDraft>? =
+        tonKitManager.startedKitsFlow.value.kitOwnedBy(ownerAddress)
+            ?.dnsExpiring(periodDays)
+            ?.mapNotNull { it.toDraftOrNull() }
+
     // The failure's message can carry the account id, so only its type is logged.
     private fun receiveAddressOrNull(account: Account, version: TonWalletVersion): String? = try {
         tonKitManager.getReceiveAddress(account, version)
@@ -108,6 +114,18 @@ private fun NftItem.toDraftOrNull(): NftItemRecordDraft? {
         verified = verified,
         imageUrl = previews.nearestSecureUrl(CARD_IMAGE_SIDE),
         largeImageUrl = previews.nearestSecureUrl(LARGE_IMAGE_SIDE),
+    )
+}
+
+private fun DnsExpiringItem.toDraftOrNull(): NftDomainDraft? {
+    val item = nftItem ?: return null
+    val domainName = name.sanitized(NAME_MAX_LENGTH) ?: return null
+    return NftDomainDraft(
+        nftAddress = item.address,
+        name = domainName,
+        expiresAt = expiringAt,
+        isOnSale = item.isOnSale,
+        imageUrl = item.previews.nearestSecureUrl(CARD_IMAGE_SIDE),
     )
 }
 

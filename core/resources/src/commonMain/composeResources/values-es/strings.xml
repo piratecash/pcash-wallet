@@ -2390,4 +2390,58 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="nft_transfer_ton_balance">Saldo de TON</string>
     <string name="nft_transfer_domain_warning">Tras la transferencia, el dominio se desvinculará de tu billetera. Las transferencias a %1$s irán al nuevo propietario. Renovar el dominio pasará a ser cosa suya.</string>
     <string name="send_confirmation_domain">Dominio</string>
+
+    <!--NFT domain renewal-->
+    <string name="nft_domain_expires">Caduca</string>
+    <plurals name="nft_domain_expires_in">
+        <item quantity="one">en %1$d día</item>
+        <item quantity="many">en %1$d días</item>
+        <item quantity="other">en %1$d días</item>
+    </plurals>
+    <string name="nft_transfer_domain_expires">El dominio caduca</string>
+    <string name="nft_domain_renew">Renovar dominio</string>
+    <string name="nft_domain_renew_title">¿Renovar %1$s?</string>
+    <plurals name="nft_domain_renew_title_many">
+        <item quantity="one">¿Renovar %1$d dominio?</item>
+        <item quantity="many">¿Renovar %1$d dominios?</item>
+        <item quantity="other">¿Renovar %1$d dominios?</item>
+    </plurals>
+    <string name="nft_domain_renew_body">El dominio se renovará por un año, hasta el %1$s. La renovación es una transacción al contrato del dominio.</string>
+    <string name="nft_domain_renew_body_many">%1$s: renovación por un año, hasta el %2$s. Un mensaje al contrato de cada dominio.</string>
+    <string name="nft_domain_renew_cost">Costo</string>
+    <string name="nft_domain_renew_confirm">Renovar</string>
+    <string name="nft_domain_renew_cancel">Cancelar</string>
+    <string name="nft_domain_renewed">Dominio renovado hasta el %1$s</string>
+    <plurals name="nft_domains_renewed">
+        <item quantity="one">%1$d dominio renovado hasta el %2$s</item>
+        <item quantity="many">%1$d dominios renovados hasta el %2$s</item>
+        <item quantity="other">%1$d dominios renovados hasta el %2$s</item>
+    </plurals>
+    <string name="nft_domain_renew_partial">Renovaciones enviadas: %1$d de %2$d. El envío del resto se interrumpió; los plazos se actualizarán cuando la red confirme.</string>
+    <plurals name="nft_domains_expiring_banner">
+        <item quantity="one">Tienes %1$d dominio por caducar. Renuévalo hasta el %2$s.</item>
+        <item quantity="many">Tienes %1$d dominios por caducar. Renueva todos hasta el %2$s.</item>
+        <item quantity="other">Tienes %1$d dominios por caducar. Renueva todos hasta el %2$s.</item>
+    </plurals>
+    <string name="nft_domains_expiring_banner_hidden">Tienes dominios por caducar. Renueva todos hasta el %1$s.</string>
+    <string name="nft_domain_renew_page_title">Renovación de dominios</string>
+    <string name="nft_domain_renew_info">Los dominios TON DNS deben renovarse una vez al año. La renovación es una transacción de 0,02 TON al contrato del dominio más la comisión de red. Color del plazo: blanco — más de 30 días, amarillo — 30 días o menos, rojo — 7 días o menos.</string>
+    <plurals name="nft_domain_expires_row">
+        <item quantity="one">Caduca en %1$d día</item>
+        <item quantity="many">Caduca en %1$d días</item>
+        <item quantity="other">Caduca en %1$d días</item>
+    </plurals>
+    <string name="nft_domain_on_sale_hint">Retira el dominio de la venta para renovarlo</string>
+    <string name="nft_domain_on_sale_badge">en venta</string>
+    <plurals name="nft_domain_renew_total">
+        <item quantity="one">Total por %1$d dominio</item>
+        <item quantity="many">Total por %1$d dominios</item>
+        <item quantity="other">Total por %1$d dominios</item>
+    </plurals>
+    <plurals name="nft_domain_renew_selected">
+        <item quantity="one">Renovar %1$d dominio hasta el %2$s</item>
+        <item quantity="many">Renovar %1$d dominios hasta el %2$s</item>
+        <item quantity="other">Renovar %1$d dominios hasta el %2$s</item>
+    </plurals>
+    <string name="nft_domain_renew_select">Selecciona dominios</string>
 </resources>

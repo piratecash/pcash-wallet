@@ -41,14 +41,15 @@ class NftTransferAvailabilityProviderTest {
         every { supportsSection(any()) } returns true
     }
     private val walletManager = mockk<IWalletManager>()
+    private val repository = NftCollectionsRepository(
+        mockk(),
+        listOf(nftProvider),
+        offlineModeManager,
+        TestDispatcherProvider(dispatcher, TestScope(dispatcher)),
+    )
     private val availabilityProvider = NftTransferAvailabilityProvider(
-        walletManager,
-        NftCollectionsRepository(
-            mockk(),
-            listOf(nftProvider),
-            offlineModeManager,
-            TestDispatcherProvider(dispatcher, TestScope(dispatcher)),
-        ),
+        NftOwnerWalletResolver(walletManager, repository),
+        repository,
     )
 
     @Test

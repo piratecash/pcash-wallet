@@ -2396,4 +2396,51 @@
     <string name="nft_transfer_ton_balance">موجودی TON</string>
     <string name="nft_transfer_domain_warning">پس از انتقال، دامنه از کیف پول شما جدا می‌شود. انتقال‌ها به %1$s به مالک جدید می‌رسد. تمدید دامنه بر عهده او خواهد بود.</string>
     <string name="send_confirmation_domain">دامنه</string>
+
+    <!--NFT domain renewal-->
+    <string name="nft_domain_expires">انقضا</string>
+    <plurals name="nft_domain_expires_in">
+        <item quantity="one">%1$d روز دیگر</item>
+        <item quantity="other">%1$d روز دیگر</item>
+    </plurals>
+    <string name="nft_transfer_domain_expires">انقضای دامنه</string>
+    <string name="nft_domain_renew">تمدید دامنه</string>
+    <string name="nft_domain_renew_title">%1$s تمدید شود؟</string>
+    <plurals name="nft_domain_renew_title_many">
+        <item quantity="one">%1$d دامنه تمدید شود؟</item>
+        <item quantity="other">%1$d دامنه تمدید شود؟</item>
+    </plurals>
+    <string name="nft_domain_renew_body">دامنه برای یک سال تا %1$s تمدید می‌شود. تمدید، تراکنشی به قرارداد دامنه است.</string>
+    <string name="nft_domain_renew_body_many">%1$s — تمدید یک‌ساله تا %2$s. یک پیام به قرارداد هر دامنه.</string>
+    <string name="nft_domain_renew_cost">هزینه</string>
+    <string name="nft_domain_renew_confirm">تمدید</string>
+    <string name="nft_domain_renew_cancel">لغو</string>
+    <string name="nft_domain_renewed">دامنه تا %1$s تمدید شد</string>
+    <plurals name="nft_domains_renewed">
+        <item quantity="one">%1$d دامنه تا %2$s تمدید شد</item>
+        <item quantity="other">%1$d دامنه تا %2$s تمدید شد</item>
+    </plurals>
+    <string name="nft_domain_renew_partial">تمدیدهای ارسال‌شده: %1$d از %2$d. ارسال برای بقیه متوقف شد؛ پس از تأیید شبکه، تاریخ‌ها به‌روز می‌شوند.</string>
+    <plurals name="nft_domains_expiring_banner">
+        <item quantity="one">شما %1$d دامنه در آستانه انقضا دارید. آن را تا %2$s تمدید کنید.</item>
+        <item quantity="other">شما %1$d دامنه در آستانه انقضا دارید. همه را تا %2$s تمدید کنید.</item>
+    </plurals>
+    <string name="nft_domains_expiring_banner_hidden">شما دامنه‌هایی در آستانه انقضا دارید. همه را تا %1$s تمدید کنید.</string>
+    <string name="nft_domain_renew_page_title">تمدید دامنه‌ها</string>
+    <string name="nft_domain_renew_info">دامنه‌های TON DNS را باید سالی یک بار تمدید کرد. تمدید، تراکنشی ۰٫۰۲ TON به قرارداد دامنه به‌علاوه کارمزد شبکه است. رنگ مهلت: سفید — بیش از ۳۰ روز، زرد — ۳۰ روز یا کمتر، قرمز — ۷ روز یا کمتر.</string>
+    <plurals name="nft_domain_expires_row">
+        <item quantity="one">انقضا تا %1$d روز دیگر</item>
+        <item quantity="other">انقضا تا %1$d روز دیگر</item>
+    </plurals>
+    <string name="nft_domain_on_sale_hint">برای تمدید، دامنه را از فروش خارج کنید</string>
+    <string name="nft_domain_on_sale_badge">در فروش</string>
+    <plurals name="nft_domain_renew_total">
+        <item quantity="one">جمع برای %1$d دامنه</item>
+        <item quantity="other">جمع برای %1$d دامنه</item>
+    </plurals>
+    <plurals name="nft_domain_renew_selected">
+        <item quantity="one">تمدید %1$d دامنه تا %2$s</item>
+        <item quantity="other">تمدید %1$d دامنه تا %2$s</item>
+    </plurals>
+    <string name="nft_domain_renew_select">دامنه‌ها را انتخاب کنید</string>
 </resources>

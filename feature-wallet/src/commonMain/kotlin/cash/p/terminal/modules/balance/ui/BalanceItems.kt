@@ -51,6 +51,10 @@ import cash.p.terminal.modules.nft.NftCollectionSource
 import cash.p.terminal.modules.nft.NftCollectionsViewModel
 import cash.p.terminal.modules.nft.NftPreviewPage
 import cash.p.terminal.modules.nft.NftSectionTitle
+import cash.p.terminal.modules.nft.renew.NftDomainRenewPage
+import cash.p.terminal.modules.nft.renew.NftDomainRenewalBanner
+import cash.p.terminal.modules.nft.renew.NftDomainRenewalViewModel
+import cash.p.terminal.modules.nft.renew.renewUntilText
 import cash.p.terminal.modules.nft.ui.NftCollectionsSection
 import cash.p.terminal.modules.receive.ui.ReceiveChooseCoinPage
 import cash.p.terminal.modules.restoreaccount.RestoreAccountPage
@@ -124,7 +128,14 @@ fun BalanceItems(
     }
 
     val nftViewModel: NftCollectionsViewModel = koinViewModel { parametersOf(NftCollectionSource.AllWallets) }
-    PageResumeEffect(onResume = nftViewModel::onResume, onPause = {})
+    val renewalViewModel: NftDomainRenewalViewModel = koinViewModel()
+    PageResumeEffect(
+        onResume = {
+            nftViewModel.onResume()
+            renewalViewModel.onResume()
+        },
+        onPause = {},
+    )
 
     var revealedCardId by remember { mutableStateOf<Int?>(null) }
 
@@ -354,6 +365,18 @@ fun BalanceItems(
                             revealedCardId = null
                         }
                     )
+                }
+                val renewalState = renewalViewModel.uiState
+                if (renewalState.domains.isNotEmpty()) {
+                    item(key = "domain_renewal") {
+                        NftDomainRenewalBanner(
+                            count = renewalState.domains.size,
+                            renewUntil = remember { renewUntilText() },
+                            hidden = renewalState.hidden,
+                            onClick = { navigation.slideFromRight(NftDomainRenewPage()) },
+                            modifier = Modifier.padding(top = 16.dp),
+                        )
+                    }
                 }
                 item(key = "nft_collections") {
                     val openAll = { navigation.slideFromRight(NftCollectionPage(NftCollectionSource.AllWallets)) }
