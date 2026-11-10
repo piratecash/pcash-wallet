@@ -15,6 +15,7 @@ import cash.p.terminal.modules.receive.FullCoinsProvider
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.MarketKitWrapper
+import io.horizontalsystems.core.DispatcherProvider
 import kotlin.reflect.KClass
 
 object ManageWalletsModule {
@@ -41,7 +42,11 @@ object ManageWalletsModule {
                 walletManager = getKoinInstance<IWalletManager>(),
                 restoreSettingsService = restoreSettingsService,
                 fullCoinsProvider = accountManager.activeAccount?.let { account ->
-                    FullCoinsProvider(getKoinInstance<MarketKitWrapper>(), account)
+                    FullCoinsProvider(
+                        getKoinInstance<MarketKitWrapper>(),
+                        account,
+                        getKoinInstance<DispatcherProvider>()
+                    )
                 },
                 account = activeAccount,
                 userDeletedWalletManager = userDeletedWalletManager,
