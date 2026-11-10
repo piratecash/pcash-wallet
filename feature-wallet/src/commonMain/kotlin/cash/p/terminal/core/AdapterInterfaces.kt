@@ -69,6 +69,9 @@ sealed interface ZcashFeeEstimate {
     /** No selection of notes covers the amount and its fee, so [ISendZcashAdapter.send] would refuse it too. */
     data object InsufficientBalance : ZcashFeeEstimate
 
+    /** [ISendZcashAdapter.send] would refuse this payment with [reason], e.g. too large for the signing device. */
+    data class Refused(val reason: Exception) : ZcashFeeEstimate
+
     /** The plan failed for another reason, e.g. no server. */
     data object Unavailable : ZcashFeeEstimate
 }

@@ -138,15 +138,15 @@ class SendZCashViewModel(
     override fun createState(): SendZCashUiState {
         val poison = isAddressSuspicious(addressState.address?.hex)
         val quote = feeQuote.quote.value
+        val planCaution = quote.planCaution
         return SendZCashUiState(
             fee = quote.fee,
             availableBalance = amountState.availableBalance,
             addressError = addressState.addressError,
-            amountCaution = amountState.amountCaution
-                ?: zcashInsufficientBalanceCaution().takeIf { quote.insufficientBalance },
+            amountCaution = amountState.amountCaution ?: planCaution,
             memoIsAllowed = memoState.memoIsAllowed,
             canBeSend = amountState.canBeSend && addressState.canBeSend &&
-                quote.isCurrent && !quote.insufficientBalance &&
+                quote.isCurrent && planCaution == null &&
                 memoState.memo.fitsMemoBytes(memoMaxBytes) && (!poison || riskAccepted),
             showAddressInput = showAddressInput,
             address = addressState.address,

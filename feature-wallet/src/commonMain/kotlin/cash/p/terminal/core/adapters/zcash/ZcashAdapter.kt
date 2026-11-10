@@ -777,6 +777,8 @@ class ZcashAdapter(
         throw e
     } catch (_: LocalizedException) {
         ZcashFeeEstimate.InsufficientBalance
+    } catch (e: ZcashError) {
+        ZcashFeeEstimate.Refused(e)
     } catch (e: Throwable) {
         zcashLogger.d { "Fee estimate failed error=${e.zcashErrorName}" }
         ZcashFeeEstimate.Unavailable

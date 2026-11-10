@@ -1,6 +1,7 @@
 package cash.p.terminal.core.adapters.zcash
 
 import cash.p.terminal.core.OfflineZcashSignRequest
+import cash.p.terminal.core.ZcashFeeEstimate
 import cash.p.terminal.core.managers.NotBroadcastException
 import cash.p.terminal.wallet.hardware.HardwareAddressPosition
 import cash.p.terminal.wallet.entities.TokenType.AddressSpecType
@@ -149,6 +150,19 @@ class ZcashAdapterDeviceSendTest : ZcashAdapterTestFixture() {
             assertEquals(error, failure.cause)
         }
         coVerify(exactly = 0) { signer.sign(any(), any(), any()) }
+    }
+
+    @Test
+    fun estimateFee_ledgerAccount_planRefused_isRefusedWithDeviceReason() = runTest(dispatcher) {
+        stubLedgerAccount()
+        startAdapter(AddressSpecType.Unified)
+        coEvery { zcashWallet.prepare(any(), any(), any()) } throws
+            ZcashException("refused [external-signing:transparent-inputs]")
+
+        assertEquals(
+            ZcashFeeEstimate.Refused(ZcashAdapter.ZcashError.LedgerTransactionTooLarge),
+            adapter.estimateFee(AMOUNT, UNIFIED_RECIPIENT, memo = ""),
+        )
     }
 
     @Test

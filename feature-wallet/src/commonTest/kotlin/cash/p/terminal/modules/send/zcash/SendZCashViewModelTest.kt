@@ -295,6 +295,18 @@ class SendZCashViewModelTest : KoinTest {
     }
 
     @Test
+    fun canBeSend_paymentRefused_isFalseWithTheRefusalReason() = runTest(dispatcher) {
+        every { adapter.maxSpendableBalance } returns BigDecimal.TEN
+        coEvery { adapter.estimateFee(any(), any(), any()) } returns
+            ZcashFeeEstimate.Refused(IllegalStateException("too large for the device"))
+        val viewModel = enteredViewModel()
+
+        assertFalse(viewModel.uiState.canBeSend)
+        val caution = (viewModel.uiState.amountCaution?.s as? TranslatableString.PlainString)?.text
+        assertEquals("too large for the device", caution)
+    }
+
+    @Test
     fun canBeSend_otherPlanningFailure_staysOpenOnTheAdapterFee() = runTest(dispatcher) {
         every { adapter.maxSpendableBalance } returns BigDecimal.TEN
         coEvery { adapter.estimateFee(any(), any(), any()) } returnsMany
