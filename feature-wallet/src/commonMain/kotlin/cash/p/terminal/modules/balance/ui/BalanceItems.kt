@@ -371,6 +371,7 @@ fun BalanceItems(
                         hidden = nftViewModel.uiState.hidden,
                         onItemClick = { navigation.slideFromRight(NftPreviewPage(it, NftCollectionSource.AllWallets)) },
                         onShowAll = openAll,
+                        modifier = Modifier.padding(bottom = 16.dp),
                     )
                 }
             }
