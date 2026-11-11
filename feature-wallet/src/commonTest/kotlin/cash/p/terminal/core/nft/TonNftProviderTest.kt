@@ -15,6 +15,7 @@ import io.horizontalsystems.tonkit.Address
 import io.horizontalsystems.tonkit.core.TonKit
 import io.horizontalsystems.tonkit.models.DnsExpiringItem
 import io.horizontalsystems.tonkit.models.EventInfo
+import io.horizontalsystems.tonkit.models.NftButton
 import io.horizontalsystems.tonkit.models.NftCollection
 import io.horizontalsystems.tonkit.models.NftItem
 import io.horizontalsystems.tonkit.models.NftPreview
@@ -361,6 +362,40 @@ class TonNftProviderTest {
         assertFalse(provider.supportsSection(wallet(mockk(), TokenType.Jetton("jetton"))))
     }
 
+    @Test
+    fun liveState_metadataButtons_mapsLabelAndTrimmedUri() = test {
+        givenLiveItem(buttons = listOf(NftButton("Claim", "  https://example.com/claim \n")))
+
+        val state = provider.liveState(OWNER, NFT_ADDRESS)
+
+        assertEquals(listOf(NftLinkButton("Claim", "https://example.com/claim")), state?.buttons)
+    }
+
+    @Test
+    fun liveState_moreThanFiveButtons_keepsFirstFiveValidOnes() = test {
+        val invalid = listOf(NftButton("‮ ", "https://a.com"), NftButton("Long", "https://a.com/" + "x".repeat(2048)))
+        val valid = (1..6).map { NftButton("B$it", "https://a.com/$it") }
+        givenLiveItem(buttons = invalid + valid)
+
+        val state = provider.liveState(OWNER, NFT_ADDRESS)
+
+        assertEquals(listOf("B1", "B2", "B3", "B4", "B5"), state?.buttons?.map { it.label })
+    }
+
+    @Test
+    fun liveState_unsafeLongLabel_stripsControlCharsAndCapsLength() = test {
+        givenLiveItem(buttons = listOf(NftButton("Get‮reward\n" + "x".repeat(100), "https://a.com")))
+
+        val label = provider.liveState(OWNER, NFT_ADDRESS)?.buttons?.single()?.label
+
+        assertEquals("Get reward " + "x".repeat(53), label)
+    }
+
+    private fun givenLiveItem(buttons: List<NftButton>) {
+        val kit = startKit(items = emptyList())
+        coEvery { kit.nftItem(Address.parse(NFT_ADDRESS)) } returns nft(NFT_ADDRESS, buttons = buttons)
+    }
+
     private fun test(block: suspend TestScope.() -> Unit) = runTest(dispatcher, timeout = 10.seconds, testBody = block)
 
     private fun TestScope.collectChanges(): List<NftChange> {
@@ -406,6 +441,7 @@ class TonNftProviderTest {
         previews: List<NftPreview> = emptyList(),
         verified: Boolean = false,
         isOnSale: Boolean = false,
+        buttons: List<NftButton> = emptyList(),
     ) = NftItem(
         address = address,
         ownerAddress = null,
@@ -418,12 +454,13 @@ class TonNftProviderTest {
         previews = previews,
         isOnSale = isOnSale,
         dns = null,
-        buttons = emptyList(),
+        buttons = buttons,
         lottie = null,
     )
 
     private companion object {
         val OWNER: String = Address.parse("0:" + "ab".repeat(32)).toUserFriendly(false)
         val OTHER_OWNER: String = Address.parse("0:" + "cd".repeat(32)).toUserFriendly(false)
+        val NFT_ADDRESS: String = Address.parse("0:" + "ef".repeat(32)).toUserFriendly(false)
     }
 }

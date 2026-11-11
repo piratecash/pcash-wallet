@@ -2563,6 +2563,10 @@
     <string name="nft_report_title">Поскаржитися на спам?</string>
     <string name="nft_report_body">Колекцію «%1$s» буде приховано, і вона потрапить до розділу «Спам» в керуванні колекціями. Повернути її можна там само кнопкою «Не спам».</string>
     <string name="nft_report_confirm">Поскаржитися та приховати</string>
+    <string name="nft_link_warning_title">Відкрити зовнішнє посилання?</string>
+    <string name="nft_link_warning_body">Переходьте, лише якщо довіряєте автору колекції: %1$s</string>
+    <string name="nft_link_open_anyway">Усе одно відкрити</string>
+    <string name="nft_link_unsupported">Посилання не підтримується</string>
     <string name="nft_toast_hidden_undo">«%1$s» приховано. Повернути можна в керуванні колекціями</string>
     <string name="nft_toast_reported">Колекцію приховано та позначено як спам</string>
     <string name="nft_undo">Скасувати</string>

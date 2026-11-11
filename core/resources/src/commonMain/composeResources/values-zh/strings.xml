@@ -2385,6 +2385,10 @@
     <string name="nft_report_title">举报为垃圾内容？</string>
     <string name="nft_report_body">收藏集“%1$s”将被隐藏，并移至收藏集管理中的“垃圾”分区。你可以在那里通过“非垃圾”按钮恢复。</string>
     <string name="nft_report_confirm">举报并隐藏</string>
+    <string name="nft_link_warning_title">打开外部链接？</string>
+    <string name="nft_link_warning_body">仅在您信任该收藏的创作者时继续：%1$s</string>
+    <string name="nft_link_open_anyway">仍然打开</string>
+    <string name="nft_link_unsupported">不支持此链接</string>
     <string name="nft_toast_hidden_undo">“%1$s”已隐藏。可在收藏集管理中恢复</string>
     <string name="nft_toast_reported">收藏集已隐藏并标记为垃圾内容</string>
     <string name="nft_undo">撤销</string>

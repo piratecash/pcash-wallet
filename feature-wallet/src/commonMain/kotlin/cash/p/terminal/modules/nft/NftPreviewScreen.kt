@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cash.p.terminal.entities.NftTrust
 import cash.p.terminal.resources.Contacts_ActionMore
+import cash.p.terminal.resources.ic_arrow_up_right_24
 import cash.p.terminal.resources.ic_info_20
 import cash.p.terminal.resources.ic_more_24
 import cash.p.terminal.resources.nft_not_spam
@@ -40,6 +41,7 @@ import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.ButtonPrimaryRed
 import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.core.nft.NftDomainExpiry
+import cash.p.terminal.core.nft.NftLinkButton
 import cash.p.terminal.core.nft.owner
 import cash.p.terminal.entities.NftItemRecord
 import cash.p.terminal.modules.manageaccount.ui.rememberCopyWithHud
@@ -77,6 +79,7 @@ import cash.p.terminal.ui_compose.components.headline1_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.components.title3_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import cash.p.terminal.wallet.WalletFactory
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -94,6 +97,7 @@ internal class NftPreviewActions(
     val onMenu: () -> Unit,
     val onReportSpam: () -> Unit,
     val onNotSpam: () -> Unit,
+    val onLinkClick: (NftLinkButton) -> Unit,
     val onBack: () -> Unit,
 )
 
@@ -134,7 +138,7 @@ internal fun NftPreviewScreen(
                 if (!uiState.hidden) {
                     DetailsHeader(network.explorerUrl)
                     Details(item, network.title, uiState.domainExpiry)
-                    TransferActions(uiState, actions.onSend, actions.onRenew)
+                    TransferActions(uiState, actions)
                 }
             }
         }
@@ -262,6 +266,40 @@ private fun Info(item: NftItemRecord, name: String, hidden: Boolean, unverified:
 }
 
 @Composable
+private fun LinkButtons(uiState: NftPreviewUiState, onClick: (NftLinkButton) -> Unit) {
+    val state = uiState.linkButtonsState
+    if (state == LinkButtonsState.Hidden) return
+    val enabled = state == LinkButtonsState.Enabled
+    val icon = painterResource(Res.drawable.ic_arrow_up_right_24)
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        uiState.linkButtons.forEachIndexed { index, button ->
+            val modifier = Modifier.fillMaxWidth()
+            if (index == 0 && !uiState.isSuspicious) {
+                ButtonPrimaryYellow(
+                    modifier = modifier,
+                    title = button.label,
+                    onClick = { onClick(button) },
+                    enabled = enabled,
+                    trailingIcon = icon,
+                )
+            } else {
+                ButtonPrimaryTransparent(
+                    title = button.label,
+                    onClick = { onClick(button) },
+                    modifier = modifier,
+                    enabled = enabled,
+                    trailingIcon = icon,
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun AboutCollection(description: String) {
     HsDivider(thickness = 1.dp)
     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -325,11 +363,7 @@ private fun AddressRow(title: String, address: String) {
 }
 
 @Composable
-private fun TransferActions(
-    uiState: NftPreviewUiState,
-    onSend: (NftTransferAvailability.Available) -> Unit,
-    onRenew: (NftDomainExpiry) -> Unit,
-) {
+private fun TransferActions(uiState: NftPreviewUiState, actions: NftPreviewActions) {
     val availability = uiState.transferAvailability
     if (availability is NftTransferAvailability.Hidden) return
 
@@ -342,14 +376,15 @@ private fun TransferActions(
                 modifier = Modifier.fillMaxWidth(),
                 title = stringResource(Res.string.Button_Send),
                 enabled = availability is NftTransferAvailability.Available,
-                onClick = { (availability as? NftTransferAvailability.Available)?.let(onSend) },
+                onClick = { (availability as? NftTransferAvailability.Available)?.let(actions.onSend) },
             )
+            LinkButtons(uiState, actions.onLinkClick)
             if (uiState.renewButton != RenewButtonState.Hidden) {
                 ButtonPrimaryTransparent(
                     modifier = Modifier.fillMaxWidth(),
                     title = stringResource(Res.string.nft_domain_renew),
                     enabled = uiState.renewButton == RenewButtonState.Enabled,
-                    onClick = { uiState.domainExpiry?.let(onRenew) },
+                    onClick = { uiState.domainExpiry?.let(actions.onRenew) },
                 )
             }
         }
@@ -380,6 +415,7 @@ private fun PreviewContent(
     availability: NftTransferAvailability = NftTransferAvailability.Loading,
     domainExpiry: NftDomainExpiry? = null,
     trust: NftTrust = NftTrust.Whitelist,
+    linkButtons: List<NftLinkButton> = emptyList(),
 ) {
     ComposeAppTheme {
         NftPreviewScreen(
@@ -390,6 +426,7 @@ private fun PreviewContent(
                 transferAvailability = availability,
                 domainExpiry = domainExpiry,
                 trust = trust,
+                linkButtons = linkButtons,
             ),
             network = NftNetworkInfo(title = "TON", explorerUrl = "https://tonviewer.com/nft/EQBx"),
             actions = NftPreviewActions(
@@ -399,6 +436,7 @@ private fun PreviewContent(
                 onMenu = {},
                 onReportSpam = {},
                 onNotSpam = {},
+                onLinkClick = {},
                 onBack = {},
             ),
         )
@@ -458,4 +496,35 @@ private fun NftPreviewScreenUnverifiedPreview() = PreviewContent(
     hidden = false,
     availability = NftTransferAvailability.Loading,
     trust = NftTrust.None,
+)
+
+private val previewLinkButtons = listOf(
+    NftLinkButton("Claim reward", "https://example.com/claim"),
+    NftLinkButton("Open in Getgems", "https://getgems.io"),
+    NftLinkButton("Pay 1 TON", "ton://transfer/EQBx?amount=1000000000"),
+)
+
+@Preview
+@Composable
+private fun NftPreviewScreenLinkButtonsPreview() = PreviewContent(
+    hidden = false,
+    availability = NftTransferAvailability.Available(WalletFactory.previewWallet(), null),
+    linkButtons = previewLinkButtons,
+)
+
+@Preview
+@Composable
+private fun NftPreviewScreenUnverifiedLinkButtonPreview() = PreviewContent(
+    hidden = false,
+    availability = NftTransferAvailability.Available(WalletFactory.previewWallet(), null),
+    trust = NftTrust.None,
+    linkButtons = previewLinkButtons.take(1),
+)
+
+@Preview
+@Composable
+private fun NftPreviewScreenLinkButtonsOnSalePreview() = PreviewContent(
+    hidden = false,
+    availability = NftTransferAvailability.Unavailable(NftTransferUnavailableReason.OnSale),
+    linkButtons = previewLinkButtons,
 )

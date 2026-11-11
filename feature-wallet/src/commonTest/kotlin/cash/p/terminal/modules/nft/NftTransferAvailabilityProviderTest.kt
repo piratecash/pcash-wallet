@@ -4,6 +4,7 @@ import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.managers.OfflineKey
 import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.core.nft.NftCollectionsRepository
+import cash.p.terminal.core.nft.NftLinkButton
 import cash.p.terminal.core.nft.NftLiveState
 import cash.p.terminal.core.nft.NftProvider
 import cash.p.terminal.entities.NftItemRecord
@@ -56,7 +57,7 @@ class NftTransferAvailabilityProviderTest {
     fun check_noActiveWalletOfItemAccount_returnsHidden() = runTest(dispatcher) {
         givenWallets(wallet(accountId = "other-account"))
 
-        assertEquals(NftTransferAvailability.Hidden, availabilityProvider.check(item))
+        assertEquals(NftTransferAvailability.Hidden, availabilityProvider.check(item).availability)
         assertNoLiveRequest()
     }
 
@@ -64,7 +65,7 @@ class NftTransferAvailabilityProviderTest {
     fun check_walletOwnsOtherAddress_returnsHidden() = runTest(dispatcher) {
         givenWallets(wallet(ownerAddress = OTHER_ADDRESS))
 
-        assertEquals(NftTransferAvailability.Hidden, availabilityProvider.check(item))
+        assertEquals(NftTransferAvailability.Hidden, availabilityProvider.check(item).availability)
     }
 
     @Test
@@ -72,14 +73,14 @@ class NftTransferAvailabilityProviderTest {
         givenWallets(wallet())
         every { nftProvider.supportsSection(any()) } returns false
 
-        assertEquals(NftTransferAvailability.Hidden, availabilityProvider.check(item))
+        assertEquals(NftTransferAvailability.Hidden, availabilityProvider.check(item).availability)
     }
 
     @Test
     fun check_watchAccount_returnsWatchOnlyWithoutRequest() = runTest(dispatcher) {
         givenWallets(wallet(watch = true, accountType = AccountType.TonAddress(ADDRESS)))
 
-        assertEquals(unavailable(NftTransferUnavailableReason.WatchOnly), availabilityProvider.check(item))
+        assertEquals(unavailable(NftTransferUnavailableReason.WatchOnly), availabilityProvider.check(item).availability)
         assertNoLiveRequest()
     }
 
@@ -87,7 +88,7 @@ class NftTransferAvailabilityProviderTest {
     fun check_accountWithoutTonConnect_returnsHiddenWithoutRequest() = runTest(dispatcher) {
         givenWallets(wallet(accountType = mockk<AccountType.EvmPrivateKey>()))
 
-        assertEquals(NftTransferAvailability.Hidden, availabilityProvider.check(item))
+        assertEquals(NftTransferAvailability.Hidden, availabilityProvider.check(item).availability)
         assertNoLiveRequest()
     }
 
@@ -96,7 +97,10 @@ class NftTransferAvailabilityProviderTest {
         givenWallets(wallet())
         every { offlineModeManager.isNetworkPaused(OfflineKey(ACCOUNT_ID, BlockchainType.Ton)) } returns true
 
-        assertEquals(unavailable(NftTransferUnavailableReason.CheckFailed), availabilityProvider.check(item))
+        assertEquals(
+            unavailable(NftTransferUnavailableReason.CheckFailed),
+            availabilityProvider.check(item).availability,
+        )
         assertNoLiveRequest()
     }
 
@@ -105,7 +109,10 @@ class NftTransferAvailabilityProviderTest {
         givenWallets(wallet())
         coEvery { nftProvider.liveState(ADDRESS, NFT) } returns null
 
-        assertEquals(unavailable(NftTransferUnavailableReason.CheckFailed), availabilityProvider.check(item))
+        assertEquals(
+            unavailable(NftTransferUnavailableReason.CheckFailed),
+            availabilityProvider.check(item).availability,
+        )
     }
 
     @Test
@@ -113,7 +120,10 @@ class NftTransferAvailabilityProviderTest {
         givenWallets(wallet())
         coEvery { nftProvider.liveState(ADDRESS, NFT) } throws IllegalStateException("boom")
 
-        assertEquals(unavailable(NftTransferUnavailableReason.CheckFailed), availabilityProvider.check(item))
+        assertEquals(
+            unavailable(NftTransferUnavailableReason.CheckFailed),
+            availabilityProvider.check(item).availability,
+        )
     }
 
     @Test
@@ -129,7 +139,7 @@ class NftTransferAvailabilityProviderTest {
         givenWallets(wallet())
         givenLiveState(NftLiveState(OTHER_ADDRESS, isOnSale = true, domain = null))
 
-        assertEquals(unavailable(NftTransferUnavailableReason.OnSale), availabilityProvider.check(item))
+        assertEquals(unavailable(NftTransferUnavailableReason.OnSale), availabilityProvider.check(item).availability)
     }
 
     @Test
@@ -137,7 +147,7 @@ class NftTransferAvailabilityProviderTest {
         givenWallets(wallet())
         givenLiveState(NftLiveState(OTHER_ADDRESS, isOnSale = false, domain = null))
 
-        assertEquals(unavailable(NftTransferUnavailableReason.NotOwner), availabilityProvider.check(item))
+        assertEquals(unavailable(NftTransferUnavailableReason.NotOwner), availabilityProvider.check(item).availability)
     }
 
     @Test
@@ -145,7 +155,7 @@ class NftTransferAvailabilityProviderTest {
         givenWallets(wallet())
         givenLiveState(NftLiveState(ownerAddress = null, isOnSale = false, domain = null))
 
-        assertEquals(unavailable(NftTransferUnavailableReason.NotOwner), availabilityProvider.check(item))
+        assertEquals(unavailable(NftTransferUnavailableReason.NotOwner), availabilityProvider.check(item).availability)
     }
 
     @Test
@@ -154,7 +164,7 @@ class NftTransferAvailabilityProviderTest {
         givenWallets(wallet)
         givenLiveState(NftLiveState(ADDRESS, isOnSale = false, domain = "alex.ton"))
 
-        val available = assertIs<NftTransferAvailability.Available>(availabilityProvider.check(item))
+        val available = assertIs<NftTransferAvailability.Available>(availabilityProvider.check(item).availability)
 
         assertSame(wallet, available.wallet)
         assertEquals("alex.ton", available.domain)
@@ -167,11 +177,35 @@ class NftTransferAvailabilityProviderTest {
         givenWallets(v4r2, w5)
         givenLiveState(NftLiveState(ADDRESS, isOnSale = false, domain = null))
 
-        val available = assertIs<NftTransferAvailability.Available>(availabilityProvider.check(item))
+        val available = assertIs<NftTransferAvailability.Available>(availabilityProvider.check(item).availability)
 
         assertSame(w5, available.wallet)
         coVerify(exactly = 0) { nftProvider.liveState(OTHER_ADDRESS, any()) }
     }
+
+    @Test
+    fun check_ownedOrOnSale_carriesLiveButtons() = runTest(dispatcher) {
+        givenWallets(wallet())
+        givenLiveState(NftLiveState(ADDRESS, isOnSale = false, domain = null, buttons = buttons))
+        assertEquals(buttons, availabilityProvider.check(item).buttons)
+
+        givenLiveState(NftLiveState(OTHER_ADDRESS, isOnSale = true, domain = null, buttons = buttons))
+        assertEquals(buttons, availabilityProvider.check(item).buttons)
+    }
+
+    @Test
+    fun check_watchOrNoTonConnectAccount_carriesNoButtons() = runTest(dispatcher) {
+        givenLiveState(NftLiveState(ADDRESS, isOnSale = false, domain = null, buttons = buttons))
+
+        givenWallets(wallet(watch = true, accountType = AccountType.TonAddress(ADDRESS)))
+        assertEquals(emptyList(), availabilityProvider.check(item).buttons)
+
+        givenWallets(wallet(accountType = mockk<AccountType.EvmPrivateKey>()))
+        assertEquals(emptyList(), availabilityProvider.check(item).buttons)
+        assertNoLiveRequest()
+    }
+
+    private val buttons = listOf(NftLinkButton("Claim", "https://example.com"))
 
     private fun givenWallets(vararg wallets: Wallet) {
         every { walletManager.activeWallets } returns wallets.toList()

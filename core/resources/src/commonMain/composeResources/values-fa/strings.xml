@@ -2410,6 +2410,10 @@
     <string name="nft_report_title">گزارش به‌عنوان اسپم؟</string>
     <string name="nft_report_body">مجموعه «%1$s» پنهان می‌شود و به بخش «اسپم» در مدیریت مجموعه‌ها می‌رود. می‌توانید آن را همان‌جا با دکمه «اسپم نیست» بازگردانید.</string>
     <string name="nft_report_confirm">گزارش و پنهان کردن</string>
+    <string name="nft_link_warning_title">پیوند خارجی باز شود؟</string>
+    <string name="nft_link_warning_body">فقط در صورتی ادامه دهید که به سازندهٔ مجموعه اعتماد دارید: %1$s</string>
+    <string name="nft_link_open_anyway">در هر صورت باز شود</string>
+    <string name="nft_link_unsupported">این پیوند پشتیبانی نمی‌شود</string>
     <string name="nft_toast_hidden_undo">«%1$s» پنهان شد. می‌توانید آن را در مدیریت مجموعه‌ها بازگردانید</string>
     <string name="nft_toast_reported">مجموعه پنهان و به‌عنوان اسپم علامت‌گذاری شد</string>
     <string name="nft_undo">واگرد</string>

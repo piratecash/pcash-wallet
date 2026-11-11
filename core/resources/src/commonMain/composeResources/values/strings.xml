@@ -2823,6 +2823,10 @@ Proceed only if you\u0027re sure.</string>
     <string name="nft_report_title">Report as spam?</string>
     <string name="nft_report_body">Collection “%1$s” will be hidden and moved to the Spam section in collection management. You can restore it there with the Not spam button.</string>
     <string name="nft_report_confirm">Report and hide</string>
+    <string name="nft_link_warning_title">Open external link?</string>
+    <string name="nft_link_warning_body">Only continue if you trust the creator of this collection: %1$s</string>
+    <string name="nft_link_open_anyway">Open anyway</string>
+    <string name="nft_link_unsupported">Link not supported</string>
     <string name="nft_toast_hidden_undo">“%1$s” hidden. You can restore it in collection management</string>
     <string name="nft_toast_reported">Collection hidden and marked as spam</string>
     <string name="nft_undo">Undo</string>

@@ -2398,6 +2398,10 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="nft_report_title">Als Spam melden?</string>
     <string name="nft_report_body">Die Sammlung „%1$s“ wird ausgeblendet und in den Bereich „Spam“ der Sammlungsverwaltung verschoben. Dort kannst du sie mit „Kein Spam“ wiederherstellen.</string>
     <string name="nft_report_confirm">Melden und ausblenden</string>
+    <string name="nft_link_warning_title">Externen Link öffnen?</string>
+    <string name="nft_link_warning_body">Fahre nur fort, wenn du dem Ersteller der Sammlung vertraust: %1$s</string>
+    <string name="nft_link_open_anyway">Trotzdem öffnen</string>
+    <string name="nft_link_unsupported">Link wird nicht unterstützt</string>
     <string name="nft_toast_hidden_undo">„%1$s“ ausgeblendet. Du kannst sie in der Sammlungsverwaltung wiederherstellen</string>
     <string name="nft_toast_reported">Sammlung ausgeblendet und als Spam markiert</string>
     <string name="nft_undo">Rückgängig</string>

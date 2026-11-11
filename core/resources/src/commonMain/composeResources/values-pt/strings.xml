@@ -2412,6 +2412,10 @@
     <string name="nft_report_title">Denunciar como spam?</string>
     <string name="nft_report_body">A coleção «%1$s» será ocultada e movida para a secção «Spam» da gestão de coleções. Pode restaurá-la aí com o botão «Não é spam».</string>
     <string name="nft_report_confirm">Denunciar e ocultar</string>
+    <string name="nft_link_warning_title">Abrir ligação externa?</string>
+    <string name="nft_link_warning_body">Continue apenas se confiar no criador da coleção: %1$s</string>
+    <string name="nft_link_open_anyway">Abrir mesmo assim</string>
+    <string name="nft_link_unsupported">Ligação não suportada</string>
     <string name="nft_toast_hidden_undo">«%1$s» ocultada. Pode restaurá-la na gestão de coleções</string>
     <string name="nft_toast_reported">Coleção ocultada e marcada como spam</string>
     <string name="nft_undo">Anular</string>

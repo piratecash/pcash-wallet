@@ -26,7 +26,15 @@ data class NftItemRecordDraft(
     val largeImageUrl: String?,
 )
 
-data class NftLiveState(val ownerAddress: String?, val isOnSale: Boolean, val domain: String?)
+data class NftLiveState(
+    val ownerAddress: String?,
+    val isOnSale: Boolean,
+    val domain: String?,
+    val buttons: List<NftLinkButton> = emptyList(),
+)
+
+/** A link the NFT creator put into its metadata; both fields are untrusted. */
+data class NftLinkButton(val label: String, val uri: String)
 
 data class NftDomainDraft(
     val nftAddress: String,

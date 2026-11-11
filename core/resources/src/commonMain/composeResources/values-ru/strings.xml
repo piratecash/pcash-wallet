@@ -2588,6 +2588,10 @@
     <string name="nft_report_title">Пожаловаться на спам?</string>
     <string name="nft_report_body">Коллекция «%1$s» будет скрыта и попадёт в раздел «Спам» в управлении коллекциями. Вернуть её можно там же кнопкой «Не спам».</string>
     <string name="nft_report_confirm">Пожаловаться и скрыть</string>
+    <string name="nft_link_warning_title">Открыть внешнюю ссылку?</string>
+    <string name="nft_link_warning_body">Переходите, только если доверяете автору коллекции: %1$s</string>
+    <string name="nft_link_open_anyway">Открыть всё равно</string>
+    <string name="nft_link_unsupported">Ссылка не поддерживается</string>
     <string name="nft_toast_hidden_undo">«%1$s» скрыта. Вернуть можно в управлении коллекциями</string>
     <string name="nft_toast_reported">Коллекция скрыта и отмечена как спам</string>
     <string name="nft_undo">Отменить</string>

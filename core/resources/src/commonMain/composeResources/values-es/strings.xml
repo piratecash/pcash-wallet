@@ -2404,6 +2404,10 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="nft_report_title">¿Denunciar como spam?</string>
     <string name="nft_report_body">La colección «%1$s» se ocultará y pasará a la sección «Spam» de la gestión de colecciones. Allí puedes restaurarla con el botón «No es spam».</string>
     <string name="nft_report_confirm">Denunciar y ocultar</string>
+    <string name="nft_link_warning_title">¿Abrir enlace externo?</string>
+    <string name="nft_link_warning_body">Continúa solo si confías en el creador de la colección: %1$s</string>
+    <string name="nft_link_open_anyway">Abrir de todos modos</string>
+    <string name="nft_link_unsupported">Enlace no compatible</string>
     <string name="nft_toast_hidden_undo">«%1$s» oculta. Puedes restaurarla en la gestión de colecciones</string>
     <string name="nft_toast_reported">Colección oculta y marcada como spam</string>
     <string name="nft_undo">Deshacer</string>

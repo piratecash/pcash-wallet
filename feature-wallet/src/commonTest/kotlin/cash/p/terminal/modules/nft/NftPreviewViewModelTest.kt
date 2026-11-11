@@ -9,6 +9,7 @@ import cash.p.terminal.entities.NftCollectionPrefRecord
 import cash.p.terminal.entities.NftTrust
 import cash.p.terminal.entities.NftUserTrust
 import cash.p.terminal.core.nft.NftDomainExpiry
+import cash.p.terminal.core.nft.NftLinkButton
 import cash.p.terminal.core.nft.NftOwner
 import cash.p.terminal.modules.nft.ui.previewNftItem
 import cash.p.terminal.wallet.Wallet
@@ -54,7 +55,7 @@ class NftPreviewViewModelTest {
     }
 
     private val availabilityProvider = mockk<NftTransferAvailabilityProvider> {
-        coEvery { check(any()) } returns NftTransferAvailability.Hidden
+        coEvery { check(any()) } returns NftLiveCheck(NftTransferAvailability.Hidden)
         coEvery { domainExpiry(any()) } returns null
     }
     private val expiryTriggers = MutableSharedFlow<Unit>()
@@ -84,9 +85,13 @@ class NftPreviewViewModelTest {
         prefs.value = mapOf(item.collectionPrefKey to pref(userTrust))
     }
 
-    private fun viewModelWith(trust: NftTrust, availability: NftTransferAvailability? = null): NftPreviewViewModel {
+    private fun viewModelWith(
+        trust: NftTrust,
+        availability: NftTransferAvailability? = null,
+        buttons: List<NftLinkButton> = emptyList(),
+    ): NftPreviewViewModel {
         item = previewNftItem("EQBx", trust = trust)
-        availability?.let { coEvery { availabilityProvider.check(item) } returns it }
+        availability?.let { coEvery { availabilityProvider.check(item) } returns NftLiveCheck(it, buttons) }
         return createViewModel().also { if (availability != null) it.onResume() }
     }
 
@@ -103,7 +108,7 @@ class NftPreviewViewModelTest {
     @Test
     fun onResume_checkCompletes_showsResult() {
         val onSale = NftTransferAvailability.Unavailable(NftTransferUnavailableReason.OnSale)
-        coEvery { availabilityProvider.check(item) } returns onSale
+        coEvery { availabilityProvider.check(item) } returns NftLiveCheck(onSale)
         val viewModel = createViewModel()
 
         viewModel.onResume()
@@ -113,8 +118,10 @@ class NftPreviewViewModelTest {
 
     @Test
     fun onResume_secondResume_showsLoadingUntilNewResult() {
-        val gate = CompletableDeferred<NftTransferAvailability>()
-        coEvery { availabilityProvider.check(item) } returns NftTransferAvailability.Hidden coAndThen { gate.await() }
+        val gate = CompletableDeferred<NftLiveCheck>()
+        coEvery { availabilityProvider.check(item) } returns NftLiveCheck(NftTransferAvailability.Hidden) coAndThen {
+            gate.await()
+        }
         val viewModel = createViewModel()
         viewModel.onResume()
         assertEquals(NftTransferAvailability.Hidden, viewModel.uiState.transferAvailability)
@@ -127,7 +134,7 @@ class NftPreviewViewModelTest {
 
     @Test
     fun hiddenFlow_changesAfterCheck_keepsTransferAvailability() {
-        coEvery { availabilityProvider.check(item) } returns NftTransferAvailability.Hidden
+        coEvery { availabilityProvider.check(item) } returns NftLiveCheck(NftTransferAvailability.Hidden)
         val viewModel = createViewModel()
         viewModel.onResume()
 
@@ -206,8 +213,8 @@ class NftPreviewViewModelTest {
     @Test
     fun onResume_triggerAfterFailedCheck_enablesRenewButton() = runTest(UnconfinedTestDispatcher()) {
         val failed = NftTransferAvailability.Unavailable(NftTransferUnavailableReason.CheckFailed)
-        coEvery { availabilityProvider.check(item) } returns failed andThen
-            NftTransferAvailability.Available(mockk<Wallet>(), null)
+        coEvery { availabilityProvider.check(item) } returns NftLiveCheck(failed) andThen
+            NftLiveCheck(NftTransferAvailability.Available(mockk<Wallet>(), null))
         coEvery { availabilityProvider.domainExpiry(item) } returns null andThen expiry(1_000)
         val viewModel = createViewModel()
         viewModel.onResume()
@@ -367,6 +374,71 @@ class NftPreviewViewModelTest {
 
         verify { prefsRepository.setHidden(item, true) }
         verify { prefsRepository.setHidden(item, false) }
+    }
+
+    @Test
+    fun linkButtonsState_perAvailability_enabledOnlyWhenSendable() {
+        val buttons = listOf(NftLinkButton("Claim", "https://example.com"))
+        val onSale = NftTransferAvailability.Unavailable(NftTransferUnavailableReason.OnSale)
+        fun state(availability: NftTransferAvailability, with: List<NftLinkButton> = buttons) =
+            viewModelWith(NftTrust.Whitelist, availability, with).uiState.linkButtonsState
+
+        assertEquals(LinkButtonsState.Enabled, state(available))
+        assertEquals(LinkButtonsState.Disabled, state(onSale))
+        assertEquals(LinkButtonsState.Hidden, state(NftTransferAvailability.Hidden))
+        assertEquals(LinkButtonsState.Hidden, state(available, with = emptyList()))
+    }
+
+    @Test
+    fun linkButtonsState_recheckRunning_disabledWithPreviousButtons() {
+        val buttons = listOf(NftLinkButton("Claim", "https://example.com"))
+        val viewModel = viewModelWith(NftTrust.Whitelist, available, buttons)
+        coEvery { availabilityProvider.check(item) } coAnswers { CompletableDeferred<NftLiveCheck>().await() }
+
+        viewModel.onResume()
+
+        assertEquals(buttons, viewModel.uiState.linkButtons)
+        assertEquals(LinkButtonsState.Disabled, viewModel.uiState.linkButtonsState)
+    }
+
+    @Test
+    fun canOpenConfirmedLink_recheckRunning_acceptsOnlyCurrentButtons() {
+        val buttons = listOf(NftLinkButton("Claim", "https://example.com"))
+        hiddenState.value = false
+        val viewModel = viewModelWith(NftTrust.None, available, buttons)
+        coEvery { availabilityProvider.check(item) } coAnswers { CompletableDeferred<NftLiveCheck>().await() }
+
+        viewModel.onResume()
+
+        assertTrue(viewModel.uiState.canOpenConfirmedLink("https://example.com"))
+        assertFalse(viewModel.uiState.canOpenConfirmedLink("https://other.example"))
+    }
+
+    @Test
+    fun canOpenConfirmedLink_afterConfirmation_onlyHiddenBalanceOrGoneButtonRejects() {
+        val url = "https://example.com"
+        val shown = NftPreviewUiState(transferAvailability = available, linkButtons = listOf(NftLinkButton("Claim", url)))
+        val onSale = NftTransferAvailability.Unavailable(NftTransferUnavailableReason.OnSale)
+
+        assertTrue(shown.canOpenConfirmedLink(url))
+        assertTrue(shown.copy(transferAvailability = onSale).canOpenConfirmedLink(url))
+        assertFalse(shown.copy(hidden = true).canOpenConfirmedLink(url))
+        assertFalse(shown.copy(linkButtons = emptyList()).canOpenConfirmedLink(url))
+    }
+
+    @Test
+    fun isSuspicious_byProviderTrustAndUserMarks() {
+        assertTrue(viewModelWith(NftTrust.None).uiState.isSuspicious)
+        assertTrue(viewModelWith(NftTrust.Blacklist).uiState.isSuspicious)
+        assertFalse(viewModelWith(NftTrust.Graylist).uiState.isSuspicious)
+
+        val spam = viewModelWith(NftTrust.Whitelist)
+        setPref(NftUserTrust.Spam)
+        assertTrue(spam.uiState.isSuspicious)
+
+        val trusted = viewModelWith(NftTrust.None)
+        setPref(NftUserTrust.Trust)
+        assertFalse(trusted.uiState.isSuspicious)
     }
 
     private fun stateWith(availability: NftTransferAvailability) =

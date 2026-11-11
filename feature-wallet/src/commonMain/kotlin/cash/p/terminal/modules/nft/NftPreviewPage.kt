@@ -58,6 +58,7 @@ class NftPreviewPage(
             namesRevealed = namesRevealed,
             onFinish = viewModel::onResume,
         )
+        val openLink = navigation.rememberNftLinkOpener(viewModel)
         val burn = navigation.rememberNftBurn(
             namesRevealed = namesRevealed,
             onFinish = { navigation.navigateUpFrom(this) },
@@ -120,6 +121,7 @@ class NftPreviewPage(
                 onMenu = { actionsLauncher.slideFromBottom(NftActionsSheet(uiState.menuActions)) },
                 onReportSpam = ::openReport,
                 onNotSpam = ::notSpam,
+                onLinkClick = openLink,
                 onBack = navigation::navigateUpSafely,
             ),
         )

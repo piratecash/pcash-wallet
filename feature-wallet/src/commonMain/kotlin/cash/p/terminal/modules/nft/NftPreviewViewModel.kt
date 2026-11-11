@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import cash.p.terminal.core.nft.NftCollectionPrefsRepository
 import cash.p.terminal.core.nft.NftCollectionsRepository
 import cash.p.terminal.core.nft.NftDomainExpiry
+import cash.p.terminal.core.nft.NftLinkButton
 import cash.p.terminal.core.nft.collectionPrefKey
 import cash.p.terminal.core.nft.owner
 import cash.p.terminal.core.nft.withUserTrust
@@ -26,8 +27,21 @@ data class NftPreviewUiState(
     val domainExpiry: NftDomainExpiry? = null,
     val trust: NftTrust = NftTrust.Whitelist,
     val menuActions: List<NftAction> = emptyList(),
+    val linkButtons: List<NftLinkButton> = emptyList(),
 ) {
     val showSpamPlate: Boolean get() = trust == NftTrust.None
+
+    val isSuspicious: Boolean get() = trust == NftTrust.None || trust == NftTrust.Blacklist
+
+    val linkButtonsState: LinkButtonsState
+        get() = when {
+            linkButtons.isEmpty() || transferAvailability is NftTransferAvailability.Hidden -> LinkButtonsState.Hidden
+            transferAvailability is NftTransferAvailability.Available -> LinkButtonsState.Enabled
+            else -> LinkButtonsState.Disabled
+        }
+
+    /** The user already confirmed: only a hidden balance or a button gone from the metadata cancels it. */
+    fun canOpenConfirmedLink(url: String): Boolean = !hidden && linkButtons.any { it.uri == url }
 
     val renewButton: RenewButtonState
         get() = when {
@@ -43,6 +57,8 @@ data class NftPreviewUiState(
 
 enum class RenewButtonState { Hidden, Disabled, Enabled }
 
+enum class LinkButtonsState { Hidden, Disabled, Enabled }
+
 class NftPreviewViewModel(
     source: NftCollectionSource,
     private val item: NftItemRecord,
@@ -55,6 +71,7 @@ class NftPreviewViewModel(
     private val hiddenFlow = source.hiddenFlow(balanceHiddenManager)
     private var revealed = false
     private var transferAvailability: NftTransferAvailability = NftTransferAvailability.Loading
+    private var linkButtons: List<NftLinkButton> = emptyList()
     private var domainExpiry: NftDomainExpiry? = null
     private var pref: NftCollectionPrefRecord? = null
     private var transferCheckJob: Job? = null
@@ -94,7 +111,9 @@ class NftPreviewViewModel(
 
     /** A renewal, a listing or a late kit start can change both, so each trigger re-reads both. */
     private suspend fun refresh() {
-        updateTransferAvailability(transferAvailabilityProvider.check(item))
+        val check = transferAvailabilityProvider.check(item)
+        linkButtons = check.buttons
+        updateTransferAvailability(check.availability)
         updateDomainExpiry()
     }
 
@@ -125,6 +144,7 @@ class NftPreviewViewModel(
             transferAvailability = transferAvailability,
             domainExpiry = domainExpiry,
             trust = trust,
+            linkButtons = linkButtons,
             menuActions = nftActions(
                 trust = trust,
                 hasCollection = item.collectionAddress != null,

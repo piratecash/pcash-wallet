@@ -2407,6 +2407,10 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="nft_report_title">Spam olarak bildirilsin mi?</string>
     <string name="nft_report_body">“%1$s” koleksiyonu gizlenecek ve koleksiyon yönetimindeki Spam bölümüne taşınacak. Orada “Spam değil” düğmesiyle geri alabilirsiniz.</string>
     <string name="nft_report_confirm">Bildir ve gizle</string>
+    <string name="nft_link_warning_title">Harici bağlantı açılsın mı?</string>
+    <string name="nft_link_warning_body">Yalnızca koleksiyonun yaratıcısına güveniyorsanız devam edin: %1$s</string>
+    <string name="nft_link_open_anyway">Yine de aç</string>
+    <string name="nft_link_unsupported">Bağlantı desteklenmiyor</string>
     <string name="nft_toast_hidden_undo">“%1$s” gizlendi. Koleksiyon yönetiminden geri alabilirsiniz</string>
     <string name="nft_toast_reported">Koleksiyon gizlendi ve spam olarak işaretlendi</string>
     <string name="nft_undo">Geri al</string>

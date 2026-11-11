@@ -15,6 +15,7 @@ import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.tonkit.Address
 import io.horizontalsystems.tonkit.core.TonKit
 import io.horizontalsystems.tonkit.models.DnsExpiringItem
+import io.horizontalsystems.tonkit.models.NftButton
 import io.horizontalsystems.tonkit.models.NftItem
 import io.horizontalsystems.tonkit.models.NftPreview
 import io.horizontalsystems.tonkit.models.TagQuery
@@ -35,6 +36,9 @@ private val logger = Logger.withTag("TonNftProvider")
 private const val HIDDEN_RENDER_TYPE = "hidden"
 private const val NAME_MAX_LENGTH = 128
 private const val DESCRIPTION_MAX_LENGTH = 2000
+private const val MAX_LINK_BUTTONS = 5
+private const val LINK_LABEL_MAX_LENGTH = 64
+private const val LINK_URI_MAX_LENGTH = 2048
 private const val CARD_IMAGE_SIDE = 500
 private const val LARGE_IMAGE_SIDE = 1500
 private const val SECURE_URL_PREFIX = "https://"
@@ -73,7 +77,7 @@ class TonNftProvider(
     override suspend fun liveState(ownerAddress: String, nftAddress: String): NftLiveState? =
         tonKitManager.startedKitsFlow.value.kitOwnedBy(ownerAddress)
             ?.nftItem(Address.parse(nftAddress))
-            ?.let { NftLiveState(it.ownerAddress, it.isOnSale, it.dns.sanitized(NAME_MAX_LENGTH)) }
+            ?.toLiveState()
 
     override suspend fun expiringDomains(ownerAddress: String, periodDays: Int): List<NftDomainDraft>? =
         tonKitManager.startedKitsFlow.value.kitOwnedBy(ownerAddress)
@@ -134,6 +138,18 @@ private fun KitNftTrust.toAppTrust(): NftTrust = when (this) {
     KitNftTrust.NONE -> NftTrust.None
     KitNftTrust.BLACKLIST -> NftTrust.Blacklist
 }
+
+private fun NftItem.toLiveState() =
+    NftLiveState(ownerAddress, isOnSale, dns.sanitized(NAME_MAX_LENGTH), buttons.toLinkButtons())
+
+private fun List<NftButton>.toLinkButtons(): List<NftLinkButton> = asSequence()
+    .mapNotNull { button ->
+        val label = button.label.sanitized(LINK_LABEL_MAX_LENGTH)
+        val uri = button.uri.trim().takeIf { it.isNotEmpty() && it.length <= LINK_URI_MAX_LENGTH }
+        if (label == null || uri == null) null else NftLinkButton(label, uri)
+    }
+    .take(MAX_LINK_BUTTONS)
+    .toList()
 
 private fun String?.sanitized(maxLength: Int): String? =
     this?.normalizedTokenLabel()?.take(maxLength)?.trim()?.ifBlank { null }

@@ -2412,6 +2412,10 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="nft_report_title">Denunciar como spam?</string>
     <string name="nft_report_body">A coleção “%1$s” será ocultada e movida para a seção “Spam” do gerenciamento de coleções. Você pode restaurá-la lá com o botão “Não é spam”.</string>
     <string name="nft_report_confirm">Denunciar e ocultar</string>
+    <string name="nft_link_warning_title">Abrir link externo?</string>
+    <string name="nft_link_warning_body">Continue somente se você confia no criador da coleção: %1$s</string>
+    <string name="nft_link_open_anyway">Abrir mesmo assim</string>
+    <string name="nft_link_unsupported">Link não compatível</string>
     <string name="nft_toast_hidden_undo">“%1$s” ocultada. Você pode restaurá-la no gerenciamento de coleções</string>
     <string name="nft_toast_reported">Coleção ocultada e marcada como spam</string>
     <string name="nft_undo">Desfazer</string>
