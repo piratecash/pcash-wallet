@@ -42,6 +42,7 @@ import kotlin.test.assertTrue
 import kotlinx.coroutines.flow.emptyFlow
 import org.koin.compose.koinInject
 import org.koin.core.context.GlobalContext
+import cash.p.terminal.shared.main.ScreenCaptureProtection
 
 @OptIn(ExperimentalTestApi::class)
 class DesktopRootDesktopTest {
@@ -76,6 +77,23 @@ class DesktopRootDesktopTest {
         onNodeWithText(TAPPED).assertExists()
         assertEquals(1, createdViewModels.size)
         assertFalse(createdViewModels.single().cleared)
+    }
+
+    @Test
+    fun vaultState_notUnlocked_protectsTheWindowFromCapture() = runDesktopComposeUiTest {
+        val captureProtection = GlobalContext.get().get<ScreenCaptureProtection>()
+        var vaultState by mutableStateOf<DesktopVaultState>(unlocked())
+        setContent { Root(vaultState) }
+        runOnIdle { assertFalse(captureProtection.isProtected.value) }
+
+        runOnIdle { vaultState = DesktopVaultState.Locked }
+        runOnIdle { assertTrue(captureProtection.isProtected.value) }
+
+        runOnIdle { vaultState = unlocked() }
+        runOnIdle { assertFalse(captureProtection.isProtected.value) }
+
+        runOnIdle { vaultState = DesktopVaultState.NoVault }
+        runOnIdle { assertTrue(captureProtection.isProtected.value) }
     }
 
     @Test
