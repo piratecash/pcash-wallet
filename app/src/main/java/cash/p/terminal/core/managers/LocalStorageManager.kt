@@ -98,6 +98,8 @@ class LocalStorageManager(
     private val TRANSACTION_HIDE_SECRET_PIN = "transaction_hide_secret_pin"
     private val NON_RECOMMENDED_ACCOUNT_ALERT_DISMISSED_ACCOUNTS =
         "non_recommended_account_alert_dismissed_accounts"
+    private val SHOW_NFT_COLLECTIONS = "show_nft_collections"
+    private val NFT_VERSION_HINTS_DISMISSED = "nft_version_hints_dismissed"
     private val APP_ID = "app_id"
     private val APP_AUTO_LOCK_INTERVAL = "app_auto_lock_interval"
     private val HIDE_SUSPICIOUS_TX = "hide_suspicious_tx"
@@ -874,6 +876,21 @@ class LocalStorageManager(
         }
 
     override val displayDiffOptionTypeFlow = MutableStateFlow(displayDiffOptionType)
+
+    override var showNftCollections: Boolean
+        get() = preferences.getBoolean(SHOW_NFT_COLLECTIONS, true)
+        set(value) {
+            preferences.edit { putBoolean(SHOW_NFT_COLLECTIONS, value) }
+            showNftCollectionsFlow.update { value }
+        }
+
+    override val showNftCollectionsFlow = MutableStateFlow(showNftCollections)
+
+    override var dismissedNftVersionHints: Set<String>
+        get() = preferences.getStringSet(NFT_VERSION_HINTS_DISMISSED, setOf()) ?: setOf()
+        set(value) {
+            preferences.edit { putStringSet(NFT_VERSION_HINTS_DISMISSED, value) }
+        }
 
     override var passphraseTermsAgreed by preferences.delegate(
         key = "passphrase_terms_agreed",

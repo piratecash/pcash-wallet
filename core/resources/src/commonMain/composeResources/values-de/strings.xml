@@ -2479,4 +2479,17 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
         <item quantity="other">%1$d Domains bis zum %2$s verlängern</item>
     </plurals>
     <string name="nft_domain_renew_select">Domains auswählen</string>
+    <string name="display_options_nft_section">NFT</string>
+    <string name="display_options_show_nft_collections">NFT-Sammlungen anzeigen</string>
+    <string name="display_options_nft_hint">Der Bereich „Sammlungen“ auf dem Hauptbildschirm und der Bereich „NFT-Sammlung“ auf dem TON-Bildschirm. Standardmäßig aktiviert.</string>
+    <string name="display_options_nft_no_gram_on_hint">Im Wallet gibt es keine GRAM-Blockchain, daher zeigt der Hauptbildschirm statt der Sammlungen einen Hinweis, wie man sie aktiviert. Deaktivieren Sie die Option, wenn Sie keine NFTs brauchen: Der Hinweis verschwindet.</string>
+    <string name="display_options_nft_no_gram_off_hint">Der Bereich „Sammlungen“ und der Hinweis sind auf dem Hauptbildschirm ausgeblendet. Aktivieren Sie die Option, um sie wieder zu sehen.</string>
+    <string name="nft_gram_info_title">NFT-Sammlungen</string>
+    <string name="nft_gram_info_text">Um diese Funktion zu aktivieren, fügen Sie dem Wallet die GRAM-Blockchain hinzu. Danach erscheint auf dem Hauptbildschirm der Bereich „Sammlungen“ mit Ihren NFTs.</string>
+    <string name="nft_gram_add_blockchain">Blockchain hinzufügen</string>
+    <string name="nft_gram_add_hint">Fügen Sie die GRAM-Blockchain hinzu, um NFTs zu sehen</string>
+    <plurals name="nft_gram_version_hint">
+        <item quantity="one">Im GRAM-%1$s-Wallet ist %2$s NFT</item>
+        <item quantity="other">Im GRAM-%1$s-Wallet sind %2$s NFTs</item>
+    </plurals>
 </resources>

@@ -5,11 +5,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cash.p.terminal.core.BalanceSettingsStorage
 import cash.p.terminal.core.nft.DOMAIN_RENEW_SOON_DAYS
 import cash.p.terminal.core.nft.NftCollectionsRepository
 import cash.p.terminal.core.nft.NftDomainExpiry
 import cash.p.terminal.core.nft.NftOwner
 import cash.p.terminal.modules.nft.NftCollectionSource
+import cash.p.terminal.modules.nft.shownBy
 import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
 import cash.p.terminal.wallet.supportsTonConnect
@@ -39,6 +41,7 @@ class NftDomainRenewalViewModel(
     private val repository: NftCollectionsRepository,
     walletManager: IWalletManager,
     balanceHiddenManager: IBalanceHiddenManager,
+    settings: BalanceSettingsStorage,
 ) : ViewModel() {
 
     private val resumes = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
@@ -53,7 +56,7 @@ class NftDomainRenewalViewModel(
             list.filter { !it.account.isWatchAccount && it.account.supportsTonConnect() }
                 // Same wallets NftOwnerWalletResolver accepts, so every listed domain can be confirmed.
                 .filter(repository::supportsSection)
-        }
+        }.shownBy(settings)
         viewModelScope.launch {
             repository.ownersFlow(wallets)
                 .onEach { uiState = NftDomainRenewalState(owners = it, hidden = uiState.hidden) }

@@ -2500,4 +2500,17 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
         <item quantity="other">Renovar %1$d domínios até %2$s</item>
     </plurals>
     <string name="nft_domain_renew_select">Selecione domínios</string>
+    <string name="display_options_nft_section">NFT</string>
+    <string name="display_options_show_nft_collections">Mostrar coleções de NFT</string>
+    <string name="display_options_nft_hint">A seção “Coleções” na tela principal e a seção “Coleção de NFT” na tela TON. Ativado por padrão.</string>
+    <string name="display_options_nft_no_gram_on_hint">A carteira não tem a blockchain GRAM, por isso a tela principal mostra, no lugar das coleções, uma dica de como ativá-las. Desative se não precisar de NFTs: a dica vai sumir.</string>
+    <string name="display_options_nft_no_gram_off_hint">A seção “Coleções” e a dica estão ocultas na tela principal. Ative para vê-las de novo.</string>
+    <string name="nft_gram_info_title">Coleções de NFT</string>
+    <string name="nft_gram_info_text">Para ativar este recurso, adicione a blockchain GRAM à carteira. Depois disso, a seção “Coleções” vai aparecer na tela principal com seus NFTs.</string>
+    <string name="nft_gram_add_blockchain">Adicionar blockchain</string>
+    <string name="nft_gram_add_hint">Adicione a blockchain GRAM para ver NFTs</string>
+    <plurals name="nft_gram_version_hint">
+        <item quantity="one">A carteira GRAM %1$s tem %2$s NFT</item>
+        <item quantity="other">A carteira GRAM %1$s tem %2$s NFTs</item>
+    </plurals>
 </resources>

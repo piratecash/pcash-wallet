@@ -2683,4 +2683,19 @@
         <item quantity="other">Продлить %1$d домена до %2$s</item>
     </plurals>
     <string name="nft_domain_renew_select">Выберите домены</string>
+    <string name="display_options_nft_section">NFT</string>
+    <string name="display_options_show_nft_collections">Показывать NFT коллекции</string>
+    <string name="display_options_nft_hint">Секция «Коллекции» на главном экране и раздел «NFT-коллекция» на экране TON. Включено по умолчанию.</string>
+    <string name="display_options_nft_no_gram_on_hint">В кошельке нет GRAM блокчейна, поэтому на главном вместо коллекций показана подсказка, как их включить. Выключите, если NFT не нужны: подсказка исчезнет.</string>
+    <string name="display_options_nft_no_gram_off_hint">Секция «Коллекции» и подсказка на главном скрыты. Включите, чтобы снова её увидеть.</string>
+    <string name="nft_gram_info_title">NFT коллекции</string>
+    <string name="nft_gram_info_text">Для активации функции нужно добавить GRAM блокчейн в кошелёк. После этого секция «Коллекции» появится на главном экране, где появятся ваши NFT.</string>
+    <string name="nft_gram_add_blockchain">Добавить блокчейн</string>
+    <string name="nft_gram_add_hint">Добавьте GRAM блокчейн, чтобы видеть NFT</string>
+    <plurals name="nft_gram_version_hint">
+        <item quantity="one">На кошельке GRAM %1$s есть %2$s NFT</item>
+        <item quantity="few">На кошельке GRAM %1$s есть %2$s NFT</item>
+        <item quantity="many">На кошельке GRAM %1$s есть %2$s NFT</item>
+        <item quantity="other">На кошельке GRAM %1$s есть %2$s NFT</item>
+    </plurals>
 </resources>

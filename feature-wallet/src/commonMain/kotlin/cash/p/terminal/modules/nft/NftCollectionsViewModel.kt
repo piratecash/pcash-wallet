@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cash.p.terminal.core.BalanceSettingsStorage
 import cash.p.terminal.core.nft.DOMAIN_RENEW_SOON_DAYS
 import cash.p.terminal.core.nft.NftChange
 import cash.p.terminal.core.nft.NftCollectionPrefKey
@@ -78,11 +79,14 @@ class NftCollectionsViewModel(
     private val prefsRepository: NftCollectionPrefsRepository,
     walletManager: IWalletManager,
     private val balanceHiddenManager: IBalanceHiddenManager,
+    private val settings: BalanceSettingsStorage,
 ) : ViewModel() {
 
     private val hiddenFlow = source.hiddenFlow(balanceHiddenManager)
-    private var currentOwners: Set<NftOwner>? = null
     private val resumes = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
+    // Emits the force flag; consumed per owners set, so switching owners cancels a queued refresh.
+    private val manualRefreshes = MutableSharedFlow<Boolean>(extraBufferCapacity = 1)
 
     // Not in the UI state: Wallet.toString() would print key material.
     var receiveWallet: Wallet? by mutableStateOf(null)
@@ -97,6 +101,7 @@ class NftCollectionsViewModel(
 
             val wallets = source.walletsFlow(walletManager)
                 .onEach { receiveWallet = it.firstOrNull(repository::supportsSection) }
+                .shownBy(settings)
             repository.ownersFlow(wallets)
                 .onEach(::onOwnersChanged)
                 .flatMapLatest(::observe)
@@ -114,7 +119,6 @@ class NftCollectionsViewModel(
     fun toggleHidden() = source.toggleHidden(balanceHiddenManager)
 
     private fun onOwnersChanged(owners: Set<NftOwner>) {
-        currentOwners = owners
         val networkTitle = owners.map { it.blockchainType }.distinct()
             .mapNotNull(repository::networkTitle)
             .joinToString()
@@ -161,11 +165,15 @@ class NftCollectionsViewModel(
             changes().filterIsInstance<NftChange.KitAppeared>().map { false },
             repository.networkResumed(owners).map { false },
             changes().filterIsInstance<NftChange.NewEvent>().debounce(NEW_EVENT_DEBOUNCE).map { true },
+            manualRefreshes,
         )
     }
 
     private fun refreshCurrentOwners(force: Boolean) {
-        val owners = currentOwners ?: return
-        viewModelScope.launch { repository.refresh(owners, force) }
+        manualRefreshes.tryEmit(force)
     }
 }
+
+/** No wallets while the user has turned NFT collections off, so nothing is read from the network. */
+internal fun Flow<List<Wallet>>.shownBy(settings: BalanceSettingsStorage): Flow<List<Wallet>> =
+    combine(settings.showNftCollectionsFlow) { wallets, show -> if (show) wallets else emptyList() }

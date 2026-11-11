@@ -2500,4 +2500,17 @@
         <item quantity="other">Renovar %1$d domínios até %2$s</item>
     </plurals>
     <string name="nft_domain_renew_select">Selecione domínios</string>
+    <string name="display_options_nft_section">NFT</string>
+    <string name="display_options_show_nft_collections">Mostrar coleções NFT</string>
+    <string name="display_options_nft_hint">A secção «Coleções» no ecrã principal e a secção «Coleção de NFT» no ecrã TON. Ativado por predefinição.</string>
+    <string name="display_options_nft_no_gram_on_hint">A carteira não tem a blockchain GRAM, por isso o ecrã principal mostra, em vez das coleções, uma dica para as ativar. Desative se não precisar de NFT: a dica desaparece.</string>
+    <string name="display_options_nft_no_gram_off_hint">A secção «Coleções» e a dica estão ocultas no ecrã principal. Ative para as voltar a ver.</string>
+    <string name="nft_gram_info_title">Coleções NFT</string>
+    <string name="nft_gram_info_text">Para ativar esta função, adicione a blockchain GRAM à carteira. Depois, a secção «Coleções» aparece no ecrã principal com os seus NFT.</string>
+    <string name="nft_gram_add_blockchain">Adicionar blockchain</string>
+    <string name="nft_gram_add_hint">Adicione a blockchain GRAM para ver os NFT</string>
+    <plurals name="nft_gram_version_hint">
+        <item quantity="one">A carteira GRAM %1$s tem %2$s NFT</item>
+        <item quantity="other">A carteira GRAM %1$s tem %2$s NFT</item>
+    </plurals>
 </resources>

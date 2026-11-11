@@ -49,6 +49,9 @@ import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
 import cash.p.terminal.modules.nft.NftCollectionPage
 import cash.p.terminal.modules.nft.NftCollectionSource
 import cash.p.terminal.modules.nft.NftCollectionsViewModel
+import cash.p.terminal.modules.nft.NftGramHintsViewModel
+import cash.p.terminal.modules.nft.gram.nftGramHints
+import cash.p.terminal.modules.nft.gram.rememberNftGramInfoOpener
 import cash.p.terminal.modules.nft.NftPreviewPage
 import cash.p.terminal.modules.nft.NftSectionTitle
 import cash.p.terminal.modules.nft.renew.NftDomainRenewPage
@@ -56,6 +59,7 @@ import cash.p.terminal.modules.nft.renew.NftDomainRenewalBanner
 import cash.p.terminal.modules.nft.renew.NftDomainRenewalViewModel
 import cash.p.terminal.modules.nft.renew.renewUntilText
 import cash.p.terminal.modules.nft.manage.NftManagePage
+import cash.p.terminal.modules.managewallets.ManageWalletsPage
 import cash.p.terminal.modules.nft.ui.NftCollectionsSection
 import cash.p.terminal.modules.receive.ui.ReceiveChooseCoinPage
 import cash.p.terminal.modules.restoreaccount.RestoreAccountPage
@@ -130,10 +134,13 @@ fun BalanceItems(
 
     val nftViewModel: NftCollectionsViewModel = koinViewModel { parametersOf(NftCollectionSource.AllWallets) }
     val renewalViewModel: NftDomainRenewalViewModel = koinViewModel()
+    val gramViewModel: NftGramHintsViewModel = koinViewModel()
+    val openNftGramInfo = navigation.rememberNftGramInfoOpener()
     PageResumeEffect(
         onResume = {
             nftViewModel.onResume()
             renewalViewModel.onResume()
+            gramViewModel.onResume()
         },
         onPause = {},
     )
@@ -401,7 +408,21 @@ fun BalanceItems(
                     )
                 }
             }
+            val nftState = nftViewModel.uiState
+            nftGramHints(
+                state = gramViewModel.uiState,
+                gridShown = balanceViewItems.isNotEmpty() &&
+                    (nftState.items.isNotEmpty() || nftState.allCollectionsHidden),
+                onInfo = openNftGramInfo,
+                onAdd = gramViewModel::add,
+                onAddDefault = gramViewModel::addDefault,
+                onDismiss = gramViewModel::dismiss,
+            )
         }
+    }
+    if (gramViewModel.uiState.openCoinManager) {
+        navigation.slideFromRight(ManageWalletsPage())
+        gramViewModel.onCoinManagerOpened()
     }
     uiState.openSend?.let { openSend ->
         navigation.openOrNotifyUnsupported(pages.sendTokenSelect(openSend), hud)

@@ -100,6 +100,23 @@ class DesktopWalletSettingsStorageTest {
     }
 
     @Test
+    fun nftSettings_nothingStored_showCollectionsWithNoDismissedHints() {
+        assertTrue(storage.showNftCollections)
+        assertTrue(storage.showNftCollectionsFlow.value)
+        assertEquals(emptySet(), storage.dismissedNftVersionHints)
+    }
+
+    @Test
+    fun nftSettings_written_areReadBackAndTheFlowFollows() {
+        storage.showNftCollections = false
+        storage.dismissedNftVersionHints = setOf("account:W5")
+
+        assertFalse(storage.showNftCollections)
+        assertFalse(storage.showNftCollectionsFlow.value)
+        assertEquals(setOf("account:W5"), storage.dismissedNftVersionHints)
+    }
+
+    @Test
     fun appVersions_corruptValue_isEmpty() {
         settingsStore.setString("appVersions", "{not json")
 

@@ -1,5 +1,6 @@
 package cash.p.terminal.modules.nft.renew
 
+import cash.p.terminal.core.BalanceSettingsStorage
 import cash.p.terminal.core.nft.DOMAIN_RENEW_SOON_DAYS
 import cash.p.terminal.core.nft.NftCollectionsRepository
 import cash.p.terminal.core.nft.NftDomainExpiry
@@ -42,6 +43,10 @@ class NftDomainRenewalViewModelTest {
     private val jettonWallet = wallet(AccountType.Mnemonic(listOf("jetton"), ""))
     private val walletsFlow = MutableStateFlow(listOf(wallet))
     private val triggers = MutableSharedFlow<Unit>(extraBufferCapacity = 8)
+    private val showNft = MutableStateFlow(true)
+    private val settings = mockk<BalanceSettingsStorage> {
+        every { showNftCollectionsFlow } returns showNft
+    }
 
     private val repository = mockk<NftCollectionsRepository> {
         coEvery { owners(listOf(wallet)) } returns setOf(owner)
@@ -77,13 +82,38 @@ class NftDomainRenewalViewModelTest {
         return mockk { every { this@mockk.account } returns account }
     }
 
-    private fun createViewModel() = NftDomainRenewalViewModel(repository, walletManager, balanceHiddenManager)
+    private fun createViewModel() = NftDomainRenewalViewModel(repository, walletManager, balanceHiddenManager, settings)
 
     private fun domain(address: String, owner: NftOwner = this.owner, onSale: Boolean = false) =
         NftDomainExpiry(owner, address, "$address.ton", expiresAt = 0, isOnSale = onSale)
 
     private fun readReturns(owner: NftOwner, domains: List<NftDomainExpiry>?) {
         coEvery { repository.expiringDomains(setOf(owner), DOMAIN_RENEW_SOON_DAYS) } returns domains
+    }
+
+    @Test
+    fun showNftCollections_off_readsNoDomains() {
+        readReturns(owner, listOf(domain("a")))
+        showNft.value = false
+
+        val viewModel = createViewModel()
+        viewModel.onResume()
+
+        assertTrue(viewModel.uiState.domains.isEmpty())
+        coVerify(exactly = 0) { repository.expiringDomains(setOf(owner), any()) }
+    }
+
+    @Test
+    fun showNftCollections_turnedOnAndOff_showsThenDropsDomains() {
+        readReturns(owner, listOf(domain("a")))
+        showNft.value = false
+        val viewModel = createViewModel()
+
+        showNft.value = true
+        assertEquals(listOf(domain("a")), viewModel.uiState.domains)
+
+        showNft.value = false
+        assertTrue(viewModel.uiState.domains.isEmpty())
     }
 
     @Test

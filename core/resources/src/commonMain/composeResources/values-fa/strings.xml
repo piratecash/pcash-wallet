@@ -2491,4 +2491,17 @@
         <item quantity="other">تمدید %1$d دامنه تا %2$s</item>
     </plurals>
     <string name="nft_domain_renew_select">دامنه‌ها را انتخاب کنید</string>
+    <string name="display_options_nft_section">NFT</string>
+    <string name="display_options_show_nft_collections">نمایش مجموعه‌های NFT</string>
+    <string name="display_options_nft_hint">بخش «مجموعه‌ها» در صفحه اصلی و بخش «مجموعه NFT» در صفحه TON. به‌طور پیش‌فرض روشن است.</string>
+    <string name="display_options_nft_no_gram_on_hint">کیف پول بلاک‌چین GRAM ندارد، بنابراین در صفحه اصلی به‌جای مجموعه‌ها راهنمای فعال‌کردن آن‌ها نمایش داده می‌شود. اگر به NFT نیاز ندارید، این گزینه را خاموش کنید تا راهنما ناپدید شود.</string>
+    <string name="display_options_nft_no_gram_off_hint">بخش «مجموعه‌ها» و راهنما در صفحه اصلی پنهان هستند. برای دیدن دوباره، این گزینه را روشن کنید.</string>
+    <string name="nft_gram_info_title">مجموعه‌های NFT</string>
+    <string name="nft_gram_info_text">برای فعال‌کردن این قابلیت، بلاک‌چین GRAM را به کیف پول اضافه کنید. پس از آن بخش «مجموعه‌ها» با NFTهای شما در صفحه اصلی نمایش داده می‌شود.</string>
+    <string name="nft_gram_add_blockchain">افزودن بلاک‌چین</string>
+    <string name="nft_gram_add_hint">برای دیدن NFTها بلاک‌چین GRAM را اضافه کنید</string>
+    <plurals name="nft_gram_version_hint">
+        <item quantity="one">کیف پول GRAM %1$s دارای %2$s NFT است</item>
+        <item quantity="other">کیف پول GRAM %1$s دارای %2$s NFT است</item>
+    </plurals>
 </resources>

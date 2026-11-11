@@ -2459,4 +2459,16 @@
         <item quantity="other">将 %1$d 个域名续费至 %2$s</item>
     </plurals>
     <string name="nft_domain_renew_select">请选择域名</string>
+    <string name="display_options_nft_section">NFT</string>
+    <string name="display_options_show_nft_collections">显示 NFT 收藏集</string>
+    <string name="display_options_nft_hint">主屏幕上的“收藏集”板块和 TON 页面上的“NFT 收藏集”板块。默认开启。</string>
+    <string name="display_options_nft_no_gram_on_hint">钱包中没有 GRAM 区块链，因此主屏幕上显示的是开启收藏集的提示，而不是收藏集。如果不需要 NFT，请关闭此项：提示将消失。</string>
+    <string name="display_options_nft_no_gram_off_hint">主屏幕上的“收藏集”板块和提示已隐藏。开启此项即可再次看到。</string>
+    <string name="nft_gram_info_title">NFT 收藏集</string>
+    <string name="nft_gram_info_text">要启用此功能，请将 GRAM 区块链添加到钱包。之后主屏幕上会出现“收藏集”板块，显示您的 NFT。</string>
+    <string name="nft_gram_add_blockchain">添加区块链</string>
+    <string name="nft_gram_add_hint">添加 GRAM 区块链即可查看 NFT</string>
+    <plurals name="nft_gram_version_hint">
+        <item quantity="other">GRAM %1$s 钱包中有 %2$s 个 NFT</item>
+    </plurals>
 </resources>

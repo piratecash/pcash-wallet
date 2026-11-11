@@ -3,6 +3,7 @@ package cash.p.terminal.core.nft
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.managers.TonKitManager
 import cash.p.terminal.core.managers.TonKitWrapper
+import cash.p.terminal.core.providers.SharedAppConfig
 import cash.p.terminal.entities.NftTrust
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.Token
@@ -12,6 +13,7 @@ import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.entities.TonWalletVersion
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.tonkit.Address
+import io.horizontalsystems.tonkit.api.TonApi
 import io.horizontalsystems.tonkit.core.TonKit
 import io.horizontalsystems.tonkit.models.DnsExpiringItem
 import io.horizontalsystems.tonkit.models.EventInfo
@@ -25,6 +27,8 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -40,6 +44,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlin.test.assertFailsWith
@@ -54,6 +59,41 @@ class TonNftProviderTest {
         every { startedKitsFlow } returns kits
     }
     private val provider = TonNftProvider(tonKitManager, TestDispatcherProvider(dispatcher, TestScope(dispatcher)))
+
+    @After
+    fun tearDown() {
+        unmockkAll()
+    }
+
+    @Test
+    fun countNfts_blacklistedAndHiddenItems_areNotCounted() = test {
+        val api = countableApi()
+        coEvery { api.getAccountNftItems(Address.parse(OWNER), any()) } returns listOf(
+            nft("bad", trust = KitNftTrust.BLACKLIST),
+            nft("hidden", renderType = "hidden"),
+            nft("good"),
+            nft("gray", trust = KitNftTrust.GRAYLIST),
+        )
+
+        assertEquals(2, provider.countNfts(mockk(), TonWalletVersion.W5))
+    }
+
+    @Test
+    fun countNfts_requestFails_returnsNull() = test {
+        val api = countableApi()
+        coEvery { api.getAccountNftItems(any(), any()) } throws IllegalStateException("offline")
+
+        assertNull(provider.countNfts(mockk(), TonWalletVersion.W5))
+    }
+
+    private fun countableApi(): TonApi {
+        val api = mockk<TonApi>()
+        mockkObject(TonKit.Companion, SharedAppConfig)
+        every { SharedAppConfig.tonApiKeys } returns emptyList()
+        every { TonKit.getTonApi(any(), any()) } returns api
+        every { tonKitManager.getReceiveAddress(any(), TonWalletVersion.W5) } returns OWNER
+        return api
+    }
 
     @Test
     fun fetch_blacklistedItem_isKeptAsBlacklist() = test {
@@ -313,6 +353,18 @@ class TonNftProviderTest {
 
         assertEquals(setOf(OWNER, OTHER_OWNER), result)
         verify(exactly = 1) { tonKitManager.getReceiveAddress(account, TonWalletVersion.V4R2) }
+    }
+
+    @Test
+    fun ownerAddresses_onlyJettonWallets_hasNoOwner() = test {
+        val account = mockk<Account>()
+
+        val result = provider.ownerAddresses(
+            listOf(wallet(account, TokenType.Jetton("jetton")), wallet(account, TokenType.TonW5Jetton("jetton"))),
+        )
+
+        assertEquals(emptySet<String>(), result)
+        verify(exactly = 0) { tonKitManager.getReceiveAddress(any(), any()) }
     }
 
     @Test

@@ -2498,4 +2498,17 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
         <item quantity="other">Renouveler %1$d domaines jusqu\u0027au %2$s</item>
     </plurals>
     <string name="nft_domain_renew_select">Sélectionnez des domaines</string>
+    <string name="display_options_nft_section">NFT</string>
+    <string name="display_options_show_nft_collections">Afficher les collections NFT</string>
+    <string name="display_options_nft_hint">La section « Collections » de l\u0027écran principal et la section « Collection NFT » de l\u0027écran TON. Activé par défaut.</string>
+    <string name="display_options_nft_no_gram_on_hint">Le portefeuille n\u0027a pas de blockchain GRAM : l\u0027écran principal affiche donc, à la place des collections, une astuce pour les activer. Désactivez l\u0027option si vous n\u0027avez pas besoin de NFT : l\u0027astuce disparaîtra.</string>
+    <string name="display_options_nft_no_gram_off_hint">La section « Collections » et l\u0027astuce sont masquées sur l\u0027écran principal. Activez l\u0027option pour les revoir.</string>
+    <string name="nft_gram_info_title">Collections NFT</string>
+    <string name="nft_gram_info_text">Pour activer cette fonction, ajoutez la blockchain GRAM au portefeuille. La section « Collections » apparaîtra alors sur l\u0027écran principal avec vos NFT.</string>
+    <string name="nft_gram_add_blockchain">Ajouter la blockchain</string>
+    <string name="nft_gram_add_hint">Ajoutez la blockchain GRAM pour voir les NFT</string>
+    <plurals name="nft_gram_version_hint">
+        <item quantity="one">Le portefeuille GRAM %1$s contient %2$s NFT</item>
+        <item quantity="other">Le portefeuille GRAM %1$s contient %2$s NFT</item>
+    </plurals>
 </resources>

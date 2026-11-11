@@ -1,5 +1,6 @@
 package cash.p.terminal.modules.managewallets
 
+import cash.p.terminal.core.AccountTokenSupport
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.Coin
@@ -22,7 +23,7 @@ class ManageWalletsTokenWalletActionsTest {
     private val noHardwareWalletsPolicy = mockk<HardwareWalletTokenPolicy> {
         every { isSupported(any<Token>()) } returns false
     }
-    private val actions = ManageWalletsTokenWalletActions(platformChainSupport, noHardwareWalletsPolicy)
+    private val actions = ManageWalletsTokenWalletActions(AccountTokenSupport(platformChainSupport, noHardwareWalletsPolicy))
     private val ethereum = Token(
         coin = Coin(uid = "ethereum", name = "Ethereum", code = "ETH"),
         blockchain = Blockchain(BlockchainType.Ethereum, "Ethereum", null),

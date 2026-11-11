@@ -3,6 +3,7 @@ package cash.p.terminal.core.nft
 import cash.p.terminal.core.managers.TonKitManager
 import cash.p.terminal.core.managers.TonKitWrapper
 import cash.p.terminal.core.managers.normalizedTokenLabel
+import cash.p.terminal.core.providers.SharedAppConfig
 import cash.p.terminal.entities.NftTrust
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.Wallet
@@ -15,6 +16,7 @@ import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.tonkit.Address
 import io.horizontalsystems.tonkit.core.TonKit
 import io.horizontalsystems.tonkit.models.DnsExpiringItem
+import io.horizontalsystems.tonkit.models.Network
 import io.horizontalsystems.tonkit.models.NftButton
 import io.horizontalsystems.tonkit.models.NftItem
 import io.horizontalsystems.tonkit.models.NftPreview
@@ -44,11 +46,15 @@ private const val LARGE_IMAGE_SIDE = 1500
 private const val SECURE_URL_PREFIX = "https://"
 private val LOTTIE_URL_PREFIXES = listOf("https://", "http://")
 private val ALL_EVENTS = TagQuery(null, null, null, null)
+private const val NFT_COUNT_LIMIT = 1000
 
 class TonNftProvider(
     private val tonKitManager: TonKitManager,
     private val dispatcherProvider: DispatcherProvider,
 ) : NftProvider {
+
+    // One client for every count; a kit is not started for a version the user has not added.
+    private val tonApi by lazy { TonKit.getTonApi(Network.MainNet, SharedAppConfig.tonApiKeys) }
 
     override val blockchainType = BlockchainType.Ton
     override val networkTitle = "TON"
@@ -58,7 +64,9 @@ class TonNftProvider(
     override fun supportsSection(wallet: Wallet) = wallet.token.tonAsset is TonAsset.Native
 
     override suspend fun ownerAddresses(wallets: List<Wallet>): Set<String> = withContext(dispatcherProvider.io) {
+        // Native GRAM only: a jetton alone is not GRAM, and NFT actions need the native wallet anyway.
         wallets
+            .filter(::supportsSection)
             .mapNotNull { wallet -> wallet.token.tonAsset?.let { wallet.account to it.version } }
             .distinct()
             .mapNotNullTo(mutableSetOf()) { (account, version) -> receiveAddressOrNull(account, version) }
@@ -84,6 +92,25 @@ class TonNftProvider(
         tonKitManager.startedKitsFlow.value.kitOwnedBy(ownerAddress)
             ?.dnsExpiring(periodDays)
             ?.mapNotNull { it.toDraftOrNull() }
+
+    suspend fun hasAddress(account: Account, version: TonWalletVersion): Boolean = withContext(dispatcherProvider.io) {
+        receiveAddressOrNull(account, version) != null
+    }
+
+    /** Non-spam NFTs at the [version] address, read without a kit; null when it cannot be read now. */
+    suspend fun countNfts(account: Account, version: TonWalletVersion): Int? = withContext(dispatcherProvider.io) {
+        val address = receiveAddressOrNull(account, version) ?: return@withContext null
+        try {
+            tonApi.getAccountNftItems(Address.parse(address), NFT_COUNT_LIMIT)
+                .mapNotNull { it.toDraftOrNull() }
+                .count { it.trust != NftTrust.Blacklist }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            logger.w { "NFT count failed for ${version.title} wallet: ${e::class.simpleName}" }
+            null
+        }
+    }
 
     // The failure's message can carry the account id, so only its type is logged.
     private fun receiveAddressOrNull(account: Account, version: TonWalletVersion): String? = try {

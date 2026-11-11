@@ -2,7 +2,25 @@ package cash.p.terminal.modules.displayoptions
 
 import org.jetbrains.compose.resources.painterResource
 import cash.p.terminal.resources.ic_arrow_right
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.tooling.preview.Preview
+import cash.p.terminal.modules.nft.gram.rememberNftGramInfoOpener
+import cash.p.terminal.resources.display_options_nft_hint
+import cash.p.terminal.resources.display_options_nft_no_gram_off_hint
+import cash.p.terminal.resources.display_options_nft_no_gram_on_hint
+import cash.p.terminal.resources.display_options_nft_section
+import cash.p.terminal.resources.display_options_show_nft_collections
+import cash.p.terminal.resources.ic_info_20
+import cash.p.terminal.resources.nft_gram_info_title
+import org.jetbrains.compose.resources.StringResource
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
@@ -47,6 +65,7 @@ internal fun DisplayOptionsScreen(
     onPercentChangeToggled: (Boolean) -> Unit,
     onPriceChangeToggled: (Boolean) -> Unit,
     onRoundingAmountMainPageToggled: (Boolean) -> Unit,
+    onShowNftCollectionsToggle: (Boolean) -> Unit,
 ) {
     var showPeriodSelector by remember { mutableStateOf(false) }
 
@@ -89,6 +108,10 @@ internal fun DisplayOptionsScreen(
                     onPriceChangeToggled = onPriceChangeToggled,
                     onRoundingAmountToggled = onRoundingAmountMainPageToggled,
                 )
+
+                uiState.nftSection?.let {
+                    NftSection(it, onShowNftCollectionsToggle, navigation.rememberNftGramInfoOpener())
+                }
             }
         }
     }
@@ -160,3 +183,67 @@ fun PriceParametersSection(
         Modifier.padding(top = 32.dp)
     )
 }
+
+@Composable
+private fun NftSection(section: NftDisplaySection, onToggle: (Boolean) -> Unit, onInfo: () -> Unit) {
+    Spacer(modifier = Modifier.height(32.dp))
+    InfoText(text = stringResource(Res.string.display_options_nft_section), paddingBottom = 8.dp)
+    CellUniversalLawrenceSection(
+        listOf {
+            SwitchWithText(
+                text = stringResource(Res.string.display_options_show_nft_collections),
+                checked = section.show,
+                onCheckedChange = onToggle,
+                extraIcon = if (section.hasGram) null else { { NftInfoIcon(onInfo) } },
+            )
+        }
+    )
+    InfoText(text = stringResource(section.hint))
+}
+
+private val NftDisplaySection.hint: StringResource
+    get() = when {
+        hasGram -> Res.string.display_options_nft_hint
+        show -> Res.string.display_options_nft_no_gram_on_hint
+        else -> Res.string.display_options_nft_no_gram_off_hint
+    }
+
+@Composable
+private fun NftInfoIcon(onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .padding(end = 4.dp)
+            .size(28.dp)
+            .clip(CircleShape)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            painter = painterResource(Res.drawable.ic_info_20),
+            contentDescription = stringResource(Res.string.nft_gram_info_title),
+            tint = ComposeAppTheme.colors.iconSecondary,
+            modifier = Modifier.size(20.dp),
+        )
+    }
+}
+
+@Composable
+private fun NftSectionPreview(section: NftDisplaySection) {
+    ComposeAppTheme {
+        Column(modifier = Modifier.background(ComposeAppTheme.colors.backgroundBase)) {
+            NftSection(section = section, onToggle = {}, onInfo = {})
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun NftSectionWithGramPreview() = NftSectionPreview(NftDisplaySection(show = true, hasGram = true))
+
+@Preview
+@Composable
+private fun NftSectionNoGramOnPreview() = NftSectionPreview(NftDisplaySection(show = true, hasGram = false))
+
+@Preview
+@Composable
+private fun NftSectionNoGramOffPreview() = NftSectionPreview(NftDisplaySection(show = false, hasGram = false))

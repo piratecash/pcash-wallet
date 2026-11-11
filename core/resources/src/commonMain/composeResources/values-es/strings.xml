@@ -2492,4 +2492,17 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
         <item quantity="other">Renovar %1$d dominios hasta el %2$s</item>
     </plurals>
     <string name="nft_domain_renew_select">Selecciona dominios</string>
+    <string name="display_options_nft_section">NFT</string>
+    <string name="display_options_show_nft_collections">Mostrar colecciones NFT</string>
+    <string name="display_options_nft_hint">La sección «Colecciones» en la pantalla principal y la sección «Colección de NFT» en la pantalla de TON. Activado por defecto.</string>
+    <string name="display_options_nft_no_gram_on_hint">La billetera no tiene la blockchain GRAM, por eso la pantalla principal muestra, en lugar de las colecciones, un consejo para activarlas. Desactívalo si no necesitas NFT: el consejo desaparecerá.</string>
+    <string name="display_options_nft_no_gram_off_hint">La sección «Colecciones» y el consejo están ocultos en la pantalla principal. Actívalo para volver a verlos.</string>
+    <string name="nft_gram_info_title">Colecciones NFT</string>
+    <string name="nft_gram_info_text">Para activar esta función, añade la blockchain GRAM a la billetera. Después, la sección «Colecciones» aparecerá en la pantalla principal con tus NFT.</string>
+    <string name="nft_gram_add_blockchain">Añadir blockchain</string>
+    <string name="nft_gram_add_hint">Añade la blockchain GRAM para ver los NFT</string>
+    <plurals name="nft_gram_version_hint">
+        <item quantity="one">La billetera GRAM %1$s tiene %2$s NFT</item>
+        <item quantity="other">La billetera GRAM %1$s tiene %2$s NFT</item>
+    </plurals>
 </resources>

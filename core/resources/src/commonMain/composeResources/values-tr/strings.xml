@@ -2488,4 +2488,17 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
         <item quantity="other">%1$d alan adını %2$s tarihine kadar yenile</item>
     </plurals>
     <string name="nft_domain_renew_select">Alan adlarını seçin</string>
+    <string name="display_options_nft_section">NFT</string>
+    <string name="display_options_show_nft_collections">NFT koleksiyonlarını göster</string>
+    <string name="display_options_nft_hint">Ana ekrandaki “Koleksiyonlar” bölümü ve TON ekranındaki “NFT koleksiyonu” bölümü. Varsayılan olarak açıktır.</string>
+    <string name="display_options_nft_no_gram_on_hint">Cüzdanda GRAM blockchain yok, bu yüzden ana ekranda koleksiyonlar yerine onları nasıl açacağınızı anlatan bir ipucu gösteriliyor. NFT gerekmiyorsa kapatın: ipucu kaybolur.</string>
+    <string name="display_options_nft_no_gram_off_hint">Ana ekrandaki “Koleksiyonlar” bölümü ve ipucu gizlendi. Yeniden görmek için açın.</string>
+    <string name="nft_gram_info_title">NFT koleksiyonları</string>
+    <string name="nft_gram_info_text">Bu özelliği açmak için cüzdana GRAM blockchain ekleyin. Ardından ana ekranda NFT\u0027lerinizin yer aldığı “Koleksiyonlar” bölümü görünür.</string>
+    <string name="nft_gram_add_blockchain">Blockchain ekle</string>
+    <string name="nft_gram_add_hint">NFT\u0027leri görmek için GRAM blockchain ekleyin</string>
+    <plurals name="nft_gram_version_hint">
+        <item quantity="one">GRAM %1$s cüzdanında %2$s NFT var</item>
+        <item quantity="other">GRAM %1$s cüzdanında %2$s NFT var</item>
+    </plurals>
 </resources>

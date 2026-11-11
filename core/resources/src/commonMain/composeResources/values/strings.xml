@@ -2904,4 +2904,17 @@ Proceed only if you\u0027re sure.</string>
         <item quantity="other">Renew %1$d domains until %2$s</item>
     </plurals>
     <string name="nft_domain_renew_select">Select domains</string>
+    <string name="display_options_nft_section">NFT</string>
+    <string name="display_options_show_nft_collections">Show NFT collections</string>
+    <string name="display_options_nft_hint">The Collections section on the main screen and the NFT collection section on the TON screen. On by default.</string>
+    <string name="display_options_nft_no_gram_on_hint">The wallet has no GRAM blockchain, so the main screen shows a tip on how to turn collections on instead. Turn this off if you do not need NFTs: the tip will disappear.</string>
+    <string name="display_options_nft_no_gram_off_hint">The Collections section and the tip are hidden on the main screen. Turn this on to see them again.</string>
+    <string name="nft_gram_info_title">NFT collections</string>
+    <string name="nft_gram_info_text">To turn this feature on, add the GRAM blockchain to the wallet. The Collections section will then appear on the main screen with your NFTs.</string>
+    <string name="nft_gram_add_blockchain">Add blockchain</string>
+    <string name="nft_gram_add_hint">Add the GRAM blockchain to see NFTs</string>
+    <plurals name="nft_gram_version_hint">
+        <item quantity="one">The GRAM %1$s wallet has %2$s NFT</item>
+        <item quantity="other">The GRAM %1$s wallet has %2$s NFTs</item>
+    </plurals>
 </resources>

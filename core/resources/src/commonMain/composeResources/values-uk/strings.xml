@@ -2658,4 +2658,19 @@
         <item quantity="other">Подовжити %1$d доменів до %2$s</item>
     </plurals>
     <string name="nft_domain_renew_select">Оберіть домени</string>
+    <string name="display_options_nft_section">NFT</string>
+    <string name="display_options_show_nft_collections">Показувати NFT-колекції</string>
+    <string name="display_options_nft_hint">Розділ «Колекції» на головному екрані та розділ «NFT-колекція» на екрані TON. Увімкнено за замовчуванням.</string>
+    <string name="display_options_nft_no_gram_on_hint">У гаманці немає блокчейну GRAM, тому на головному замість колекцій показано підказку, як їх увімкнути. Вимкніть, якщо NFT не потрібні: підказка зникне.</string>
+    <string name="display_options_nft_no_gram_off_hint">Розділ «Колекції» і підказку на головному приховано. Увімкніть, щоб знову їх побачити.</string>
+    <string name="nft_gram_info_title">NFT-колекції</string>
+    <string name="nft_gram_info_text">Щоб увімкнути цю функцію, додайте блокчейн GRAM до гаманця. Після цього на головному екрані з’явиться розділ «Колекції» з вашими NFT.</string>
+    <string name="nft_gram_add_blockchain">Додати блокчейн</string>
+    <string name="nft_gram_add_hint">Додайте блокчейн GRAM, щоб бачити NFT</string>
+    <plurals name="nft_gram_version_hint">
+        <item quantity="one">У гаманці GRAM %1$s є %2$s NFT</item>
+        <item quantity="few">У гаманці GRAM %1$s є %2$s NFT</item>
+        <item quantity="many">У гаманці GRAM %1$s є %2$s NFT</item>
+        <item quantity="other">У гаманці GRAM %1$s є %2$s NFT</item>
+    </plurals>
 </resources>

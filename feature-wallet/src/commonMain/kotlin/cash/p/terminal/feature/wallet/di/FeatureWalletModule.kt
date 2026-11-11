@@ -22,10 +22,12 @@ import cash.p.terminal.core.managers.TimePasswordProvider
 import cash.p.terminal.core.managers.TokenAutoEnableManager
 import cash.p.terminal.core.managers.TonAccountManager
 import cash.p.terminal.core.managers.TronAccountManager
+import cash.p.terminal.core.AccountTokenSupport
 import cash.p.terminal.core.managers.WalletActivator
 import cash.p.terminal.core.managers.WordsManager
 import cash.p.terminal.core.nft.NftCollectionPrefsRepository
 import cash.p.terminal.core.nft.NftCollectionsRepository
+import cash.p.terminal.core.nft.NftGramHintsRepository
 import cash.p.terminal.core.nft.NftLottieLoader
 import cash.p.terminal.core.nft.NftProvider
 import cash.p.terminal.core.nft.TonNftProvider
@@ -65,6 +67,7 @@ import cash.p.terminal.modules.importwallet.ImportWalletViewModel
 import cash.p.terminal.modules.intro.IntroViewModel
 import cash.p.terminal.modules.markdown.MarkdownViewModel
 import cash.p.terminal.modules.nft.NftCollectionsViewModel
+import cash.p.terminal.modules.nft.NftGramHintsViewModel
 import cash.p.terminal.modules.nft.NftPreviewViewModel
 import cash.p.terminal.modules.nft.manage.NftManageViewModel
 import cash.p.terminal.modules.nft.NftOwnerWalletResolver
@@ -454,6 +457,7 @@ val featureWalletModule = module {
     singleOf(::NftOwnerWalletResolver)
     singleOf(::NftTransferAvailabilityProvider)
     singleOf(::NftLottieLoader)
+    singleOf(::NftGramHintsRepository)
     factoryOf(::SwapProviderTransactionsStorage)
     factoryOf(::SwapTransactionMatcher)
     singleOf(::ContactsRepository)
@@ -515,10 +519,11 @@ val featureWalletModule = module {
     viewModel { (blockchain: Blockchain) -> AddRpcViewModel(blockchain, get()) }
 
     viewModel { (url: String) -> MarkdownViewModel(url, get(), get()) }
-    viewModel { params -> NftCollectionsViewModel(params.get(), get(), get(), get(), get()) }
+    viewModel { params -> NftCollectionsViewModel(params.get(), get(), get(), get(), get(), get()) }
     viewModel { params -> NftManageViewModel(params.get(), get(), get(), get(), get()) }
     viewModel { params -> NftPreviewViewModel(params.get(), params.get(), get(), get(), get(), get(), get()) }
     viewModelOf(::NftDomainRenewalViewModel)
+    viewModelOf(::NftGramHintsViewModel)
     viewModel { params ->
         NftDomainRenewViewModel(
             domains = params.get(),
@@ -670,6 +675,7 @@ val featureWalletModule = module {
     factory { BalanceCache(get<AppDatabaseProvider>().database.enabledWalletsCacheDao()) }
     factoryOf(::BalanceAdapterRepository)
     factoryOf(::BalanceViewItemFactory)
+    singleOf(::AccountTokenSupport)
     factoryOf(::ManageWalletsTokenWalletActions) bind TokenWalletActions::class
     factoryOf(::TotalService)
     factoryOf(::TotalBalance)

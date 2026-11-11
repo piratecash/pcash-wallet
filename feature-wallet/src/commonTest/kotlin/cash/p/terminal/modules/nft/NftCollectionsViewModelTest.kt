@@ -1,5 +1,6 @@
 package cash.p.terminal.modules.nft
 
+import cash.p.terminal.core.BalanceSettingsStorage
 import cash.p.terminal.core.nft.DOMAIN_RENEW_SOON_DAYS
 import cash.p.terminal.core.nft.NftChange
 import cash.p.terminal.core.nft.NftCollectionPrefKey
@@ -26,6 +27,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -61,6 +63,10 @@ class NftCollectionsViewModelTest {
     private val changes = MutableSharedFlow<NftChange>(extraBufferCapacity = 8)
     private val prefs = MutableStateFlow<Map<NftCollectionPrefKey, NftCollectionPrefRecord>>(emptyMap())
     private val domainTriggers = MutableSharedFlow<Unit>(extraBufferCapacity = 8)
+    private val showNft = MutableStateFlow(true)
+    private val settings = mockk<BalanceSettingsStorage> {
+        every { showNftCollectionsFlow } returns showNft
+    }
 
     private val repository = mockk<NftCollectionsRepository> {
         coEvery { owners(listOf(wallet)) } returns setOf(owner)
@@ -99,7 +105,7 @@ class NftCollectionsViewModelTest {
     }
 
     private fun createViewModel(source: NftCollectionSource = NftCollectionSource.AllWallets) =
-        NftCollectionsViewModel(source, repository, prefsRepository, walletManager, hiddenManager)
+        NftCollectionsViewModel(source, repository, prefsRepository, walletManager, hiddenManager, settings)
 
     private fun pref(address: String, hidden: Boolean = false, userTrust: NftUserTrust = NftUserTrust.None) =
         NftCollectionPrefRecord(owner.accountId, owner.blockchainType, address, hidden, userTrust)
@@ -127,6 +133,68 @@ class NftCollectionsViewModelTest {
 
     private fun expiringReturns(domains: List<NftDomainExpiry>?) {
         coEvery { repository.expiringDomains(setOf(owner), DOMAIN_RENEW_SOON_DAYS) } returns domains
+    }
+
+    private fun turnOffWithNoOwners() {
+        coEvery { repository.owners(emptyList()) } returns emptySet()
+        every { repository.itemsFlow(emptySet()) } returns MutableStateFlow(NftItemsState(emptyList(), isLoaded = true))
+        showNft.value = false
+    }
+
+    @Test
+    fun showNftCollections_offAtStart_readsNothingAndShowsNothing() = runTest(dispatcher) {
+        turnOffWithNoOwners()
+
+        val viewModel = createViewModel()
+        viewModel.onResume()
+        viewModel.refresh()
+
+        coVerify(exactly = 0) { repository.refresh(match { it.isNotEmpty() }, any()) }
+        coVerify(exactly = 0) { repository.expiringDomains(match { it.isNotEmpty() }, any()) }
+        assertTrue(viewModel.uiState.items.isEmpty())
+        assertFalse(viewModel.uiState.isLoading)
+    }
+
+    @Test
+    fun showNftCollections_turnedOn_refreshesAndShowsItems() = runTest(dispatcher) {
+        turnOffWithNoOwners()
+        val viewModel = createViewModel()
+
+        showNft.value = true
+        items.value = NftItemsState(listOf(record("a")), isLoaded = true)
+
+        coVerify(exactly = 1) { repository.refresh(setOf(owner), false) }
+        assertEquals(1, viewModel.uiState.totalCount)
+    }
+
+    @Test
+    fun showNftCollections_turnedOffWhileShown_clearsItemsAndIgnoresNewEvents() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        items.value = NftItemsState(listOf(record("a")), isLoaded = true)
+
+        turnOffWithNoOwners()
+        changes.emit(NftChange.NewEvent)
+        advanceTimeBy(5_000)
+
+        assertTrue(viewModel.uiState.items.isEmpty())
+        coVerify(exactly = 0) { repository.refresh(any(), true) }
+    }
+
+    @Test
+    fun refresh_inFlightWhenTurnedOff_isCancelled() = runTest(dispatcher) {
+        val gate = CompletableDeferred<Unit>()
+        var finished = false
+        coEvery { repository.refresh(setOf(owner), true) } coAnswers {
+            gate.await()
+            finished = true
+        }
+        val viewModel = createViewModel()
+        viewModel.refresh()
+
+        turnOffWithNoOwners()
+        gate.complete(Unit)
+
+        assertFalse(finished)
     }
 
     @Test

@@ -22,7 +22,8 @@ class DisplayOptionsPage : HSPage() {
             onPricePeriodChanged = viewModel::onPricePeriodChanged,
             onPercentChangeToggled = viewModel::onPercentChangeToggled,
             onPriceChangeToggled = viewModel::onPriceChangeToggled,
-            onRoundingAmountMainPageToggled = viewModel::onRoundingAmountMainPageToggled
+            onRoundingAmountMainPageToggled = viewModel::onRoundingAmountMainPageToggled,
+            onShowNftCollectionsToggle = viewModel::onShowNftCollectionsToggled,
         )
     }
 
