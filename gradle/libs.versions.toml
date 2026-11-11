@@ -1,6 +1,5 @@
 [versions]
 activityCompose = "1.13.0"
-androidShell = "1.0.0"
 biometric = "1.1.0"
 circleindicator = "2.1.6"
 browser = "1.10.0"
@@ -74,20 +73,20 @@ secp256k1 = "0.24.0"
 tonKotlin = "0.5.0" # updated for ktor 3.x compatibility
 orgJson = "20250517"
 piratecash-ton = "v2.0.0-pcash.21"
-beam-sdk = "v0.3.1"
+beam-sdk = "v0.3.2"
 openpnp-capture-java = "v0.0.30-2-pcash.2"
-piratecash-bitcoin = "v0.1.0-pcash.41"
+piratecash-bitcoin = "v0.1.0-pcash.47"
 
 hd-wallet-kit = "1.0.1"
-stellar-kit = "v2.0.0-pcash.5"
-thorchain-kit = "1.2.0"
-trezor-kit = "1.4.0"
-piratecash-ethereum = "v1.0.0-pcash.10"
-piratecash-solana = "v2.0.0-pcash.6"
-monero-kit-android = "v0.18.3.4-pcash.20"
+stellar-kit = "v2.0.0-pcash.6"
+thorchain-kit = "1.4.0"
+trezor-kit = "1.4.1"
+piratecash-ethereum = "v1.0.0-pcash.11"
+piratecash-solana = "v2.0.0-pcash.8"
+monero-kit-android = "v0.18.3.4-pcash.25"
 netcipher = "2.1.0"
 solanakt = "v1.0.0-pcash.5"
-piratecash-tron = "v2.0.0-pcash.1"
+piratecash-tron = "v2.0.0-pcash.4"
 tangem-sdk = "3.9.2-pcash.5"
 gson = "2.13.2"
 retrofit = "3.0.0"
@@ -100,7 +99,7 @@ android-core-ktx = "1.18.0"
 twitterText = "3.1.0"
 workRuntimeKtx = "2.11.2"
 workRxjava2 = "2.11.2"
-zcashSdkKmp = "v1.4.5"
+zcashSdkKmp = "v1.5.0"
 junitJupiter = "6.0.3"
 google-play-core = "2.1.0"
 bitcoinj = "0.17"
@@ -117,11 +116,10 @@ zxing = "3.5.4"
 accompanist-permissions = "0.37.3"
 lint = "32.1.0"
 
-tor-android = "0.4.9.5.1"
+tor-android = "0.4.9.11"
 
 [libraries]
 android-bom = { module = "com.reown:android-bom", version.ref = "reownBom" }
-android-shell = { module = "com.jaredrummler:android-shell", version.ref = "androidShell" }
 androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "biometric" }
 androidx-browser = { module = "androidx.browser:browser", version.ref = "browser" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
@@ -249,6 +247,7 @@ bitcoin-dogecoin-kit = { group = "com.github.piratecash.bitcoin-kit-android", na
 bitcoin-cosanta-kit = { group = "com.github.piratecash.bitcoin-kit-android", name = "cosantakit", version.ref = "piratecash-bitcoin" }
 bitcoin-piratecash-kit = { group = "com.github.piratecash.bitcoin-kit-android", name = "piratecashkit", version.ref = "piratecash-bitcoin" }
 bitcoin-hodler = { group = "com.github.piratecash.bitcoin-kit-android", name = "hodler", version.ref = "piratecash-bitcoin" }
+bitcoin-kit-database-naming = { group = "com.github.piratecash.bitcoin-kit-android", name = "database-naming", version.ref = "piratecash-bitcoin" }
 bitcoin-kit-sqlcipher-driver = { group = "com.github.piratecash.bitcoin-kit-android", name = "sqlcipher-driver", version.ref = "piratecash-bitcoin" }
 hd-wallet-kit = { group = "com.github.piratecash.hd-wallet-kit-android", name = "hd-wallet-kit-kmp", version.ref = "hd-wallet-kit" }
 stellar-kit = { group = "com.github.piratecash.stellar-kit-android", name = "stellarkit", version.ref = "stellar-kit" }

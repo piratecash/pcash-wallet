@@ -4,9 +4,11 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.test.core.app.ApplicationProvider
 import cash.p.terminal.core.TestDispatcherProvider
+import cash.p.terminal.core.managers.IdentityKitStorageNaming
 import cash.p.terminal.core.storage.AccountsDao
 import cash.p.terminal.core.storage.AppDatabase
 import cash.p.terminal.core.storage.RestoreSettingDao
+import cash.p.terminal.core.storage.SingleDatabaseStorageRouter
 import cash.p.terminal.core.storage.StaticAppDatabaseProvider
 import cash.p.terminal.wallet.AccountDeletionBlockedException
 import cash.p.terminal.wallet.IAdapterManager
@@ -85,7 +87,7 @@ class BeamAccountDeletionPreflightTest {
         every { accounts.isAvailable(any()) } answers { firstArg<String>() in existing - deleted }
         every { owner.current } returns null
         state = deletionState()
-        locator = spyk(BeamStorageLocator(AndroidKitPlatformContexts(context)))
+        locator = spyk(BeamStorageLocator(AndroidKitPlatformContexts(context), IdentityKitStorageNaming))
         keys = spyk(BeamDatabaseKeyProvider(context, locator, encryption, state))
     }
 
@@ -595,7 +597,7 @@ class BeamAccountDeletionPreflightTest {
     }
 
     private fun deletionState() =
-        BeamDeletionState(StaticAppDatabaseProvider(database), SharedPreferencesBeamResetMarker(context))
+        BeamDeletionState(SingleDatabaseStorageRouter(StaticAppDatabaseProvider(database)), SharedPreferencesBeamResetMarker(context))
 
     private fun restart() {
         state = deletionState()

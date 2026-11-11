@@ -5,6 +5,7 @@ import android.content.Context
 import cash.p.terminal.core.adapters.zcash.session.ZcashDatabaseFiles
 import cash.p.terminal.core.adapters.zcash.session.ZcashDbKeyProvider
 import cash.p.terminal.core.adapters.zcash.session.ZcashSessionManager
+import cash.p.terminal.core.managers.IdentityKitStorageNaming
 import cash.p.terminal.core.storage.ZcashSingleUseAddressStorage
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -37,7 +38,8 @@ class ClearZCashWalletDataUseCaseTest {
     fun setUp() {
         noBackupDir = Files.createTempDirectory("zcash-erase").toFile()
         databaseFiles = ZcashDatabaseFiles(
-            AndroidKitPlatformContexts(mockk<Context> { every { noBackupFilesDir } returns noBackupDir })
+            AndroidKitPlatformContexts(mockk<Context> { every { noBackupFilesDir } returns noBackupDir }),
+            IdentityKitStorageNaming,
         )
         databaseFiles.dataDir.mkdirs()
         databasePaths().forEach { it.writeText("data") }

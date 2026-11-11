@@ -1,5 +1,6 @@
 package cash.p.terminal.core.managers
 
+import io.horizontalsystems.databasenaming.DatabaseNameResolver
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
@@ -77,7 +78,7 @@ class EvmKitManagerOfflineGateTest {
             networkErrorTracker = mockk(relaxed = true),
             offlineModeManager = offlineModeManager,
             databaseKeys = mockk(),
-            platformContexts = mockk(),
+            platformContexts = mockk<KitPlatformContexts> { every { resolverFor(any()) } returns DatabaseNameResolver.Identity },
         )
         setField(
             manager, "evmKitWrapper", EvmKitWrapper(

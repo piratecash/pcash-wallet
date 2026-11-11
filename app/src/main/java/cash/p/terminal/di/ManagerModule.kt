@@ -54,6 +54,9 @@ import cash.p.terminal.core.managers.BalanceHideOnFlipManager
 import cash.p.terminal.core.managers.BeamDatabaseKeyProvider
 import cash.p.terminal.core.managers.BeamKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.BeamResetMarker
+import cash.p.terminal.core.managers.BeamStorageLocator
+import cash.p.terminal.core.managers.IdentityKitStorageNaming
+import cash.p.terminal.core.managers.KitStorageNaming
 import cash.p.terminal.core.managers.SharedPreferencesBeamResetMarker
 import cash.p.terminal.core.providers.AddressResolutionConfig
 import cash.p.terminal.ui.helpers.TextHelper
@@ -116,6 +119,8 @@ import cash.p.terminal.core.managers.MoneroDeviceWalletFileStore
 import cash.p.terminal.core.managers.MoneroDeviceWalletProvisioner
 import cash.p.terminal.core.managers.MoneroTrezorReadiness
 import cash.p.terminal.core.managers.MoneroTrezorOperationGateway
+import cash.p.terminal.core.managers.TrezorAttachments
+import cash.p.terminal.core.managers.UsbTrezorAttachments
 import cash.p.terminal.core.managers.MoneroHardwareGateway
 import cash.p.terminal.core.managers.RateAppManager
 import cash.p.terminal.core.managers.SilentCameraManager
@@ -130,6 +135,9 @@ import cash.p.terminal.core.managers.TonConnectManager
 import cash.p.terminal.core.managers.TonKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.AndroidTonKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.TorManager
+import cash.p.terminal.core.tor.TorServiceGateway
+import cash.p.terminal.core.tor.TorSyncCoordinator
+import cash.p.terminal.core.tor.TorSyncState
 import cash.p.terminal.core.managers.TronKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.AndroidTronKitDatabaseKeyProvider
 import cash.p.terminal.core.INetworkManager
@@ -196,6 +204,10 @@ import cash.p.terminal.modules.settings.appearance.AppIconService
 import cash.p.terminal.modules.settings.appearance.LaunchScreenService
 import cash.p.terminal.modules.theme.ThemeService
 import cash.p.terminal.modules.settings.guides.GuidesRepository
+import cash.p.terminal.modules.pin.AndroidDuressSecretPages
+import cash.p.terminal.modules.pin.DuressSecretController
+import cash.p.terminal.modules.pin.DuressSecretPages
+import cash.p.terminal.modules.pin.PinDuressSecretController
 import cash.p.terminal.modules.pin.hiddenwallet.HiddenWalletPinPolicy
 import cash.p.terminal.modules.walletconnect.WCManager
 import cash.p.terminal.modules.walletconnect.WCWalletRequestHandler
@@ -205,7 +217,7 @@ import cash.p.terminal.widgets.MarketWatchlistResetCleaner
 import cash.p.terminal.widgets.MarketWidgetManager
 import cash.p.terminal.widgets.MarketWidgetRepository
 import cash.p.terminal.widgets.WidgetMarketFavoritesChangeListener
-import cash.p.terminal.core.storage.AppDatabase
+import cash.p.terminal.core.storage.StorageRouter
 import cash.p.terminal.core.storage.ChartIndicatorStorageImpl
 import cash.p.terminal.modules.chart.ChartIndicatorStorage
 import cash.p.terminal.modules.balance.AndroidBalancePlatformActions
@@ -222,8 +234,6 @@ import cash.p.terminal.network.pirate.di.PREMIUM_API_BASE_URL_QUALIFIER
 import cash.p.terminal.premium.di.PREMIUM_IS_DEBUG_QUALIFIER
 import cash.p.terminal.navigation.AppPages
 import cash.p.terminal.wallet.navigation.WalletPages
-import com.m2049r.xmrwallet.service.MoneroWalletService
-import com.piratecash.monero.MoneroWalletFiles
 import io.horizontalsystems.core.AppForegroundState
 import io.horizontalsystems.core.BackgroundManager
 import io.horizontalsystems.core.BaseCurrencyStorage
@@ -253,6 +263,7 @@ import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.createdAtStart
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
+import org.koin.core.parameter.parametersOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.bind
 import org.koin.dsl.binds
@@ -308,6 +319,8 @@ val managerModule = module {
     single { PreferenceManager.getDefaultSharedPreferences(get()) }
     singleOf(::BackgroundManager) bind IBackgroundManager::class
     singleOf(::AndroidKitPlatformContexts) bind KitPlatformContexts::class
+    single<KitStorageNaming> { IdentityKitStorageNaming }
+    singleOf(::BeamStorageLocator)
     singleOf(::AndroidEvmHardwareSigners) bind EvmHardwareSigners::class
     singleOf(::AndroidBitcoinHardwareSigners) bind BitcoinHardwareSigners::class
     singleOf(::AndroidSolanaHardwareSigners) bind SolanaHardwareSigners::class
@@ -407,11 +420,11 @@ val managerModule = module {
 
     singleOf(::DefaultMoneroNativeWalletRuntime) bind MoneroNativeWalletRuntime::class
     singleOf(::MoneroTrezorOperationGateway) bind MoneroHardwareGateway::class
+    singleOf(::UsbTrezorAttachments) bind TrezorAttachments::class
     singleOf(::MoneroTrezorReadiness)
     singleOf(::DefaultMoneroDeviceWalletNative) bind MoneroDeviceWalletNative::class
     single { MoneroDeviceWalletFileStore.create(get()) }
     singleOf(::MoneroDeviceWalletProvisioner)
-    single { MoneroWalletService(MoneroWalletFiles.root(get())) }
     singleOf(::SilentCameraManager) bind ISilentPhotoCapture::class
     singleOf(::CurrentDateProvider) bind ICurrentDateProvider::class
     singleOf(::AndroidUptimeProvider) bind UptimeProvider::class
@@ -447,7 +460,12 @@ val managerModule = module {
     singleOf(::BalanceViewTypeManager)
     singleOf(::DeviceFlipDetector)
     singleOf(::BalanceHideOnFlipManager) { createdAtStart() } bind BalanceHideOnFlipHandler::class
-    singleOf(::TorManager) bind ITorManager::class
+    singleOf(::TorServiceGateway)
+    singleOf(::TorManager) { createdAtStart() } bind ITorManager::class
+    // Lazy wallet stack: eager creation would open the wallet databases on the main thread inside startKoin
+    single(createdAtStart = true) {
+        TorSyncCoordinator(get(), lazy { get() }, lazy { get() }, lazy { get() }, get())
+    } bind TorSyncState::class
     single {
         KeyStoreCleaner(get(), get(), get(), get(), lazy { get<IAccountCleaner>() }, lazy { get<TonConnectManager>() })
     } bind IKeyStoreCleaner::class
@@ -483,12 +501,17 @@ val managerModule = module {
             appVersion = AppConfigProvider.appVersion,
             databaseKeyProvider = get(),
             accountManager = get(),
-            appDatabase = get(),
+            router = get(),
             dispatcherProvider = get(),
         ).also { it.start() }
     }
     factory { (pinComponent: IPinComponent) ->
         HiddenWalletPinPolicy(pinComponent, get())
+    }
+    singleOf(::AndroidDuressSecretPages) bind DuressSecretPages::class
+    single<DuressSecretController> {
+        val pinComponent = get<IPinComponent>()
+        PinDuressSecretController(pinComponent, get(), get { parametersOf(pinComponent) }, get())
     }
 
     single(named(PREMIUM_API_BASE_URL_QUALIFIER)) { AppConfigProvider.premiumApiBaseUrl }
@@ -517,7 +540,7 @@ val managerModule = module {
 
     singleOf(::WidgetMarketFavoritesChangeListener) bind MarketFavoritesChangeListener::class
     single<MarketFavoritesMigration> {
-        MarketFavoritesDataMigration(get<AppDatabase>().marketFavoritesDao(), get())
+        MarketFavoritesDataMigration(get<StorageRouter>().shared.marketFavoritesDao(), get())
     }
 
     // Guides

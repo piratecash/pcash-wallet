@@ -59,6 +59,7 @@
     <string name="trezor_not_initialized_description">Dieser Trezor ist noch nicht eingerichtet. Schließen Sie die Einrichtung auf dem Gerät ab und verbinden Sie es erneut.</string>
     <string name="trezor_not_initialized_cta">Einrichtungsanleitung</string>
     <string name="trezor_connect_failed">Verbindung mit Trezor fehlgeschlagen.</string>
+    <string name="hardware_connect_device_to_sync">Verbinden Sie das Gerät zur Synchronisierung</string>
     <string name="Button_Activate">Aktivieren</string>
     <string name="activation_required_dialog_description">Um %1$s zu erhalten, müssen Sie den Token aktivieren. Das Stellar-Netzwerk verlangt für jeden Token eine Vertrauenslinie (Trustline). Ohne sie kann Ihre Wallet %2$s nicht empfangen — die Transaktion wird abgelehnt und die Gelder werden nicht zugestellt.</string>
     <string name="activate_you_activate">Sie aktivieren</string>
@@ -762,6 +763,8 @@
     <string name="TransactionInfo_Date">Datum</string>
     <string name="transaction_info_sync_source">Sync-Quelle</string>
     <string name="TransactionInfo_Id">Transaktion ID</string>
+    <string name="transaction_info_replaces_transaction">Ersetzt Transaktion</string>
+    <string name="transaction_info_replaced_by_transaction">Ersetzt durch Transaktion</string>
     <string name="TransactionInfo_Service">Dienst</string>
     <string name="TransactionInfo_RawTransaction">Rohdaten der Transaktion</string>
     <string name="TransactionInfo_ContactName">Kontaktname</string>
@@ -1432,6 +1435,7 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="Tor_Connection_Disable">Tor deaktivieren</string>
     <string name="Tor_Alert_Title">Internet</string>
     <string name="TorPage_Connecting">Tor wird verbunden…</string>
+    <string name="TorPage_ConnectingProgress">Tor wird verbunden… %1$d%</string>
     <string name="TorPage_Failed">Fehler beim Verbinden von Tor</string>
     <string name="Tor_TorIsActive">Tor ist aktiv</string>
     <!--Coin Page-->
@@ -1730,7 +1734,7 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="login_logging_log_successful">Erfolgreiche Anmeldungen protokollieren</string>
     <string name="login_logging_log_unsuccessful">Fehlgeschlagene Anmeldungen protokollieren</string>
     <string name="login_logging_duress_mode">ZWANGSMODUS</string>
-    <string name="login_logging_log_into_duress">In Zwangsmodus einloggen</string>
+    <string name="login_logging_log_into_duress">Anmeldungen im Zwangsmodus protokollieren</string>
     <string name="login_logging_send_notification">Anmeldebenachrichtigung senden</string>
     <string name="login_logging_delete_auth_data">Alle Authentifizierungsdaten löschen</string>
     <string name="login_logging_delete_auth_data_description">Diese Funktion löscht alle Authentifizierungsdaten mit Fotos beim Einloggen in den Zwangsmodus.</string>
@@ -1829,14 +1833,14 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="Unlock_Random">Zufällig</string>
     <!--Set Pin-->
     <string name="PinSet_Title">Code festlegen</string>
-    <string name="PinSet_Info">Dein Code wird verwendet werden, um deinen Wallet zu entsperren und Geld schicken</string>
-    <string name="PinSet_Transactions_Hide">Set Passcode for \“Transactions Auto Hide\” mode</string>
+    <string name="PinSet_Info">Dein Code wird verwendet, um deine Wallet zu entsperren</string>
+    <string name="PinSet_Transactions_Hide">Code für den Modus „Transaktionen automatisch ausblenden“ festlegen</string>
     <string name="PinSet_ConfirmInfo">Bestätigen</string>
     <string name="PinSet_ErrorPinsDontMatch">Code stimmt nicht überein. Bitte noch einmal versuchen.</string>
     <string name="PinSet_ErrorFailedToSavePin">Beim Speichern Ihren Code ist leider ein Fehler aufgetreten. Bitte versuchen es erneut.</string>
     <string name="PinSet_ForBiometrics">Passcode zum Aktivieren von Biometrien festlegen</string>
     <string name="PinSet_ForDuress">Code zum Aktivieren des Duress Modus festlegen</string>
-    <string name="pin_set_for_login_logging">Set a passcode to enable login logging</string>
+    <string name="pin_set_for_login_logging">Code festlegen zum Aktivieren des Login-Protokolls</string>
     <string name="pin_set_for_login_logging_passcode">Code festlegen zum Schutz des Login-Protokolls</string>
     <string name="confirm_pin_to_disable_login_logging_passcode">Code eingeben zum Deaktivieren des Login-Protokolls</string>
     <string name="pin_set_for_delete_all_contacts">Code festlegen, um alle Kontakte zu löschen</string>
@@ -2246,6 +2250,7 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="desktop_change_password_current_hint">Aktuelles Passwort</string>
     <string name="desktop_change_password_new_hint">Neues Passwort</string>
     <string name="desktop_change_password_failed">Das Passwort konnte nicht gespeichert werden. Das aktuelle Passwort funktioniert weiterhin</string>
+    <string name="desktop_change_password_in_use">Dieses Passwort wird bereits verwendet</string>
     <string name="desktop_change_password_corrupted">Die Schlüsseldatei ist beschädigt: Sobald die App gesperrt ist, können Sie sich nicht mehr anmelden. Speichern Sie eine Sicherungskopie jeder Wiederherstellungsphrase.</string>
     <string name="desktop_change_password_success">Passwort geändert</string>
     <string name="desktop_security_lock_now">Jetzt sperren</string>
@@ -2492,4 +2497,25 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
         <item quantity="one">Im GRAM-%1$s-Wallet ist %2$s NFT</item>
         <item quantity="other">Im GRAM-%1$s-Wallet sind %2$s NFTs</item>
     </plurals>
+    <string name="desktop_unlock_legacy_format">Die Daten wurden von einer älteren Version der App erstellt und können nicht geöffnet werden</string>
+    <string name="desktop_duress_password_set">Duress-Modus festlegen</string>
+    <string name="desktop_duress_password_edit">Duress-Passwort bearbeiten</string>
+    <string name="desktop_duress_password_disable">Duress-Passwort deaktivieren</string>
+    <string name="desktop_duress_password_description">Mit diesem Modus lassen sich mehrere App-Passwörter einrichten, wobei ein bestimmtes Passwort nur ausgewählte Wallets anzeigt. Entwickelt, um ausgewählte Wallets bei Zwang oder Drohungen zu schützen.</string>
+    <string name="desktop_duress_password_note_change_title">Passwortänderung</string>
+    <string name="desktop_duress_password_note_change_description">Das Ändern des Passworts im Duress-Modus ändert auch das aktuelle Passwort für diesen Modus.</string>
+    <string name="desktop_duress_password_title">Duress-Passwort</string>
+    <string name="desktop_duress_password_set_description">Passwort für den Duress-Modus festlegen</string>
+    <string name="desktop_duress_password_edit_description">Neues Passwort für den Duress-Modus eingeben</string>
+    <string name="desktop_hidden_wallet_password_title">Passwort der versteckten Wallet</string>
+    <string name="desktop_hidden_wallet_password_description">Passwort für die versteckte Wallet erstellen</string>
+    <string name="desktop_hidden_wallet_password_terms_warning">Die globale Wallet wird diese Wallet nicht sehen, und wenn Sie das Passwort vergessen, können Sie den Zugriff auf die Wallet mit der Seed-Phrase wiederherstellen.</string>
+    <string-array name="desktop_hidden_wallet_password_terms">
+        <item>Der Benutzer versteht, dass die Wallet nicht unter den anderen Wallets sichtbar ist.</item>
+        <item>Der Benutzer versteht, dass die Wallet wiederhergestellt werden kann, wenn er ihre Seed-Phrase kennt, falls er das Passwort vergisst.</item>
+    </string-array>
+    <string name="desktop_levels_limit_reached">Das Limit der Ebenen ist erreicht. Es können keine weiteren Passwörter hinzugefügt werden</string>
+    <string name="desktop_password_save_failed">Das Passwort konnte nicht gespeichert werden. Bitte versuchen Sie es erneut</string>
+    <string name="tron_controlled_by_others_title">Andere können dieses Konto kontrollieren</string>
+    <string name="tron_controlled_by_others_warning">Die Berechtigungen für dieses Konto wurden geändert: Andere Schlüssel können es möglicherweise kontrollieren. Gelder, die Sie dorthin senden, können ohne Ihr Zutun abgehoben werden. Laden Sie es nur auf, wenn Sie wissen, wem diese Schlüssel gehören.</string>
 </resources>

@@ -3,6 +3,7 @@ package cash.p.terminal.feature.wallet.di
 import cash.p.terminal.core.IAccountFactory
 import cash.p.terminal.core.IBackupManager
 import cash.p.terminal.core.ITermsManager
+import cash.p.terminal.core.adapters.BitcoinReplacementRegistry
 import cash.p.terminal.core.adapters.zcash.ZcashAddressDeriver
 import cash.p.terminal.core.adapters.zcash.ZcashKeyExporter
 import cash.p.terminal.core.factories.AccountFactory
@@ -23,6 +24,7 @@ import cash.p.terminal.core.managers.TokenAutoEnableManager
 import cash.p.terminal.core.managers.TonAccountManager
 import cash.p.terminal.core.managers.TronAccountManager
 import cash.p.terminal.core.AccountTokenSupport
+import cash.p.terminal.core.managers.UserLevelLogScope
 import cash.p.terminal.core.managers.WalletActivator
 import cash.p.terminal.core.managers.WordsManager
 import cash.p.terminal.core.nft.NftCollectionPrefsRepository
@@ -36,6 +38,7 @@ import cash.p.terminal.core.providers.PredefinedBlockchainSettingsProvider
 import cash.p.terminal.core.providers.ZcashDatabaseFilesMarker
 import cash.p.terminal.core.providers.ZcashDbMarker
 import cash.p.terminal.core.usecase.GenerateMoneroWalletUseCase
+import cash.p.terminal.core.usecase.MoneroWalletServiceProvider
 import cash.p.terminal.core.usecase.MoneroWalletUseCase
 import cash.p.terminal.core.usecase.ValidateMoneroHeightUseCase
 import cash.p.terminal.core.usecase.ValidateMoneroMnemonicUseCase
@@ -44,6 +47,9 @@ import cash.p.terminal.modules.releasenotes.ReleaseNotesViewModel
 import cash.p.terminal.modules.settings.about.AboutViewModel
 import cash.p.terminal.modules.settings.appcache.AppCacheViewModel
 import cash.p.terminal.modules.settings.appstatus.AppStatusViewModel
+import cash.p.terminal.modules.pin.SetDuressPinIntroViewModel
+import cash.p.terminal.modules.pin.SetDuressPinSelectAccountsViewModel
+import cash.p.terminal.modules.settings.advancedsecurity.terms.HiddenWalletTermsViewModel
 import cash.p.terminal.modules.settings.appearance.AppearanceViewModel
 import cash.p.terminal.modules.settings.terms.TermsViewModel
 import cash.p.terminal.core.managers.RandomProvider
@@ -132,7 +138,6 @@ import cash.p.terminal.core.managers.BeamLifecycleCoordinator
 import cash.p.terminal.core.managers.BeamSendCoordinator
 import cash.p.terminal.core.managers.BeamSessionFactory
 import cash.p.terminal.core.managers.BeamSessionOwner
-import cash.p.terminal.core.managers.BeamStorageLocator
 import cash.p.terminal.wallet.AccountDeletionPreflight
 import cash.p.terminal.core.managers.SpamManager
 import cash.p.terminal.core.managers.TransactionAdapterManager
@@ -262,10 +267,15 @@ import cash.p.terminal.modules.transactions.TransactionsService
 import cash.p.terminal.modules.transactions.TransactionsViewModel
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.FullCoin
-import cash.p.terminal.core.storage.AppDatabaseProvider
+import cash.p.terminal.core.storage.StorageRouter
+import cash.p.terminal.core.storage.sessionLevel
+import io.horizontalsystems.core.logger.LogScope
+import io.horizontalsystems.core.storage.LogsDao
 import cash.p.terminal.core.usecase.GetRestoreHeightForWalletUseCase
 import cash.p.terminal.core.usecase.RescanMoneroUseCase
 import cash.p.terminal.core.usecase.RescanZcashUseCase
+import cash.p.terminal.core.usecase.RecordBitcoinReplacementUseCase
+import cash.p.terminal.core.usecase.RelinkSwapToReplacementUseCase
 import cash.p.terminal.core.usecase.ResolveTransactionItemUseCase
 import cash.p.terminal.modules.balance.BalanceAccountsViewModel
 import cash.p.terminal.modules.balance.BalanceAdapterRepository
@@ -360,6 +370,7 @@ val featureWalletModule = module {
     singleOf(::TransactionAdapterManager)
     single<IAdapterManager> { get<AdapterManager>() }
     singleOf(::OfflineNetworkController)
+    singleOf(::MoneroWalletServiceProvider)
     singleOf(::MoneroKitManager)
     singleOf(::ClearZCashWalletDataUseCase)
     singleOf(::ZcashDatabaseFiles)
@@ -373,9 +384,8 @@ val featureWalletModule = module {
     singleOf(::ZcashSessionManager)
     singleOf(::ZcashSingleUseAddressStorage)
     factory { (accountId: String) -> ZcashSingleUseAddressManager(storage = get(), accountId = accountId) }
-    factory { get<AppDatabaseProvider>().database.moneroFileDao() }
-    factory { get<AppDatabaseProvider>().database.zcashSingleUseAddressDao() }
-    factory { get<AppDatabaseProvider>().database.logsDao() }
+    factory<LogsDao> { get<StorageRouter>().sessionLevel.logsDao() }
+    singleOf(::UserLevelLogScope) bind LogScope::class
     factory<BalanceXRateRepository>(named("wallet")) {
         DefaultBalanceXRateRepository(tag = "wallet", currencyManager = get(), marketKit = get())
     }
@@ -390,7 +400,6 @@ val featureWalletModule = module {
     singleOf(::AccountStorageCleaner)
     singleOf(::AccountCleaner) bind IAccountCleaner::class
     singleOf(::DeletedAccountsCleanup)
-    singleOf(::BeamStorageLocator)
     singleOf(::BeamDeletionState)
     single<AccountDeletionPreflight> {
         // Key wrapping depends on KeyStoreCleaner, which itself needs the AccountManager guarded here.
@@ -447,6 +456,7 @@ val featureWalletModule = module {
     singleOf(::BeamOfflineOperations)
     singleOf(::PendingAccountProviderImpl) bind PendingAccountProvider::class
     singleOf(::ZcashIronwoodMigrationRegistry)
+    singleOf(::BitcoinReplacementRegistry)
     singleOf(::CoinManager) bind ICoinManager::class
     singleOf(::OfflineModeStorage)
     singleOf(::NftItemStorage)
@@ -499,6 +509,9 @@ val featureWalletModule = module {
     factoryOf(::AppearanceSettingsBackup)
     factoryOf(::BlockchainSettingsBackup)
     viewModelOf(::TermsViewModel)
+    viewModelOf(::SetDuressPinIntroViewModel)
+    viewModelOf(::SetDuressPinSelectAccountsViewModel)
+    viewModelOf(::HiddenWalletTermsViewModel)
     viewModelOf(::AppearanceViewModel)
     viewModelOf(::AboutViewModel)
     viewModelOf(::AppStatusViewModel)
@@ -629,7 +642,9 @@ val featureWalletModule = module {
     }
     viewModel { (provider: BlockchainStatusProvider) -> BlockchainStatusViewModel(provider, get(), get(), get()) }
     viewModel { (wallet: Wallet) ->
-        SyncErrorViewModel(SyncErrorService(wallet, get(), SharedAppConfig.reportEmail, get(), get(), get(), get()))
+        SyncErrorViewModel(
+            SyncErrorService(wallet, get(), SharedAppConfig.reportEmail, get(), get(), get(), get(), get(), get())
+        )
     }
     singleOf(::CheckAmlIncomingTransactionUseCase)
     singleOf(::AmlStatusManager)
@@ -666,13 +681,15 @@ val featureWalletModule = module {
     viewModel { (wallet: Wallet) -> activateTokenViewModel(wallet) }
     viewModel { (activeAccount: Account, fullCoin: FullCoin) -> NetworkSelectViewModel(activeAccount, fullCoin, get()) }
     viewModel { (activeAccount: Account) ->
-        ReceiveTokenSelectViewModel(get(), activeAccount, FullCoinsProvider(get(), activeAccount), get())
+        ReceiveTokenSelectViewModel(get(), activeAccount, FullCoinsProvider(get(), activeAccount, get()), get())
     }
     factoryOf(::ResolveTransactionItemUseCase)
+    factoryOf(::RelinkSwapToReplacementUseCase)
+    factoryOf(::RecordBitcoinReplacementUseCase)
     factoryOf(::GetRestoreHeightForWalletUseCase)
     factoryOf(::RescanMoneroUseCase)
     factoryOf(::RescanZcashUseCase)
-    factory { BalanceCache(get<AppDatabaseProvider>().database.enabledWalletsCacheDao()) }
+    factoryOf(::BalanceCache)
     factoryOf(::BalanceAdapterRepository)
     factoryOf(::BalanceViewItemFactory)
     singleOf(::AccountTokenSupport)

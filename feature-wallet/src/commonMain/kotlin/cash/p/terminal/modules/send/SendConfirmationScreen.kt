@@ -55,6 +55,7 @@ import cash.p.terminal.ui.compose.components.SectionTitleCell
 import cash.p.terminal.ui.compose.components.TransactionInfoAddressCell
 import cash.p.terminal.ui.compose.components.TransactionInfoContactCell
 import cash.p.terminal.ui.compose.components.TransactionInfoRbfCell
+import cash.p.terminal.ui_compose.components.TextImportantError
 import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.TitleAndValueCell
 import cash.p.terminal.ui_compose.components.body_leah
@@ -87,6 +88,7 @@ import cash.p.terminal.resources.send_confirmation_sync_error_warning
 import cash.p.terminal.resources.send_confirmation_syncing_warning
 import cash.p.terminal.resources.send_failed_offline_prompt_message
 import cash.p.terminal.resources.send_failed_offline_prompt_title
+import cash.p.terminal.core.HSCaution
 import cash.p.terminal.core.getKoinInstance
 import io.horizontalsystems.core.IAppNumberFormatter
 
@@ -123,6 +125,7 @@ fun SendConfirmationScreen(
     balanceHidden: Boolean = false,
     onBalanceClicked: () -> Unit = {},
     feeWarningData: NetworkFeeWarningData? = null,
+    sendCaution: HSCaution? = null,
     windowInsets: WindowInsets = NavigationBarDefaults.windowInsets,
     insufficientFeeText: String? = null,
     assetContent: (@Composable () -> Unit)? = null,
@@ -299,6 +302,14 @@ fun SendConfirmationScreen(
                             text = stringResource(Res.string.send_confirmation_syncing_warning)
                         )
                     }
+                }
+                sendCaution?.let { caution ->
+                    val description = caution.getDescription()
+                    TextImportantError(
+                        modifier = Modifier.padding(bottom = 12.dp),
+                        text = description ?: caution.getString(),
+                        title = caution.getString().takeIf { description != null },
+                    )
                 }
                 SendButton(
                     modifier = Modifier.fillMaxWidth(),

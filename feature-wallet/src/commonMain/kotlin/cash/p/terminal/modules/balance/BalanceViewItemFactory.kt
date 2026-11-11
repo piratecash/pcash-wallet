@@ -50,6 +50,8 @@ import cash.p.terminal.resources.beam_restore_importing_snapshot
 import cash.p.terminal.resources.beam_restore_resolving_birthday
 import cash.p.terminal.resources.beam_restore_scanning_wallet_outputs
 import cash.p.terminal.resources.beam_restore_validating_snapshot
+import cash.p.terminal.resources.hardware_connect_device_to_sync
+import cash.p.terminal.resources.balance_sync_error_fixed_source
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.compose.components.diffSign
 import cash.p.terminal.ui.compose.components.diffText
@@ -63,6 +65,8 @@ import cash.p.terminal.wallet.balance.BalanceViewType
 import cash.p.terminal.wallet.balance.DeemedValue
 import cash.p.terminal.wallet.policy.PlatformOperation
 import cash.p.terminal.wallet.policy.PlatformOperationSupport
+import com.piratecash.monero.signer.HardwareWalletErrorCode
+import com.piratecash.monero.signer.HardwareWalletOperationException
 import io.horizontalsystems.core.IAppNumberFormatter
 import io.horizontalsystems.core.Translator
 import io.horizontalsystems.core.entities.BlockchainType
@@ -95,6 +99,7 @@ data class BalanceViewItem(
     val displayDiffOptionType: DisplayDiffOptionType = DisplayDiffOptionType.BOTH,
     val offline: Boolean = false,
     val syncErrorBlockedByProvider: Boolean = false,
+    val syncErrorFromDevice: Boolean = false,
     val notSupportedOnPlatform: Boolean = false,
 )
 
@@ -132,6 +137,7 @@ data class BalanceViewItem2(
     val stackingUnpaid: DeemedValue<String>?,
     val offline: Boolean = false,
     val syncErrorBlockedByProvider: Boolean = false,
+    val syncErrorFromDevice: Boolean = false,
     val notSupportedOnPlatform: Boolean = false,
 )
 
@@ -560,6 +566,7 @@ class BalanceViewItemFactory(
 
         val syncDisplayState = syncDisplayState(wallet, displaySyncState)
         val syncError = (displaySyncState as? AdapterState.NotSynced)?.error
+        val deviceErrorMessage = deviceSyncErrorMessage(syncError)
 
         return BalanceViewItem(
             wallet = item.wallet,
@@ -576,8 +583,9 @@ class BalanceViewItemFactory(
             badge = wallet.badge,
             swapVisible = isSwappable,
             swapAvailability = swapAvailability(item, syncDisplayState.offline),
-            errorMessage = syncError?.message,
+            errorMessage = syncErrorMessage(syncError, deviceErrorMessage),
             syncErrorBlockedByProvider = syncError?.isBlockedByProvider() == true,
+            syncErrorFromDevice = deviceErrorMessage != null,
             isWatchAccount = watchAccount,
             warning = item.warning?.warningText,
             diff = item.coinPrice?.diffPercentage,
@@ -586,6 +594,24 @@ class BalanceViewItemFactory(
             offline = syncDisplayState.offline,
             notSupportedOnPlatform = item.notSupportedOnPlatform,
         )
+    }
+
+    // A hardware Monero wallet syncs only while its device is connected; a node failure is not the device's.
+    private fun deviceSyncErrorMessage(error: Throwable?): String? = when {
+        error is HardwareWalletOperationException && error.error == HardwareWalletErrorCode.Network -> null
+
+        error is HardwareWalletOperationException ->
+            Translator.getString(Res.string.hardware_connect_device_to_sync)
+
+        else -> null
+    }
+
+    private fun syncErrorMessage(error: Throwable?, deviceMessage: String?): String? = when {
+        deviceMessage != null -> deviceMessage
+        error is HardwareWalletOperationException && error.error == HardwareWalletErrorCode.Network ->
+            Translator.getString(Res.string.balance_sync_error_fixed_source)
+
+        else -> error?.message
     }
 
     private fun stackingUnpaidValue(
@@ -638,8 +664,9 @@ class BalanceViewItemFactory(
         val stackingUnpaid = stackingUnpaidValue(item, showStackingUnpaid, balanceTotalVisibility)
 
         val syncError = (displaySyncState as? AdapterState.NotSynced)?.error
+        val deviceErrorMessage = deviceSyncErrorMessage(syncError)
         val errorMessage = if (networkAvailable) {
-            syncError?.message
+            syncErrorMessage(syncError, deviceErrorMessage)
         } else {
             Translator.getString(Res.string.Hud_Text_NoInternet)
         }
@@ -662,6 +689,7 @@ class BalanceViewItemFactory(
             swapAvailability = swapAvailability(item, syncDisplayState.offline),
             errorMessage = errorMessage,
             syncErrorBlockedByProvider = networkAvailable && syncError?.isBlockedByProvider() == true,
+            syncErrorFromDevice = networkAvailable && deviceErrorMessage != null,
             isWatchAccount = watchAccount,
             isSwipeToDeleteEnabled = isSwipeToDeleteEnabled,
             stackingUnpaid = stackingUnpaid,

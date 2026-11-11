@@ -59,6 +59,7 @@
     <string name="trezor_not_initialized_description">Esta Trezor ainda não está configurada. Conclua a configuração no dispositivo e ligue-a novamente.</string>
     <string name="trezor_not_initialized_cta">Guia de configuração</string>
     <string name="trezor_connect_failed">Não foi possível conectar ao Trezor.</string>
+    <string name="hardware_connect_device_to_sync">Conecte o dispositivo para sincronizar</string>
     <string name="Button_Activate">Ativar</string>
     <string name="activation_required_dialog_description">Para receber %1$s, tem de ativar o token. A rede Stellar exige o estabelecimento de uma linha de confiança (trustline) para cada token. Sem ela, a sua carteira não pode receber %2$s — a transação será rejeitada e os fundos não serão entregues.</string>
     <string name="activate_you_activate">Vai ativar</string>
@@ -769,6 +770,8 @@
     <string name="TransactionInfo_Date">Data</string>
     <string name="transaction_info_sync_source">Fonte de sincronização</string>
     <string name="TransactionInfo_Id">ID</string>
+    <string name="transaction_info_replaces_transaction">Substitui a transação</string>
+    <string name="transaction_info_replaced_by_transaction">Substituída pela transação</string>
     <string name="TransactionInfo_Service">Serviço</string>
     <string name="TransactionInfo_RawTransaction">Transação bruta</string>
     <string name="TransactionInfo_ContactName">Nome do Contato</string>
@@ -1441,6 +1444,7 @@
     <string name="Tor_Connection_Disable">Desativar Tor</string>
     <string name="Tor_Alert_Title">Internet</string>
     <string name="TorPage_Connecting">Conectando Tor…</string>
+    <string name="TorPage_ConnectingProgress">Conectando Tor… %1$d%</string>
     <string name="TorPage_Failed">Falha ao conectar Tor</string>
     <string name="Tor_TorIsActive">Tor está ativo</string>
     <!--Coin Page-->
@@ -1740,7 +1744,7 @@
     <string name="login_logging_log_successful">Registar logins bem-sucedidos</string>
     <string name="login_logging_log_unsuccessful">Registar logins falhados</string>
     <string name="login_logging_duress_mode">MODO COAÇÃO</string>
-    <string name="login_logging_log_into_duress">Entrar em modo coação</string>
+    <string name="login_logging_log_into_duress">Registar logins em modo coação</string>
     <string name="login_logging_send_notification">Enviar notificação de login</string>
     <string name="login_logging_delete_auth_data">Eliminar todos os dados de autenticação</string>
     <string name="login_logging_delete_auth_data_description">Esta função elimina todos os dados de autenticação com fotos ao entrar em modo coação.</string>
@@ -1838,13 +1842,13 @@
     <!--Set Pin-->
     <string name="PinSet_Title">Create Passcode</string>
     <string name="PinSet_Info">Sua senha será usada para desbloquear sua carteira</string>
-    <string name="PinSet_Transactions_Hide">Set Passcode for \“Transactions Auto Hide\” mode</string>
+    <string name="PinSet_Transactions_Hide">Definir código para o modo “Ocultação automática de transações”</string>
     <string name="PinSet_ConfirmInfo">Confirmar</string>
     <string name="PinSet_ErrorPinsDontMatch">Senhas não conferem. Tente novamente.</string>
-    <string name="PinSet_ErrorFailedToSavePin">Ocorreu um erro ao enviar a mensagem. Tente novamente.</string>
+    <string name="PinSet_ErrorFailedToSavePin">Ocorreu um erro ao guardar a sua senha. Tente novamente.</string>
     <string name="PinSet_ForBiometrics">Set a passcode to enable Biometrics</string>
     <string name="PinSet_ForDuress">Set a passcode to enable Duress Mode</string>
-    <string name="pin_set_for_login_logging">Set a passcode to enable login logging</string>
+    <string name="pin_set_for_login_logging">Definir código para ativar o registo de login</string>
     <string name="pin_set_for_login_logging_passcode">Definir código para proteger o registo de login</string>
     <string name="confirm_pin_to_disable_login_logging_passcode">Digite o código para desativar o registo de login</string>
     <string name="pin_set_for_delete_all_contacts">Defina um código para eliminar todos os contactos</string>
@@ -2255,6 +2259,7 @@
     <string name="desktop_change_password_current_hint">Senha atual</string>
     <string name="desktop_change_password_new_hint">Nova senha</string>
     <string name="desktop_change_password_failed">Não foi possível salvar a senha. A senha atual continua a funcionar</string>
+    <string name="desktop_change_password_in_use">Esta senha já está a ser utilizada</string>
     <string name="desktop_change_password_corrupted">O arquivo de chave está danificado: depois de a app ser bloqueada, não poderá entrar. Guarde uma cópia de segurança de cada frase de recuperação.</string>
     <string name="desktop_change_password_success">Senha alterada</string>
     <string name="desktop_security_lock_now">Bloquear agora</string>
@@ -2513,4 +2518,25 @@
         <item quantity="one">A carteira GRAM %1$s tem %2$s NFT</item>
         <item quantity="other">A carteira GRAM %1$s tem %2$s NFT</item>
     </plurals>
+    <string name="desktop_unlock_legacy_format">Os dados foram criados por uma versão mais antiga da aplicação e não podem ser abertos</string>
+    <string name="desktop_duress_password_set">Definir modo Duress</string>
+    <string name="desktop_duress_password_edit">Editar senha Duress</string>
+    <string name="desktop_duress_password_disable">Desativar senha Duress</string>
+    <string name="desktop_duress_password_description">Este modo permite definir várias senhas da aplicação, em que uma senha específica mostra apenas determinadas carteiras. Concebido para manter as carteiras escolhidas seguras sob coação ou ameaças.</string>
+    <string name="desktop_duress_password_note_change_title">Alteração de senha</string>
+    <string name="desktop_duress_password_note_change_description">Alterar a senha no modo Duress também altera a senha atual desse modo.</string>
+    <string name="desktop_duress_password_title">Senha Duress</string>
+    <string name="desktop_duress_password_set_description">Defina uma senha para o modo Duress</string>
+    <string name="desktop_duress_password_edit_description">Introduza uma nova senha para o modo Duress</string>
+    <string name="desktop_hidden_wallet_password_title">Senha da carteira oculta</string>
+    <string name="desktop_hidden_wallet_password_description">Crie uma senha para a carteira oculta</string>
+    <string name="desktop_hidden_wallet_password_terms_warning">A carteira global não verá esta carteira e, se esquecer a respetiva senha, pode recuperar o acesso com a frase semente.</string>
+    <string-array name="desktop_hidden_wallet_password_terms">
+        <item>O utilizador compreende que a carteira não ficará visível entre as outras carteiras.</item>
+        <item>O utilizador compreende que, se esquecer a senha, a carteira pode ser recuperada através da frase semente.</item>
+    </string-array>
+    <string name="desktop_levels_limit_reached">Foi atingido o limite de níveis. Não é possível adicionar mais senhas</string>
+    <string name="desktop_password_save_failed">Não foi possível guardar a senha. Tente novamente</string>
+    <string name="tron_controlled_by_others_title">Outras pessoas podem controlar esta conta</string>
+    <string name="tron_controlled_by_others_warning">As permissões desta conta foram alteradas: outras chaves podem controlá-la. Os fundos que enviar para ela podem ser levantados sem a sua intervenção. Carregue-a apenas se souber de quem são essas chaves.</string>
 </resources>

@@ -1,6 +1,6 @@
 package cash.p.terminal.core.managers
 
-import cash.p.terminal.core.storage.AppDatabaseProvider
+import cash.p.terminal.core.storage.StorageRouter
 import co.touchlab.kermit.Logger
 import cash.p.terminal.core.storage.EvmMethodLabelDao
 import cash.p.terminal.core.storage.SyncerStateDao
@@ -14,12 +14,12 @@ private val logger = Logger.withTag("EvmLabelManager")
 class EvmLabelManager(
     private val api: EvmLabelApi,
     private val addressLabelManager: AddressLabelManager,
-    private val databaseProvider: AppDatabaseProvider,
+    private val router: StorageRouter,
 ) {
     private val methodLabelDao: EvmMethodLabelDao
-        get() = databaseProvider.database.evmMethodLabelDao()
+        get() = router.shared.evmMethodLabelDao()
     private val syncerStateStorage: SyncerStateDao
-        get() = databaseProvider.database.syncerStateDao()
+        get() = router.shared.syncerStateDao()
 
     private val keyMethodLabelsTimestamp = "evm-label-manager-method-labels-timestamp"
     private val keyAddressLabelsTimestamp = "evm-label-manager-address-labels-timestamp"

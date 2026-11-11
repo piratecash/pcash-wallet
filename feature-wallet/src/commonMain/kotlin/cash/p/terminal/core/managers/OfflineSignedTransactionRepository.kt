@@ -1,6 +1,7 @@
 package cash.p.terminal.core.managers
 
-import cash.p.terminal.core.storage.AppDatabaseProvider
+import cash.p.terminal.core.storage.StorageRouter
+import cash.p.terminal.core.storage.acrossAccounts
 import cash.p.terminal.entities.DecodedOfflineTransaction
 import cash.p.terminal.entities.OfflineSignedTransactionDraft
 import cash.p.terminal.entities.OfflineSignedTransactionEntity
@@ -11,6 +12,7 @@ import io.horizontalsystems.core.DispatcherProvider
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
 import co.touchlab.kermit.Logger
 import java.math.BigDecimal
@@ -18,16 +20,16 @@ import java.math.BigDecimal
 private val logger = Logger.withTag("OfflineSignedTransactionRepository")
 
 class OfflineSignedTransactionRepository(
-    private val databaseProvider: AppDatabaseProvider,
+    private val router: StorageRouter,
     private val dispatcherProvider: DispatcherProvider,
 ) {
-    private val dao get() = databaseProvider.database.offlineSignedTransactionDao()
+    private fun dao(accountId: String) = router.account(accountId)?.offlineSignedTransactionDao()
 
     // Best-effort: a storage failure must not turn a successful offline signature into a failure,
     // so the signed QR is still shown to the user even if persistence fails.
     suspend fun save(draft: OfflineSignedTransactionDraft, pcashPayload: String) {
         executeSafely("persist") {
-            dao.insertIfAbsent(draft.toEntity(pcashPayload))
+            dao(draft.wallet.account.id)?.insertIfAbsent(draft.toEntity(pcashPayload))
         }
     }
 
@@ -37,7 +39,7 @@ class OfflineSignedTransactionRepository(
         pcashPayload: String,
     ) {
         executeSafely("persist imported") {
-            dao.insertIfAbsent(decoded.toEntity(wallet, pcashPayload))
+            dao(wallet.account.id)?.insertIfAbsent(decoded.toEntity(wallet, pcashPayload))
         }
     }
 
@@ -47,13 +49,13 @@ class OfflineSignedTransactionRepository(
         txHash: String,
     ) {
         executeSafely("persist raw imported") {
-            dao.insertIfAbsent(rawImportEntity(wallet, rawHex, txHash))
+            dao(wallet.account.id)?.insertIfAbsent(rawImportEntity(wallet, rawHex, txHash))
         }
     }
 
     suspend fun markBroadcastAttempt(accountId: String, txHash: String) {
         executeSafely("mark broadcast attempt") {
-            dao.markBroadcastAttempt(
+            dao(accountId)?.markBroadcastAttempt(
                 accountId = accountId,
                 txHash = txHash,
                 status = OfflineSignedTransactionStatus.Pending.value,
@@ -72,7 +74,9 @@ class OfflineSignedTransactionRepository(
     suspend fun markBroadcastedByRawHex(rawHex: String, confirmedTxHash: String) {
         executeSafely("mark broadcasted by raw hex") {
             val timestamp = System.currentTimeMillis()
-            dao.pendingByRawHex(rawHex, OfflineSignedTransactionStatus.Pending.value)
+            router.acrossAccounts {
+                offlineSignedTransactionDao().pendingByRawHex(rawHex, OfflineSignedTransactionStatus.Pending.value)
+            }
                 .forEach { entity ->
                     reconcileBroadcasted(entity.accountId, entity.txHash, confirmedTxHash, timestamp)
                 }
@@ -82,19 +86,28 @@ class OfflineSignedTransactionRepository(
     suspend fun markBroadcastedRawDuplicates(accountId: String) {
         executeSafely("mark broadcasted raw duplicates") {
             val timestamp = System.currentTimeMillis()
-            dao.broadcastedRawMatches(
-                accountId = accountId,
-                pendingStatus = OfflineSignedTransactionStatus.Pending.value,
-                broadcastedStatus = OfflineSignedTransactionStatus.Broadcasted.value,
-            ).forEach { match ->
-                reconcileBroadcasted(match.accountId, match.txHash, match.confirmedTxHash, timestamp)
-            }
+            dao(accountId)?.pendingByAccount(accountId, OfflineSignedTransactionStatus.Pending.value)
+                ?.forEach { pending ->
+                    newestBroadcastedHash(pending.rawHex)?.let { confirmedTxHash ->
+                        reconcileBroadcasted(accountId, pending.txHash, confirmedTxHash, timestamp)
+                    }
+                }
         }
     }
 
+    // The same raw transaction may have been broadcast from another account, whose rows live in its own store.
+    private suspend fun newestBroadcastedHash(rawHex: String): String? =
+        router.accounts
+            .mapNotNull {
+                it.offlineSignedTransactionDao()
+                    .newestBroadcastedByRawHex(rawHex, OfflineSignedTransactionStatus.Broadcasted.value)
+            }
+            .maxWithOrNull(NEWEST_BROADCAST_LAST)
+            ?.txHash
+
     suspend fun markBroadcastFailed(accountId: String, txHash: String, error: String) {
         executeSafely("mark broadcast failed") {
-            dao.markBroadcastFailed(
+            dao(accountId)?.markBroadcastFailed(
                 accountId = accountId,
                 txHash = txHash,
                 status = OfflineSignedTransactionStatus.Pending.value,
@@ -105,7 +118,7 @@ class OfflineSignedTransactionRepository(
     }
 
     fun observe(accountId: String): Flow<List<OfflineSignedTransactionEntity>> =
-        dao.observe(accountId)
+        dao(accountId)?.observe(accountId) ?: flowOf(emptyList())
 
     private suspend fun reconcileBroadcasted(
         accountId: String,
@@ -113,7 +126,7 @@ class OfflineSignedTransactionRepository(
         confirmedTxHash: String,
         timestamp: Long,
     ) {
-        dao.reconcileBroadcasted(
+        dao(accountId)?.reconcileBroadcasted(
             accountId = accountId,
             txHash = txHash,
             confirmedTxHash = confirmedTxHash,
@@ -248,4 +261,9 @@ class OfflineSignedTransactionRepository(
 
     private fun BigDecimal.toAtomicString(decimals: Int): String =
         movePointRight(decimals).toBigInteger().toString()
+
+    private companion object {
+        val NEWEST_BROADCAST_LAST = compareBy<OfflineSignedTransactionEntity, Long?>(nullsFirst()) { it.broadcastedAt }
+            .thenBy { it.createdAt }
+    }
 }

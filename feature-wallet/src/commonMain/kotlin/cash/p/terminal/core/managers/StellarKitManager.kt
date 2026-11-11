@@ -43,6 +43,7 @@ class StellarKitManager(
     private val hardwarePublicKeyStorage: IHardwarePublicKeyStorage,
     private val hardwareSigners: StellarHardwareSigners,
     private val platformContexts: KitPlatformContexts,
+    private val storageNaming: KitStorageNaming,
     private val backgroundKeepAliveManager: BackgroundKeepAliveManager,
     private val networkErrorTracker: NetworkErrorTracker,
     private val offlineModeManager: OfflineModeManager,
@@ -123,7 +124,13 @@ class StellarKitManager(
 
     private suspend fun prepareDatabase(account: Account): ByteArray {
         val databaseKey = stellarKitDatabaseKeyProvider.awaitKey(account.id)
-        StellarKit.migrateDatabase(platformContexts.stellar, Network.MainNet, account.id, databaseKey)
+        StellarKit.migrateDatabase(
+            platformContexts.stellar(account.id),
+            Network.MainNet,
+            account.id,
+            databaseKey,
+            storageNaming.resolverFor(account.id),
+        )
         return databaseKey
     }
 
@@ -140,7 +147,8 @@ class StellarKitManager(
         val kit = StellarKit.getInstance(
             signer = signer,
             network = Network.MainNet,
-            context = platformContexts.stellar,
+            context = platformContexts.stellar(account.id),
+            nameResolver = storageNaming.resolverFor(account.id),
             walletId = account.id,
             databaseKey = databaseKey,
             eventListenerFactory = eventListenerFactory(account)
@@ -166,7 +174,8 @@ class StellarKitManager(
             StellarKit.getInstance(
                 signer = stellarWallet,
                 network = Network.MainNet,
-                context = platformContexts.stellar,
+                context = platformContexts.stellar(account.id),
+                nameResolver = storageNaming.resolverFor(account.id),
                 walletId = account.id,
                 databaseKey = databaseKey,
                 eventListenerFactory = eventListenerFactory(account)
@@ -175,7 +184,8 @@ class StellarKitManager(
             StellarKit.getInstance(
                 stellarWallet = accountType.toStellarWallet(),
                 network = Network.MainNet,
-                context = platformContexts.stellar,
+                context = platformContexts.stellar(account.id),
+                nameResolver = storageNaming.resolverFor(account.id),
                 walletId = account.id,
                 databaseKey = databaseKey,
                 eventListenerFactory = eventListenerFactory(account)
@@ -189,7 +199,9 @@ class StellarKitManager(
         if (currentAccount?.id == accountId) {
             stop()
         }
-        Network.entries.forEach { StellarKit.clear(platformContexts.stellar, it, accountId) }
+        val context = platformContexts.stellar(accountId)
+        val nameResolver = storageNaming.resolverFor(accountId)
+        Network.entries.forEach { StellarKit.clear(context, it, accountId, nameResolver) }
         stellarKitDatabaseKeyProvider.remove(accountId)
     }
 

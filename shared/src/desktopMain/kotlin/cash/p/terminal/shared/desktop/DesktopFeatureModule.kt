@@ -16,6 +16,8 @@ import cash.p.terminal.modules.pin.core.UptimeProvider
 import cash.p.terminal.network.desktopAppDataDirectory
 import cash.p.terminal.network.desktopAppDataFile
 import cash.p.terminal.shared.desktop.lock.ChangePasswordViewModel
+import cash.p.terminal.shared.desktop.lock.DuressPasswordViewModel
+import cash.p.terminal.shared.desktop.lock.HiddenWalletPasswordViewModel
 import cash.p.terminal.shared.desktop.lock.ConfirmPasswordViewModel
 import cash.p.terminal.shared.desktop.lock.CreatePasswordViewModel
 import cash.p.terminal.shared.desktop.lock.DesktopInactivityLock
@@ -28,6 +30,7 @@ import cash.p.terminal.shared.desktop.qrscanner.DesktopWebcamSession
 import cash.p.terminal.shared.desktop.qrscanner.DesktopWebcamSettings
 import cash.p.terminal.shared.desktop.settings.DesktopAutoLockIntervalsViewModel
 import cash.p.terminal.shared.desktop.settings.DesktopLanguageSettingsViewModel
+import cash.p.terminal.shared.desktop.settings.DesktopDuressSectionViewModel
 import cash.p.terminal.shared.desktop.settings.DesktopSecurityViewModel
 import cash.p.terminal.shared.desktop.settings.DesktopSettingsPages
 import cash.p.terminal.shared.desktop.vault.DefaultSqlCipherDriverFactory
@@ -35,6 +38,9 @@ import cash.p.terminal.shared.desktop.vault.DesktopPreferencesReset
 import cash.p.terminal.shared.desktop.vault.DesktopSecretFieldsEncryption
 import cash.p.terminal.shared.desktop.vault.DesktopUptimeProvider
 import cash.p.terminal.shared.desktop.vault.DesktopVault
+import cash.p.terminal.shared.desktop.vault.DesktopWalletLayer
+import cash.p.terminal.shared.desktop.vault.NoStorageCheckpoints
+import cash.p.terminal.shared.desktop.vault.StorageCheckpoints
 import cash.p.terminal.shared.desktop.vault.DesktopVaultFiles
 import cash.p.terminal.shared.desktop.vault.SqlCipherDriverFactory
 import cash.p.terminal.vault.PasswordVault
@@ -69,6 +75,7 @@ import io.horizontalsystems.core.ILockoutStorage
 import io.horizontalsystems.core.MarketSettingsStore
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
+import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.bind
 import org.koin.dsl.binds
@@ -114,7 +121,11 @@ val desktopFeatureModule = module {
     singleOf(::LockoutManager) bind ILockoutManager::class
     singleOf(::DefaultSqlCipherDriverFactory) bind SqlCipherDriverFactory::class
     singleOf(::DesktopPreferencesReset)
-    singleOf(::DesktopVault)
+    single<StorageCheckpoints> { NoStorageCheckpoints }
+    single {
+        // Lazy: the wallet session is built over this vault.
+        DesktopVault(get(), get(), get(), get(), get(), get(), get(), lazy { get<DesktopWalletLayer>() })
+    }
     singleOf(::DesktopAppExit)
     singleOf(::ProcessAppRelauncher) bind DesktopAppRelauncher::class
     singleOf(::DesktopWipeCoordinator)
@@ -131,6 +142,9 @@ val desktopFeatureModule = module {
     viewModelOf(::ChangePasswordViewModel)
     viewModelOf(::ConfirmPasswordViewModel)
     viewModelOf(::DesktopSecurityViewModel)
+    viewModelOf(::DesktopDuressSectionViewModel)
+    viewModel { (accountIds: List<String>) -> DuressPasswordViewModel(accountIds, get(), get(), get(), get()) }
+    viewModelOf(::HiddenWalletPasswordViewModel)
     viewModelOf(::DesktopAutoLockIntervalsViewModel)
     viewModelOf(::DesktopLanguageSettingsViewModel)
     viewModelOf(::DesktopQrScannerViewModel)

@@ -42,6 +42,7 @@ import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.mockk.mockk
+import kotlinx.coroutines.flow.MutableSharedFlow
 import java.util.Locale
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -56,6 +57,8 @@ import kotlin.test.assertTrue
  */
 @OptIn(ExperimentalTestApi::class)
 class DesktopLockIsolationDesktopTest {
+    private val session = mockk<DesktopStorageSession>(relaxed = true)
+    private val levelChanges = MutableSharedFlow<Int>(extraBufferCapacity = 1)
 
     private var appComposed = false
     private val createdViewModels = mutableListOf<TrackingViewModel>()
@@ -112,6 +115,21 @@ class DesktopLockIsolationDesktopTest {
         assertFalse(createdViewModels.single().cleared)
     }
 
+    @Test
+    fun levelChange_underTheLock_returnsToTheMainPageForTheNextUnlock() = runDesktopComposeUiTest {
+        var vaultState by mutableStateOf<DesktopVaultState>(unlocked())
+        setContent { Root(vaultState) { navigation -> AppWithNavigation(navigation) } }
+        onNodeWithText(OPEN_SECOND).performClick()
+        onNodeWithText(KEEP_STATE).assertExists()
+
+        runOnIdle { vaultState = DesktopVaultState.Locked }
+        runOnIdle { levelChanges.tryEmit(1) }
+        runOnIdle { vaultState = unlocked() }
+
+        onNodeWithText(OPEN_SECOND).assertExists()
+        onNodeWithText(KEEP_STATE).assertDoesNotExist()
+    }
+
     @Composable
     private fun Root(vaultState: DesktopVaultState, appContent: @Composable (HSNavigation) -> Unit) {
         TestWindowHost {
@@ -120,6 +138,7 @@ class DesktopLockIsolationDesktopTest {
                     vaultState = vaultState,
                     localeTag = "en",
                     appGeneration = 0,
+                    levelChanges = levelChanges,
                     rootPage = { FirstPage() },
                     appContent = appContent,
                     wipeFailed = false,
@@ -193,7 +212,7 @@ class DesktopLockIsolationDesktopTest {
         initializer { TrackingViewModel().also { createdViewModels += it } }
     }
 
-    private fun unlocked() = DesktopVaultState.Unlocked(mockk<DesktopStorageSession>(relaxed = true))
+    private fun unlocked() = DesktopVaultState.Unlocked(session)
 
     private class TrackingViewModel : ViewModel() {
         var cleared = false

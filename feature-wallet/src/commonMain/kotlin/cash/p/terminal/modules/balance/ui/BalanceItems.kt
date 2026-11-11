@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -64,6 +65,7 @@ import cash.p.terminal.modules.nft.ui.NftCollectionsSection
 import cash.p.terminal.modules.receive.ui.ReceiveChooseCoinPage
 import cash.p.terminal.modules.restoreaccount.RestoreAccountPage
 import cash.p.terminal.modules.restoreaccount.restoreshamir.RestoreShamirPage
+import cash.p.terminal.modules.syncerror.closeSyncErrorDialogUnlessFailing
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.PageResumeEffect
@@ -144,6 +146,11 @@ fun BalanceItems(
         },
         onPause = {},
     )
+
+    val failingWallets = balanceViewItems.filter { it.failedIconVisible }.map { it.wallet }
+    LaunchedEffect(failingWallets) {
+        navigation.closeSyncErrorDialogUnlessFailing(failingWallets)
+    }
 
     var revealedCardId by remember { mutableStateOf<Int?>(null) }
 

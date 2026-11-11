@@ -98,7 +98,7 @@ class AppDatabaseUpgradeTest {
     fun logsDao_existingVersion118File_persistsLogEntry() = runBlocking {
         database.logsDao().insert(LogEntry(date = 1, level = Log.INFO, actionId = "tag", message = "message"))
 
-        assertEquals(listOf("message"), database.logsDao().getRecent(10).map { it.message })
+        assertEquals(listOf("message"), database.logsDao().getRecent(10, 0).map { it.message })
     }
 
     @Test

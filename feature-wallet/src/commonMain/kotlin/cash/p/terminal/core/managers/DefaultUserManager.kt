@@ -1,5 +1,6 @@
 package cash.p.terminal.core.managers
 
+import cash.p.terminal.core.storage.StorageRouter
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.managers.UserManager
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -11,7 +12,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 class DefaultUserManager(
-    private val accountManager: IAccountManager
+    private val accountManager: IAccountManager,
+    private val router: StorageRouter,
 ): UserManager {
     private var currentUserLevel = UserManager.DEFAULT_USER_LEVEL
 
@@ -56,10 +58,10 @@ class DefaultUserManager(
     }
 
     override fun allowAccountsForDuress(accountIds: List<String>) {
-        accountManager.updateAccountLevels(accountIds, currentUserLevel + 1)
+        router.setLevel(accountIds, currentUserLevel + 1)
     }
 
     override fun disallowAccountsForDuress() {
-        accountManager.updateMaxLevel(currentUserLevel)
+        router.collapseLevelsAbove(currentUserLevel)
     }
 }

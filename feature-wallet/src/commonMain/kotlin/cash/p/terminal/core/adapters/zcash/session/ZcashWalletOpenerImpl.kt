@@ -43,6 +43,7 @@ class ZcashWalletOpenerImpl(
         val logger = zcashAppLogger(accountId)
         failureReporter.processStarted(logger)
         val dirState = dirState()
+        databaseFiles.databaseDir(accountId).mkdirs()
         ZcashSdk.initialize(databaseFiles.dataDir.absolutePath, databaseFiles.legacyDir.absolutePath)
 
         val dbKey = dbKeyProvider.keyFor(accountId)

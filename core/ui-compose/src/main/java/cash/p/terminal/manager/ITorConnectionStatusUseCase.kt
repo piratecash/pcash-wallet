@@ -19,4 +19,5 @@ data class TorViewState(
     val showRetryButton: Boolean,
     val torIsActive: Boolean,
     val showNetworkConnectionError: Boolean,
+    val bootstrapProgress: Int? = null,
 )

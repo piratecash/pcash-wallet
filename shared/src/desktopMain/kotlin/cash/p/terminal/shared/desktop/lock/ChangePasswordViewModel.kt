@@ -9,7 +9,9 @@ import cash.p.terminal.shared.desktop.vault.ChangePasswordOutcome
 import cash.p.terminal.shared.desktop.vault.DesktopVault
 import cash.p.terminal.wallet.PassphraseValidator
 import cash.p.terminal.wallet.PasswordRequirement
+import io.horizontalsystems.core.ICurrentDateProvider
 import kotlinx.coroutines.launch
+import java.util.Date
 
 data class ChangePasswordUiState(
     val currentPassword: String = "",
@@ -19,6 +21,7 @@ data class ChangePasswordUiState(
     val invalidCharacters: Boolean = false,
     val inProgress: Boolean = false,
     val outcome: ChangePasswordOutcome? = null,
+    val lockedOutUntil: Date? = null,
 ) {
     val mismatch: Boolean get() = confirmation.isNotEmpty() && confirmation != newPassword
 
@@ -28,16 +31,22 @@ data class ChangePasswordUiState(
             unmetRequirements.isEmpty() &&
             !invalidCharacters &&
             confirmation == newPassword &&
-            !inProgress
+            !inProgress &&
+            lockedOutUntil == null
 }
 
 class ChangePasswordViewModel(
     private val vault: DesktopVault,
     private val passphraseValidator: PassphraseValidator,
+    private val currentDateProvider: ICurrentDateProvider,
 ) : ViewModel() {
 
     var uiState by mutableStateOf(ChangePasswordUiState())
         private set
+
+    init {
+        viewModelScope.launch { showLockout() }
+    }
 
     fun onCurrentPasswordChange(value: String) {
         uiState = uiState.copy(currentPassword = value, outcome = null)
@@ -66,6 +75,15 @@ class ChangePasswordViewModel(
                 new = uiState.newPassword.toCharArray(),
             )
             uiState = uiState.copy(inProgress = false, outcome = outcome)
+            if (outcome == ChangePasswordOutcome.LOCKED_OUT) showLockout()
         }
+    }
+
+    /** The form becomes usable again by itself once the deadline passes. */
+    private suspend fun showLockout() {
+        val until = vault.lockedOutUntil() ?: return
+        uiState = uiState.copy(lockedOutUntil = until)
+        currentDateProvider.awaitWallTime { until.time }
+        if (uiState.lockedOutUntil == until) uiState = uiState.copy(lockedOutUntil = null)
     }
 }

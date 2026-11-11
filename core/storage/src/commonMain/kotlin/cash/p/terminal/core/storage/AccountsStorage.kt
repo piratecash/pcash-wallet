@@ -9,10 +9,7 @@ import cash.p.terminal.wallet.entities.AccountRecord
 import cash.p.terminal.wallet.entities.SecretList
 import cash.p.terminal.wallet.entities.SecretString
 
-class AccountsStorage(private val databaseProvider: AppDatabaseProvider) : IAccountsStorage {
-
-    private val dao: AccountsDao
-        get() = databaseProvider.database.accountsDao()
+class AccountsStorage(private val router: StorageRouter) : IAccountsStorage {
 
     companion object {
         // account type codes stored in db
@@ -37,10 +34,11 @@ class AccountsStorage(private val databaseProvider: AppDatabaseProvider) : IAcco
     }
 
     override fun getActiveAccountId(level: Int): String? {
-        return dao.getActiveAccount(level)?.accountId
+        return router.level(level).activeAccountDao().getActiveAccount(level)?.accountId
     }
 
     override fun setActiveAccountId(level: Int, id: String?) {
+        val dao = router.level(level).activeAccountDao()
         if (id == null) {
             dao.deleteActiveAccount(level)
         } else {
@@ -49,16 +47,16 @@ class AccountsStorage(private val databaseProvider: AppDatabaseProvider) : IAcco
     }
 
     override val isAccountsEmpty: Boolean
-        get() = dao.getTotalCount() == 0
+        get() = router.accounts.all { it.accountsDao().getTotalCount() == 0 }
 
     override fun allAccounts(accountsMinLevel: Int): List<Account> {
         return if (accountsMinLevel < 0) { // hidden accounts level
-            dao.getAccountForLevel(accountsMinLevel)
+            router.acrossAccounts { accountsDao().getAccountForLevel(accountsMinLevel) }
                 .mapNotNull { record: AccountRecord ->
                     toAccount(record)
                 }
         } else {
-            dao.getAll(accountsMinLevel)
+            router.acrossAccounts { accountsDao().getAll(accountsMinLevel) }
                 .mapNotNull { record: AccountRecord ->
                     toAccount(record)
                 }
@@ -141,49 +139,45 @@ class AccountsStorage(private val databaseProvider: AppDatabaseProvider) : IAcco
     }
 
     override fun getDeletedAccountIds(): List<String> {
-        return dao.getDeletedIds()
+        return router.acrossAccounts { accountsDao().getDeletedIds() }
     }
 
     override fun clearDeleted(accountIds: List<String>) {
-        return dao.clearDeleted(accountIds)
+        router.forEachAccount { accountsDao().clearDeleted(accountIds) }
     }
 
     override fun save(account: Account) {
-        dao.insert(getAccountRecord(account))
+        router.prepareAccountStore(account.id)
+        // Silently dropping a new account would lose its seed.
+        checkNotNull(router.account(account.id)) { "No store for the account" }
+            .accountsDao()
+            .insert(getAccountRecord(account))
     }
 
     override fun update(account: Account) {
-        dao.update(getAccountRecord(account))
+        router.account(account.id)?.accountsDao()?.update(getAccountRecord(account))
     }
 
     override fun updateName(id: String, name: String) {
-        dao.updateName(id, name)
+        router.account(id)?.accountsDao()?.updateName(id, name)
     }
 
     override fun updateBackupFlags(id: String, isBackedUp: Boolean, isFileBackedUp: Boolean) {
-        dao.updateBackupFlags(id, isBackedUp, isFileBackedUp)
+        router.account(id)?.accountsDao()?.updateBackupFlags(id, isBackedUp, isFileBackedUp)
     }
 
-    override fun updateLevels(accountIds: List<String>, level: Int) {
-        dao.updateLevels(accountIds, level)
-    }
-
-    override fun updateMaxLevel(level: Int) {
-        dao.updateMaxLevel(level)
-    }
-
-    override fun loadAccount(id: String): Account? = toAccount(dao.loadAccount(id))
+    override fun loadAccount(id: String): Account? = toAccount(router.account(id)?.accountsDao()?.loadAccount(id))
 
     override fun delete(id: String) {
-        dao.delete(id)
+        router.account(id)?.accountsDao()?.delete(id)
     }
 
     override fun clear() {
-        dao.deleteAll()
+        router.forEachAccount { accountsDao().deleteAll() }
     }
 
     override fun getWalletsCountByLevel(level: Int): Int {
-        return dao.getCountByLevel(level)
+        return router.accounts.sumOf { it.accountsDao().getCountByLevel(level) }
     }
 
     private fun getAccountRecord(account: Account): AccountRecord {

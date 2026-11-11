@@ -9,16 +9,18 @@ import io.horizontalsystems.core.DispatcherProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.math.BigDecimal
 
 class SwapProviderTransactionsStorage(
-    private val databaseProvider: AppDatabaseProvider,
+    private val router: StorageRouter,
     private val dispatcherProvider: DispatcherProvider
 ) {
-    private val dao: SwapProviderTransactionsDao
-        get() = databaseProvider.database.swapProviderTransactionsDao()
+    private fun dao(accountId: String) = router.account(accountId)?.swapProviderTransactionsDao()
 
+    private fun List<SwapProviderTransaction>.newestFirst(limit: Int) =
+        sortedByDescending { it.date }.take(limit)
 
     private companion object Companion {
         const val THRESHOLD_MSEC = 40_000
@@ -26,16 +28,21 @@ class SwapProviderTransactionsStorage(
         const val FINISHED_AT_WINDOW_MS = 1_800_000L // ±30 minutes
         const val LEGACY_WINDOW_BEFORE_MS = 3_600_000L  // 1 hour before
         const val LEGACY_WINDOW_AFTER_MS = 10_800_000L  // 3 hours after
+        const val OBSERVE_ALL_LIMIT = 100
     }
 
     fun save(
         swapProviderTransaction: SwapProviderTransaction
-    ) = dao.insert(swapProviderTransaction)
+    ) {
+        dao(swapProviderTransaction.accountId)?.insert(swapProviderTransaction)
+    }
 
     suspend fun saveAsync(
         swapProviderTransaction: SwapProviderTransaction
-    ) = withContext(dispatcherProvider.io) {
-        dao.insert(swapProviderTransaction)
+    ) {
+        withContext(dispatcherProvider.io) {
+            dao(swapProviderTransaction.accountId)?.insert(swapProviderTransaction)
+        }
     }
 
     fun getAll(
@@ -44,46 +51,53 @@ class SwapProviderTransactionsStorage(
         statusesExcluded: List<String>,
         providersExcluded: List<SwapProvider>,
         limit: Int
-    ) = dao.getAll(
-        tokenQueryId = token.tokenQuery.id,
-        coinUid = token.coin.uid,
-        blockchainType = token.blockchainType.uid,
-        address = address,
-        statusesExcluded = statusesExcluded,
-        providersExcluded = providersExcluded,
-        limit = limit
-    )
+    ) = router.acrossAccounts {
+        swapProviderTransactionsDao().getAll(
+            tokenQueryId = token.tokenQuery.id,
+            coinUid = token.coin.uid,
+            blockchainType = token.blockchainType.uid,
+            address = address,
+            statusesExcluded = statusesExcluded,
+            providersExcluded = providersExcluded,
+            limit = limit
+        )
+    }.newestFirst(limit)
 
     fun getAllUnfinishedByAccount(
         accountId: String,
         statusesExcluded: List<String>,
         providersExcluded: List<SwapProvider>,
         limit: Int
-    ) = dao.getAllUnfinishedByAccount(
+    ) = dao(accountId)?.getAllUnfinishedByAccount(
         accountId = accountId,
         statusesExcluded = statusesExcluded,
         providersExcluded = providersExcluded,
         limit = limit
-    )
+    ).orEmpty()
 
     fun observeByToken(
         token: Token,
         address: String,
         limit: Int = 50
-    ): Flow<List<SwapProviderTransaction>> = dao.observeByToken(
-        tokenQueryId = token.tokenQuery.id,
-        coinUid = token.coin.uid,
-        blockchainType = token.blockchainType.uid,
-        address = address,
-        limit = limit
-    )
+    ): Flow<List<SwapProviderTransaction>> = router.observeAcrossAccounts {
+        swapProviderTransactionsDao().observeByToken(
+            tokenQueryId = token.tokenQuery.id,
+            coinUid = token.coin.uid,
+            blockchainType = token.blockchainType.uid,
+            address = address,
+            limit = limit
+        )
+    }.map { it.newestFirst(limit) }
 
-    fun observeAll(): Flow<List<SwapProviderTransaction>> = dao.observeAll()
+    fun observeAll(): Flow<List<SwapProviderTransaction>> =
+        router.observeAcrossAccounts { swapProviderTransactionsDao().observeAll() }
+            .map { it.newestFirst(OBSERVE_ALL_LIMIT) }
 
     fun observeAllByAccount(
         accountId: String,
         limit: Int = 100
-    ): Flow<List<SwapProviderTransaction>> = dao.observeAllByAccount(accountId, limit)
+    ): Flow<List<SwapProviderTransaction>> =
+        dao(accountId)?.observeAllByAccount(accountId, limit) ?: flowOf(emptyList())
 
     fun observeForActiveAccount(
         activeAccountStateFlow: Flow<ActiveAccountState>
@@ -93,48 +107,48 @@ class SwapProviderTransactionsStorage(
             if (accountId != null) observeAllByAccount(accountId) else flowOf(emptyList())
         }
 
-    fun observeByDate(date: Long): Flow<SwapProviderTransaction?> = dao.observeByDate(date)
+    fun observeByDate(date: Long): Flow<SwapProviderTransaction?> =
+        router.observeAcrossAccounts { swapProviderTransactionsDao().observeByDate(date).map(::listOfNotNull) }
+            .map { it.firstOrNull() }
 
     suspend fun getTransaction(transactionId: String) =
         withContext(dispatcherProvider.io) {
-            dao.getTransaction(transactionId)
+            router.firstInAccounts { swapProviderTransactionsDao().getTransaction(transactionId) }
         }
 
     suspend fun getByDate(date: Long): SwapProviderTransaction? =
         withContext(dispatcherProvider.io) {
-            dao.getByDate(date)
+            router.firstInAccounts { swapProviderTransactionsDao().getByDate(date) }
         }
 
     fun getByTokenIn(
         token: Token,
         amountIn: BigDecimal?,
         timestamp: Long
-    ) = dao.getByTokenIn(
-        tokenQueryId = token.tokenQuery.id,
-        coinUid = token.coin.uid,
-        blockchainType = token.blockchainType.uid,
-        amountIn = amountIn,
-        dateFrom = timestamp - THRESHOLD_MSEC,
-        dateTo = timestamp + THRESHOLD_MSEC
-    )
+    ) = router.accounts.mapNotNull {
+        it.swapProviderTransactionsDao().getByTokenIn(
+            tokenQueryId = token.tokenQuery.id,
+            coinUid = token.coin.uid,
+            blockchainType = token.blockchainType.uid,
+            amountIn = amountIn,
+            dateFrom = timestamp - THRESHOLD_MSEC,
+            dateTo = timestamp + THRESHOLD_MSEC
+        )
+    }.maxByOrNull { it.date }
 
     fun getByOutgoingRecordUid(
         outgoingRecordUid: String
-    ) = dao.getByOutgoingRecordUid(
-        outgoingRecordUid = outgoingRecordUid
-    )
+    ) = router.firstInAccounts { swapProviderTransactionsDao().getByOutgoingRecordUid(outgoingRecordUid) }
 
     fun getByIncomingRecordUid(
         incomingRecordUid: String
-    ) = dao.getByIncomingRecordUid(
-        incomingRecordUid = incomingRecordUid
-    )
+    ) = router.firstInAccounts { swapProviderTransactionsDao().getByIncomingRecordUid(incomingRecordUid) }
 
     fun getByTokenOut(
         token: Token,
         timestamp: Long,
         accountId: String
-    ) = dao.getByTokenOut(
+    ) = dao(accountId)?.getByTokenOut(
         tokenQueryId = token.tokenQuery.id,
         coinUid = token.coin.uid,
         blockchainType = token.blockchainType.uid,
@@ -149,7 +163,7 @@ class SwapProviderTransactionsStorage(
         accountId: String,
         amount: BigDecimal,
         timestamp: Long
-    ): SwapProviderTransaction? = dao.getByAddressAndAmount(
+    ): SwapProviderTransaction? = dao(accountId)?.getByAddressAndAmount(
         address = address,
         tokenQueryId = token.tokenQuery.id,
         coinUid = token.coin.uid,
@@ -164,23 +178,36 @@ class SwapProviderTransactionsStorage(
     )
 
     fun setIncomingRecordUid(date: Long, incomingRecordUid: String, amountOutReal: BigDecimal) =
-        dao.setIncomingRecordUid(date, incomingRecordUid, amountOutReal)
+        router.forEachAccount {
+            swapProviderTransactionsDao().setIncomingRecordUid(date, incomingRecordUid, amountOutReal)
+        }
 
     fun syncReceivedAt(date: Long, incomingRecordUid: String, receivedAt: Long) =
-        dao.syncReceivedAt(date, incomingRecordUid, receivedAt)
+        router.forEachAccount { swapProviderTransactionsDao().syncReceivedAt(date, incomingRecordUid, receivedAt) }
 
     fun setOutgoingRecordUid(date: Long, outgoingRecordUid: String) =
-        dao.setOutgoingRecordUid(date, outgoingRecordUid)
+        router.forEachAccount { swapProviderTransactionsDao().setOutgoingRecordUid(date, outgoingRecordUid) }
+
+    fun relinkOutgoingRecord(
+        date: Long,
+        outgoingRecordUid: String,
+        transactionId: String,
+        depositTransactionHash: String?
+    ) = router.forEachAccount {
+        swapProviderTransactionsDao().relinkOutgoingRecord(date, outgoingRecordUid, transactionId, depositTransactionHash)
+    }
 
     fun updateStatusFields(
         date: Long,
         status: String,
         amountOutReal: BigDecimal?,
         finishedAt: Long?
-    ) = dao.updateStatusFields(date, status, amountOutReal, finishedAt)
+    ) = router.forEachAccount {
+        swapProviderTransactionsDao().updateStatusFields(date, status, amountOutReal, finishedAt)
+    }
 
     fun updateTransactionId(date: Long, newTransactionId: String) =
-        dao.updateTransactionId(date, newTransactionId)
+        router.forEachAccount { swapProviderTransactionsDao().updateTransactionId(date, newTransactionId) }
 
     fun getByProviderAndTokenOut(
         provider: SwapProvider,
@@ -189,7 +216,7 @@ class SwapProviderTransactionsStorage(
         addressOut: String,
         expectedAmount: BigDecimal,
         legStartTime: Long,
-    ): SwapProviderTransaction? = dao.getByProviderAndTokenOut(
+    ): SwapProviderTransaction? = dao(accountId)?.getByProviderAndTokenOut(
         provider = provider.name,
         tokenQueryId = tokenOut.tokenQuery.id,
         coinUid = tokenOut.coin.uid,
@@ -210,7 +237,7 @@ class SwapProviderTransactionsStorage(
         tolerance: Double,
         accountId: String,
         limit: Int = 100
-    ): List<SwapProviderTransaction> = dao.getUnmatchedSwapsByTokenOut(
+    ): List<SwapProviderTransaction> = dao(accountId)?.getUnmatchedSwapsByTokenOut(
         tokenQueryId = token.tokenQuery.id,
         coinUid = token.coin.uid,
         blockchainType = token.blockchainType.uid,
@@ -220,7 +247,7 @@ class SwapProviderTransactionsStorage(
         amount = amount.toDouble(),
         tolerance = tolerance,
         limit = limit
-    )
+    ).orEmpty()
 }
 
 fun List<SwapProviderTransaction>.toRecordUidMap(): Map<String, SwapProviderTransaction> {

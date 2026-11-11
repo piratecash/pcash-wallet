@@ -3,30 +3,28 @@ package cash.p.terminal.core.storage
 import cash.p.terminal.wallet.IEnabledWalletStorage
 import cash.p.terminal.wallet.entities.EnabledWallet
 
-class EnabledWalletsStorage(private val databaseProvider: AppDatabaseProvider) : IEnabledWalletStorage {
-
-    private val dao: EnabledWalletsDao
-        get() = databaseProvider.database.walletsDao()
+class EnabledWalletsStorage(private val router: StorageRouter) : IEnabledWalletStorage {
 
     override val enabledWallets: List<EnabledWallet>
-        get() = dao.enabledCoins()
+        get() = router.acrossAccounts { walletsDao().enabledCoins() }
 
     override fun enabledWallets(accountId: String): List<EnabledWallet> {
-        return dao.enabledCoins(accountId)
+        return router.account(accountId)?.walletsDao()?.enabledCoins(accountId).orEmpty()
     }
 
     override fun save(enabledWallets: List<EnabledWallet>): List<Long> =
-        dao.insertWallets(enabledWallets)
+        enabledWallets.groupBy { router.account(it.accountId) }
+            .flatMap { (store, wallets) -> store?.walletsDao()?.insertWallets(wallets).orEmpty() }
 
     override fun deleteAll() {
-        dao.deleteAll()
+        router.forEachAccount { walletsDao().deleteAll() }
     }
 
-    override fun delete(enabledWalletIds: List<Long>) {
-        dao.deleteWallets(enabledWalletIds)
+    override fun delete(accountId: String, enabledWalletIds: List<Long>) {
+        router.account(accountId)?.walletsDao()?.deleteWallets(enabledWalletIds)
     }
 
     override fun deleteByTokenQueryId(accountId: String, tokenQueryId: String) {
-        dao.deleteByTokenQueryId(accountId, tokenQueryId)
+        router.account(accountId)?.walletsDao()?.deleteByTokenQueryId(accountId, tokenQueryId)
     }
 }

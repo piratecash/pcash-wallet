@@ -1,7 +1,7 @@
 package cash.p.terminal.shared.desktop.session
 
 import cash.p.terminal.core.StorageLockedException
-import cash.p.terminal.core.storage.AppDatabaseProvider
+import cash.p.terminal.core.storage.StorageRouter
 import cash.p.terminal.core.usecase.MoneroWalletStorage
 import cash.p.terminal.modules.backuplocal.fullbackup.BackupSource
 import cash.p.terminal.modules.backuplocal.fullbackup.FullBackup
@@ -9,7 +9,7 @@ import cash.p.terminal.modules.backuplocal.fullbackup.WalletBackupProvider
 import cash.p.terminal.modules.contacts.ContactsRepository
 import cash.p.terminal.modules.contacts.model.Contact
 import cash.p.terminal.network.pirate.domain.enity.TrialPremiumResult
-import cash.p.terminal.premium.data.database.PremiumDatabaseProvider
+import cash.p.terminal.premium.data.database.PremiumDatabaseRouter
 import cash.p.terminal.premium.domain.usecase.SeedToEvmAddressUseCase
 import cash.p.terminal.shared.desktop.vault.CreateOutcome
 import cash.p.terminal.shared.desktop.vault.DesktopVaultFiles
@@ -82,8 +82,8 @@ class DesktopWalletStorageTest {
         assertNull(graph.accountManager.activeAccount)
         assertEquals(ActiveAccountState.NotLoaded, graph.accountManager.activeAccountStateFlow.first())
         assertEquals(UserManager.DEFAULT_USER_LEVEL, graph.koin.get<UserManager>().getUserLevel())
-        assertFailsWith<StorageLockedException> { graph.koin.get<AppDatabaseProvider>().database }
-        assertFailsWith<StorageLockedException> { graph.koin.get<PremiumDatabaseProvider>().database }
+        assertFailsWith<StorageLockedException> { graph.koin.get<StorageRouter>().shared }
+        assertFailsWith<StorageLockedException> { graph.koin.get<PremiumDatabaseRouter>().forLevel(0) }
     }
 
     @Test
@@ -110,7 +110,7 @@ class DesktopWalletStorageTest {
         val restored = save(mnemonicAccount(isBackedUp = true).copy(origin = AccountOrigin.Restored))
 
         graph.restart()
-        assertFailsWith<StorageLockedException> { graph.koin.get<AppDatabaseProvider>().database }
+        assertFailsWith<StorageLockedException> { graph.koin.get<StorageRouter>().shared }
         assertEquals(UnlockOutcome.Success, graph.vault.unlock(password()))
 
         assertEquals(listOf(restored.id), graph.accountManager.accounts.map(Account::id))
@@ -128,10 +128,10 @@ class DesktopWalletStorageTest {
 
         assertIs<TrialPremiumResult.DemoActive>(graph.checkPremiumUseCase.checkTrialPremiumStatus())
         graph.closeVault()
-        val raw = graph.dataDirectory.rawBytes()
-        val bnbAddress = SeedToEvmAddressUseCase()(MnemonicSeed.derive(TEST_WORDS))
-        assertFalse(raw.contains(bnbAddress), "the BNB address is stored in plaintext")
-        assertFalse(raw.contains(TEST_WORDS.first()), "the mnemonic is stored in plaintext")
+        val data = graph.dataDirectory
+        val address = SeedToEvmAddressUseCase()(MnemonicSeed.derive(TEST_WORDS))
+        assertFalse(data.anyFileContains(address), "the BNB address is stored in plaintext")
+        assertFalse(data.anyFileContains(TEST_WORDS.first()), "the mnemonic is stored in plaintext")
 
         graph.vault.unlock(password())
         graph.wipeAndRelaunch()
@@ -152,7 +152,7 @@ class DesktopWalletStorageTest {
 
         assertEquals(walletPassword, stored?.password)
         graph.closeVault()
-        assertFalse(graph.dataDirectory.rawBytes().contains(walletPassword), "the Monero password is stored in plaintext")
+        assertFalse(graph.dataDirectory.anyFileContains(walletPassword), "the Monero password is stored in plaintext")
     }
 
     @Test

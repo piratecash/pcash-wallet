@@ -59,6 +59,7 @@
     <string name="trezor_not_initialized_description">Este Trezor aún no está configurado. Completa la configuración en el dispositivo y vuelve a conectarlo.</string>
     <string name="trezor_not_initialized_cta">Guía de configuración</string>
     <string name="trezor_connect_failed">No se pudo conectar con Trezor.</string>
+    <string name="hardware_connect_device_to_sync">Conecta el dispositivo para sincronizar</string>
     <string name="Button_Activate">Activar</string>
     <string name="activation_required_dialog_description">Para recibir %1$s, debe activar el token. La red Stellar requiere establecer una línea de confianza (trustline) para cada token. Sin ella, su monedero no podrá recibir %2$s: la transacción será rechazada y los fondos no serán entregados.</string>
     <string name="activate_you_activate">Usted activa</string>
@@ -764,6 +765,8 @@
     <string name="TransactionInfo_Date">Fecha</string>
     <string name="transaction_info_sync_source">Fuente de sincronización</string>
     <string name="TransactionInfo_Id">ID</string>
+    <string name="transaction_info_replaces_transaction">Reemplaza la transacción</string>
+    <string name="transaction_info_replaced_by_transaction">Reemplazada por la transacción</string>
     <string name="TransactionInfo_Service">Servicio</string>
     <string name="TransactionInfo_RawTransaction">Transacción sin procesar</string>
     <string name="TransactionInfo_ContactName">Nombre de contacto</string>
@@ -1132,8 +1135,8 @@
     <string name="SettingsSecurity_DisablePin">Desactivar bloqueo con código</string>
     <string name="SettingsSecurity_DeleteSeparatePasscode">Delete a Separate Passcode</string>
     <string name="SettingsSecurity_EditPin">Editar el código </string>
-    <string name="SettingsSecurity_SetDuressPin">Establecer modo de Duración</string>
-    <string name="SettingsSecurity_EditDuressPin">Editar contraseña de Duración</string>
+    <string name="SettingsSecurity_SetDuressPin">Establecer modo Duress</string>
+    <string name="SettingsSecurity_EditDuressPin">Editar contraseña Duress</string>
     <string name="SettingsSecurity_DisableDuressPin">Desactivar Duress Passcode</string>
     <string name="SettingsSecurity_DuressPinDescription">Un modo especializado diseñado para mantener las billeteras seleccionadas a salvo bajo coacción.</string>
     <string name="SettingsSecurity_ManageKeys">Gestionar monederos</string>
@@ -1148,21 +1151,21 @@
     <string name="SettingsSecurity_SyncModeHybridDescription">API + Blockchain</string>
     <string name="SettingsSecurity_SyncModeBlockchain">Filtrar por blockchain</string>
     <string name="SettingsSecurity_SyncModeBlockchainDescription">Lento, sin privado.</string>
-    <string name="SetDuressPin_Title">Durar contraseña</string>
+    <string name="SetDuressPin_Title">Contraseña Duress</string>
     <string name="SetDuressPin_Description">Establecer un código de acceso para el modo Duress</string>
-    <string name="EditDuressPin_Title">Editar contraseña de Duración</string>
+    <string name="EditDuressPin_Title">Editar contraseña Duress</string>
     <string name="EditDuressPin_Description">Introduzca una nueva contraseña para el modo Duress</string>
-    <string name="DuressPin_Title">Modo Duración</string>
+    <string name="DuressPin_Title">Modo Duress</string>
     <string name="DuressPin_Description">Este modo permite a los usuarios configurar múltiples códigos de acceso de la aplicación de desbloqueo donde un código de acceso deseado sólo muestra las carteras especificadas. Diseñado para mantener seguros las carteras seleccionadas bajo coerción o amenazas.</string>
     <string name="DuressPin_Notes">NOTAS</string>
     <string name="DuressPin_Notes_Biometrics_Title">Autenticación biométrica</string>
-    <string name="DuressPin_Notes_Biometrics_Description">La función de Autenticación Biométrica funcionará para desbloquear el Modo Duración. Puede desactivar la Autenticación Biométrica para mayor comodidad.</string>
+    <string name="DuressPin_Notes_Biometrics_Description">La función de Autenticación Biométrica funcionará para desbloquear el Modo Duress. Puede desactivar la Autenticación Biométrica para mayor comodidad.</string>
     <string name="DuressPin_Notes_PasscodeDisabling_Title">Desactivando contraseña</string>
-    <string name="DuressPin_Notes_PasscodeDisabling_Description">Deshabilitar el código de acceso en el modo principal restablecerá automáticamente el modo Duración.</string>
+    <string name="DuressPin_Notes_PasscodeDisabling_Description">Deshabilitar el código de acceso en el modo principal restablecerá automáticamente el modo Duress.</string>
     <string name="DuressPin_Notes_PasscodeChange_Title">Cambiar contraseña</string>
     <string name="DuressPin_Notes_PasscodeChange_Description">Cambiar el código de acceso en el modo Duress también cambiará el código de acceso actual para ese modo.</string>
     <string name="DuressPinSelectAccounts_Title">Seleccionar carteras</string>
-    <string name="DuressPinSelectAccounts_Description">Seleccione las carteras que se mostrarán en Modo Duración.</string>
+    <string name="DuressPinSelectAccounts_Description">Seleccione las carteras que se mostrarán en Modo Duress.</string>
     <string name="DuressPinSelectAccounts_SectionWallets_Title">MONEDEROS</string>
     <string name="DuressPinSelectAccounts_SectionWatchWallets_Title">VER MONEDEROS</string>
     <!--Setting_Terms-->
@@ -1269,7 +1272,7 @@
     <string name="wallet_duplicated">Monedero duplicado exitosamente</string>
     <string name="error_while_duplicating_wallect">Error al duplicar el monedero</string>
     <string name="ManageAccount_Unlink">Eliminar Monedero</string>
-    <string name="ManageAccount_BackupRequired_Title">Se requiere una copia de seg</string>
+    <string name="ManageAccount_BackupRequired_Title">Se requiere una copia de seguridad</string>
     <string name="ManageAccount_BackupRequired_Description">Necesita una Copia de seguridad %1$s antes de poder recibir %2$s.</string>
     <string name="ManageAccount_Delete_ConfirmationRemove">Esta acción eliminará los monederos de este dispositivo.</string>
     <string name="ManageAccount_Delete_ConfirmationLose">Asegúrese de haber guardado su frase de recuperación o clave privada. Sin ellas, podría perder permanentemente el acceso a su monedero y a sus fondos.</string>
@@ -1433,6 +1436,7 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="Tor_Connection_Disable">Desactivar Tor</string>
     <string name="Tor_Alert_Title">Internet</string>
     <string name="TorPage_Connecting">Conectando Tor…</string>
+    <string name="TorPage_ConnectingProgress">Conectando Tor… %1$d%</string>
     <string name="TorPage_Failed">Error al conectar Tor</string>
     <string name="Tor_TorIsActive">Tor está activo</string>
     <!--Coin Page-->
@@ -1732,7 +1736,7 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="login_logging_log_successful">Registrar inicios exitosos</string>
     <string name="login_logging_log_unsuccessful">Registrar inicios fallidos</string>
     <string name="login_logging_duress_mode">MODO DE COACCIÓN</string>
-    <string name="login_logging_log_into_duress">Iniciar sesión en modo coacción</string>
+    <string name="login_logging_log_into_duress">Registrar inicios en modo coacción</string>
     <string name="login_logging_send_notification">Enviar notificación de inicio</string>
     <string name="login_logging_delete_auth_data">Eliminar todos los datos de autenticación</string>
     <string name="login_logging_delete_auth_data_description">Esta función elimina todos los datos de autenticación con fotos al iniciar sesión en modo coacción.</string>
@@ -1829,14 +1833,14 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="Unlock_Random">Aleatorio</string>
     <!--Set Pin-->
     <string name="PinSet_Title">Establezca una contraseña</string>
-    <string name="PinSet_Info">Su código servirá para abrir su monedero y enviar dinero</string>
-    <string name="PinSet_Transactions_Hide">Set Passcode for \“Transactions Auto Hide\” mode</string>
+    <string name="PinSet_Info">Su código servirá para abrir su monedero</string>
+    <string name="PinSet_Transactions_Hide">Establecer código para el modo «Ocultar transacciones automáticamente»</string>
     <string name="PinSet_ConfirmInfo">Confirmar</string>
     <string name="PinSet_ErrorPinsDontMatch">El código no coincide. Inténtelo de nuevo.</string>
     <string name="PinSet_ErrorFailedToSavePin">Se ha producido un error al intentar guardar su código. Inténtelo de nuevo.</string>
     <string name="PinSet_ForBiometrics">Establecer un código de acceso para habilitar Biometrics</string>
-    <string name="PinSet_ForDuress">Establecer un código de acceso para activar el modo Duración</string>
-    <string name="pin_set_for_login_logging">Set a passcode to enable login logging</string>
+    <string name="PinSet_ForDuress">Establecer un código de acceso para activar el modo Duress</string>
+    <string name="pin_set_for_login_logging">Establecer código para activar el registro de inicio de sesión</string>
     <string name="pin_set_for_login_logging_passcode">Establecer código para proteger el registro de inicio de sesión</string>
     <string name="confirm_pin_to_disable_login_logging_passcode">Ingrese el código para desactivar el registro de inicio de sesión</string>
     <string name="pin_set_for_delete_all_contacts">Establece un código para eliminar todos los contactos</string>
@@ -2010,7 +2014,7 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="auth_info_no_records">Aún no hay registros de autorización</string>
     <string name="send_sms_via_zec_title">Aviso de inicio de sesión</string>
     <string name="send_sms_enabled">Enviar notificación</string>
-    <string name="send_sms_via_zec_info">Notifica a una persona de confianza que te has visto obligado a abrir la aplicación.\n\nCuándo: solo cuando la aplicación se desbloquea introduciendo el código del Modo Duración. Un inicio de sesión normal, un código incorrecto o el desbloqueo por biometría no envían nada.\n\nQué: una transacción de 0.0001 ZEC (más la comisión de red) desde la billetera elegida a la dirección protegida (shielded) de Zcash del destinatario, con tu mensaje en el memo. No es un SMS: el destinatario lee el mensaje en su billetera Zcash, no se necesita número de teléfono.\n\nCuándo llega: se envía automáticamente en segundo plano justo después de iniciar sesión y normalmente llega al destinatario en pocos minutos; la billetera puede necesitar sincronizarse primero, lo que puede tardar más.\n\nCoste: cada notificación cuesta 0.0001 ZEC más la comisión. Si la billetera no tiene suficiente ZEC en ese momento, la notificación no se envía ni se reintenta — usa el botón de prueba para comprobar que funciona.\n\nPuedes desactivar las notificaciones con el interruptor en la parte superior de esta pantalla.</string>
+    <string name="send_sms_via_zec_info">Notifica a una persona de confianza que te has visto obligado a abrir la aplicación.\n\nCuándo: solo cuando la aplicación se desbloquea introduciendo el código del Modo Duress. Un inicio de sesión normal, un código incorrecto o el desbloqueo por biometría no envían nada.\n\nQué: una transacción de 0.0001 ZEC (más la comisión de red) desde la billetera elegida a la dirección protegida (shielded) de Zcash del destinatario, con tu mensaje en el memo. No es un SMS: el destinatario lee el mensaje en su billetera Zcash, no se necesita número de teléfono.\n\nCuándo llega: se envía automáticamente en segundo plano justo después de iniciar sesión y normalmente llega al destinatario en pocos minutos; la billetera puede necesitar sincronizarse primero, lo que puede tardar más.\n\nCoste: cada notificación cuesta 0.0001 ZEC más la comisión. Si la billetera no tiene suficiente ZEC en ese momento, la notificación no se envía ni se reintenta — usa el botón de prueba para comprobar que funciona.\n\nPuedes desactivar las notificaciones con el interruptor en la parte superior de esta pantalla.</string>
     <string name="send_sms_wallet_balance_hint">Asegúrese de tener el monto requerido en la billetera seleccionada.</string>
     <string name="send_sms_syncing">Sincronizando para enviar…</string>
     <string name="send_sms_test_success">Su mensaje ha sido enviado exitosamente.</string>
@@ -2247,6 +2251,7 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="desktop_change_password_current_hint">Contraseña actual</string>
     <string name="desktop_change_password_new_hint">Nueva contraseña</string>
     <string name="desktop_change_password_failed">No se pudo guardar la contraseña. La contraseña actual sigue funcionando</string>
+    <string name="desktop_change_password_in_use">Esta contraseña ya está en uso</string>
     <string name="desktop_change_password_corrupted">El archivo de claves está dañado: una vez que la aplicación se bloquee, no podrás iniciar sesión. Guarda una copia de seguridad de cada frase de recuperación.</string>
     <string name="desktop_change_password_success">Contraseña cambiada</string>
     <string name="desktop_security_lock_now">Bloquear ahora</string>
@@ -2505,4 +2510,25 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
         <item quantity="one">La billetera GRAM %1$s tiene %2$s NFT</item>
         <item quantity="other">La billetera GRAM %1$s tiene %2$s NFT</item>
     </plurals>
+    <string name="desktop_unlock_legacy_format">Los datos fueron creados por una versión anterior de la aplicación y no se pueden abrir</string>
+    <string name="desktop_duress_password_set">Activar modo Duress</string>
+    <string name="desktop_duress_password_edit">Editar contraseña Duress</string>
+    <string name="desktop_duress_password_disable">Desactivar contraseña Duress</string>
+    <string name="desktop_duress_password_description">Este modo permite configurar varias contraseñas de la aplicación, de modo que una contraseña concreta muestre solo determinadas billeteras. Diseñado para mantener a salvo las billeteras elegidas bajo coacción o amenazas.</string>
+    <string name="desktop_duress_password_note_change_title">Cambio de contraseña</string>
+    <string name="desktop_duress_password_note_change_description">Cambiar la contraseña en el modo Duress también cambiará la contraseña actual de ese modo.</string>
+    <string name="desktop_duress_password_title">Contraseña Duress</string>
+    <string name="desktop_duress_password_set_description">Establece una contraseña para el modo Duress</string>
+    <string name="desktop_duress_password_edit_description">Introduce una nueva contraseña para el modo Duress</string>
+    <string name="desktop_hidden_wallet_password_title">Contraseña de la billetera oculta</string>
+    <string name="desktop_hidden_wallet_password_description">Crea una contraseña para la billetera oculta</string>
+    <string name="desktop_hidden_wallet_password_terms_warning">La billetera global no verá esta billetera y, si olvidas su contraseña, puedes recuperar el acceso con la frase semilla.</string>
+    <string-array name="desktop_hidden_wallet_password_terms">
+        <item>El usuario entiende que la billetera no será visible entre las demás billeteras.</item>
+        <item>El usuario entiende que, si olvida la contraseña, la billetera se puede recuperar conociendo su frase semilla.</item>
+    </string-array>
+    <string name="desktop_levels_limit_reached">Se alcanzó el límite de niveles. No se pueden añadir más contraseñas</string>
+    <string name="desktop_password_save_failed">No se pudo guardar la contraseña. Inténtalo de nuevo</string>
+    <string name="tron_controlled_by_others_title">Otros pueden controlar esta cuenta</string>
+    <string name="tron_controlled_by_others_warning">Los permisos de esta cuenta han cambiado: otras claves pueden controlarla. Los fondos que envíe a ella podrían retirarse sin su participación. Recárguela solo si sabe de quién son esas claves.</string>
 </resources>

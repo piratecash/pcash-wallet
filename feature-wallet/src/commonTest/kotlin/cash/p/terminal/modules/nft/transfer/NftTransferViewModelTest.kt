@@ -7,6 +7,7 @@ import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
 import cash.p.terminal.core.managers.PoisonAddressManager
 import cash.p.terminal.core.managers.RecentAddressManager
 import cash.p.terminal.core.storage.PoisonAddressDao
+import cash.p.terminal.core.storage.SingleDatabaseStorageRouter
 import cash.p.terminal.core.storage.StaticAppDatabaseProvider
 import cash.p.terminal.entities.Address
 import cash.p.terminal.entities.PoisonAddress
@@ -563,7 +564,7 @@ class NftTransferViewModelTest {
 
     private fun routePoisonLookupToRealManager() {
         val manager = PoisonAddressManager(
-            StaticAppDatabaseProvider(mockk { every { poisonAddressDao() } returns poisonDao }),
+            SingleDatabaseStorageRouter(StaticAppDatabaseProvider(mockk { every { poisonAddressDao() } returns poisonDao })),
             mockk<ContactsRepository> { every { getContactsFiltered(any(), any(), any()) } returns emptyList() },
             mockk(relaxed = true),
             TestDispatcherProvider(dispatcher, CoroutineScope(dispatcher)),

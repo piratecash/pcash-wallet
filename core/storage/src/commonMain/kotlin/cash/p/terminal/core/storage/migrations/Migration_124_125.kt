@@ -8,13 +8,23 @@ import androidx.sqlite.execSQL
 object Migration_124_125 : Migration(124, 125) {
     override fun migrate(connection: SQLiteConnection) {
         connection.execSQL(
-            "CREATE TABLE IF NOT EXISTS `NftCollectionPrefRecord` (" +
+            "CREATE TABLE IF NOT EXISTS `NftItemRecord` (" +
                 "`accountId` TEXT NOT NULL, " +
                 "`blockchainType` TEXT NOT NULL, " +
-                "`collectionKey` TEXT NOT NULL, " +
-                "`hidden` INTEGER NOT NULL, " +
-                "`userTrust` TEXT NOT NULL, " +
-                "PRIMARY KEY(`accountId`, `blockchainType`, `collectionKey`))"
+                "`ownerAddress` TEXT NOT NULL, " +
+                "`address` TEXT NOT NULL, " +
+                "`position` INTEGER NOT NULL, " +
+                "`name` TEXT, " +
+                "`description` TEXT, " +
+                "`realOwnerAddress` TEXT, " +
+                "`collectionAddress` TEXT, " +
+                "`collectionName` TEXT, " +
+                "`collectionDescription` TEXT, " +
+                "`trust` TEXT NOT NULL, " +
+                "`verified` INTEGER NOT NULL, " +
+                "`imageUrl` TEXT, " +
+                "`largeImageUrl` TEXT, " +
+                "PRIMARY KEY(`accountId`, `blockchainType`, `ownerAddress`, `address`))"
         )
     }
 }

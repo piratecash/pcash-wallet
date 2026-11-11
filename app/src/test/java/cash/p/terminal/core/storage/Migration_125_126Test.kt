@@ -2,8 +2,10 @@ package cash.p.terminal.core.storage
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import cash.p.terminal.entities.NftCollectionPrefRecord
 import cash.p.terminal.entities.NftItemRecord
 import cash.p.terminal.entities.NftTrust
+import cash.p.terminal.entities.NftUserTrust
 import io.horizontalsystems.core.entities.BlockchainType
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -27,42 +29,62 @@ class Migration_125_126Test {
     }
 
     @Test
-    fun migrate125To126_columnsAbsent_addsThemWithDefaultsAndKeepsItem() = runBlocking {
-        seedVersion125(dropNewColumns = true)
+    fun migrate125To126_tableAbsent_createsTableAndKeepsNftItems() = runBlocking {
+        seedVersion125(dropPrefTable = true)
 
-        assertEquals(listOf(NFT_ITEM), readItems())
+        assertMigratedWithNftItemKept()
     }
 
     @Test
-    fun migrate125To126_columnsAlreadyExist_succeedsAndKeepsItem() = runBlocking {
-        seedVersion125(dropNewColumns = false)
+    fun migrate125To126_tableAlreadyExists_succeedsAndKeepsNftItems() = runBlocking {
+        seedVersion125(dropPrefTable = false)
 
-        assertEquals(listOf(NFT_ITEM), readItems())
+        assertMigratedWithNftItemKept()
     }
 
     @Test
-    fun migrate125To126_afterMigration_storesSaleStateAndLottieUrl() = runBlocking {
-        seedVersion125(dropNewColumns = true)
-        val listed = NFT_ITEM.copy(inSale = true, lottieUrl = "https://nft.fragment.com/gift/a.lottie.json")
-
+    fun upsert_afterMigration_replacesRowOfSameCollectionOnly() = runBlocking {
+        seedVersion125(dropPrefTable = true)
         val database = buildAppDatabase(context)
         try {
-            database.nftItemDao().replace(ACCOUNT_ID, BlockchainType.Ton, OWNER, listOf(listed))
+            val dao = database.nftCollectionPrefDao()
+            val other = pref("collection-b", hidden = true, userTrust = NftUserTrust.None)
+            dao.upsert(pref("collection-a", hidden = true, userTrust = NftUserTrust.None))
+            dao.upsert(other)
+            val updated = pref("collection-a", hidden = false, userTrust = NftUserTrust.Spam)
 
-            assertEquals(listOf(listed), database.nftItemDao().observe(ACCOUNT_ID, listOf(OWNER)).first())
+            dao.upsert(updated)
+
+            assertEquals(setOf(updated, other), dao.observe(ACCOUNT_ID).first().toSet())
         } finally {
             database.close()
         }
     }
 
-    private suspend fun seedVersion125(dropNewColumns: Boolean) {
+    @Test
+    fun deleteByAccountIds_afterMigration_removesOnlyThoseAccounts() = runBlocking {
+        seedVersion125(dropPrefTable = true)
+        val database = buildAppDatabase(context)
+        try {
+            val dao = database.nftCollectionPrefDao()
+            val kept = pref("collection-a", hidden = true, userTrust = NftUserTrust.Trust, accountId = OTHER_ACCOUNT_ID)
+            dao.upsert(pref("collection-a", hidden = true, userTrust = NftUserTrust.Trust))
+            dao.upsert(kept)
+
+            dao.deleteByAccountIds(listOf(ACCOUNT_ID))
+
+            assertEquals(emptyList<NftCollectionPrefRecord>(), dao.observe(ACCOUNT_ID).first())
+            assertEquals(listOf(kept), dao.observe(OTHER_ACCOUNT_ID).first())
+        } finally {
+            database.close()
+        }
+    }
+
+    private suspend fun seedVersion125(dropPrefTable: Boolean) {
         buildAppDatabase(context).run {
             nftItemDao().replace(ACCOUNT_ID, BlockchainType.Ton, OWNER, listOf(NFT_ITEM))
             openHelper.writableDatabase.run {
-                if (dropNewColumns) {
-                    execSQL("ALTER TABLE NftItemRecord DROP COLUMN inSale")
-                    execSQL("ALTER TABLE NftItemRecord DROP COLUMN lottieUrl")
-                }
+                if (dropPrefTable) execSQL("DROP TABLE NftCollectionPrefRecord")
                 version = 125
             }
             close()
@@ -70,17 +92,32 @@ class Migration_125_126Test {
     }
 
     /** Room validates the schema against the entity when the database opens. */
-    private suspend fun readItems(): List<NftItemRecord> {
+    private suspend fun assertMigratedWithNftItemKept() {
         val database = buildAppDatabase(context)
-        return try {
-            database.nftItemDao().observe(ACCOUNT_ID, listOf(OWNER)).first()
+        try {
+            database.openHelper.readableDatabase.query(
+                "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='NftCollectionPrefRecord'"
+            ).use { cursor ->
+                cursor.moveToFirst()
+                assertEquals(1, cursor.getInt(0))
+            }
+
+            assertEquals(listOf(NFT_ITEM), database.nftItemDao().observe(ACCOUNT_ID, listOf(OWNER)).first())
         } finally {
             database.close()
         }
     }
 
+    private fun pref(
+        collectionKey: String,
+        hidden: Boolean,
+        userTrust: NftUserTrust,
+        accountId: String = ACCOUNT_ID,
+    ) = NftCollectionPrefRecord(accountId, BlockchainType.Ton, collectionKey, hidden, userTrust)
+
     private companion object {
         const val ACCOUNT_ID = "account-1"
+        const val OTHER_ACCOUNT_ID = "account-2"
         const val OWNER = "owner-a"
 
         val NFT_ITEM = NftItemRecord(
@@ -95,8 +132,8 @@ class Migration_125_126Test {
             collectionAddress = "collection-a",
             collectionName = "Collection",
             collectionDescription = null,
-            trust = NftTrust.Whitelist,
-            verified = true,
+            trust = NftTrust.Blacklist,
+            verified = false,
             imageUrl = null,
             largeImageUrl = null,
         )

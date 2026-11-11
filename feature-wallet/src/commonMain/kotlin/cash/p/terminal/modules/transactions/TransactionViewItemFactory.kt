@@ -4,10 +4,12 @@ import org.jetbrains.compose.resources.StringResource
 import cash.p.beam.BeamTransactionDirection
 import cash.p.terminal.entities.transactionrecords.beam.BeamTransactionRecord
 import cash.p.terminal.core.TransactionSettingsStorage
+import cash.p.terminal.core.adapters.BitcoinReplacementRegistry
 import cash.p.terminal.core.managers.BalanceHiddenManager
 import cash.p.terminal.core.managers.AddressMetadataManager
 import cash.p.terminal.core.managers.PoisonAddressManager
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
+import cash.p.terminal.core.usecase.RelinkSwapToReplacementUseCase
 import cash.p.terminal.core.utils.IncomingTransaction
 import cash.p.terminal.core.utils.SwapTransactionMatcher
 import cash.p.terminal.entities.SwapProviderTransaction
@@ -51,6 +53,7 @@ import io.horizontalsystems.tronkit.models.Transaction
 import java.math.BigDecimal
 import java.util.Date
 import java.util.concurrent.ConcurrentHashMap
+import org.koin.java.KoinJavaComponent.inject
 import org.jetbrains.compose.resources.DrawableResource
 import cash.p.terminal.resources.Transaction_Unlimited_CoinCode
 import cash.p.terminal.resources.Transactions_Approve
@@ -110,6 +113,10 @@ class TransactionViewItemFactory(
         val matchedSwapStatus: String?,
     )
 
+    private val replacementRegistry: BitcoinReplacementRegistry by inject(BitcoinReplacementRegistry::class.java)
+    private val relinkSwapToReplacement: RelinkSwapToReplacementUseCase
+            by inject(RelinkSwapToReplacementUseCase::class.java)
+
     private var showAmount = !balanceHiddenManager.balanceHidden
     private var addressPoisoningViewMode = localStorage.addressPoisoningViewMode
     private val cache = ConcurrentHashMap<String, Map<CacheKey, TransactionViewItem>>()
@@ -136,6 +143,8 @@ class TransactionViewItemFactory(
         walletUid: String? = null,
         matchedSwap: SwapProviderTransaction? = null
     ): TransactionViewItem {
+        val swap = (transactionItem.record as? BitcoinTransactionRecord)
+            ?.let { relinkReplacementChainSwap(it) } ?: matchedSwap
         val perItemShowAmount = if (walletUid != null) {
             !balanceHiddenManager.isTransactionInfoHiddenForWallet(
                 transactionItem.record.uid,
@@ -147,7 +156,7 @@ class TransactionViewItemFactory(
 
         val cacheKey = CacheKey(
             transactionItemVersion = transactionItem.cacheVersion,
-            matchedSwapStatus = matchedSwap?.status,
+            matchedSwapStatus = swap?.status,
         )
 
         cache[transactionItem.record.uid]?.get(cacheKey)?.let { cached ->
@@ -164,7 +173,7 @@ class TransactionViewItemFactory(
             }
         }
 
-        val convertedViewItem = convertToViewItem(transactionItem, matchedSwap)
+        val convertedViewItem = convertToViewItem(transactionItem, swap)
         val transactionViewItem = convertedViewItem.copy(
             showAmount = perItemShowAmount,
             addressPoisoningViewMode = addressPoisoningViewMode,
@@ -1531,6 +1540,23 @@ class TransactionViewItemFactory(
                 icon = icon
             )
         }
+    }
+
+    // The swap may still sit on another member of the chain this visible record won.
+    private suspend fun relinkReplacementChainSwap(record: BitcoinTransactionRecord): SwapProviderTransaction? {
+        if (record.replacementChainUids.isEmpty() || record.replacedByHash != null) return null
+        if (record.transactionRecordType == TransactionRecordType.BITCOIN_INCOMING) return null
+        val chain = replacementRegistry.chainOf(
+            record.source.account.id,
+            record.token.blockchainType.uid,
+            record.transactionHash
+        ) ?: return null
+        return relinkSwapToReplacement.relink(
+            candidateUids = record.replacementChainUids + record.uid,
+            chainHashes = chain.hashes,
+            toUid = record.uid,
+            toHash = record.transactionHash,
+        )
     }
 
     private fun createViewItemFromBitcoinOutgoingTransactionRecord(

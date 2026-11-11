@@ -6,7 +6,8 @@ import cash.p.terminal.network.binance.data.TokenBalance
 import cash.p.terminal.network.pirate.domain.enity.TrialPremiumResult
 import cash.p.terminal.network.pirate.domain.repository.PiratePlaceRepository
 import cash.p.terminal.premium.data.config.PremiumConfig
-import cash.p.terminal.premium.data.database.PremiumDatabaseProvider
+import cash.p.terminal.premium.data.database.PremiumDatabaseRouter
+import cash.p.terminal.premium.data.database.sessionDatabase
 import cash.p.terminal.premium.data.model.AccountPremiumCacheEntity
 import cash.p.terminal.premium.data.model.PremiumUser
 import cash.p.terminal.premium.data.repository.PremiumUserRepository
@@ -48,7 +49,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 internal class CheckPremiumUseCaseImpl(
     private val premiumUserRepository: PremiumUserRepository,
-    private val premiumDatabaseProvider: PremiumDatabaseProvider,
+    private val premiumDatabaseRouter: PremiumDatabaseRouter,
     private val binanceApi: BinanceApi,
     private val piratePlaceRepository: PiratePlaceRepository,
     private val accountManager: IAccountManager,
@@ -62,8 +63,8 @@ internal class CheckPremiumUseCaseImpl(
 ) : CheckPremiumUseCase {
 
     private val logger = Logger.withTag("CheckPremiumUseCase")
-    private val demoPremiumUserDao get() = premiumDatabaseProvider.database.demoPremiumUserDao()
-    private val accountPremiumCacheDao get() = premiumDatabaseProvider.database.accountPremiumCacheDao()
+    private val demoPremiumUserDao get() = premiumDatabaseRouter.sessionDatabase.demoPremiumUserDao()
+    private val accountPremiumCacheDao get() = premiumDatabaseRouter.sessionDatabase.accountPremiumCacheDao()
     private val warmUpJob = AtomicReference<Job?>(null)
 
     private val mutex = Mutex()
@@ -108,6 +109,10 @@ internal class CheckPremiumUseCaseImpl(
         // A warm-up that died (e.g. on a closed storage) must not block the next start.
         val replaceable = current == null || current.isCompleted
         if (replaceable && warmUpJob.compareAndSet(current, job)) job.start() else job.cancel()
+    }
+
+    override fun cancelWarmUp() {
+        warmUpJob.get()?.cancel()
     }
 
     override suspend fun stopWarmUp() {

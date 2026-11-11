@@ -1,5 +1,6 @@
 package cash.p.terminal.core.managers
 
+import io.horizontalsystems.databasenaming.DatabaseNameResolver
 import cash.p.terminal.core.factories.EvmAccountManagerFactory
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
@@ -52,7 +53,10 @@ class EvmBlockchainManagerTest {
         networkErrorTracker = mockk(relaxed = true),
         offlineModeManager = mockk(relaxed = true),
         databaseKeys = databaseKeys,
-        platformContexts = mockk { every { ethereum } returns context },
+        platformContexts = mockk {
+            every { ethereum(any()) } returns context
+            every { resolverFor(any()) } returns DatabaseNameResolver.Identity
+        },
     )
 
     private var createdManager: EvmKitManager? = null

@@ -40,9 +40,9 @@ class DesktopVaultSessionLifetimeTest {
 
         assertEquals(DesktopVaultState.Locked, vault.state.value)
         assertSame(session, vault.openSession())
-        session.database.syncerStateDao().insert(SyncerState("height", "42"))
-        assertEquals("42", session.database.syncerStateDao().get("height")?.value)
-        assertNotNull(session.kitDatabaseKey("bitcoin", "account-1"))
+        session.shared.syncerStateDao().insert(SyncerState("height", "42"))
+        assertEquals("42", session.shared.syncerStateDao().get("height")?.value)
+        assertNotNull(session.sharedNamesSecret())
         val encryption = DesktopSecretFieldsEncryption(vault)
         assertEquals(SECRET, encryption.decrypt(encryption.encrypt(SECRET)))
     }
@@ -50,7 +50,7 @@ class DesktopVaultSessionLifetimeTest {
     @Test
     fun lock_writeStartedBeforeTheLock_completes() = runTest {
         vault.create(password())
-        val dao = assertNotNull(vault.openSession()).database.syncerStateDao()
+        val dao = assertNotNull(vault.openSession()).shared.syncerStateDao()
         val lockDone = CompletableDeferred<Unit>()
 
         val write = async(Dispatchers.IO) {
@@ -82,8 +82,8 @@ class DesktopVaultSessionLifetimeTest {
         assertSame(session, vault.openSession())
         assertEquals(openedDrivers, driverFactory.created, "a second database was opened")
         val checked = assertIs<UnlockResult.Success>(unlockResults.last())
-        assertNull(checked.session.appDatabaseKey(), "the vault session of the check stayed open")
-        assertNotNull(session.kitDatabaseKey("bitcoin", "account-1"))
+        assertNull(checked.session.secretFieldsKey(), "the vault session of the check stayed open")
+        assertNotNull(session.sharedNamesSecret())
     }
 
     @Test
@@ -95,7 +95,7 @@ class DesktopVaultSessionLifetimeTest {
         assertEquals(WipeOutcome.SUCCESS, vault.wipe())
 
         assertNull(vault.openSession())
-        assertNull(session.kitDatabaseKey("bitcoin", "account-1"))
+        assertNull(session.sharedNamesSecret())
         assertNull(session.secretFieldsKey())
     }
 
@@ -154,20 +154,19 @@ class DesktopVaultSessionLifetimeTest {
     }
 
     @Test
-    fun unlock_slotFileOfAnotherVault_staysLockedAndReportsCorrupted() = runTest {
+    fun unlock_slotFileOfAnotherVault_opensNothingAndTheOwnSlotFileStillWorks() = runTest {
         vault.create(password())
-        val session = vault.openSession()
         val ownSlot = fixture.files.vaultFile.readBytes()
         replaceSlotWithAnotherVault()
 
-        assertEquals(UnlockOutcome.Corrupted, vault.verifyPassword(password(NEW_PASSWORD)))
+        assertEquals(UnlockOutcome.WrongPassword(4), vault.verifyPassword(password(NEW_PASSWORD)))
         vault.lock()
-        assertEquals(UnlockOutcome.Corrupted, vault.unlock(password(NEW_PASSWORD)))
+        assertEquals(UnlockOutcome.StorageUnavailable, vault.unlock(password(NEW_PASSWORD)))
         assertEquals(DesktopVaultState.Locked, vault.state.value)
 
         fixture.files.vaultFile.writeBytes(ownSlot)
         assertEquals(UnlockOutcome.Success, vault.unlock(password()))
-        assertSame(session, vault.openSession())
+        assertIs<DesktopVaultState.Unlocked>(vault.state.value)
     }
 
     private fun replaceSlotWithAnotherVault() {

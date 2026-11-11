@@ -33,6 +33,7 @@ class Migration_120_121Test {
             swapProviderTransactionsDao().insert(linkedSwap())
             openHelper.writableDatabase.run {
                 execSQL("ALTER TABLE SwapProviderTransaction DROP COLUMN receivedAt")
+                execSQL("ALTER TABLE LogEntry DROP COLUMN userLevel")
                 version = 120
             }
             close()

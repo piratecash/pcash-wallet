@@ -1,9 +1,12 @@
 package cash.p.terminal.wallet
 
 import android.content.Context
+import cash.p.terminal.core.managers.DefaultUserManager
 import cash.p.terminal.core.storage.AccountsDao
 import cash.p.terminal.core.storage.AccountsStorage
+import cash.p.terminal.core.storage.ActiveAccountDao
 import cash.p.terminal.core.storage.AppDatabase
+import cash.p.terminal.core.storage.SingleDatabaseStorageRouter
 import cash.p.terminal.core.storage.StaticAppDatabaseProvider
 import cash.p.terminal.core.storage.UserDeletedWalletDao
 import cash.p.terminal.entities.ActiveAccount
@@ -15,6 +18,7 @@ import io.mockk.coEvery
 import io.horizontalsystems.core.DefaultDispatcherProvider
 import io.mockk.mockk
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -22,7 +26,11 @@ import org.junit.Test
 class HiddenWalletAccountVisibilityTest {
 
     private val accountsDao = InMemoryAccountsDao()
-    private val storage = AccountsStorage(StaticAppDatabaseProvider(FakeAppDatabase(accountsDao)))
+    private val activeAccountDao = InMemoryActiveAccountDao()
+    private val router = SingleDatabaseStorageRouter(
+        StaticAppDatabaseProvider(FakeAppDatabase(accountsDao, activeAccountDao))
+    )
+    private val storage = AccountsStorage(router)
     private val getMoneroWalletFilesNameUseCase = mockk<IGetMoneroWalletFilesNameUseCase>()
     private val removeMoneroWalletFilesUseCase: RemoveMoneroWalletFilesUseCase =
         RemoveMoneroWalletFilesUseCase(
@@ -42,6 +50,7 @@ class HiddenWalletAccountVisibilityTest {
     @Before
     fun setup() {
         accountsDao.reset()
+        activeAccountDao.reset()
         listOf(
             testAccount(id = "regular", level = 0),
             testAccount(id = "duress", level = 1),
@@ -87,6 +96,27 @@ class HiddenWalletAccountVisibilityTest {
         assertEquals(0, storage.getWalletsCountByLevel(-99))
     }
 
+    @Test
+    fun setUserLevel_levelBelowRoot_opensItsWalletsAndItsActiveAccount() {
+        storage.save(testAccount(id = "hidden-1-active", level = -1))
+        storage.setActiveAccountId(-1, "hidden-1-active")
+
+        DefaultUserManager(accountManager, router).setUserLevel(-1)
+
+        assertEquals(setOf("hidden-1", "hidden-1-active"), accountManager.accounts.map { it.id }.toSet())
+        assertEquals("hidden-1-active", accountManager.activeAccount?.id)
+    }
+
+    @Test
+    fun accountsAtLevel_levelBelowRoot_theirLevelsResolveToAStore() {
+        val hidden = accountManager.accountsAtLevel(-2).single()
+
+        val level = checkNotNull(router.levelOf(hidden.id))
+
+        assertEquals(-2, level)
+        assertSame(router.level(router.rootLevel), router.level(level))
+    }
+
     private fun testAccount(id: String, level: Int): Account {
         return Account(
             id = id,
@@ -100,10 +130,12 @@ class HiddenWalletAccountVisibilityTest {
 }
 
 private class FakeAppDatabase(
-    private val accountsDao: AccountsDao
+    private val accountsDao: AccountsDao,
+    private val activeAccountDao: ActiveAccountDao,
 ) : AppDatabase() {
 
     override fun accountsDao(): AccountsDao = accountsDao
+    override fun activeAccountDao(): ActiveAccountDao = activeAccountDao
 
     override fun chartIndicatorSettingsDao() = unsupported()
     override fun walletsDao() = unsupported()
@@ -144,7 +176,6 @@ private class FakeAppDatabase(
 
 private class InMemoryAccountsDao : AccountsDao {
     private val accounts = linkedMapOf<String, AccountRecord>()
-    private val active = mutableMapOf<Int, ActiveAccount>()
 
     override fun getIds(): List<String> = accounts.keys.toList()
 
@@ -152,7 +183,6 @@ private class InMemoryAccountsDao : AccountsDao {
 
     fun reset() {
         accounts.clear()
-        active.clear()
     }
 
     override fun insert(accountRow: AccountRecord) {
@@ -219,6 +249,17 @@ private class InMemoryAccountsDao : AccountsDao {
         }
     }
 
+    override fun getCountByLevel(level: Int): Int =
+        accounts.values.count { !it.deleted && it.level == level }
+
+    override fun getLevel(id: String): Int? = accounts[id]?.takeUnless { it.deleted }?.level
+}
+
+private class InMemoryActiveAccountDao : ActiveAccountDao {
+    private val active = mutableMapOf<Int, ActiveAccount>()
+
+    fun reset() = active.clear()
+
     override fun getActiveAccount(level: Int): ActiveAccount? = active[level]
 
     override fun insertActiveAccount(activeAccount: ActiveAccount) {
@@ -228,7 +269,4 @@ private class InMemoryAccountsDao : AccountsDao {
     override fun deleteActiveAccount(level: Int) {
         active.remove(level)
     }
-
-    override fun getCountByLevel(level: Int): Int =
-        accounts.values.count { !it.deleted && it.level == level }
 }

@@ -59,6 +59,7 @@
     <string name="trezor_not_initialized_description">此 Trezor 尚未设置。请在设备上完成设置，然后重新连接。</string>
     <string name="trezor_not_initialized_cta">设置指南</string>
     <string name="trezor_connect_failed">无法连接到 Trezor。</string>
+    <string name="hardware_connect_device_to_sync">连接设备以同步</string>
     <string name="Button_Activate">激活</string>
     <string name="activation_required_dialog_description">要接收 %1$s，您需要激活该代币。Stellar 网络要求为每个代币建立信任线（trustline）。没有信任线，您的钱包将无法接收 %2$s——交易会被拒绝，资金也不会到账。</string>
     <string name="activate_you_activate">您将激活</string>
@@ -765,6 +766,8 @@
     <string name="TransactionInfo_Date">日期</string>
     <string name="transaction_info_sync_source">同步来源</string>
     <string name="TransactionInfo_Id">交易ID</string>
+    <string name="transaction_info_replaces_transaction">被替换的交易</string>
+    <string name="transaction_info_replaced_by_transaction">被以下交易替换</string>
     <string name="TransactionInfo_Service">服务</string>
     <string name="TransactionInfo_RawTransaction">原始交易</string>
     <string name="TransactionInfo_ContactName">联系人姓名</string>
@@ -1001,7 +1004,7 @@
     <string name="BackupManager_RestoreBackup">还原备份</string>
     <string name="BackupManager_CreateBackup">创建新备份</string>
     <string name="BackupManager_BаckupFile">备份文件</string>
-    <string name="BackupManager_Wallets">战利品</string>
+    <string name="BackupManager_Wallets">钱包</string>
     <string name="BackupManager_Other">其他</string>
     <string name="BackupManager_Restore">恢复自</string>
     <string name="BackupManager_BackupFileContents">备份文件中的内容列表。</string>
@@ -1133,8 +1136,8 @@
     <string name="SettingsSecurity_DisablePin">禁用密码</string>
     <string name="SettingsSecurity_DeleteSeparatePasscode">Delete a Separate Passcode</string>
     <string name="SettingsSecurity_EditPin">编辑密码</string>
-    <string name="SettingsSecurity_SetDuressPin">设置压力模式</string>
-    <string name="SettingsSecurity_EditDuressPin">编辑货币密码</string>
+    <string name="SettingsSecurity_SetDuressPin">设置胁迫模式</string>
+    <string name="SettingsSecurity_EditDuressPin">编辑胁迫模式密码</string>
     <string name="SettingsSecurity_DisableDuressPin">禁用冒险密码</string>
     <string name="SettingsSecurity_DuressPinDescription">专用模式用于在胁迫下使选定的钱包安全。</string>
     <string name="SettingsSecurity_ManageKeys">管理钱包</string>
@@ -1149,23 +1152,23 @@
     <string name="SettingsSecurity_SyncModeHybridDescription">API + Blockchain</string>
     <string name="SettingsSecurity_SyncModeBlockchain">按区块链过滤</string>
     <string name="SettingsSecurity_SyncModeBlockchainDescription">慢，私密.</string>
-    <string name="SetDuressPin_Title">密码错误</string>
-    <string name="SetDuressPin_Description">设置口令模式密码</string>
-    <string name="EditDuressPin_Title">编辑货币密码</string>
-    <string name="EditDuressPin_Description">输入新的密码来复位模式</string>
-    <string name="DuressPin_Title">服用模式</string>
+    <string name="SetDuressPin_Title">胁迫模式密码</string>
+    <string name="SetDuressPin_Description">设置胁迫模式密码</string>
+    <string name="EditDuressPin_Title">编辑胁迫模式密码</string>
+    <string name="EditDuressPin_Description">输入胁迫模式的新密码</string>
+    <string name="DuressPin_Title">胁迫模式</string>
     <string name="DuressPin_Description">此模式允许用户设置多个解锁应用密码，当需要的密码只显示指定的钱包。 设计用来使选定的钱包在胁迫或威胁下安全。</string>
     <string name="DuressPin_Notes">注意事项</string>
     <string name="DuressPin_Notes_Biometrics_Title">生物认证</string>
-    <string name="DuressPin_Notes_Biometrics_Description">生物鉴别认证功能可以解锁时尚模式。您可以禁用生物鉴别认证以方便。</string>
+    <string name="DuressPin_Notes_Biometrics_Description">生物鉴别认证功能可以解锁胁迫模式。您可以禁用生物鉴别认证以方便。</string>
     <string name="DuressPin_Notes_PasscodeDisabling_Title">密码已禁用</string>
-    <string name="DuressPin_Notes_PasscodeDisabling_Description">在主模式下禁用密码将自动重置压力模式。</string>
+    <string name="DuressPin_Notes_PasscodeDisabling_Description">在主模式下禁用密码将自动重置胁迫模式。</string>
     <string name="DuressPin_Notes_PasscodeChange_Title">密码更改</string>
-    <string name="DuressPin_Notes_PasscodeChange_Description">更改时尚模式中的密码也会更改当前模式下的密码。</string>
+    <string name="DuressPin_Notes_PasscodeChange_Description">更改胁迫模式中的密码也会更改当前模式下的密码。</string>
     <string name="DuressPinSelectAccounts_Title">选择钱包</string>
-    <string name="DuressPinSelectAccounts_Description">选择将显示在时尚模式中的钱包。</string>
-    <string name="DuressPinSelectAccounts_SectionWallets_Title">战利品</string>
-    <string name="DuressPinSelectAccounts_SectionWatchWallets_Title">观看战利品</string>
+    <string name="DuressPinSelectAccounts_Description">选择将显示在胁迫模式中的钱包。</string>
+    <string name="DuressPinSelectAccounts_SectionWallets_Title">钱包</string>
+    <string name="DuressPinSelectAccounts_SectionWatchWallets_Title">观察钱包</string>
     <!--Setting_Terms-->
     <string name="SettingsTerms_Backup">安全地备份每个钱包的恢复短语。这是在应用程序发生故障时重新获得资金的唯一途径。</string>
     <string name="SettingsTerms_PrivateKeys">钱包恢复短语在安装过程中在设备上随机生成，并且不存储在其他地方。</string>
@@ -1432,6 +1435,7 @@
     <string name="Tor_Connection_Disable">禁用Tor</string>
     <string name="Tor_Alert_Title">互联网</string>
     <string name="TorPage_Connecting">토르 연결 중…</string>
+    <string name="TorPage_ConnectingProgress">正在连接 Tor… %1$d%</string>
     <string name="TorPage_Failed">Tor 연결 실패</string>
     <string name="Tor_TorIsActive">Tor 已激活</string>
     <!--Coin Page-->
@@ -1729,7 +1733,7 @@
     <string name="login_logging_log_successful">记录成功登录</string>
     <string name="login_logging_log_unsuccessful">记录失败登录</string>
     <string name="login_logging_duress_mode">胁迫模式</string>
-    <string name="login_logging_log_into_duress">登录胁迫模式</string>
+    <string name="login_logging_log_into_duress">记录胁迫模式登录</string>
     <string name="login_logging_send_notification">发送登录通知</string>
     <string name="login_logging_delete_auth_data">删除所有认证数据</string>
     <string name="login_logging_delete_auth_data_description">此功能会在登录胁迫模式时删除所有认证数据和照片。</string>
@@ -1742,7 +1746,7 @@
     </string-array>
     <string-array name="login_logging_periods_short">
         <item>-</item>
-        <item>1月</item>
+        <item>1个月</item>
         <item>1年</item>
     </string-array>
     <string name="login_logging_delete_data_title">删除数据</string>
@@ -1826,14 +1830,14 @@
     <string name="Unlock_Random">随机</string>
     <!--Set Pin-->
     <string name="PinSet_Title">设置密码</string>
-    <string name="PinSet_Info">您的密码将用于解锁钱包和发送资金</string>
-    <string name="PinSet_Transactions_Hide">Set Passcode for \“Transactions Auto Hide\” mode</string>
+    <string name="PinSet_Info">您的密码将用于解锁钱包</string>
+    <string name="PinSet_Transactions_Hide">为“自动隐藏交易”模式设置密码</string>
     <string name="PinSet_ConfirmInfo">确认</string>
     <string name="PinSet_ErrorPinsDontMatch">密码不匹配。请重试。</string>
     <string name="PinSet_ErrorFailedToSavePin">保存密码时出错。请重试。</string>
     <string name="PinSet_ForBiometrics">设置密码以启用生物计。</string>
-    <string name="PinSet_ForDuress">设置密码以启用压力模式</string>
-    <string name="pin_set_for_login_logging">Set a passcode to enable login logging</string>
+    <string name="PinSet_ForDuress">设置密码以启用胁迫模式</string>
+    <string name="pin_set_for_login_logging">设置密码以启用登录日志</string>
     <string name="pin_set_for_login_logging_passcode">设置密码以保护登录日志</string>
     <string name="confirm_pin_to_disable_login_logging_passcode">输入密码以禁用登录日志</string>
     <string name="pin_set_for_delete_all_contacts">设置一个密码以删除所有联系人</string>
@@ -2238,6 +2242,7 @@
     <string name="desktop_change_password_current_hint">当前密码</string>
     <string name="desktop_change_password_new_hint">新密码</string>
     <string name="desktop_change_password_failed">无法保存密码。当前密码仍然有效</string>
+    <string name="desktop_change_password_in_use">此密码已被使用</string>
     <string name="desktop_change_password_corrupted">密钥文件已损坏：应用锁定后您将无法登录。请为每个恢复短语保存备份。</string>
     <string name="desktop_change_password_success">密码已更改</string>
     <string name="desktop_security_lock_now">立即锁定</string>
@@ -2471,4 +2476,25 @@
     <plurals name="nft_gram_version_hint">
         <item quantity="other">GRAM %1$s 钱包中有 %2$s 个 NFT</item>
     </plurals>
+    <string name="desktop_unlock_legacy_format">这些数据由旧版应用创建，无法打开</string>
+    <string name="desktop_duress_password_set">设置压力模式</string>
+    <string name="desktop_duress_password_edit">编辑压力模式密码</string>
+    <string name="desktop_duress_password_disable">停用压力模式密码</string>
+    <string name="desktop_duress_password_description">此模式可设置多个应用密码，其中指定的密码只会显示特定钱包，旨在在受到胁迫或威胁时保护所选钱包。</string>
+    <string name="desktop_duress_password_note_change_title">密码更改</string>
+    <string name="desktop_duress_password_note_change_description">在压力模式下更改密码，也会更改该模式的当前密码。</string>
+    <string name="desktop_duress_password_title">压力模式密码</string>
+    <string name="desktop_duress_password_set_description">为压力模式设置密码</string>
+    <string name="desktop_duress_password_edit_description">为压力模式输入新密码</string>
+    <string name="desktop_hidden_wallet_password_title">隐藏钱包密码</string>
+    <string name="desktop_hidden_wallet_password_description">为隐藏钱包创建密码</string>
+    <string name="desktop_hidden_wallet_password_terms_warning">全局钱包将看不到此钱包，如果您忘记其密码，可以使用助记词恢复对该钱包的访问。</string>
+    <string-array name="desktop_hidden_wallet_password_terms">
+        <item>用户明白该钱包不会显示在其他钱包之中。</item>
+        <item>用户明白，如果忘记密码，只要知道助记词即可恢复该钱包。</item>
+    </string-array>
+    <string name="desktop_levels_limit_reached">已达到层级上限，无法再添加密码</string>
+    <string name="desktop_password_save_failed">无法保存密码，请重试</string>
+    <string name="tron_controlled_by_others_title">其他人可能控制此账户</string>
+    <string name="tron_controlled_by_others_warning">此账户的权限已被更改：其他密钥可能控制该账户。您转入的资金可能在未经您同意的情况下被提取。仅当您知道这些密钥属于谁时才向其充值。</string>
 </resources>

@@ -55,6 +55,7 @@ class TonKitManager(
     private val backgroundManager: IBackgroundManager,
     private val hardwarePublicKeyStorage: IHardwarePublicKeyStorage,
     private val platformContexts: KitPlatformContexts,
+    private val storageNaming: KitStorageNaming,
     private val backgroundKeepAliveManager: BackgroundKeepAliveManager,
     private val networkErrorTracker: NetworkErrorTracker,
     private val offlineModeManager: OfflineModeManager,
@@ -170,10 +171,11 @@ class TonKitManager(
             TonKit.getInstance(
                 tonWallet,
                 Network.MainNet,
-                platformContexts.ton,
+                platformContexts.ton(account.id),
                 walletId,
                 databaseKey = prepareDatabase(account.id, walletId),
                 httpClient = httpClient,
+                nameResolver = storageNaming.resolverFor(account.id),
             ),
             tonWallet,
             version,
@@ -183,7 +185,13 @@ class TonKitManager(
     // Both wallet versions of an account share the account's database key.
     private suspend fun prepareDatabase(accountId: String, walletId: String): ByteArray {
         val databaseKey = tonKitDatabaseKeyProvider.awaitKey(accountId)
-        TonKit.migrateDatabase(platformContexts.ton, Network.MainNet, walletId, databaseKey)
+        TonKit.migrateDatabase(
+            platformContexts.ton(accountId),
+            Network.MainNet,
+            walletId,
+            databaseKey,
+            storageNaming.resolverFor(accountId),
+        )
         return databaseKey
     }
 
@@ -191,9 +199,11 @@ class TonKitManager(
         if (currentAccount?.id == accountId) {
             stop(entries.keys)
         }
+        val context = platformContexts.ton(accountId)
+        val nameResolver = storageNaming.resolverFor(accountId)
         TonWalletVersion.entries.forEach { version ->
             val walletId = tonKitWalletId(accountId, version)
-            Network.entries.forEach { TonKit.clear(platformContexts.ton, it, walletId) }
+            Network.entries.forEach { TonKit.clear(context, it, walletId, nameResolver) }
         }
         tonKitDatabaseKeyProvider.remove(accountId)
     }

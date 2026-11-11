@@ -25,7 +25,7 @@ import org.koin.compose.viewmodel.koinViewModel
 internal fun UnlockScreen(
     wipeFailed: Boolean,
     onForgotPasswordClick: () -> Unit,
-    onDataUnreadable: () -> Unit,
+    onStorageUnusable: (UnlockOutcome) -> Unit,
     viewModel: UnlockViewModel = koinViewModel(),
 ) {
     UnlockContent(
@@ -34,9 +34,9 @@ internal fun UnlockScreen(
         onPasswordChange = viewModel::onPasswordChange,
         onUnlockClick = viewModel::onSubmitClick,
         onForgotPasswordClick = onForgotPasswordClick,
-        onDataUnreadable = {
-            viewModel.onDataUnreadableShown()
-            onDataUnreadable()
+        onStorageUnusable = {
+            viewModel.onStorageUnusableShown()
+            onStorageUnusable(it)
         },
     )
 }
@@ -48,12 +48,13 @@ internal fun UnlockContent(
     onPasswordChange: (String) -> Unit,
     onUnlockClick: () -> Unit,
     onForgotPasswordClick: () -> Unit,
-    onDataUnreadable: () -> Unit,
+    onStorageUnusable: (UnlockOutcome) -> Unit,
 ) {
-    // Unreadable data cannot be unlocked by any password: the only way out is the reset screen.
-    val reportDataUnreadable by rememberUpdatedState(onDataUnreadable)
+    // Unreadable or old-format data cannot be unlocked by any password: the only way out is the reset screen.
+    val reportStorageUnusable by rememberUpdatedState(onStorageUnusable)
     LaunchedEffect(uiState.outcome) {
-        if (uiState.outcome == UnlockOutcome.Corrupted) reportDataUnreadable()
+        uiState.outcome?.takeIf { it == UnlockOutcome.Corrupted || it == UnlockOutcome.LegacyFormat }
+            ?.let(reportStorageUnusable)
     }
     LockScreenLayout(title = stringResource(Res.string.desktop_unlock_title)) {
         // The previous instance failed to wipe and restarted the app: the slots, and so the data, are intact.
@@ -89,7 +90,7 @@ private fun UnlockContentPreview() {
             onPasswordChange = {},
             onUnlockClick = {},
             onForgotPasswordClick = {},
-            onDataUnreadable = {},
+            onStorageUnusable = {},
         )
     }
 }

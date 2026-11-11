@@ -45,6 +45,7 @@
     <string name="trezor_not_initialized_description">Этот Trezor ещё не настроен. Завершите настройку на устройстве и подключите его снова.</string>
     <string name="trezor_not_initialized_cta">Инструкция по настройке</string>
     <string name="trezor_connect_failed">Не удалось подключиться к Trezor.</string>
+    <string name="hardware_connect_device_to_sync">Подключите устройство для синхронизации</string>
     <string name="Button_Restore">Импорт</string>
     <string name="Button_Reset">Сбросить</string>
     <string name="Button_Understand">Я понимаю</string>
@@ -774,6 +775,8 @@
     <string name="TransactionInfo_Date">Дата</string>
     <string name="transaction_info_sync_source">Источник синхронизации</string>
     <string name="TransactionInfo_Id">ID Транзакции</string>
+    <string name="transaction_info_replaces_transaction">Заменяет транзакцию</string>
+    <string name="transaction_info_replaced_by_transaction">Заменена транзакцией</string>
     <string name="TransactionInfo_Service">Сервис</string>
     <string name="TransactionInfo_RawTransaction">Неподтвержденная транзакция</string>
     <string name="TransactionInfo_ContactName">Имя контакта</string>
@@ -1469,6 +1472,7 @@
     <string name="Tor_Connection_Disable">Отключить Tor</string>
     <string name="Tor_Alert_Title">Доступ в интернет</string>
     <string name="TorPage_Connecting">Подключение Tor…</string>
+    <string name="TorPage_ConnectingProgress">Подключение Tor… %1$d%</string>
     <string name="TorPage_Failed">Не удалось подключиться к Tor</string>
     <string name="Tor_TorIsActive">Tor активен</string>
     <!--Coin Page-->
@@ -1746,7 +1750,7 @@
     <string name="PinSet_ErrorFailedToSavePin">При сохранении вашего кода произошла ошибка. Повторите попытку.</string>
     <string name="PinSet_ForBiometrics">Установить секретный код для включения биометрических данных</string>
     <string name="PinSet_ForDuress">Установите код для включения режима Duress</string>
-    <string name="pin_set_for_login_logging">Set a passcode to enable login logging</string>
+    <string name="pin_set_for_login_logging">Установите код для включения журнала входа</string>
     <string name="pin_set_for_login_logging_passcode">Установите код для защиты журнала входа</string>
     <string name="confirm_pin_to_disable_login_logging_passcode">Введите код для отключения журнала входа</string>
     <string name="pin_set_for_delete_all_contacts">Установите код для удаления всех контактов</string>
@@ -2426,6 +2430,7 @@
     <string name="desktop_change_password_current_hint">Текущий пароль</string>
     <string name="desktop_change_password_new_hint">Новый пароль</string>
     <string name="desktop_change_password_failed">Не удалось сохранить пароль. Текущий пароль продолжает действовать</string>
+    <string name="desktop_change_password_in_use">Этот пароль уже используется</string>
     <string name="desktop_change_password_corrupted">Файл ключа повреждён: после блокировки приложения вы не сможете войти. Сохраните резервную копию каждой фразы восстановления.</string>
     <string name="desktop_change_password_success">Пароль изменён</string>
     <string name="desktop_security_lock_now">Заблокировать сейчас</string>
@@ -2698,4 +2703,25 @@
         <item quantity="many">На кошельке GRAM %1$s есть %2$s NFT</item>
         <item quantity="other">На кошельке GRAM %1$s есть %2$s NFT</item>
     </plurals>
+    <string name="desktop_unlock_legacy_format">Данные созданы более старой версией приложения и не могут быть открыты</string>
+    <string name="desktop_duress_password_set">Установить режим Duress</string>
+    <string name="desktop_duress_password_edit">Изменить Duress-пароль</string>
+    <string name="desktop_duress_password_disable">Отключить Duress-пароль</string>
+    <string name="desktop_duress_password_description">Этот режим позволяет задать несколько паролей приложения, при этом заданный пароль показывает только определённые кошельки. Создан для защиты выбранных кошельков при принуждении или угрозах.</string>
+    <string name="desktop_duress_password_note_change_title">Смена пароля</string>
+    <string name="desktop_duress_password_note_change_description">Смена пароля в режиме Duress также изменит текущий пароль этого режима.</string>
+    <string name="desktop_duress_password_title">Duress-пароль</string>
+    <string name="desktop_duress_password_set_description">Задайте пароль для режима Duress</string>
+    <string name="desktop_duress_password_edit_description">Введите новый пароль для режима Duress</string>
+    <string name="desktop_hidden_wallet_password_title">Пароль скрытого кошелька</string>
+    <string name="desktop_hidden_wallet_password_description">Создайте пароль для скрытого кошелька</string>
+    <string name="desktop_hidden_wallet_password_terms_warning">Глобальный кошелёк не увидит этот кошелёк, а если вы забудете его пароль, доступ к кошельку можно восстановить по seed-фразе.</string>
+    <string-array name="desktop_hidden_wallet_password_terms">
+        <item>Пользователь понимает, что кошелёк не будет виден среди других кошельков.</item>
+        <item>Пользователь понимает, что если он забудет пароль кошелька, его можно восстановить, зная seed-фразу.</item>
+    </string-array>
+    <string name="desktop_levels_limit_reached">Достигнут предел уровней. Новые пароли добавить нельзя</string>
+    <string name="desktop_password_save_failed">Не удалось сохранить пароль. Попробуйте ещё раз</string>
+    <string name="tron_controlled_by_others_title">Аккаунтом могут управлять другие</string>
+    <string name="tron_controlled_by_others_warning">Права на этот аккаунт изменены: им могут управлять другие ключи. Средства, которые вы на него переведёте, могут вывести без вашего участия. Пополняйте его, только если знаете, чьи это ключи.</string>
 </resources>

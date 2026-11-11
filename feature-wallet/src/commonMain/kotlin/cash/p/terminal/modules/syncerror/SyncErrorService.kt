@@ -4,8 +4,13 @@ import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.core.managers.BtcBlockchainManager
 import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.NetworkErrorTracker
+import cash.p.terminal.core.tor.TorSyncState
 import cash.p.terminal.wallet.Wallet
+import co.touchlab.kermit.Logger
+import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.ISystemInfoManager
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 
 class SyncErrorService(
     private val wallet: Wallet,
@@ -15,7 +20,11 @@ class SyncErrorService(
     private val evmBlockchainManager: EvmBlockchainManager,
     private val networkErrorTracker: NetworkErrorTracker,
     private val systemInfoManager: ISystemInfoManager,
+    private val torSyncState: TorSyncState,
+    private val dispatcherProvider: DispatcherProvider,
 ) {
+
+    private val logger = Logger.withTag("SyncErrorService")
 
     val blockchainWrapper by lazy {
         btcBlockchainManager.blockchain(wallet.token.blockchainType)?.let {
@@ -31,8 +40,18 @@ class SyncErrorService(
 
     val sourceChangeable = blockchainWrapper != null
 
+    // The sheet closes right after Retry, so the work must not depend on its lifetime
     fun retry() {
-        adapterManager.refreshByWallet(wallet)
+        dispatcherProvider.applicationScope.launch {
+            try {
+                torSyncState.requestNewCircuits()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                logger.w(e) { "New Tor circuits request failed" }
+            }
+            adapterManager.refreshByWallet(wallet)
+        }
     }
 
     fun buildReportBody(error: String): String = buildString {

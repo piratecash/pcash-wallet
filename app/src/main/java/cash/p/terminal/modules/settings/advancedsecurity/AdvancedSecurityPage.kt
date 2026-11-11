@@ -18,12 +18,9 @@ import cash.p.terminal.modules.calculator.domain.CalculatorModeService
 import cash.p.terminal.modules.calculator.pinsettings.CalculatorPinSettingsScreen
 import cash.p.terminal.modules.calculator.pinsettings.CalculatorPinSettingsViewModel
 import cash.p.terminal.modules.pin.PinType
-import cash.p.terminal.modules.pin.hiddenwallet.SetHiddenWalletPinPage
 import cash.p.terminal.modules.settings.advancedsecurity.securereset.SecureResetTermsScreen
 import cash.p.terminal.modules.settings.advancedsecurity.securereset.SecureResetTermsViewModel
 import cash.p.terminal.modules.settings.advancedsecurity.securereset.SetSecureResetPinPage
-import cash.p.terminal.modules.settings.advancedsecurity.terms.HiddenWalletTermsScreen
-import cash.p.terminal.modules.settings.advancedsecurity.terms.HiddenWalletTermsViewModel
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.viewModelStoreOwnerForPage
@@ -64,31 +61,6 @@ class AdvancedSecurityPage : HSPage() {
                 navigation.slideFromRight(CalculatorPinPage())
             },
             onClose = navigation::navigateUpSafely
-        )
-    }
-}
-
-class HiddenWalletTermsPage : HSPage() {
-
-    @Composable
-    override fun GetContent(navigation: HSNavigation) {
-        val context = LocalContext.current
-        val termTitles =
-            context.resources.getStringArray(R.array.AdvancedSecurity_Terms_Checkboxes)
-
-        val viewModel: HiddenWalletTermsViewModel = koinViewModel {
-            parametersOf(termTitles)
-        }
-        val uiState = viewModel.uiState
-        val openSetHiddenWalletPin = navigation.rememberEnsurePinSet(Res.string.PinSet_Title, PinType.REGULAR) {
-            navigation.slideFromRight(SetHiddenWalletPinPage())
-        }
-
-        HiddenWalletTermsScreen(
-            uiState = uiState,
-            onCheckboxToggle = viewModel::toggleCheckbox,
-            onAgreeClick = openSetHiddenWalletPin,
-            onNavigateBack = navigation::navigateUpSafely
         )
     }
 }

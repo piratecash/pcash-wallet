@@ -38,6 +38,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.async
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -50,6 +51,8 @@ import org.junit.Before
 import org.junit.Test
 import java.math.BigDecimal
 import java.util.Collections
+
+private const val RELEASE_WAIT = 500L
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AdapterManagerTest {
@@ -64,6 +67,7 @@ class AdapterManagerTest {
     private lateinit var restoreModeUpdatedSubject: PublishSubject<BlockchainType>
     private lateinit var adapterManager: AdapterManager
     private val pendingBalanceCalculator = mockk<PendingBalanceCalculator>(relaxed = true)
+    private val moneroKitWrapper = mockk<MoneroKitWrapper>(relaxed = true)
 
     @Before
     fun setUp() {
@@ -86,6 +90,7 @@ class AdapterManagerTest {
             },
             evmBlockchainManager = mockk(relaxed = true) {
                 every { allBlockchains } returns emptyList()
+                every { getBlockchain(any<Token>()) } returns null
             },
             solanaKitManager = mockk(relaxed = true) {
                 every { kitStoppedObservable } returns Observable.never()
@@ -96,6 +101,7 @@ class AdapterManagerTest {
             },
             moneroKitManager = mockk(relaxed = true) {
                 every { kitStoppedObservable } returns Observable.never()
+                every { moneroKitWrapper } returns this@AdapterManagerTest.moneroKitWrapper
             },
             stellarKitManager = mockk(relaxed = true),
             thorchainKitManagers = mockk(relaxed = true) {
@@ -181,6 +187,24 @@ class AdapterManagerTest {
     }
 
     @Test
+    fun refresh_unattendedMonero_syncsUnattendedWithoutUserRefresh() = testScope.runTest {
+        val wallet = wallet("xmr", BlockchainType.Monero, TokenType.Native)
+        val adapter = mockk<IAdapter>(relaxed = true)
+        coEvery { adapterFactory.getAdapterOrNull(wallet, any()) } returns adapter
+        activeWalletsFlow.value = listOf(wallet)
+        adapterManager.startAdapterManager()
+        advanceUntilIdle()
+
+        adapterManager.refresh(attended = false)
+        adapterManager.refreshByWallet(wallet, attended = false)
+        advanceUntilIdle()
+
+        coVerify(exactly = 0) { adapter.refresh() }
+        coVerify(exactly = 0) { moneroKitWrapper.refresh() }
+        coVerify(exactly = 2) { moneroKitWrapper.syncUnattended() }
+    }
+
+    @Test
     fun refreshAdapters_beamWallet_awaitsExactOldAdapterUnlink() = testScope.runTest {
         assertBeamReplacementWaits(refresh = true)
     }
@@ -247,6 +271,23 @@ class AdapterManagerTest {
                 "but call order was: $callOrder",
             stopIndex < createIndex
         )
+    }
+
+    @Test
+    fun initAdapters_walletsOfTwoAccountsNarrowedToOne_stopsObservingTheOtherAccount() = testScope.runTest {
+        coEvery { adapterFactory.getAdapterOrNull(any(), any()) } returns mockk(relaxed = true)
+        adapterManager.startAdapterManager()
+
+        // Repeated with new wallets: which account a hash map lists first differs per wallet.
+        repeat(30) { round ->
+            val kept = wallet("kept")
+            activeWalletsFlow.value = listOf(wallet("upper-$round"), kept)
+            advanceUntilIdle()
+            activeWalletsFlow.value = listOf(kept)
+            advanceUntilIdle()
+
+            verify(exactly = 1) { pendingBalanceCalculator.stopObserving("upper-$round") }
+        }
     }
 
     /**
@@ -787,6 +828,56 @@ class AdapterManagerTest {
 
         verify(exactly = 1) { offlineModeManager.onAdapterGone(bitcoinWallet) }
         verify(exactly = 0) { offlineModeManager.onAdapterGone(dashWallet) }
+    }
+
+    @Test
+    fun awaitReleased_neverStarted_returnsAtOnce() = testScope.runTest {
+        activeWalletsFlow.value = listOf(wallet("upper"))
+
+        adapterManager.awaitReleased(emptySet())
+    }
+
+    @Test
+    fun awaitReleased_upperWalletStillActive_waitsUntilItsAdapterIsStoppedAndUnlinked() = testScope.runTest {
+        val upper = wallet("upper")
+        val kept = wallet("kept")
+        val upperAdapter = mockk<IAdapter>(relaxed = true)
+        val unlinkGate = CompletableDeferred<Unit>()
+        coEvery { adapterFactory.getAdapterOrNull(upper, any()) } returns upperAdapter
+        coEvery { adapterFactory.getAdapterOrNull(kept, any()) } returns mockk(relaxed = true)
+        coEvery { adapterFactory.unlinkAdapter(upper, upperAdapter) } coAnswers { unlinkGate.await() }
+        activeWalletsFlow.value = listOf(upper, kept)
+        adapterManager.startAdapterManager()
+        advanceUntilIdle()
+
+        val released = async { adapterManager.awaitReleased(setOf("kept")) }
+        advanceTimeBy(RELEASE_WAIT)
+        assertFalse(released.isCompleted)
+
+        activeWalletsFlow.value = listOf(kept)
+        advanceTimeBy(RELEASE_WAIT)
+        verify { upperAdapter.stop() }
+        assertFalse(released.isCompleted)
+
+        unlinkGate.complete(Unit)
+        released.await()
+    }
+
+    @Test
+    fun initAdapters_lastWalletGone_publishesTheEmptySet() = testScope.runTest {
+        val upper = wallet("upper")
+        coEvery { adapterFactory.getAdapterOrNull(upper, any()) } returns mockk(relaxed = true)
+        val published = mutableListOf<Map<Wallet, IAdapter>>()
+        val subscription = adapterManager.adaptersReadyObservable.subscribe { published += it }
+        activeWalletsFlow.value = listOf(upper)
+        adapterManager.startAdapterManager()
+        advanceUntilIdle()
+
+        activeWalletsFlow.value = emptyList()
+        advanceUntilIdle()
+
+        assertTrue(published.last().isEmpty())
+        subscription.dispose()
     }
 
     private fun wallet(accountId: String): Wallet {

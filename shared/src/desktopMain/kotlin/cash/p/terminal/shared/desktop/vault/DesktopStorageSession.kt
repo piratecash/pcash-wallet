@@ -1,167 +1,249 @@
 package cash.p.terminal.shared.desktop.vault
 
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import androidx.room.migration.Migration
-import cash.p.terminal.core.storage.AppDatabase
-import cash.p.terminal.core.storage.AppDatabaseConstructor
-import cash.p.terminal.core.storage.migrations.Migration_118_119
-import cash.p.terminal.core.storage.migrations.Migration_119_120
-import cash.p.terminal.core.storage.migrations.Migration_120_121
-import cash.p.terminal.core.storage.migrations.Migration_121_122
-import cash.p.terminal.core.storage.migrations.Migration_122_123
-import cash.p.terminal.core.storage.migrations.Migration_123_124
-import cash.p.terminal.core.storage.migrations.Migration_124_125
-import cash.p.terminal.core.storage.migrations.Migration_125_126
+import cash.p.terminal.core.managers.DatabaseKey
+import cash.p.terminal.core.storage.AccountDaos
+import cash.p.terminal.core.storage.LevelDaos
+import cash.p.terminal.core.storage.SharedDaos
+import cash.p.terminal.core.storage.desktop.SafeLink
+import cash.p.terminal.core.storage.desktop.SharedDatabase
+import cash.p.terminal.core.storage.desktop.SharedDatabase_Impl
+import cash.p.terminal.core.storage.desktop.VaultSafeDao
 import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.premium.data.database.PremiumDatabase
-import cash.p.terminal.premium.data.database.PremiumDatabaseConstructor
+import cash.p.terminal.vault.CreateResult
+import cash.p.terminal.vault.EnvelopePayload
 import cash.p.terminal.vault.Hkdf
 import cash.p.terminal.vault.VaultSession
-import io.horizontalsystems.sqlcipher.SqlCipherDriver
-import kotlinx.coroutines.Dispatchers
-import java.io.File
-import java.security.MessageDigest
+import kotlinx.coroutines.flow.Flow
 
 /**
- * Owns the unlocked databases and the keys derived from the master key.
- * [close] takes the databases down and wipes every key, the vault session included.
+ * The storage a password opens: its safe as the root, the safes below it, the shared safe and the stores
+ * of the accounts they point to. [close] takes all of it down and wipes every key, the vault session included.
  */
 class DesktopStorageSession private constructor(
-    private val vaultSession: VaultSession,
-    private val drivers: List<SqlCipherDriver>,
-    internal val database: AppDatabase,
-    internal val premiumDatabase: PremiumDatabase,
-    private val secretKey: ByteArray,
-    private val kitWrappingKey: ByteArray,
+    private val environment: StorageEnvironment,
+    private val parts: Parts,
+    private val keys: SessionKeys,
 ) {
     @Volatile
     private var closed = false
 
-    /** Derived per kit and account, so no kit key is ever stored; null once closed. */
-    fun kitDatabaseKey(kitName: String, accountId: String): ByteArray? =
-        if (closed) null else deriveKitKey(kitWrappingKey, kitName, accountId)
+    // Changed under the vault lock only.
+    private val retired = mutableListOf<RetiredLevels>()
 
-    internal fun secretFieldsKey(): ByteArray? = if (closed) null else secretKey
+    internal val rootLevel: Int get() = parts.chain.rootLevel
 
-    /** Whether [vaultSession] carries the master key this storage was opened with. */
-    internal fun isOpenedBy(vaultSession: VaultSession): Boolean {
-        val candidate = vaultSession.secretFieldsKey() ?: return false
-        return try {
-            !closed && MessageDigest.isEqual(candidate, secretKey)
-        } finally {
-            candidate.fill(0)
+    /** Names the wallet this session opened: levels count from zero in every root. */
+    internal val rootSlot: Int get() = parts.chain.root.link.slot
+    internal val chain: SafeChain get() = parts.chain
+    internal val levels: LevelProvisioner get() = parts.levels
+    internal val shared: SharedDaos get() = parts.shared.room
+    internal val accounts: List<AccountDaos> get() = parts.stores.all
+    internal val accountStores: Flow<List<AccountDaos>> get() = parts.stores.changes
+
+    internal fun level(level: Int): LevelDaos = parts.chain.safe(level)
+
+    internal fun premium(level: Int): PremiumDatabase = parts.chain.safe(level).premium
+
+    internal fun account(accountId: String): AccountStore? = parts.stores.store(accountId)
+
+    internal val accountIds: Set<String> get() = parts.stores.accountIds
+
+    /** A kit key is 256 random bits, generated once and kept in the store of the account. */
+    internal fun kitKey(accountId: String, kitName: String): DatabaseKey? =
+        parts.stores.store(accountId)?.kitKey(kitName, environment::randomKey)
+
+    internal val rootSafe: VaultSafeDao get() = parts.chain.root.dao
+
+    /** Null for a level this session does not reach, such as the default before the first unlock event. */
+    internal fun safeOrNull(level: Int): VaultSafeDao? = parts.chain.safeOrNull(level)?.dao
+
+    internal fun levelOf(accountId: String): Int? = parts.stores.levelOf(accountId)
+
+    internal fun prepareAccountStore(accountId: String) = parts.stores.prepare(accountId)
+
+    /** The pointers go in first: a crash leaves a duplicate that resolves at the next login, never a lost account. */
+    internal fun setLevel(accountIds: List<String>, level: Int) {
+        val target = parts.chain.safe(level)
+        val safes = parts.chain.safes
+        val moving = safes.flatMap { it.dao.pointers() }
+            .filter { it.accountId in accountIds }
+            .distinctBy { it.accountId }
+        target.dao.insertPointers(moving)
+        moving.forEach { it.storeKey.fill(0) }
+        checkpoint(StorageCheckpoint.SET_LEVEL_POINTERS_INSERTED)
+        (safes - target).forEach {
+            it.dao.deletePointers(accountIds)
+            checkpoint(StorageCheckpoint.SET_LEVEL_POINTERS_DELETED_FROM_SAFE)
         }
+        parts.stores.refreshLevels()
+    }
+
+    internal fun collapseLevelsAbove(level: Int) {
+        val safe = parts.chain.safe(level)
+        val meta = safe.meta
+        if (meta.child == null) return
+        try {
+            if (meta.collapse == null) {
+                val lower = parts.chain.below(safe)
+                check(parts.chain.isComplete && lower.none { it.meta.collapse != null }) {
+                    "A level below did not open"
+                }
+                parts.collapse.begin(safe, lower)
+                parts.chain.closeBelow(safe)
+                parts.collapse.finish(safe)
+            } else {
+                parts.chain.closeBelow(safe)
+                parts.collapse.recover(safe)
+            }
+        } finally {
+            parts.stores.refreshLevels()
+        }
+    }
+
+    /** Hex of a key every level shares; null once closed. */
+    internal fun sharedNamesSecret(): String? = if (closed) null else keys.sharedNames.toHexString()
+
+    internal fun secretFieldsKey(): ByteArray? = if (closed) null else keys.secretFields
+
+    /** The level in this chain that [candidate] opens; null when it belongs to another root or a level above. */
+    internal fun levelOpenedBy(candidate: VaultSession): Int? =
+        candidate.payload()?.use { parts.chain.levelOpenedBy(it.slotKey) }
+
+    /**
+     * Everything above [level] leaves the session's view now, as if [proof]'s password had opened this session.
+     * Takes ownership of [proof]; the old vault session and its upper-level key are wiped here. The stores and
+     * safes above stay open only until the caller closes what this returns: adapters being stopped still use them.
+     */
+    internal fun narrowTo(level: Int, proof: VaultSession): AutoCloseable {
+        // Owned before anything can fail: a fallback to a cold switch closes them with the session.
+        val levels = RetiredLevels(parts.chain.narrowTo(level)).also(retired::add)
+        checkpoint(StorageCheckpoint.NARROWING_CHAIN_SPLIT)
+        levels.accountIds = parts.stores.retireUnreachable()
+        parts.levels.replaceVaultSession(proof)
+        return levels
     }
 
     fun close() {
         if (closed) return
         closed = true
-        closeInOrder(listOf(premiumDatabase, database), drivers, listOf(secretKey, kitWrappingKey), vaultSession)
+        retired.toList().forEach(RetiredLevels::close)
+        parts.close()
+        keys.wipe()
+        parts.levels.closeVaultSession()
+        tryOrNull { environment.slots.alignFileAttributes() }
+    }
+
+    private fun checkpoint(checkpoint: StorageCheckpoint) = environment.checkpoints.reached(checkpoint)
+
+    private inner class RetiredLevels(val safes: List<OpenSafe>) : AutoCloseable {
+        var accountIds: List<String> = emptyList()
+
+        override fun close() {
+            if (!retired.remove(this)) return
+            try {
+                parts.stores.closeRetired(accountIds)
+            } finally {
+                safes.forEach(OpenSafe::close)
+                tryOrNull { environment.slots.alignFileAttributes() }
+            }
+        }
+    }
+
+    private class Parts(
+        val shared: EncryptedDatabase<SharedDatabase>,
+        val chain: SafeChain,
+        val collapse: CollapseOperation,
+        val stores: AccountStores,
+        val levels: LevelProvisioner,
+    ) {
+        fun close() {
+            stores.close()
+            chain.close()
+            shared.close()
+        }
+    }
+
+    private class SessionKeys(val secretFields: ByteArray, val sharedNames: ByteArray) {
+        fun wipe() {
+            secretFields.fill(0)
+            sharedNames.fill(0)
+        }
     }
 
     companion object {
         private const val KEY_SIZE = 32
-        private const val PREMIUM_DATABASE_FILE = "premium.db"
-        private const val PREMIUM_KIT_NAME = "premium-db"
 
-        /**
-         * Opens the app database right away, so a key that does not fit the file fails here and not at
-         * the first query later. Cleans up after itself on any failure and rethrows.
-         */
-        fun open(
+        /** Throws when the storage does not open; whatever it had opened is closed, the vault session too. */
+        internal fun open(vaultSession: VaultSession, environment: StorageEnvironment): DesktopStorageSession =
+            assemble(vaultSession, environment) { opener, link -> opener.open(link) }
+
+        /** A new vault: every slot but the root's starts out as noise. */
+        internal fun create(created: CreateResult.Created, environment: StorageEnvironment): DesktopStorageSession {
+            val session = created.session
+            val rootSlot = checkNotNull(session.payload()) { "The vault session is closed" }.use { it.slot }
+            environment.slots.prepareAll(occupiedSlot = rootSlot)
+            KitDecoys(environment.files, environment.slots).create()
+            return assemble(session, environment) { opener, link ->
+                opener.create(link, created.slotPool, created.envelopePool, isHiddenRoot = false)
+            }
+        }
+
+        private inline fun assemble(
             vaultSession: VaultSession,
-            files: DesktopVaultFiles,
-            driverFactory: SqlCipherDriverFactory,
+            environment: StorageEnvironment,
+            openRoot: (SafeOpener, SafeLink) -> OpenSafe,
         ): DesktopStorageSession {
-            val databaseKey = checkNotNull(vaultSession.appDatabaseKey()) { "Vault session is closed" }
-            var driver: SqlCipherDriver? = null
-            var database: AppDatabase? = null
-            var premiumDriver: SqlCipherDriver? = null
-            var premiumDatabase: PremiumDatabase? = null
-            var secretKey: ByteArray? = null
-            var kitWrappingKey: ByteArray? = null
+            val payload = checkNotNull(vaultSession.payload()) { "The vault session is closed" }
+            val opened = ArrayDeque<AutoCloseable>()
             try {
-                secretKey = checkNotNull(vaultSession.secretFieldsKey())
-                kitWrappingKey = checkNotNull(vaultSession.kitKeysWrappingKey())
-                driver = driverFactory.create(databaseKey)
-                database = buildDatabase(
-                    files.databaseFile,
-                    driver,
-                    AppDatabaseConstructor::initialize,
-                    Migration_118_119,
-                    Migration_119_120,
-                    Migration_120_121,
-                    Migration_121_122,
-                    Migration_122_123,
-                    Migration_123_124,
-                    Migration_124_125,
-                    Migration_125_126,
+                val opener = SafeOpener(environment)
+                val shared = openShared(environment, payload).also(opened::addFirst)
+                val collapse = CollapseOperation(environment, opener)
+                val chain = SafeChain(opener, collapse).also(opened::addFirst)
+                val rootLink = SafeLink(payload.slot, payload.slotKey.copyOf(), vaultSession.envelopeIndex)
+                chain.open(openRoot(opener, rootLink))
+                val stores = AccountStores(environment, chain).also(opened::addFirst)
+                stores.openAll()
+                val levels = LevelProvisioner(environment, opener, chain, vaultSession)
+                val keys = SessionKeys(
+                    secretFields = checkNotNull(vaultSession.secretFieldsKey()),
+                    sharedNames = checkNotNull(vaultSession.sharedNamesKey()),
                 )
-                // Opening is what reveals a key that does not fit the file.
-                database.syncerStateDao().get("")
-                premiumDriver = createPremiumDriver(driverFactory, kitWrappingKey)
-                premiumDatabase = buildDatabase(
-                    File(files.kitsDirectory.apply { mkdirs() }, PREMIUM_DATABASE_FILE),
-                    premiumDriver,
-                    PremiumDatabaseConstructor::initialize,
-                )
+                tryOrNull { environment.slots.alignFileAttributes() }
                 return DesktopStorageSession(
-                    vaultSession, listOf(premiumDriver, driver), database, premiumDatabase, secretKey, kitWrappingKey
+                    environment,
+                    Parts(shared, chain, collapse, stores, levels),
+                    keys,
                 )
             } catch (e: Throwable) {
                 // An Error from the SQLCipher native load must not leak an open database either.
-                closeInOrder(
-                    listOf(premiumDatabase, database),
-                    listOf(premiumDriver, driver),
-                    listOf(secretKey, kitWrappingKey),
-                    vaultSession,
-                )
+                opened.forEach { tryOrNull { it.close() } }
+                vaultSession.close()
                 throw e
             } finally {
-                databaseKey.fill(0)
+                payload.close()
             }
         }
 
-        /** The premium cache lives as long as the vault, keyed like a kit database. */
-        private fun createPremiumDriver(
-            driverFactory: SqlCipherDriverFactory,
-            kitWrappingKey: ByteArray,
-        ): SqlCipherDriver {
-            val key = deriveKitKey(kitWrappingKey, PREMIUM_KIT_NAME, "")
+        private fun openShared(
+            environment: StorageEnvironment,
+            payload: EnvelopePayload,
+        ): EncryptedDatabase<SharedDatabase> {
+            val key = Hkdf.expand(payload.sharedKey, "shared-db".toByteArray(Charsets.UTF_8), KEY_SIZE)
             try {
-                return driverFactory.create(key)
+                val file = environment.files.sharedDatabaseFile
+                val shared = environment.openDatabase<SharedDatabase>(file, key, ::SharedDatabase_Impl)
+                try {
+                    shared.openNow()
+                } catch (e: Throwable) {
+                    shared.close()
+                    throw e
+                }
+                return shared
             } finally {
                 key.fill(0)
             }
-        }
-
-        private fun deriveKitKey(kitWrappingKey: ByteArray, kitName: String, accountId: String): ByteArray =
-            Hkdf.expand(kitWrappingKey, "kit-db/v1/$kitName/$accountId".toByteArray(Charsets.UTF_8), KEY_SIZE)
-
-        private inline fun <reified T : RoomDatabase> buildDatabase(
-            file: File,
-            driver: SqlCipherDriver,
-            noinline factory: () -> T,
-            vararg migrations: Migration,
-        ): T =
-            Room.databaseBuilder<T>(name = file.absolutePath, factory = factory)
-                .setDriver(driver)
-                .addMigrations(*migrations)
-                // A blocking DAO nested in a transaction must reach Room's `useConnection` undispatched.
-                .setQueryCoroutineContext(Dispatchers.Unconfined)
-                .build()
-
-        private fun closeInOrder(
-            databases: List<RoomDatabase?>,
-            drivers: List<SqlCipherDriver?>,
-            keys: List<ByteArray?>,
-            vaultSession: VaultSession,
-        ) {
-            databases.forEach { tryOrNull { it?.close() } }
-            drivers.forEach { tryOrNull { it?.close() } }
-            keys.forEach { it?.fill(0) }
-            vaultSession.close()
         }
     }
 }

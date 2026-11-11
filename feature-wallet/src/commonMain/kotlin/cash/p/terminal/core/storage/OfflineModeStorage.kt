@@ -3,27 +3,34 @@ package cash.p.terminal.core.storage
 import cash.p.terminal.entities.OfflineBlockchain
 import io.horizontalsystems.core.entities.BlockchainType
 
-class OfflineModeStorage(private val databaseProvider: AppDatabaseProvider) {
+class OfflineModeStorage(private val router: StorageRouter) {
 
-    private val dao get() = databaseProvider.database.offlineBlockchainDao()
+    private fun dao(accountId: String) = router.account(accountId)?.offlineBlockchainDao()
 
-    fun getAll(): List<OfflineBlockchain> = dao.getAll()
+    fun getAll(): List<OfflineBlockchain> = router.acrossAccounts { offlineBlockchainDao().getAll() }
 
     suspend fun setMode(
         accountId: String,
         blockchainType: BlockchainType,
         offline: Boolean,
         enabledAt: Long?,
-    ) = dao.setMode(accountId, blockchainType, offline, enabledAt)
+    ) {
+        dao(accountId)?.setMode(accountId, blockchainType, offline, enabledAt)
+    }
 
     suspend fun setLastSynced(
         accountId: String,
         blockchainType: BlockchainType,
         lastSyncedAt: Long,
-    ) = dao.setLastSynced(accountId, blockchainType, lastSyncedAt)
+    ) {
+        dao(accountId)?.setLastSynced(accountId, blockchainType, lastSyncedAt)
+    }
 
-    suspend fun deleteByAccount(accountId: String) = dao.deleteByAccount(accountId)
+    suspend fun deleteByAccount(accountId: String) {
+        dao(accountId)?.deleteByAccount(accountId)
+    }
 
-    suspend fun deleteChain(accountId: String, blockchainType: BlockchainType) =
-        dao.deleteChain(accountId, blockchainType)
+    suspend fun deleteChain(accountId: String, blockchainType: BlockchainType) {
+        dao(accountId)?.deleteChain(accountId, blockchainType)
+    }
 }

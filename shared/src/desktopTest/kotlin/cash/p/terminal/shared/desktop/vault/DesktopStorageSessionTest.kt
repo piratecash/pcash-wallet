@@ -1,7 +1,8 @@
 package cash.p.terminal.shared.desktop.vault
 
-import androidx.sqlite.execSQL
-import cash.p.terminal.entities.StackingCache
+import cash.p.terminal.shared.desktop.session.anyFileContains
+import cash.p.terminal.vault.EnvelopePayload
+import cash.p.terminal.vault.PasswordVault
 import cash.p.terminal.vault.VaultSession
 import cash.p.terminal.wallet.entities.AccountRecord
 import cash.p.terminal.wallet.entities.SecretList
@@ -15,11 +16,10 @@ import kotlinx.coroutines.test.runTest
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
+import java.io.File
 import java.io.IOException
-import java.math.BigDecimal
 import kotlin.test.AfterTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
@@ -28,6 +28,7 @@ import kotlin.test.assertTrue
 
 private const val MNEMONIC_WORD = "abandonment-seed-word"
 private const val PASSPHRASE = "unrepeatable-passphrase"
+private const val ACCOUNT_ID = "account-1"
 
 class DesktopStorageSessionTest {
 
@@ -41,68 +42,18 @@ class DesktopStorageSessionTest {
     }
 
     @Test
-    fun open_databaseFileWithoutItsKey_failsAndTheFileHoldsNoPlaintextSecret() = runTest {
+    fun open_accountStoreWithoutItsKey_failsAndNoFileHoldsAPlaintextSecret() = runTest {
         startEncryptionGraph()
         vault.create(password())
-        val session = assertIs<DesktopVaultState.Unlocked>(vault.state.value).session
-        session.database.accountsDao().insert(accountRecord())
+        val router = DesktopStorageRouter(vault)
+        router.prepareAccountStore(ACCOUNT_ID)
+        checkNotNull(router.account(ACCOUNT_ID)).accountsDao().insert(accountRecord())
         vault.close()
 
-        val fileBytes = fixture.files.databaseFile.readBytes()
-        assertFalse(fileBytes.decodeToString().contains(MNEMONIC_WORD))
-        assertFalse(fileBytes.decodeToString().contains(PASSPHRASE))
-        assertFailsWith<Exception> { readAccountsWith(ByteArray(KEY_SIZE) { 9 }) }
-    }
-
-    @Test
-    fun open_version118Database_migratesAndStoresStackingCache() = runTest {
-        val keys = mutableListOf<ByteArray>()
-        val keyCapturingVault = fixture.vault(driverFactory = object : SqlCipherDriverFactory {
-            override fun create(key: ByteArray): SqlCipherDriver =
-                DefaultSqlCipherDriverFactory().create(key).also { keys += key.copyOf() }
-        })
-        keyCapturingVault.create(password())
-        keyCapturingVault.close()
-        downgradeToVersion118(appDatabaseKey = keys.first())
-        val cache = StackingCache(
-            coin = "pirate",
-            address = "address",
-            unpaid = BigDecimal("1.5"),
-            totalIncome = BigDecimal("10"),
-            nextAccrualAt = 1_000L,
-            nextPayoutAt = null,
-            cachedBalance = BigDecimal("100"),
-            timestamp = 2_000L,
-        )
-
-        keyCapturingVault.unlock(password())
-        val database = assertIs<DesktopVaultState.Unlocked>(keyCapturingVault.state.value).session.database
-        database.stackingCacheDao().save(cache)
-
-        assertEquals(cache, database.stackingCacheDao().get("pirate", "address"))
-        keyCapturingVault.close()
-    }
-
-    @Test
-    fun open_version122DatabaseWithNftTables_dropsNftTablesAndKeepsAccount() = runTest {
-        val keys = mutableListOf<ByteArray>()
-        val keyCapturingVault = fixture.vault(driverFactory = object : SqlCipherDriverFactory {
-            override fun create(key: ByteArray): SqlCipherDriver =
-                DefaultSqlCipherDriverFactory().create(key).also { keys += key.copyOf() }
-        })
-        startEncryptionGraph(keyCapturingVault)
-        keyCapturingVault.create(password())
-        assertIs<DesktopVaultState.Unlocked>(keyCapturingVault.state.value).session.database
-            .accountsDao().insert(accountRecord())
-        keyCapturingVault.close()
-        downgradeToVersion122WithNftTables(appDatabaseKey = keys.first())
-
-        keyCapturingVault.unlock(password())
-        val database = assertIs<DesktopVaultState.Unlocked>(keyCapturingVault.state.value).session.database
-
-        assertEquals(listOf("account-1"), database.accountsDao().getIds())
-        keyCapturingVault.close()
-        assertEquals(0L, countNftTables(appDatabaseKey = keys.first()))
+        assertFalse(fixture.dataDirectory.anyFileContains(MNEMONIC_WORD))
+        assertFalse(fixture.dataDirectory.anyFileContains(PASSPHRASE))
+        val accountStore = fixture.files.kitsDirectory.walkTopDown().first { it.isFile && !it.name.endsWith(".lck") }
+        assertFailsWith<Exception> { readAccountsWith(accountStore, ByteArray(KEY_SIZE) { 9 }) }
     }
 
     @Test
@@ -124,74 +75,43 @@ class DesktopStorageSessionTest {
     }
 
     private fun assertOpenFailureCleansUp(failure: Throwable) = runTest {
-        val databaseKey = ByteArray(KEY_SIZE) { 1 }
-        val secretFieldsKey = ByteArray(KEY_SIZE) { 2 }
-        val kitKeysWrappingKey = ByteArray(KEY_SIZE) { 3 }
+        val payload = EnvelopePayload(0, ByteArray(KEY_SIZE) { 1 }, ByteArray(KEY_SIZE) { 2 })
         val vaultSession = mockk<VaultSession>(relaxed = true) {
-            every { appDatabaseKey() } returns databaseKey
-            every { secretFieldsKey() } returns secretFieldsKey
-            every { kitKeysWrappingKey() } returns kitKeysWrappingKey
+            every { envelopeIndex } returns 0
+            every { payload() } returns payload
         }
         val driver = mockk<SqlCipherDriver>(relaxed = true) {
             every { open(any()) } throws failure
         }
+        val environment = StorageEnvironment(
+            fixture.files,
+            PasswordVault(fixture.files.vaultFile),
+            driverFactory(driver),
+            NoStorageCheckpoints,
+            object : VaultLock {
+                override fun <T> exclusive(block: () -> T): T = block()
+            },
+        )
 
-        val thrown = assertFailsWith<Throwable> {
-            DesktopStorageSession.open(vaultSession, fixture.files, driverFactory(driver))
-        }
+        val thrown = assertFailsWith<Throwable> { DesktopStorageSession.open(vaultSession, environment) }
 
         // Coroutine stack-trace recovery may rethrow a copy that keeps the original as its cause.
         assertTrue(generateSequence(thrown, Throwable::cause).any { it === failure })
         verify { driver.close() }
         verify { vaultSession.close() }
-        assertTrue(databaseKey.all { it == 0.toByte() })
-        assertTrue(secretFieldsKey.all { it == 0.toByte() })
-        assertTrue(kitKeysWrappingKey.all { it == 0.toByte() })
+        assertTrue(payload.slotKey.all { it == 0.toByte() })
+        assertTrue(payload.sharedKey.all { it == 0.toByte() })
     }
 
-    private fun readAccountsWith(key: ByteArray) =
+    private fun readAccountsWith(file: File, key: ByteArray) =
         SqlCipherDriver(key).use { driver ->
-            driver.open(fixture.files.databaseFile.absolutePath).use { connection ->
+            driver.open(file.absolutePath).use { connection ->
                 connection.prepare("SELECT name FROM AccountRecord").use { statement -> statement.step() }
             }
         }
 
-    private fun downgradeToVersion118(appDatabaseKey: ByteArray) =
-        SqlCipherDriver(appDatabaseKey).use { driver ->
-            driver.open(fixture.files.databaseFile.absolutePath).use { connection ->
-                connection.execSQL("DROP TABLE StackingCache")
-                connection.execSQL("ALTER TABLE SwapProviderTransaction DROP COLUMN receivedAt")
-                connection.execSQL("PRAGMA user_version = 118")
-            }
-        }
-
-    private fun downgradeToVersion122WithNftTables(appDatabaseKey: ByteArray) =
-        SqlCipherDriver(appDatabaseKey).use { driver ->
-            driver.open(fixture.files.databaseFile.absolutePath).use { connection ->
-                // Column layout is irrelevant: the migration drops the tables by name.
-                NFT_TABLES.forEach { table ->
-                    connection.execSQL("CREATE TABLE `$table` (`id` TEXT NOT NULL)")
-                    connection.execSQL("INSERT INTO `$table` VALUES ('row')")
-                }
-                connection.execSQL("PRAGMA user_version = 122")
-            }
-        }
-
-    private fun countNftTables(appDatabaseKey: ByteArray): Long =
-        SqlCipherDriver(appDatabaseKey).use { driver ->
-            driver.open(fixture.files.databaseFile.absolutePath).use { connection ->
-                connection.prepare(
-                    "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name IN " +
-                        NFT_TABLES.joinToString(prefix = "(", postfix = ")") { "'$it'" }
-                ).use { statement ->
-                    statement.step()
-                    statement.getLong(0)
-                }
-            }
-        }
-
     private fun accountRecord() = AccountRecord(
-        id = "account-1",
+        id = ACCOUNT_ID,
         name = "Main",
         type = "mnemonic",
         origin = "Created",
@@ -207,17 +127,13 @@ class DesktopStorageSessionTest {
         override fun create(key: ByteArray): SqlCipherDriver = driver
     }
 
-    private fun startEncryptionGraph(encryptingVault: DesktopVault = vault) {
+    private fun startEncryptionGraph() {
         startKoin {
-            modules(module { single<IEncryptionManager> { DesktopSecretFieldsEncryption(encryptingVault) } })
+            modules(module { single<IEncryptionManager> { DesktopSecretFieldsEncryption(vault) } })
         }
     }
 
     private companion object {
         const val KEY_SIZE = 32
-
-        val NFT_TABLES = listOf(
-            "NftCollectionRecord", "NftAssetRecord", "NftMetadataSyncRecord", "NftAssetBriefMetadataRecord",
-        )
     }
 }

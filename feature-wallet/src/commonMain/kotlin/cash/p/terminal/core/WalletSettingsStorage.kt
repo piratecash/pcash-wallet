@@ -44,6 +44,9 @@ interface TransactionSettingsStorage {
     val utxoExpertModeEnabledFlow: StateFlow<Boolean>
     var swapMevProtectionEnabled: Boolean
     var transferPasscodeEnabled: Boolean
+
+    /** Speed-up links written by `BitcoinReplacementRegistry`; the encoding is owned by it. */
+    var bitcoinReplacementLinks: Set<String>
 }
 
 interface NetworkSettingsStorage {

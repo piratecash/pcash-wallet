@@ -1,6 +1,8 @@
 package cash.p.terminal.modules.balance
 
 import cash.p.terminal.core.storage.EnabledWalletsCacheDao
+import cash.p.terminal.core.storage.SingleDatabaseStorageRouter
+import cash.p.terminal.core.storage.StaticAppDatabaseProvider
 import cash.p.terminal.entities.EnabledWalletCache
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.Token
@@ -19,6 +21,9 @@ import java.math.BigDecimal
 
 class BalanceCacheTest {
 
+    private fun routerWith(dao: EnabledWalletsCacheDao) =
+        SingleDatabaseStorageRouter(StaticAppDatabaseProvider(mockk { every { enabledWalletsCacheDao() } returns dao }))
+
     @Test
     fun getCache_cachedTotalBalance_restoresAsAvailable() {
         val wallet = wallet()
@@ -34,7 +39,7 @@ class BalanceCacheTest {
             )
         }
 
-        val cached = BalanceCache(dao).getCache(wallet)
+        val cached = BalanceCache(routerWith(dao)).getCache(wallet)
 
         assertBigDecimalEquals("3", cached?.available)
         assertBigDecimalEquals("0", cached?.pending)
@@ -50,7 +55,7 @@ class BalanceCacheTest {
             every { insertAll(capture(capturedCache)) } returns Unit
         }
 
-        BalanceCache(dao).setCache(
+        BalanceCache(routerWith(dao)).setCache(
             wallet,
             BalanceData(
                 available = BigDecimal("1"),

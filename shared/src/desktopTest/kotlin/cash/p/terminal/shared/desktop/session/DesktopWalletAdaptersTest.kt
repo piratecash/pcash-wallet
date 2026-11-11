@@ -30,6 +30,7 @@ import java.io.File
 import kotlin.io.path.createTempDirectory
 import kotlin.test.AfterTest
 import kotlin.test.Test
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
@@ -90,7 +91,7 @@ class DesktopWalletAdaptersTest {
 
         verify { graph.relauncher.relaunch(wipeFailed = false) }
         assertTrue(files.slotFiles().none(File::exists), "a vault slot outlived the wipe")
-        assertTrue(files.databaseFiles().none(File::exists), "the database outlived the wipe")
+        assertFalse(files.vaultDirectory.exists(), "the databases outlived the wipe")
         // A kit still writing after the wipe leaves files behind: the next vault starts without them.
         File(ethereumKits.apply { mkdirs() }, "residual.db").writeText("left over")
         graph.restart()
@@ -99,14 +100,21 @@ class DesktopWalletAdaptersTest {
     }
 
     @Test
-    fun deletedAccountsCleanup_deletedEvmAccount_deletesItsKitDatabasesOnTheNextLaunch() = runBlocking<Unit> {
+    fun deletedAccountsCleanup_deletedEvmAccount_removesItsDirectoryAndNoOtherAccountsData() = runBlocking<Unit> {
         val account = createWithOfflineEthereumAccount()
+        val other = mnemonicAccount(isBackedUp = true)
+        graph.accountManager.save(other)
+        graph.koin.get<OfflineModeManager>().persistAndPublish(other.id, BlockchainType.Ethereum, offline = true)
         val ethereum = wallet(ETHEREUM, account)
-        graph.activeWallets.value = listOf(ethereum)
+        val otherEthereum = wallet(ETHEREUM, other)
+        graph.activeWallets.value = listOf(ethereum, otherEthereum)
         assertNotNull(adapterManager.awaitAdapterForWallet<IBalanceAdapter>(ethereum, ADAPTER_TIMEOUT_MS))
-        // Only the databases: the kit's clear() leaves the SQLCipher lock files behind.
-        val kitFiles = ethereumKits.listFiles().orEmpty().filterNot { it.extension in LOCK_FILE_EXTENSIONS }
-        assertTrue(kitFiles.isNotEmpty(), "the EVM adapter created no kit database")
+        assertNotNull(adapterManager.awaitAdapterForWallet<IBalanceAdapter>(otherEthereum, ADAPTER_TIMEOUT_MS))
+        val directory = accountDirectory(account)
+        val otherDirectory = accountDirectory(other)
+        val otherFiles = otherDirectory.walkTopDown().filter(File::isFile).toList()
+        val otherKey = checkNotNull(graph.vault.openSession()?.kitKey(other.id, "evm")).bytes.copyOf()
+        assertTrue(directory.walkTopDown().count(File::isFile) > 1, "the EVM adapter created no kit database")
 
         graph.accountManager.delete(account.id)
         graph.activeWallets.value = emptyList()
@@ -114,7 +122,9 @@ class DesktopWalletAdaptersTest {
         assertEquals(UnlockOutcome.Success, graph.vault.unlock(password()))
         graph.koin.get<DeletedAccountsCleanup>().invoke()
 
-        assertTrue(kitFiles.none(File::exists), "kit files of the deleted account: ${kitFiles.filter(File::exists)}")
+        assertFalse(directory.exists(), "the directory of the deleted account stayed")
+        assertTrue(otherFiles.all(File::exists), "files of another account: ${otherFiles.filterNot(File::exists)}")
+        assertContentEquals(otherKey, graph.vault.openSession()?.kitKey(other.id, "evm")?.bytes)
     }
 
     /** Offline before any adapter exists, so the EVM kit never starts its sync. */
@@ -126,13 +136,15 @@ class DesktopWalletAdaptersTest {
         return account
     }
 
+    private fun accountDirectory(account: Account): File = graph.koin.get<DesktopVaultFiles>()
+        .accountStoreDirectory(checkNotNull(graph.vault.openSession()?.account(account.id)).storageId)
+
     private fun wallet(token: Token, account: Account): Wallet =
         requireNotNull(graph.koin.get<WalletFactory>().create(token, account, null))
 
     private companion object {
         const val ADAPTER_TIMEOUT_MS = 10_000L
         const val WIPE_TIMEOUT_MS = 10_000L
-        val LOCK_FILE_EXTENSIONS = setOf("lck", "lock")
 
         // m/44'/60'/0'/0/0 of the BIP-39 "abandon ... about" phrase.
         const val BIP39_VECTOR_ETHEREUM_ADDRESS = "0x9858EfFD232B4033E47d90003D41EC34EcaEda94"

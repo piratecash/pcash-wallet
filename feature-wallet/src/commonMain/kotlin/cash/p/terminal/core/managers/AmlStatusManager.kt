@@ -10,6 +10,7 @@ import cash.p.terminal.modules.transactions.isIncomingForAmlCheck
 import cash.p.terminal.premium.domain.PremiumSettings
 import io.horizontalsystems.core.DispatcherProvider
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -45,6 +46,10 @@ class AmlStatusManager(
     @Volatile
     private var isCleared = false
 
+    // Moved by a reload: work begun before it belongs to the previous level and must not run after it.
+    @Volatile
+    private var generation = 0
+
     private val _statusUpdates = MutableSharedFlow<AmlStatusUpdate>()
     val statusUpdates = _statusUpdates.asSharedFlow()
 
@@ -64,6 +69,15 @@ class AmlStatusManager(
         }
     }
 
+    /** The flag belongs to the user level: a desktop level change moves it without [setEnabled]. */
+    fun reloadEnabled() {
+        val enabled = premiumSettings.getAmlCheckReceivedEnabled()
+        generation++
+        clearAll()
+        isCleared = !enabled
+        _enabledStateFlow.value = enabled
+    }
+
     fun getStatus(uid: String): AmlStatus? = amlStatuses[uid]
 
     fun getAddressStatus(address: String): AmlStatus? = addressStatuses[address]
@@ -74,6 +88,7 @@ class AmlStatusManager(
         if (!record.isIncomingForAmlCheck()) return
         if (record.getSenderAddresses().isEmpty()) return
 
+        val requestGeneration = generation
         managerScope.launch {
             queueMutex.withLock {
                 // Re-check inside lock to prevent race conditions
@@ -88,7 +103,7 @@ class AmlStatusManager(
                 }
 
                 // Add to end (highest priority position)
-                val request = PendingRequest(uid, record)
+                val request = PendingRequest(uid, record, requestGeneration)
                 pendingQueue.addLast(request)
                 pendingUids.add(uid)
 
@@ -114,20 +129,25 @@ class AmlStatusManager(
                 // Take last item (most recently added = highest priority)
                 val request = pendingQueue.removeLast()
                 pendingUids.remove(request.uid)
-                launchRequest(request)
+                if (request.generation == generation) launchRequest(request)
             }
         }
     }
 
     private fun launchRequest(request: PendingRequest) {
-        val (uid, record) = request
+        val (uid, record, requestGeneration) = request
         val token = record.token
 
         amlStatuses[uid] = AmlStatus.Loading
         emitUpdate(uid, AmlStatus.Loading)
 
-        val job = managerScope.launch(dispatcherProvider.io) {
+        // Registered before it starts: a reload either cancels it or is seen by the check below.
+        val job = managerScope.launch(dispatcherProvider.io, CoroutineStart.LAZY) {
             try {
+                if (requestGeneration != generation) {
+                    amlStatuses.remove(uid)
+                    return@launch
+                }
                 val addresses = record.getSenderAddresses().map { Address(it) }
                 val results = checkAmlIncomingTransaction(addresses, token)
 
@@ -152,6 +172,7 @@ class AmlStatusManager(
         }
 
         activeRequests[uid] = job
+        job.start()
     }
 
     fun clearAll() {
@@ -195,7 +216,8 @@ class AmlStatusManager(
 
     private data class PendingRequest(
         val uid: String,
-        val record: TransactionRecord
+        val record: TransactionRecord,
+        val generation: Int
     )
 
     data class AmlStatusUpdate(

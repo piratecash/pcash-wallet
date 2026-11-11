@@ -3,7 +3,7 @@ package cash.p.terminal.modules.balance
 import cash.p.terminal.core.BalanceSettingsStorage
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.isNative
-import cash.p.terminal.core.storage.MoneroFileDao
+import cash.p.terminal.core.storage.StorageRouter
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.BalanceSortType
 import cash.p.terminal.wallet.IAccountManager
@@ -16,6 +16,7 @@ import cash.p.terminal.wallet.models.CoinPrice
 import cash.p.terminal.manager.IConnectivityManager
 import cash.p.terminal.wallet.useCases.IRemoveMoneroWalletFilesUseCase
 import io.reactivex.subjects.PublishSubject
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -41,9 +42,7 @@ class DefaultBalanceService private constructor(
     private val removeMoneroWalletFilesUseCase: IRemoveMoneroWalletFilesUseCase by inject(
         IRemoveMoneroWalletFilesUseCase::class.java
     )
-    private val moneroFileDao: MoneroFileDao by inject(
-        MoneroFileDao::class.java
-    )
+    private val router: StorageRouter by inject(StorageRouter::class.java)
 
     override val networkAvailable: Boolean
         get() = connectivityManager.isConnected.value
@@ -73,6 +72,8 @@ class DefaultBalanceService private constructor(
     // Replace CopyOnWriteArrayList with StateFlow
     private val _balanceItemsState = MutableStateFlow<List<BalanceItem>>(emptyList())
     override val balanceItemsFlow = _balanceItemsState.asStateFlow()
+
+    private val walletsLoaded = CompletableDeferred<Unit>()
 
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
 
@@ -210,7 +211,10 @@ class DefaultBalanceService private constructor(
                 )
             }
         }
+        walletsLoaded.complete(Unit)
     }
+
+    suspend fun awaitWalletsLoaded() = walletsLoaded.await()
 
     override suspend fun refresh() {
         xRateRepository.refresh()
@@ -247,7 +251,7 @@ class DefaultBalanceService private constructor(
      */
     private suspend fun deleteMoneroRecords(wallet: Wallet) = withContext(Dispatchers.IO) {
         if (removeMoneroWalletFilesUseCase(wallet.account)) {
-            moneroFileDao.deleteAssociatedRecord(wallet.account.id)
+            router.account(wallet.account.id)?.moneroFileDao()?.deleteAssociatedRecord(wallet.account.id)
         }
     }
 

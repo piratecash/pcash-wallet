@@ -211,7 +211,7 @@ class SolanaKitManager(
         if (currentAccount?.id == accountId) {
             stopKit()
         }
-        SolanaKit.clear(platformContexts.solana, accountId)
+        SolanaKit.clear(platformContexts.solana(accountId), accountId, platformContexts.resolverFor(accountId))
         solanaKitDatabaseKeyProvider.remove(accountId)
     }
 
@@ -306,9 +306,12 @@ class SolanaKitManager(
 
     private suspend fun createKit(address: String, walletId: String): SolanaKit {
         val databaseKey = solanaKitDatabaseKeyProvider.awaitKey(walletId)
-        SolanaKit.migrateDatabase(platformContexts.solana, walletId, databaseKey)
+        val context = platformContexts.solana(walletId)
+        val nameResolver = platformContexts.resolverFor(walletId)
+        SolanaKit.migrateDatabase(context, walletId, databaseKey, nameResolver)
         return SolanaKit.getInstance(
-            context = platformContexts.solana,
+            context = context,
+            nameResolver = nameResolver,
             addressString = address,
             rpcSource = rpcSourceManager.rpcSource,
             walletId = walletId,

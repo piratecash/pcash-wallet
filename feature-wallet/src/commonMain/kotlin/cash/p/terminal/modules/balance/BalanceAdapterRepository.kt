@@ -2,15 +2,18 @@ package cash.p.terminal.modules.balance
 
 import cash.p.terminal.core.NotSupportedOnPlatformException
 import cash.p.terminal.core.managers.PendingBalanceCalculator
+import cash.p.terminal.core.tor.TorSyncState
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.entities.BalanceData
 import cash.p.terminal.wallet.Clearable
 import cash.p.terminal.wallet.IAdapterManager
+import cash.p.terminal.wallet.ReceiveAccountStatus
 import cash.p.terminal.core.adapters.BaseTronAdapter
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.entities.BlockchainType
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.balance.BalanceWarning
+import cash.p.terminal.wallet.isAdapterStopped
 import cash.p.terminal.wallet.policy.PlatformChainSupport
 import cash.p.terminal.wallet.policy.PlatformOperation
 import cash.p.terminal.wallet.policy.PlatformOperationSupport
@@ -18,8 +21,12 @@ import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
+import kotlinx.coroutines.withContext
 import java.math.BigDecimal
 
 class BalanceAdapterRepository(
@@ -28,7 +35,8 @@ class BalanceAdapterRepository(
     private val pendingBalanceCalculator: PendingBalanceCalculator,
     private val platformChainSupport: PlatformChainSupport,
     private val platformOperationSupport: PlatformOperationSupport,
-    dispatcherProvider: DispatcherProvider
+    private val torSyncState: TorSyncState,
+    private val dispatcherProvider: DispatcherProvider
 ) : Clearable {
     private var wallets = listOf<Wallet>()
 
@@ -59,7 +67,7 @@ class BalanceAdapterRepository(
             }
         }
         coroutineScope.launch {
-            pendingBalanceCalculator.pendingChangedFlow.collect {
+            merge(pendingBalanceCalculator.pendingChangedFlow, torSyncState.syncErrorsHidden).collect {
                 wallets.forEach(::notifyWalletUpdate)
             }
         }
@@ -82,16 +90,25 @@ class BalanceAdapterRepository(
 
     fun state(wallet: Wallet): AdapterState {
         if (!platformChainSupport.isSupported(wallet)) return AdapterState.NotSynced(NotSupportedOnPlatformException())
-        return adapterManager.getBalanceAdapterForWallet(wallet)?.balanceState
+        val state = adapterManager.getBalanceAdapterForWallet(wallet)?.balanceState
             ?: if (adapterManager.initializationInProgressFlow.value) {
                 AdapterState.Syncing()
             } else {
                 AdapterState.NotSynced(Exception("Adapter unavailable"))
             }
+        return state.hiddenWhileTorStarts()
     }
 
+    private fun AdapterState.hiddenWhileTorStarts(): AdapterState =
+        if (this is AdapterState.NotSynced && !isAdapterStopped && torSyncState.syncErrorsHidden.value) {
+            AdapterState.Connecting
+        } else {
+            this
+        }
+
     fun transactionsSyncState(wallet: Wallet): AdapterState =
-        adapterManager.getBalanceAdapterForWallet(wallet)?.transactionsSyncState ?: state(wallet)
+        adapterManager.getBalanceAdapterForWallet(wallet)?.transactionsSyncState?.hiddenWhileTorStarts()
+            ?: state(wallet)
 
     fun balanceData(wallet: Wallet): BalanceData {
         if (!platformChainSupport.isSupported(wallet)) return BalanceData(BigDecimal.ZERO)
@@ -105,22 +122,39 @@ class BalanceAdapterRepository(
         return adapterAllows && platformOperationSupport.supports(PlatformOperation.Send)
     }
 
-    suspend fun warning(wallet: Wallet): BalanceWarning? {
+    // The kit's account request blocks its thread.
+    suspend fun warning(wallet: Wallet): BalanceWarning? = withContext(dispatcherProvider.io) {
         try {
-            if (wallet.token.blockchainType is BlockchainType.Tron) {
-                (adapterManager.getAdapterForWalletOld(wallet) as? BaseTronAdapter)?.let { adapter ->
-                    if (!adapter.isAddressActive(adapter.receiveAddress))
-                        return BalanceWarning.TronInactiveAccountWarning
-                }
-            }
+            tronAccountWarning(wallet)
         } catch (e: Exception) {
             e.printStackTrace()
+            null
         }
-        return null
+    }
+
+    private suspend fun tronAccountWarning(wallet: Wallet): BalanceWarning? {
+        if (wallet.token.blockchainType !is BlockchainType.Tron) return null
+        val adapter = adapterManager.getAdapterForWalletOld(wallet) as? BaseTronAdapter ?: return null
+        return when (adapter.accountStatus(adapter.receiveAddress)) {
+            ReceiveAccountStatus.NotActive -> BalanceWarning.TronInactiveAccountWarning
+            ReceiveAccountStatus.ControlledByOthers -> BalanceWarning.TronControlledByOthersWarning
+            ReceiveAccountStatus.Active -> null
+        }
+    }
+
+    fun hasAdapter(wallet: Wallet): Boolean = adapterManager.getAdapterForWalletOld(wallet) != null
+
+    suspend fun awaitAdapter(wallet: Wallet) {
+        adapterManager.adapterChanges().first { hasAdapter(wallet) }
     }
 
     suspend fun refresh() {
+        torSyncState.requestNewCircuits()
         adapterManager.refresh()
     }
 
 }
+
+/** initializationInProgressFlow replays on subscription, so no change between a check and subscribing is lost. */
+internal fun IAdapterManager.adapterChanges(): Flow<Any> =
+    merge(adaptersReadyObservable.asFlow(), initializationInProgressFlow)

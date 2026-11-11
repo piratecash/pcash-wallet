@@ -149,6 +149,7 @@ kotlin {
                 implementation(libs.resolution.java)
 
                 implementation(libs.bitcoin.core)
+                api(libs.bitcoin.kit.database.naming)
                 implementation(libs.bitcoin.kit)
                 implementation(libs.bitcoin.cash.kit)
                 implementation(libs.bitcoin.ecash.kit)

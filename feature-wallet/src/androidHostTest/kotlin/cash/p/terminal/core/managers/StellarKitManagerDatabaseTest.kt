@@ -1,6 +1,7 @@
 package cash.p.terminal.core.managers
 
 import cash.p.terminal.core.UnsupportedAccountException
+import cash.p.terminal.core.managers.IdentityKitStorageNaming
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
@@ -232,6 +233,7 @@ class StellarKitManagerDatabaseTest {
         hardwarePublicKeyStorage = hardwarePublicKeyStorage,
         hardwareSigners = AndroidStellarHardwareSigners(mockk(relaxed = true)),
         platformContexts = mockk(relaxed = true),
+        storageNaming = IdentityKitStorageNaming,
         backgroundKeepAliveManager = mockk(relaxed = true),
         networkErrorTracker = mockk(relaxed = true),
         offlineModeManager = mockk(relaxed = true),

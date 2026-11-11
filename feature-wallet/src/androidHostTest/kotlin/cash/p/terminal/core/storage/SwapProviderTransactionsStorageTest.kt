@@ -1,5 +1,6 @@
 package cash.p.terminal.core.storage
 
+import cash.p.terminal.core.storage.SingleDatabaseStorageRouter
 import cash.p.terminal.core.storage.StaticAppDatabaseProvider
 import android.content.Context
 import androidx.room.Room
@@ -46,7 +47,7 @@ class SwapProviderTransactionsStorageTest {
     private val testScope = CoroutineScope(dispatcher)
     private val dao = mockk<SwapProviderTransactionsDao>(relaxed = true)
     private val storage = SwapProviderTransactionsStorage(
-        databaseProvider = StaticAppDatabaseProvider(mockk { every { swapProviderTransactionsDao() } returns dao }),
+        router = SingleDatabaseStorageRouter(StaticAppDatabaseProvider(mockk { every { swapProviderTransactionsDao() } returns dao })),
         dispatcherProvider = TestDispatcherProvider(dispatcher, testScope)
     )
 
@@ -63,7 +64,7 @@ class SwapProviderTransactionsStorageTest {
             .allowMainThreadQueries()
             .build()
         roomStorage = SwapProviderTransactionsStorage(
-            databaseProvider = StaticAppDatabaseProvider(database),
+            router = SingleDatabaseStorageRouter(StaticAppDatabaseProvider(database)),
             dispatcherProvider = TestDispatcherProvider(dispatcher, testScope)
         )
     }

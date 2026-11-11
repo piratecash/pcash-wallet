@@ -82,8 +82,8 @@ android {
         compileSdk compile_sdk_version
         minSdkVersion min_sdk_version
         targetSdkVersion target_sdk_version
-        versionCode 261
-        versionName "1.1.261"
+        versionCode 262
+        versionName "1.2.262"
         buildConfigField "String", "GIT_HASH", "\"${getGitVersionSuffix()}\""
         buildConfigField "String", "GIT_BRANCH", "\"${gitBranchProvider.getOrElse("unknown")}\""
         // True only for the disposable baseline-profile generation build type (see baselinegen).
@@ -555,7 +555,6 @@ dependencies {
     //Android Tor
     implementation libs.tor.android
 
-    api libs.android.shell
     api libs.portmapper
 
     implementation libs.google.play.app.update

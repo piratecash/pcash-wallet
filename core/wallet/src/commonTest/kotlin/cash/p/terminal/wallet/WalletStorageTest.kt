@@ -442,8 +442,8 @@ class WalletStorageTest {
             items.clear()
         }
 
-        override fun delete(enabledWalletIds: List<Long>) {
-            items.removeAll { it.id in enabledWalletIds.toSet() }
+        override fun delete(accountId: String, enabledWalletIds: List<Long>) {
+            items.removeAll { it.accountId == accountId && it.id in enabledWalletIds.toSet() }
         }
 
         override fun deleteByTokenQueryId(accountId: String, tokenQueryId: String) {

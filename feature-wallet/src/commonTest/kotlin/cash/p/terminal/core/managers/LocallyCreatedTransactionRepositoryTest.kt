@@ -1,5 +1,6 @@
 package cash.p.terminal.core.managers
 
+import cash.p.terminal.core.storage.SingleDatabaseStorageRouter
 import io.mockk.mockk
 import io.mockk.every
 import cash.p.terminal.core.storage.StaticAppDatabaseProvider
@@ -163,7 +164,7 @@ class LocallyCreatedTransactionRepositoryTest {
     fun trimAllAccounts_overLimit_keepsLatestPerAccount() = runTest {
         val dao = FakeLocallyCreatedTransactionDao()
         val storage = LocallyCreatedTransactionStorage(
-            StaticAppDatabaseProvider(mockk { every { locallyCreatedTransactionDao() } returns dao })
+            SingleDatabaseStorageRouter(StaticAppDatabaseProvider(mockk { every { locallyCreatedTransactionDao() } returns dao }))
         )
 
         repeat(3) { index ->
@@ -196,7 +197,7 @@ class LocallyCreatedTransactionRepositoryTest {
     ): LocallyCreatedTransactionRepository {
         return LocallyCreatedTransactionRepository(
             storage = LocallyCreatedTransactionStorage(
-            StaticAppDatabaseProvider(mockk { every { locallyCreatedTransactionDao() } returns dao })
+            SingleDatabaseStorageRouter(StaticAppDatabaseProvider(mockk { every { locallyCreatedTransactionDao() } returns dao }))
         ),
             dispatcherProvider = TestDispatcherProvider(StandardTestDispatcher(testScheduler), this),
         )
