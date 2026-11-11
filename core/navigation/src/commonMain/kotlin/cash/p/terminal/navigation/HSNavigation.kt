@@ -1,7 +1,7 @@
 package cash.p.terminal.navigation
 
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.navigation3.runtime.NavBackStack
-import androidx.navigation3.runtime.result.ResultEventBus
 import kotlin.reflect.KClass
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -14,7 +14,8 @@ import kotlin.time.TimeSource
  */
 class HSNavigation(val backStack: NavBackStack<HSPage>) {
 
-    internal val resultBus = ResultEventBus()
+    // State, not a channel: a collector cancelled right after receiving would lose the element.
+    internal val pendingAnswers = mutableStateMapOf<String, Answer>()
 
     // Kept until delivered or until the caller leaves the back stack.
     internal val launches = mutableMapOf<String, Launch>()
@@ -33,7 +34,7 @@ class HSNavigation(val backStack: NavBackStack<HSPage>) {
         val key = page.resultKey ?: return
         if (key !in launches) return
         page.resultKey = null
-        resultBus.sendResult(key, Answer(page, result))
+        pendingAnswers[key] = Answer(page, result)
     }
 
     fun navigateUp(): Boolean {
@@ -101,7 +102,7 @@ class HSNavigation(val backStack: NavBackStack<HSPage>) {
     internal fun forgetLauncher(key: String) {
         launcherOwners.remove(key)
         launches.remove(key)
-        resultBus.removeResult(key)
+        pendingAnswers.remove(key)
     }
 }
 

@@ -184,6 +184,7 @@ private fun ScannerView(onScan: (String) -> Unit) {
     val disposed = remember { AtomicBoolean(false) }
     val cameraProviderRef = remember { AtomicReference<ProcessCameraProvider?>() }
     val imageAnalysisRef = remember { AtomicReference<ImageAnalysis?>() }
+    val previewRef = remember { AtomicReference<Preview?>() }
     val analyzerRef = remember { AtomicReference<QrCodeAnalyzer?>() }
     var cameraError by remember { mutableStateOf<String?>(null) }
     val cameraInitErrorText = stringResource(R.string.scan_qr_camera_initialization_failed)
@@ -192,6 +193,8 @@ private fun ScannerView(onScan: (String) -> Unit) {
         analyzerRef.getAndSet(null)?.release()
         imageAnalysisRef.getAndSet(null)?.clearAnalyzer()
         cameraProviderRef.getAndSet(null)?.unbindAll()
+        // CameraX keeps the last bound Preview after unbind; it must not keep PreviewView.
+        previewRef.getAndSet(null)?.surfaceProvider = null
     }
 
     fun isCameraBindingDisposed() =
@@ -235,7 +238,10 @@ private fun ScannerView(onScan: (String) -> Unit) {
                 val preview = Preview.Builder()
                     .setResolutionSelector(resolutionSelector)
                     .build()
-                    .also { it.surfaceProvider = previewView.surfaceProvider }
+                    .also {
+                        previewRef.set(it)
+                        it.surfaceProvider = previewView.surfaceProvider
+                    }
 
                 val imageAnalyzer = ImageAnalysis.Builder()
                     .setResolutionSelector(resolutionSelector)
