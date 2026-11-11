@@ -6,7 +6,7 @@ interface IEnabledWalletStorage {
     val enabledWallets: List<EnabledWallet>
     fun enabledWallets(accountId: String): List<EnabledWallet>
     fun save(enabledWallets: List<EnabledWallet>): List<Long>
-    fun delete(enabledWalletIds: List<Long>)
+    fun delete(accountId: String, enabledWalletIds: List<Long>)
     fun deleteByTokenQueryId(accountId: String, tokenQueryId: String)
     fun deleteAll()
 }

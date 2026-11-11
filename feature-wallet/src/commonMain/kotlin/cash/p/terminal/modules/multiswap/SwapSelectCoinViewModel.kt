@@ -34,7 +34,11 @@ class SwapSelectCoinViewModel(
     private val activeAccount: Account,
     private val dispatcherProvider: DispatcherProvider,
 ) : ViewModel() {
-    private val coinsProvider = FullCoinsProvider(getKoinInstance<MarketKitWrapper>(), activeAccount)
+    private val coinsProvider = FullCoinsProvider(
+        getKoinInstance<MarketKitWrapper>(),
+        activeAccount,
+        dispatcherProvider
+    )
     private val adapterManager = getKoinInstance<IAdapterManager>()
     private val currencyManager = getKoinInstance<CurrencyManager>()
     private val marketKit = getKoinInstance<MarketKitWrapper>()

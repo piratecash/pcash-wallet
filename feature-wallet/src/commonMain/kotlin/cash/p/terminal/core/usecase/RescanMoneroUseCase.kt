@@ -5,7 +5,7 @@ import cash.p.terminal.core.managers.MoneroKitManager
 import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.core.managers.RestoreSettingsManager
 import cash.p.terminal.core.managers.isNetworkPaused
-import cash.p.terminal.core.storage.MoneroFileDao
+import cash.p.terminal.core.storage.StorageRouter
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.useCases.IRemoveMoneroWalletFilesUseCase
@@ -20,7 +20,7 @@ import kotlinx.coroutines.withContext
 class RescanMoneroUseCase(
     private val moneroKitManager: MoneroKitManager,
     private val removeMoneroWalletFilesUseCase: IRemoveMoneroWalletFilesUseCase,
-    private val moneroFileDao: MoneroFileDao,
+    private val router: StorageRouter,
     private val restoreSettingsManager: RestoreSettingsManager,
     private val offlineModeManager: OfflineModeManager,
     private val dispatcherProvider: DispatcherProvider,
@@ -48,7 +48,7 @@ class RescanMoneroUseCase(
         if (!removed) {
             throw MoneroRescanException("Failed to remove Monero wallet files for account ${account.id}")
         }
-        moneroFileDao.deleteAssociatedRecord(account.id)
+        router.account(account.id)?.moneroFileDao()?.deleteAssociatedRecord(account.id)
     }
 
     private fun saveRestoreHeight(account: Account, newHeight: Long) {

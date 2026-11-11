@@ -14,8 +14,9 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 object AppLog {
-    // Resolved per call so a log made before Koin starts fails inside the executor task, not at the call site.
+    // Resolved per call: the store behind it changes with the session.
     private val logsDao: LogsDao get() = getKoinInstance()
+    private val logScope: LogScope get() = getKoinInstance()
 
     // Stored levels keep the values of android.util.Log, which earlier rows were written with.
     internal const val LEVEL_INFO = 4
@@ -30,38 +31,53 @@ object AppLog {
     private val logDispatcher = executor.asCoroutineDispatcher()
     private val sdf = newDateFormat()
 
-    fun info(actionId: String, message: String) = submitInsert(LEVEL_INFO, actionId, message)
+    fun info(actionId: String, message: String, accountId: String? = null) =
+        submitInsert(LEVEL_INFO, actionId, message, accountId = accountId)
 
-    fun warning(actionId: String, message: String, e: Throwable) =
-        submitInsert(LEVEL_WARN, actionId, message, e)
+    fun warning(actionId: String, message: String, e: Throwable, accountId: String? = null) =
+        submitInsert(LEVEL_WARN, actionId, message, e, accountId)
 
-    fun warning(actionId: String, message: String) = submitInsert(LEVEL_WARN, actionId, message)
+    fun warning(actionId: String, message: String, accountId: String? = null) =
+        submitInsert(LEVEL_WARN, actionId, message, accountId = accountId)
 
     private fun submitInsert(
         level: Int,
         actionId: String,
         message: String,
         error: Throwable? = null,
+        accountId: String? = null,
     ) {
+        // Resolved here, not in the task: a queued line must go to the store and level of its own call.
+        val dao = resolveOrNull { logsDao } ?: return
+        val scope = resolveOrNull { logScope } ?: return
+        val stamp = scope.stampFor(accountId) ?: return
         executor.submit {
             val text = if (error == null) message else message + ": " + getStackTraceString(error)
-            logsDao.insert(LogEntry(System.currentTimeMillis(), level, actionId, text))
-            logsDao.trimToNewest(MAX_ENTRIES)
+            dao.insert(LogEntry(System.currentTimeMillis(), level, actionId, text, stamp))
+            dao.trimToNewest(MAX_ENTRIES)
         }
+    }
+
+    /** A log call never throws: without Koin or an open session the line is dropped. */
+    private inline fun <T> resolveOrNull(resolve: () -> T): T? = try {
+        resolve()
+    } catch (e: Exception) {
+        null
     }
 
     /** Streams the whole log (or one tag) into [out] page by page, without materialising the table. */
     suspend fun writeLog(out: Appendable, tag: String? = null) = withContext(logDispatcher) {
         val dateFormat = newDateFormat()
+        val userLevel = logScope.userLevel
         var currentActionId: String? = null
         var afterFirstId = 0L
         var afterId = 0
 
         do {
             val page = if (tag == null) {
-                logsDao.getGroupedPage(afterFirstId, afterId, EXPORT_PAGE_SIZE)
+                logsDao.getGroupedPage(afterFirstId, afterId, EXPORT_PAGE_SIZE, userLevel)
             } else {
-                logsDao.getGroupedPageByTag(tag, afterFirstId, afterId, EXPORT_PAGE_SIZE)
+                logsDao.getGroupedPageByTag(tag, afterFirstId, afterId, EXPORT_PAGE_SIZE, userLevel)
             }
 
             page.forEach { row ->
@@ -81,11 +97,11 @@ object AppLog {
     }
 
     suspend fun getLog(): Map<String, Any> = withContext(Dispatchers.IO) {
-        buildLogMap(logsDao.getRecent(500).reversed())
+        buildLogMap(logsDao.getRecent(500, logScope.userLevel).reversed())
     }
 
     fun getRecentLog(tag: String, limit: Int = 300): Map<String, Any> =
-        buildLogMap(logsDao.getRecentByTag(tag, limit).reversed())
+        buildLogMap(logsDao.getRecentByTag(tag, limit, logScope.userLevel).reversed())
 
     private fun buildLogMap(entries: List<LogEntry>): Map<String, Any> {
         val res = mutableMapOf<String, MutableMap<String, String>>()
@@ -99,10 +115,11 @@ object AppLog {
     }
 
     fun cleanupOldLogs() {
+        val dao = resolveOrNull { logsDao } ?: return
         executor.submit {
             val threeMonthsAgo = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(DAYS_TO_KEEP)
-            logsDao.deleteOlderThan(threeMonthsAgo)
-            logsDao.trimToNewest(MAX_ENTRIES)
+            dao.deleteOlderThan(threeMonthsAgo)
+            dao.trimToNewest(MAX_ENTRIES)
         }
     }
 

@@ -5,6 +5,8 @@ import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.providers.SharedAppConfig
 import cash.p.terminal.core.storage.AccountsDao
 import cash.p.terminal.core.storage.AppDatabase
+import cash.p.terminal.core.storage.SingleDatabaseStorageRouter
+import cash.p.terminal.core.storage.StaticAppDatabaseProvider
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.IAccountManager
 import co.touchlab.kermit.LogWriter
@@ -381,7 +383,7 @@ class TonConnectManagerTest {
         appVersion = "1.0",
         databaseKeyProvider = keyProvider,
         accountManager = accountManager,
-        appDatabase = appDatabase,
+        router = SingleDatabaseStorageRouter(StaticAppDatabaseProvider(appDatabase)),
         dispatcherProvider = TestDispatcherProvider(dispatcher, backgroundScope),
     )
 

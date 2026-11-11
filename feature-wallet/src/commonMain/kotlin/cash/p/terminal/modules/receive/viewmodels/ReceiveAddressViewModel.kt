@@ -5,6 +5,7 @@ import cash.p.beam.BeamAddressType
 import cash.p.beam.BeamNetwork
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IReceiveAdapter
+import cash.p.terminal.wallet.ReceiveAccountStatus
 import cash.p.terminal.wallet.entities.UsedAddress
 import cash.p.terminal.core.factories.uriScheme
 import cash.p.terminal.core.paymentUriTokenUid
@@ -13,6 +14,7 @@ import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.core.utils.AddressUriParser
 import cash.p.terminal.entities.AddressUri
 import cash.p.terminal.ui_compose.entities.ViewState
+import cash.p.terminal.modules.balance.adapterChanges
 import cash.p.terminal.modules.receive.ReceiveModule
 import cash.p.terminal.modules.receive.ReceiveModule.AdditionalData
 import io.horizontalsystems.core.Translator
@@ -33,13 +35,13 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import co.touchlab.kermit.Logger
 import java.math.BigDecimal
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.beam_receive_regular_alert
+import cash.p.terminal.resources.tron_controlled_by_others_warning
 
 private val logger = Logger.withTag("ReceiveAddressViewModel")
 
@@ -65,7 +67,7 @@ class ReceiveAddressViewModel internal constructor(
     private data class Shown(
         val alertText: ReceiveModule.AlertText? = null,
         val address: String = "",
-        val accountActive: Boolean = true,
+        val accountStatus: ReceiveAccountStatus = ReceiveAccountStatus.Active,
     )
 
     @Volatile
@@ -90,10 +92,9 @@ class ReceiveAddressViewModel internal constructor(
         if (beamAddressProvider == null) {
             viewModelScope.launch(dispatcherProvider.io) {
                 // One collector: every trigger fires on the same init, and concurrent
-                // setData() would race two isAddressActive requests against each other.
+                // setData() would race two accountStatus requests against each other.
                 merge(
-                    adapterManager.adaptersReadyObservable.asFlow(),
-                    adapterManager.initializationInProgressFlow,
+                    adapterManager.adapterChanges(),
                     retries,
                 ).collect {
                     val adapter = setData()
@@ -124,13 +125,13 @@ class ReceiveAddressViewModel internal constructor(
             usedAddresses = usedAddresses,
             usedChangeAddresses = usedChangeAddresses,
             isAddressHistorySupported = isAddressHistorySupported,
-            showTronAlert = !shown.accountActive,
+            showTronAlert = shown.accountStatus == ReceiveAccountStatus.NotActive,
             beamReceiveType = beamReceiveType,
             uri = getUri(shown.address),
             watchAccount = watchAccount,
-            additionalItems = getAdditionalData(shown.accountActive),
+            additionalItems = getAdditionalData(shown.accountStatus),
             amount = amount,
-            alertText = shown.alertText,
+            alertText = shown.alertText ?: accountStatusAlert(shown.accountStatus),
         mainNet = mainNet,
             blockchainName = blockchainName,
             addressFormat = addressFormat,
@@ -161,6 +162,13 @@ class ReceiveAddressViewModel internal constructor(
         }
         emitState()
     }
+
+    private fun accountStatusAlert(status: ReceiveAccountStatus): ReceiveModule.AlertText? =
+        if (status == ReceiveAccountStatus.ControlledByOthers) {
+            ReceiveModule.AlertText.Normal(Translator.getString(Res.string.tron_controlled_by_others_warning))
+        } else {
+            null
+        }
 
     private fun getBeamAlertText(type: BeamAddressType): ReceiveModule.AlertText? =
         if (type == BeamAddressType.Regular) {
@@ -245,12 +253,15 @@ class ReceiveAddressViewModel internal constructor(
     ) = renderMutex.withLock {
         // A cancelled fresh-address job must not publish over the render that replaced it.
         currentCoroutineContext().ensureActive()
-        shown = Shown(address = address, accountActive = shown.accountActive)
+        shown = Shown(address = address, accountStatus = shown.accountStatus)
         viewState = ViewState.Success
         if (checkActivation) {
-            // Unknown activation state must not hide a valid address behind the TRON warning
-            val accountActive = tryOrNull { adapter.isAddressActive(address) } ?: true
-            shown = shown.copy(accountActive = accountActive)
+            // A failed check must not hide a valid address behind the inactive warning,
+            // nor drop a foreign-control warning already known.
+            val accountStatus = tryOrNull { adapter.accountStatus(address) }
+                ?: shown.accountStatus.takeIf { it == ReceiveAccountStatus.ControlledByOthers }
+                ?: ReceiveAccountStatus.Active
+            shown = shown.copy(accountStatus = accountStatus)
         }
     }
 
@@ -269,10 +280,10 @@ class ReceiveAddressViewModel internal constructor(
         return newUri
     }
 
-    private fun getAdditionalData(accountActive: Boolean): List<AdditionalData> {
+    private fun getAdditionalData(accountStatus: ReceiveAccountStatus): List<AdditionalData> {
         val items = mutableListOf<AdditionalData>()
 
-        if (!accountActive) {
+        if (accountStatus == ReceiveAccountStatus.NotActive) {
             items.add(AdditionalData.AccountNotActive)
         }
 

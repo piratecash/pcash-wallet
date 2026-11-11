@@ -3,6 +3,7 @@ package cash.p.terminal.shared.desktop
 import cash.p.terminal.entities.AppVersion
 import cash.p.terminal.modules.amount.AmountInputType
 import io.horizontalsystems.core.DesktopSettingsStore
+import io.mockk.mockk
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -21,7 +22,7 @@ class DesktopWalletSettingsStorageTest {
     private val directory = Files.createTempDirectory("wallet-settings-store").toFile()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val settingsStore = DesktopSettingsStore(File(directory, "settings.preferences_pb"), scope)
-    private val storage = DesktopWalletSettingsStorage(settingsStore)
+    private val storage = DesktopWalletSettingsStorage(settingsStore, mockk(relaxed = true))
 
     @AfterTest
     fun tearDown() {

@@ -2,7 +2,8 @@ package cash.p.terminal.premium.domain.usecase
 
 import cash.p.terminal.network.pirate.domain.enity.TrialPremiumResult
 import cash.p.terminal.network.pirate.domain.repository.PiratePlaceRepository
-import cash.p.terminal.premium.data.database.PremiumDatabaseProvider
+import cash.p.terminal.premium.data.database.PremiumDatabaseRouter
+import cash.p.terminal.premium.data.database.sessionDatabase
 import cash.p.terminal.premium.data.model.DemoPremiumUser
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.eligibleForPremium
@@ -10,12 +11,12 @@ import co.touchlab.kermit.Logger
 
 internal class CheckTrialPremiumUseCase(
     private val piratePlaceRepository: PiratePlaceRepository,
-    private val premiumDatabaseProvider: PremiumDatabaseProvider,
+    private val premiumDatabaseRouter: PremiumDatabaseRouter,
     private val getBnbAddressUseCase: GetBnbAddressUseCaseImpl,
     private val isDebug: Boolean
 ) {
     private val logger = Logger.withTag("CheckTrialPremiumUseCase")
-    private val demoPremiumUserDao get() = premiumDatabaseProvider.database.demoPremiumUserDao()
+    private val demoPremiumUserDao get() = premiumDatabaseRouter.sessionDatabase.demoPremiumUserDao()
 
     suspend fun checkTrialPremiumStatus(account: Account): TrialPremiumResult {
         if (!account.eligibleForPremium()) {

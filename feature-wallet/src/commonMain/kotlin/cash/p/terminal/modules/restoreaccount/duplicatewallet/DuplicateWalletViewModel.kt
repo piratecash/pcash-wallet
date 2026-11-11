@@ -274,6 +274,7 @@ class DuplicateWalletViewModel(
     }
 
     private suspend fun writeCopiedAccount(newAccount: Account, wallets: List<EnabledWallet>) {
+        restoreSettingsManager.prepareForNewAccount(newAccount)
         wallets.forEach {
             val tokenQuery = TokenQuery.fromId(it.tokenQueryId) ?: return@forEach
             val settings = restoreSettingsManager.settings(accountToCopy, tokenQuery.blockchainType)

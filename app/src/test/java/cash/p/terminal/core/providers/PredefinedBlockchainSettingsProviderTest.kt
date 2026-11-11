@@ -3,6 +3,7 @@ package cash.p.terminal.core.providers
 import cash.p.terminal.core.managers.AndroidKitPlatformContexts
 import android.content.Context
 import cash.p.terminal.core.adapters.zcash.session.ZcashDatabaseFiles
+import cash.p.terminal.core.managers.IdentityKitStorageNaming
 import cash.p.terminal.core.managers.RestoreSettingsManager
 import cash.p.terminal.core.managers.ZcashBirthdayProvider
 import cash.p.terminal.core.usecase.ValidateMoneroHeightUseCase
@@ -38,7 +39,8 @@ class PredefinedBlockchainSettingsProviderTest {
     fun setUp() {
         noBackupDir = Files.createTempDirectory("zcash-settings").toFile()
         databaseFiles = ZcashDatabaseFiles(
-            AndroidKitPlatformContexts(mockk<Context> { every { noBackupFilesDir } returns noBackupDir })
+            AndroidKitPlatformContexts(mockk<Context> { every { noBackupFilesDir } returns noBackupDir }),
+            IdentityKitStorageNaming,
         )
     }
 

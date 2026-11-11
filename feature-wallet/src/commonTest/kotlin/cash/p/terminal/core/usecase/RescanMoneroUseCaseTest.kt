@@ -8,6 +8,8 @@ import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.core.managers.RestoreSettings
 import cash.p.terminal.core.managers.RestoreSettingsManager
 import cash.p.terminal.core.storage.MoneroFileDao
+import cash.p.terminal.core.storage.SingleDatabaseStorageRouter
+import cash.p.terminal.core.storage.StaticAppDatabaseProvider
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
@@ -53,7 +55,7 @@ class RescanMoneroUseCaseTest {
     private val useCase = RescanMoneroUseCase(
         moneroKitManager = moneroKitManager,
         removeMoneroWalletFilesUseCase = removeMoneroWalletFilesUseCase,
-        moneroFileDao = moneroFileDao,
+        router = SingleDatabaseStorageRouter(StaticAppDatabaseProvider(mockk { every { moneroFileDao() } returns moneroFileDao })),
         restoreSettingsManager = restoreSettingsManager,
         offlineModeManager = offlineModeManager,
         dispatcherProvider = dispatcherProvider,

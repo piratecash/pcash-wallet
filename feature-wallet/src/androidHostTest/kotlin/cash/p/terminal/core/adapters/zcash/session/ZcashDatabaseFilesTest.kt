@@ -2,6 +2,7 @@ package cash.p.terminal.core.adapters.zcash.session
 
 import cash.p.terminal.core.managers.AndroidKitPlatformContexts
 import android.content.Context
+import cash.p.terminal.core.managers.IdentityKitStorageNaming
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.After
@@ -25,7 +26,8 @@ class ZcashDatabaseFilesTest {
     @Before
     fun setUp() {
         noBackupDir = Files.createTempDirectory("zcash-db").toFile()
-        databaseFiles = ZcashDatabaseFiles(AndroidKitPlatformContexts(mockk<Context> { every { noBackupFilesDir } returns noBackupDir }))
+        databaseFiles = ZcashDatabaseFiles(AndroidKitPlatformContexts(mockk<Context> { every { noBackupFilesDir } returns noBackupDir }),
+            IdentityKitStorageNaming,)
         databaseFiles.dataDir.mkdirs()
     }
 

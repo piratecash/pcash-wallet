@@ -5,7 +5,7 @@ import cash.p.terminal.entities.BtcRestoreMode
 import cash.p.terminal.entities.TransactionDataSortMode
 import io.horizontalsystems.core.entities.BlockchainType
 
-class BlockchainSettingsStorage(private val databaseProvider: AppDatabaseProvider) {
+class BlockchainSettingsStorage(private val router: StorageRouter) {
 
     companion object {
         const val keyBtcRestore: String = "btc-restore"
@@ -18,7 +18,7 @@ class BlockchainSettingsStorage(private val databaseProvider: AppDatabaseProvide
     }
 
     private val dao: BlockchainSettingDao
-        get() = databaseProvider.database.blockchainSettingDao()
+        get() = router.shared.blockchainSettingDao()
 
     fun btcRestoreMode(blockchainType: BlockchainType): BtcRestoreMode? {
         return dao.getBlockchainSetting(blockchainType.uid, keyBtcRestore)?.let { storedSetting ->

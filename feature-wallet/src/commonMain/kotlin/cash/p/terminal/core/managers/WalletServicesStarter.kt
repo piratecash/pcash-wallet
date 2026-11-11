@@ -5,6 +5,7 @@ import cash.p.terminal.modules.contacts.ContactsRepository
 import cash.p.terminal.wallet.IAdapterManager
 import co.touchlab.kermit.Logger
 import io.horizontalsystems.core.DispatcherProvider
+import io.horizontalsystems.core.logger.AppLog
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -34,8 +35,9 @@ class WalletServicesStarter(
 
     fun startAdapters() = adapterManager.startAdapterManager()
 
-    /** Returns at once: both jobs run on the application scope, the cleanup after a delay. */
+    /** Returns at once: the jobs run on the application scope, the account cleanup after a delay. */
     fun scheduleAccountDataCleanup() {
+        AppLog.cleanupOldLogs()
         dispatcherProvider.applicationScope.launch { locallyCreatedTransactionRepository.trimAllAccounts() }
         dispatcherProvider.applicationScope.launch { clearDeletedAccounts() }
     }

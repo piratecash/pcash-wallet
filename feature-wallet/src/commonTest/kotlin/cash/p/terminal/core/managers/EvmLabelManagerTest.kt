@@ -1,5 +1,6 @@
 package cash.p.terminal.core.managers
 
+import cash.p.terminal.core.storage.SingleDatabaseStorageRouter
 import cash.p.terminal.core.storage.StaticAppDatabaseProvider
 import cash.p.terminal.core.storage.EvmMethodLabelDao
 import cash.p.terminal.core.storage.SyncerStateDao
@@ -40,12 +41,12 @@ class EvmLabelManagerTest {
         manager = EvmLabelManager(
             api = api,
             addressLabelManager = addressLabelManager,
-            databaseProvider = StaticAppDatabaseProvider(
+            router = SingleDatabaseStorageRouter(StaticAppDatabaseProvider(
                 mockk {
                     every { evmMethodLabelDao() } returns methodLabelDao
                     every { syncerStateDao() } returns syncerStateStorage
                 }
-            ),
+            )),
         )
     }
 

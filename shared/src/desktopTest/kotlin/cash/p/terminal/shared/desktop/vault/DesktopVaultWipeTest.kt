@@ -76,7 +76,7 @@ class DesktopVaultWipeTest {
         val vault = vault(settingsStore, favoritesManager, currencyManager, chartIndicatorManager, languageManager)
 
         vault.create(password())
-        session(vault).database.syncerStateDao().insert(SyncerState("height", "42"))
+        session(vault).shared.syncerStateDao().insert(SyncerState("height", "42"))
         fixture.files.contactsFile.apply { parentFile?.mkdirs() }.writeText("sealed")
         settingsStore.launchPage = "market"
         currencyManager.setBaseCurrencyCode("EUR")
@@ -88,7 +88,7 @@ class DesktopVaultWipeTest {
 
         assertEquals(DesktopVaultState.NoVault, vault.state.value)
         assertFalse(fixture.files.vaultFile.exists())
-        assertFalse(fixture.files.databaseFile.exists())
+        assertFalse(fixture.files.vaultDirectory.exists())
         assertFalse(fixture.files.contactsFile.exists())
         assertEquals(null, settingsStore.launchPage)
         assertEquals(emptySet(), favoritesManager.favoriteCoinUids.first())
@@ -288,6 +288,8 @@ class DesktopVaultWipeTest {
         ),
         dispatcherProvider = dispatcherProvider,
         driverFactory = DefaultSqlCipherDriverFactory(),
+        checkpoints = NoStorageCheckpoints,
+        walletLayer = lazyOf(fixture.walletLayer),
     )
 
     private fun session(vault: DesktopVault): DesktopStorageSession =

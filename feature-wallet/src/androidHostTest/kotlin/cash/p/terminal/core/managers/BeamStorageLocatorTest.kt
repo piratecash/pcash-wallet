@@ -2,6 +2,7 @@ package cash.p.terminal.core.managers
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import cash.p.terminal.core.managers.IdentityKitStorageNaming
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -14,7 +15,7 @@ import kotlin.test.assertFailsWith
 @Config(manifest = Config.NONE, sdk = [27])
 class BeamStorageLocatorTest {
     private val context = ApplicationProvider.getApplicationContext<Context>()
-    private val locator = BeamStorageLocator(AndroidKitPlatformContexts(context))
+    private val locator = BeamStorageLocator(AndroidKitPlatformContexts(context), IdentityKitStorageNaming)
 
     @Test
     fun storagePath_untrustedAccountIds_areStableDistinctAndContained() {
@@ -22,7 +23,7 @@ class BeamStorageLocatorTest {
         val paths = accounts.map { locator.storagePath(it) }
         assertEquals(accounts.size, paths.toSet().size)
         accounts.zip(paths).forEach { (account, directory) ->
-            assertEquals(directory, BeamStorageLocator(AndroidKitPlatformContexts(context)).storagePath(account))
+            assertEquals(directory, BeamStorageLocator(AndroidKitPlatformContexts(context), IdentityKitStorageNaming).storagePath(account))
             assertEquals("mainnet", directory.name)
             assertTrue(directory.parentFile?.name.orEmpty().matches(Regex("[a-f0-9]{64}")))
             val beamRoot = context.noBackupFilesDir.resolve("beam").canonicalFile

@@ -21,6 +21,10 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.async
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Assert.assertNull
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -207,6 +211,24 @@ class TransactionAdapterManagerTest {
         emitAdapters(mapOf(wallet(healthySource) to healthyAdapter))
 
         assertSame(healthyAdapter, transactionAdapterManager.getAdapter(healthySource))
+    }
+
+    @Test
+    fun awaitReleased_adapterOfAnotherAccount_waitsUntilAnEmptySetUnlinksIt() = testScope.runTest {
+        val source = transactionSource()
+        val wallet = wallet(source)
+        emitAdapters(mapOf(wallet to walletTransactionsAdapter()))
+        advanceUntilIdle()
+
+        val released = async { transactionAdapterManager.awaitReleased(emptySet()) }
+        advanceUntilIdle()
+        assertFalse(released.isCompleted)
+
+        emitAdapters(emptyMap())
+        advanceUntilIdle()
+
+        assertTrue(released.isCompleted)
+        assertNull(transactionAdapterManager.getAdapter(source))
     }
 
     private fun emitAdapters(adapters: Map<Wallet, IAdapter>) {

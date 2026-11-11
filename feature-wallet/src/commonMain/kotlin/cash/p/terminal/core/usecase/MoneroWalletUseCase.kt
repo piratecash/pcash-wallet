@@ -16,17 +16,18 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 
 class MoneroWalletUseCase(
-    private val moneroWalletService: MoneroWalletService,
+    private val moneroWalletServiceProvider: MoneroWalletServiceProvider,
     private val generateMoneroWalletUseCase: GenerateMoneroWalletUseCase,
     private val moneroWalletStorage: MoneroWalletStorage,
 ) {
     private val logger = Logger.withTag("MoneroWalletUseCase")
+    private val moneroWalletService: MoneroWalletService get() = moneroWalletServiceProvider.service
 
     suspend fun createNew(): AccountType? = withContext(Dispatchers.IO) {
         val walletInnerName = generateMoneroWalletUseCase() ?: return@withContext null
 
         // check if the wallet we want to create already exists
-        val walletFolder: File = moneroWalletStorage.walletsRoot()
+        val walletFolder: File = moneroWalletStorage.walletsRootOrNull() ?: return@withContext null
         if (!walletFolder.isDirectory()) {
             logger.e { "Wallet dir " + walletFolder.absolutePath + "is not a directory" }
             return@withContext null
@@ -82,7 +83,7 @@ class MoneroWalletUseCase(
         withContext(Dispatchers.IO) {
             val newWalletInnerName = generateMoneroWalletUseCase() ?: return@withContext null
 
-            val walletFolder: File = moneroWalletStorage.walletsRoot()
+            val walletFolder: File = moneroWalletStorage.walletsRootOrNull() ?: return@withContext null
             if (!walletFolder.isDirectory()) {
                 logger.e { "Wallet dir " + walletFolder.absolutePath + "is not a directory" }
                 return@withContext null
@@ -154,7 +155,7 @@ class MoneroWalletUseCase(
                 walletInnerNameExisting ?: generateMoneroWalletUseCase() ?: return@withContext null
 
             val crazyPass = crazyPassExisting ?: moneroWalletStorage.newWalletPassword()
-            val walletFolder: File = moneroWalletStorage.walletsRoot()
+            val walletFolder: File = moneroWalletStorage.walletsRootOrNull() ?: return@withContext null
             val newWalletFile = File(walletFolder, walletInnerName)
             closeOpenedWallet()
             val newWallet = WalletManager.getInstance()

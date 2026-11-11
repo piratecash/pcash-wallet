@@ -1,6 +1,7 @@
 package cash.p.terminal.modules.walletconnect
 
-import cash.p.terminal.core.storage.AppDatabase
+import cash.p.terminal.core.storage.StorageRouter
+import cash.p.terminal.core.storage.liveAccountIds
 import cash.p.terminal.core.storage.liveAccountIds
 import cash.p.terminal.core.utils.Utils
 import com.reown.walletkit.client.Wallet
@@ -19,7 +20,7 @@ import kotlinx.coroutines.reactive.asFlow
 class WCSessionManager(
     private val accountManager: IAccountManager,
     private val storage: WCSessionStorage,
-    private val appDatabase: AppDatabase,
+    private val router: StorageRouter,
     private val dispatcherProvider: DispatcherProvider,
 ) {
 
@@ -112,7 +113,7 @@ class WCSessionManager(
         currentSessions: List<Wallet.Model.Session>,
         dbSessions: List<WalletConnectV2Session>,
     ) {
-        val liveIds = appDatabase.accountsDao().liveAccountIds().toSet()
+        val liveIds = router.liveAccountIds().toSet()
         val liveTopics = currentSessions.map { it.topic }.toSet()
         dbSessions
             .filter { it.accountId !in liveIds && it.topic in liveTopics }

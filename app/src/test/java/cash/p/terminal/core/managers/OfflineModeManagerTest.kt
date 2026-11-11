@@ -51,6 +51,36 @@ class OfflineModeManagerTest {
     )
 
     @Test
+    fun retainAccounts_accountOutOfView_dropsItsFlagAndOverridesAndKeepsTheRows() = runTest(dispatcher) {
+        val manager = createManager(listOf(offlineRow(offline = true)))
+        manager.beginTransition(key, TOKEN)
+
+        manager.retainAccounts(setOf(OTHER_ACCOUNT_ID))
+
+        assertFalse(manager.isNetworkPaused(key))
+        coVerify(exactly = 0) { storage.deleteByAccount(any()) }
+    }
+
+    @Test
+    fun retainAccounts_visibleAccount_keepsItsFlag() = runTest(dispatcher) {
+        val manager = createManager(listOf(offlineRow(offline = true)))
+
+        manager.retainAccounts(setOf(ACCOUNT_ID))
+
+        assertTrue(manager.isNetworkPaused(key))
+    }
+
+    @Test
+    fun reload_rowsOfAnotherSession_replaceTheOnesReadAtConstruction() = runTest(dispatcher) {
+        val manager = createManager()
+        every { storage.getAll() } returns listOf(offlineRow(offline = true))
+
+        manager.reload()
+
+        assertTrue(manager.isNetworkPaused(key))
+    }
+
+    @Test
     fun isNetworkPaused_storedOfflineRow_readAtConstruction() {
         val manager = createManager(listOf(offlineRow(offline = true)))
 

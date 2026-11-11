@@ -6,13 +6,13 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.navigation3.runtime.NavBackStack
-import androidx.navigation3.runtime.result.ResultEventBus
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertSame
@@ -84,6 +84,34 @@ class ResultLauncherTest : ComposeHostTest() {
         assertEquals(listOf("picked" to "arg"), caller.received)
         assertEquals(listOf(root, caller, sheet), backStack.toList())
         assertEquals(1, caller.compositions)
+    }
+
+    @Test
+    fun setResult_callerLeavesCompositionInSameFrame_deliversOnReturn() = runComposeUiTest {
+        var callerShown by mutableStateOf(true)
+        var sendResult by mutableStateOf(false)
+        var launcher: ResultLauncher<Unit>? = null
+        val received = mutableListOf<String>()
+        val pin = PinPage()
+        setContent {
+            // In the composition body, not an effect: the send must precede the disposal this frame applies.
+            if (sendResult) navigation.setResult(pin, "ok")
+            val holder = rememberSaveableStateHolder()
+            if (callerShown) {
+                holder.SaveableStateProvider("caller") {
+                    launcher = navigation.rememberResultLauncher<String> { received += it }
+                }
+            }
+        }
+        act { checkNotNull(launcher).slideFromRight(pin) }
+
+        act {
+            sendResult = true
+            callerShown = false
+        }
+        act { callerShown = true }
+
+        assertEquals(listOf("ok"), received)
     }
 
     @Test
@@ -281,19 +309,17 @@ class ResultLauncherTest : ComposeHostTest() {
     }
 
     @Test
-    fun removeLastUntil_coveredCallerRemoved_closesItsResultChannels() = runComposeUiTest {
+    fun removeLastUntil_coveredCallerRemoved_dropsItsPendingAnswer() = runComposeUiTest {
         show()
         val pin = PinPage()
         act { caller.launcher.slideFromRight(pin, "arg") }
-        act {
-            navigation.setResult(pin, "ok")
-            navigation.navigateUp()
-        }
-        act { navigation.slideFromRight(ConfirmPage()) }
+        act { navigation.setResult(pin, "ok") }
+        assertEquals(1, navigation.pendingAnswers.size)
 
         act { navigation.removeLastUntil(CallerPage::class, inclusive = true) }
 
-        assertTrue(navigation.resultBus.openResultKeys().isEmpty())
+        assertTrue(navigation.pendingAnswers.isEmpty())
+        assertTrue(caller.received.isEmpty())
     }
 
     @Test
@@ -379,10 +405,6 @@ class ResultLauncherTest : ComposeHostTest() {
         waitForIdle()
     }
 }
-
-// The bus does not expose its channels.
-private fun ResultEventBus.openResultKeys(): Set<Any?> =
-    (javaClass.getDeclaredField("channelMap").apply { isAccessible = true }.get(this) as Map<*, *>).keys
 
 /** Shows the last result in state remembered by its current composition. */
 private class CallerPage : HSPage() {

@@ -2,6 +2,7 @@ package cash.p.terminal.core.managers
 
 import android.content.Context
 import io.horizontalsystems.bitcoincore.core.IConnectionManager
+import io.horizontalsystems.databasenaming.DatabaseNameResolver
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -31,12 +32,12 @@ class BitcoinKitDatabaseManagerTest {
     @Test
     fun prepare_concurrentCalls_migratesOnceAndReturnsEncryptedEnvironment() = runTest {
         coEvery { keyProvider.awaitKey(ACCOUNT_ID) } returns databaseKey
-        coEvery { operations.migrate(any(), any(), any()) } returns Unit
+        coEvery { operations.migrate(any(), any(), any(), any()) } returns Unit
         val manager = createManager()
 
         val environments = List(4) { async { manager.prepare(ACCOUNT_ID) } }.awaitAll()
 
-        coVerify(exactly = 1) { operations.migrate(DATA_DIR, ACCOUNT_ID, databaseKey) }
+        coVerify(exactly = 1) { operations.migrate(DATA_DIR, ACCOUNT_ID, databaseKey, DatabaseNameResolver.Identity) }
         environments.forEach { environment ->
             assertEquals(DATA_DIR, environment.dataDir)
             assertEquals(MWEB_DATA_DIR, environment.mwebDataDir)
@@ -48,7 +49,7 @@ class BitcoinKitDatabaseManagerTest {
     @Test
     fun prepare_migrationFails_retriesWithExistingKey() = runTest {
         coEvery { keyProvider.awaitKey(ACCOUNT_ID) } returns databaseKey
-        coEvery { operations.migrate(any(), any(), any()) } throws
+        coEvery { operations.migrate(any(), any(), any(), any()) } throws
             IllegalStateException("migration failed") andThen Unit
         val manager = createManager()
 
@@ -56,40 +57,66 @@ class BitcoinKitDatabaseManagerTest {
         manager.prepare(ACCOUNT_ID)
 
         coVerify(exactly = 2) { keyProvider.awaitKey(ACCOUNT_ID) }
-        coVerify(exactly = 2) { operations.migrate(DATA_DIR, ACCOUNT_ID, databaseKey) }
+        coVerify(exactly = 2) { operations.migrate(DATA_DIR, ACCOUNT_ID, databaseKey, DatabaseNameResolver.Identity) }
         verify(exactly = 0) { keyProvider.remove(any()) }
     }
 
     @Test
     fun prepare_migrationCancelled_retainsKeyAndCanRetry() = runTest {
         coEvery { keyProvider.awaitKey(ACCOUNT_ID) } returns databaseKey
-        coEvery { operations.migrate(any(), any(), any()) } throws CancellationException() andThen Unit
+        coEvery { operations.migrate(any(), any(), any(), any()) } throws CancellationException() andThen Unit
         val manager = createManager()
 
         assertFailsWith<CancellationException> { manager.prepare(ACCOUNT_ID) }
         manager.prepare(ACCOUNT_ID)
 
-        coVerify(exactly = 2) { operations.migrate(DATA_DIR, ACCOUNT_ID, databaseKey) }
+        coVerify(exactly = 2) { operations.migrate(DATA_DIR, ACCOUNT_ID, databaseKey, DatabaseNameResolver.Identity) }
         verify(exactly = 0) { keyProvider.remove(any()) }
     }
 
     @Test
+    fun retainAccounts_accountOutOfView_migratesAgainWhenItReturns() = runTest {
+        coEvery { keyProvider.awaitKey(ACCOUNT_ID) } returns databaseKey
+        coEvery { operations.migrate(any(), any(), any(), any()) } returns Unit
+        val manager = createManager()
+        manager.prepare(ACCOUNT_ID)
+
+        manager.retainAccounts(emptySet())
+        manager.prepare(ACCOUNT_ID)
+
+        coVerify(exactly = 2) { operations.migrate(DATA_DIR, ACCOUNT_ID, databaseKey, any()) }
+    }
+
+    @Test
+    fun retainAccounts_visibleAccount_doesNotMigrateAgain() = runTest {
+        coEvery { keyProvider.awaitKey(ACCOUNT_ID) } returns databaseKey
+        coEvery { operations.migrate(any(), any(), any(), any()) } returns Unit
+        val manager = createManager()
+        manager.prepare(ACCOUNT_ID)
+
+        manager.retainAccounts(setOf(ACCOUNT_ID))
+        manager.prepare(ACCOUNT_ID)
+
+        coVerify(exactly = 1) { operations.migrate(DATA_DIR, ACCOUNT_ID, databaseKey, any()) }
+    }
+
+    @Test
     fun clear_success_clearsDatabasesBeforeRemovingKey() = runTest {
-        every { operations.clear(any(), any(), any()) } returns Unit
+        every { operations.clear(any(), any(), any(), any()) } returns Unit
         every { keyProvider.remove(any()) } returns Unit
         val manager = createManager()
 
         manager.clear(ACCOUNT_ID)
 
         verifyOrder {
-            operations.clear(DATA_DIR, MWEB_DATA_DIR, ACCOUNT_ID)
+            operations.clear(DATA_DIR, MWEB_DATA_DIR, ACCOUNT_ID, DatabaseNameResolver.Identity)
             keyProvider.remove(ACCOUNT_ID)
         }
     }
 
     @Test
     fun clear_databaseClearFails_retainsKey() = runTest {
-        every { operations.clear(any(), any(), any()) } throws IllegalStateException("clear failed")
+        every { operations.clear(any(), any(), any(), any()) } throws IllegalStateException("clear failed")
         val manager = createManager()
 
         assertFailsWith<IllegalStateException> { manager.clear(ACCOUNT_ID) }
@@ -99,17 +126,18 @@ class BitcoinKitDatabaseManagerTest {
 
     @Test
     fun clearMweb_anyAccount_keepsDatabaseKey() = runTest {
-        every { operations.clearMweb(any(), any(), any()) } returns Unit
+        every { operations.clearMweb(any(), any(), any(), any()) } returns Unit
         val manager = createManager()
 
         manager.clearMweb(ACCOUNT_ID)
 
-        verify(exactly = 1) { operations.clearMweb(DATA_DIR, MWEB_DATA_DIR, ACCOUNT_ID) }
+        verify(exactly = 1) { operations.clearMweb(DATA_DIR, MWEB_DATA_DIR, ACCOUNT_ID, DatabaseNameResolver.Identity) }
         verify(exactly = 0) { keyProvider.remove(any()) }
     }
 
     private fun createManager() = BitcoinKitDatabaseManager(
         AndroidKitPlatformContexts(context),
+        IdentityKitStorageNaming,
         keyProvider,
         operations,
         connectionManager,

@@ -2,9 +2,11 @@ package cash.p.terminal.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.navigation3.runtime.result.ResultEffect
 
 internal class Launch(val callee: HSPage, val arg: Any?)
 
@@ -61,11 +63,15 @@ inline fun <reified R : Any, A> HSNavigation.rememberResultLauncher(
 internal fun <A> HSNavigation.rememberAnyResultLauncher(onResult: (Any, Any?) -> Unit): ResultLauncher<A> {
     val key = rememberSaveable { randomId() }
     val owner = LocalHSPage.current
-    ResultEffect<Answer>(key, resultBus) { answer ->
+    val currentOnResult by rememberUpdatedState(onResult)
+    val answer = pendingAnswers[key]
+    LaunchedEffect(answer) {
+        if (answer == null) return@LaunchedEffect
+        pendingAnswers.remove(key)
         // Ignored: a launch dropped with its caller, or one a later launch of this launcher replaced.
-        val launch = launches[key]?.takeIf { it.callee === answer.callee } ?: return@ResultEffect
+        val launch = launches[key]?.takeIf { it.callee === answer.callee } ?: return@LaunchedEffect
         launches.remove(key)
-        onResult(answer.result, launch.arg)
+        currentOnResult(answer.result, launch.arg)
     }
     DisposableEffect(key, owner) {
         if (owner != null) launcherOwners[key] = owner

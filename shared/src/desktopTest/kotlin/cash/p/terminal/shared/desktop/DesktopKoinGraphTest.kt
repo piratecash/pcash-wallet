@@ -57,6 +57,7 @@ import cash.p.terminal.wallet.policy.PlatformChainSupport
 import cash.p.terminal.wallet.policy.PlatformOperationSupport
 import cash.p.terminal.wallet.useCases.WalletUseCase
 import io.horizontalsystems.core.IAppNumberFormatter
+import io.horizontalsystems.core.logger.LogScope
 import okio.FileSystem
 import okio.Path
 import org.koin.core.error.InstanceCreationException
@@ -128,7 +129,6 @@ import cash.p.terminal.modules.offline.OfflineModeToggleViewModel
 import cash.p.terminal.modules.settings.addresschecker.UnifiedAddressCheckerViewModel
 import cash.p.terminal.modules.settings.addresschecker.ui.AddressCheckTokenSelectorViewModel
 import cash.p.terminal.modules.syncerror.SyncErrorService
-import cash.p.terminal.core.storage.EnabledWalletsCacheDao
 import cash.p.terminal.modules.balance.DefaultBalanceService
 import cash.p.terminal.modules.balance.token.TokenBalanceService
 import cash.p.terminal.modules.balance.token.TokenBalanceViewModel
@@ -307,7 +307,9 @@ import cash.p.terminal.modules.restoreaccount.restoreprivatekey.RestorePrivateKe
 import cash.p.terminal.modules.settings.terms.TermsViewModel
 import cash.p.terminal.modules.unlinkaccount.UnlinkAccountViewModel
 import cash.p.terminal.modules.zcashconfigure.ZcashConfigureViewModel
+import cash.p.terminal.modules.settings.advancedsecurity.terms.HiddenWalletTermsViewModel
 import cash.p.terminal.shared.desktop.lock.ChangePasswordViewModel
+import cash.p.terminal.shared.desktop.lock.DuressPasswordViewModel
 import cash.p.terminal.shared.desktop.lock.ConfirmPasswordViewModel
 import cash.p.terminal.shared.desktop.lock.CreatePasswordViewModel
 import cash.p.terminal.shared.desktop.lock.ForgotPasswordViewModel
@@ -390,6 +392,8 @@ class DesktopKoinGraphTest {
                 notReachedOnDesktop + absentOnDesktop,
             injections = injectedParameters(
                 definition<PassphraseTermsViewModel>(Array<String>::class),
+                definition<HiddenWalletTermsViewModel>(Array<String>::class),
+                definition<DuressPasswordViewModel>(List::class),
                 definition<SafetyRulesViewModel>(SafetyRulesModule.SafetyRulesMode::class, List::class),
                 definition<ManageAccountsViewModel>(ManageAccountsModule.Mode::class),
                 definition<WatchAddressViewModel>(AddressParserChain::class),
@@ -462,6 +466,7 @@ class DesktopKoinGraphTest {
             val koin = GlobalContext.get()
             lookedUpAfterTheFirstUnlock.forEach { type -> koin.get<Any>(type) }
             assertIs<BeamAccountDeletionPreflight>(koin.get<AccountDeletionPreflight>())
+            assertIs<DesktopLogScope>(koin.get<LogScope>())
             assertIs<DesktopBeamKitDatabaseKeyProvider>(koin.get<BeamKitDatabaseKeyProvider>())
         } finally {
             DesktopTestGraph.stop()
@@ -831,7 +836,6 @@ class DesktopKoinGraphTest {
             TokenBalanceService::class,
             TimerService::class,
             TokenTransactionsService::class,
-            EnabledWalletsCacheDao::class,
             // Built inside the EnsResolver definition.
             RpcSource::class,
         )

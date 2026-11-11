@@ -57,6 +57,7 @@ import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.favorites.MarketFavoritesManager
 import cash.p.terminal.wallet.balance.BalanceItem
+import cash.p.terminal.wallet.balance.BalanceWarning
 import cash.p.terminal.wallet.balance.DeemedValue
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
 import cash.p.terminal.wallet.managers.TransactionDisplayLevel
@@ -939,6 +940,30 @@ class TokenBalanceViewModelTest : KoinTest {
         advanceUntilIdle()
 
         assertEquals(true, viewModel.uiState.networkFeeWarning != null)
+    }
+
+    @Test
+    fun networkFeeWarning_tronControlledByOthers_hidesBanner() = runTest(dispatcher) {
+        assertFeeBannerShown(BalanceWarning.TronControlledByOthersWarning, expected = false)
+    }
+
+    @Test
+    fun networkFeeWarning_tronInactiveAccount_keepsBanner() = runTest(dispatcher) {
+        assertFeeBannerShown(BalanceWarning.TronInactiveAccountWarning, expected = true)
+    }
+
+    private fun TestScope.assertFeeBannerShown(warning: BalanceWarning, expected: Boolean) {
+        val bep20Wallet = createBep20Wallet()
+        testWallet = bep20Wallet
+        setupFeeWarningMocks()
+
+        val viewModel = createViewModel()
+        val balanceItem = createBalanceItem(wallet = bep20Wallet).copy(warning = warning)
+        every { balanceService.balanceItem } returns balanceItem
+        balanceItemFlow.value = balanceItem
+        advanceUntilIdle()
+
+        assertEquals(expected, viewModel.uiState.networkFeeWarning != null)
     }
 
     @Test

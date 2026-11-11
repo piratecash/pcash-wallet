@@ -2,6 +2,9 @@ package cash.p.terminal.core.managers
 
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.storage.AppDatabaseProvider
+import cash.p.terminal.core.storage.LevelDaos
+import cash.p.terminal.core.storage.SingleDatabaseStorageRouter
+import cash.p.terminal.core.storage.StorageRouter
 import cash.p.terminal.core.storage.StackingCacheDao
 import cash.p.terminal.entities.StackingCache
 import cash.p.terminal.network.pirate.domain.enity.InvestmentData
@@ -17,6 +20,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestScope
@@ -67,7 +71,7 @@ class StackingManagerTest {
         every { wallet.getUniqueKey() } returns WALLET_KEY
         coEvery { dao.get(any(), any()) } returns null
 
-        manager = StackingManager(repository, databaseProvider, dispatcherProvider)
+        manager = StackingManager(repository, SingleDatabaseStorageRouter(databaseProvider), dispatcherProvider)
     }
 
     @After
@@ -384,6 +388,51 @@ class StackingManagerTest {
 
         coVerify(exactly = 0) { repository.getInvestmentData(any(), any(), any()) }
         assertEquals(BigDecimal.ZERO, manager.unpaidFor(unsupported))
+    }
+
+    @Test
+    fun apiResponseAfterNarrowing_savesIntoTheStoreOfTheRequest() = testScope.runTest {
+        val narrowing = NarrowingRouter()
+        val response = CompletableDeferred<InvestmentData>()
+        coEvery { repository.getInvestmentData(COIN, ADDRESS, any()) } coAnswers { response.await() }
+        manager = StackingManager(repository, narrowing.router, dispatcherProvider)
+
+        manager.loadInvestmentData(wallet, ADDRESS, BALANCE)
+        narrowing.level = 1
+        response.complete(investmentData("42.5", "100", NEXT_ACCRUAL, NEXT_PAYOUT))
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) { narrowing.upperDao.save(any()) }
+        coVerify(exactly = 0) { narrowing.lowerDao.save(any()) }
+    }
+
+    @Test
+    fun apiResponseAfterNarrowing_storeOfTheRequestClosed_keepsTheValueAndWritesNowhere() = testScope.runTest {
+        val narrowing = NarrowingRouter()
+        val response = CompletableDeferred<InvestmentData>()
+        coEvery { repository.getInvestmentData(COIN, ADDRESS, any()) } coAnswers { response.await() }
+        coEvery { narrowing.upperDao.save(any()) } throws IllegalStateException("closed")
+        manager = StackingManager(repository, narrowing.router, dispatcherProvider)
+
+        manager.loadInvestmentData(wallet, ADDRESS, BALANCE)
+        narrowing.level = 1
+        response.complete(investmentData("42.5", "100", NEXT_ACCRUAL, NEXT_PAYOUT))
+        advanceUntilIdle()
+
+        assertEquals(UNPAID, manager.unpaidFor(wallet))
+        coVerify(exactly = 0) { narrowing.lowerDao.save(any()) }
+    }
+
+    /** A router whose session root moves from the upper level to the lower one when [level] changes. */
+    private class NarrowingRouter {
+        var level = 0
+        val upperDao = mockk<StackingCacheDao>(relaxed = true).also { coEvery { it.get(any(), any()) } returns null }
+        val lowerDao = mockk<StackingCacheDao>(relaxed = true).also { coEvery { it.get(any(), any()) } returns null }
+        val router = mockk<StorageRouter> {
+            every { rootLevel } answers { level }
+            every { level(0) } returns mockk<LevelDaos> { every { stackingCacheDao() } returns upperDao }
+            every { level(1) } returns mockk<LevelDaos> { every { stackingCacheDao() } returns lowerDao }
+        }
     }
 
     private fun givenCache(

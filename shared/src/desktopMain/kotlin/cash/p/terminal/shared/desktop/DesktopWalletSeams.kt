@@ -2,6 +2,7 @@ package cash.p.terminal.shared.desktop
 
 import androidx.compose.runtime.Composable
 import cash.p.terminal.core.NonFatalReporter
+import cash.p.terminal.core.StorageLockedException
 import cash.p.terminal.core.UnsupportedAccountException
 import cash.p.terminal.core.WalletOnboardingStorage
 import cash.p.terminal.core.adapters.BitcoinDeviceSigner
@@ -10,6 +11,7 @@ import cash.p.terminal.core.adapters.zcash.ZcashHardwareSigners
 import cash.p.terminal.core.adapters.zcash.ZcashTransactionSigner
 import cash.p.terminal.core.managers.BeamResetMarker
 import cash.p.terminal.core.managers.EvmHardwareSigners
+import cash.p.terminal.core.managers.KitStorageNaming
 import cash.p.terminal.core.managers.MoneroHardwareGateway
 import cash.p.terminal.core.managers.PlatformAccountDataCleaner
 import cash.p.terminal.core.managers.SolanaHardwareSigners
@@ -17,9 +19,10 @@ import cash.p.terminal.core.managers.StellarHardwareSigners
 import cash.p.terminal.core.managers.TonHardwareSigners
 import cash.p.terminal.core.managers.TronHardwareSigners
 import cash.p.terminal.core.providers.AddressResolutionConfig
-import cash.p.terminal.core.storage.AppDatabaseProvider
+import cash.p.terminal.core.storage.desktop.LevelSetting
+import cash.p.terminal.core.storage.desktop.VaultSafeDao
 import cash.p.terminal.core.usecase.MoneroWalletStorage
-import cash.p.terminal.feature.wallet.PinStateInfo
+import cash.p.terminal.core.usecase.walletsRootOrNull
 import cash.p.terminal.modules.balance.BalancePlatformActions
 import cash.p.terminal.modules.contacts.DeleteContactsPinSettings
 import cash.p.terminal.modules.managewallets.HardwareWalletKeyProvisioner
@@ -28,12 +31,12 @@ import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.network.data.EncodedSecrets
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.platform_not_supported_yet
+import cash.p.terminal.shared.desktop.vault.DesktopVault
 import cash.p.terminal.shared.desktop.vault.DesktopVaultFiles
 import cash.p.terminal.tangem.domain.model.AddressBytesWithPublicKey
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountDeletionBlockedException
 import cash.p.terminal.wallet.AccountType
-import cash.p.terminal.wallet.IDeletedWalletChecker
 import cash.p.terminal.wallet.IHardwarePublicKeyStorage
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
@@ -67,7 +70,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.IOException
 import java.security.SecureRandom
 
 /** Desktop has no hardware wallets: no account ever reaches the hardware keys or token policy. */
@@ -222,13 +224,19 @@ class DesktopWalletOnboardingStorage(private val settingsStore: DesktopSettingsS
 }
 
 /**
- * Wallet files live under the kits directory, so the wipe erases them. The file password has no
- * KeyStore to live in: it is random and stored in the account, in the encrypted passphrase column.
+ * Wallet files live under the kits directory, so the wipe erases them. A wallet is created before its account
+ * exists and its name is stored with the account, so the root is the same for all levels and opaque, not the
+ * file names. The file password has no KeyStore to live in: it is random and stored in the account, in the
+ * encrypted passphrase column.
  */
-class DesktopMoneroWalletStorage(private val files: DesktopVaultFiles) : MoneroWalletStorage {
+class DesktopMoneroWalletStorage(
+    private val files: DesktopVaultFiles,
+    private val storageNaming: KitStorageNaming,
+) : MoneroWalletStorage {
     private val secureRandom = SecureRandom()
 
-    override fun walletsRoot(): File = File(files.kitsDirectory, MONERO_DIRECTORY).apply { mkdirs() }
+    override fun walletsRoot(): File =
+        File(files.kitsDirectory, storageNaming.sharedResolver.resolve(MONERO_DIRECTORY)).apply { mkdirs() }
 
     override fun newWalletPassword(): String =
         ByteArray(PASSWORD_BYTES).also(secureRandom::nextBytes).joinToString("") { "%02x".format(it) }
@@ -237,14 +245,6 @@ class DesktopMoneroWalletStorage(private val files: DesktopVaultFiles) : MoneroW
         const val MONERO_DIRECTORY = "monero"
         const val PASSWORD_BYTES = 32
     }
-}
-
-/** Desktop has a password, no PIN and no duress mode. */
-object DesktopPinStateInfo : PinStateInfo {
-    override val isPinSet = false
-    override fun isDuressPinSet() = false
-    override fun getDuressLevel() = 0
-    override fun validateCurrentLevel(pin: String) = false
 }
 
 object DesktopDeleteContactsPinSettings : DeleteContactsPinSettings {
@@ -265,12 +265,6 @@ object DesktopAddressResolutionConfig : AddressResolutionConfig {
     override val blocksDecodedEthereumRpc = "https://api.blocksdecoded.com/v1/ethereum-rpc/mainnet"
 }
 
-/** Reads the open session per call, so a wipe and a new vault never serve the old rows. */
-class DesktopDeletedWalletChecker(private val databases: AppDatabaseProvider) : IDeletedWalletChecker {
-    override suspend fun getDeletedTokenQueryIds(accountId: String): Set<String> =
-        databases.database.userDeletedWalletDao().getDeletedTokenQueryIds(accountId).toSet()
-}
-
 /** A desktop keyboard is never a third-party IME, so there is nothing to warn about. */
 object DesktopThirdKeyboard : IThirdKeyboard {
     override var isThirdPartyKeyboardAllowed: Boolean
@@ -288,21 +282,21 @@ class DesktopRemoveMoneroWalletFilesUseCase(
         getMoneroWalletFilesNameUseCase(account)?.let { invoke(it) } ?: false
 
     override suspend fun invoke(walletInnerName: String): Boolean = withContext(dispatcherProvider.io) {
-        MoneroWalletFiles(File(storage.walletsRoot(), walletInnerName)).delete()
+        storage.walletsRootOrNull()?.let { MoneroWalletFiles(File(it, walletInnerName)).delete() } ?: false
     }
 }
 
-/** Outside the vault database, like the Android marker, and dropped by the wipe with the other settings. */
-class DesktopBeamResetMarker(private val settingsStore: DesktopSettingsStore) : BeamResetMarker {
-    override val isSet: Boolean get() = settingsStore.flag(RESET_PENDING) == true
+/** In the safe of the session's root, which the wipe erases with the rest. */
+class DesktopBeamResetMarker(private val vault: DesktopVault) : BeamResetMarker {
+    override val isSet: Boolean get() = vault.openSession()?.rootSafe?.setting(RESET_PENDING) != null
 
-    override fun set() = write(true)
+    override fun set() = write { putSetting(LevelSetting(RESET_PENDING, true.toString())) }
 
-    override fun clear() = write(false)
+    override fun clear() = write { deleteSetting(RESET_PENDING) }
 
-    private fun write(value: Boolean) = try {
-        settingsStore.setFlag(RESET_PENDING, value)
-    } catch (e: IOException) {
+    private fun write(change: VaultSafeDao.() -> Unit) = try {
+        (vault.openSession() ?: throw StorageLockedException()).rootSafe.change()
+    } catch (e: Exception) {
         throw AccountDeletionBlockedException(e)
     }
 

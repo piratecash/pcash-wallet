@@ -19,7 +19,6 @@ import cash.p.terminal.modules.calculator.pinsettings.CalculatorPinSettingsViewM
 import cash.p.terminal.modules.settings.advancedsecurity.AdvancedSecurityViewModel
 import cash.p.terminal.modules.settings.advancedsecurity.terms.DeleteContactsTermsViewModel
 import cash.p.terminal.modules.settings.advancedsecurity.securereset.SecureResetTermsViewModel
-import cash.p.terminal.modules.settings.advancedsecurity.terms.HiddenWalletTermsViewModel
 import cash.p.terminal.modules.settings.displaytransactions.DisplayTransactionsViewModel
 import cash.p.terminal.modules.settings.guides.GuidesViewModel
 import cash.p.terminal.modules.walletconnect.request.WCRequestEvmViewModel
@@ -31,7 +30,6 @@ import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedSheet
 import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedViewModel
 import io.horizontalsystems.core.DefaultDispatcherProvider
 import io.horizontalsystems.core.DispatcherProvider
-import cash.p.terminal.modules.pin.SetDuressPinIntroViewModel
 import cash.p.terminal.modules.settings.appearance.AppIconViewModel
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
@@ -52,7 +50,6 @@ val viewModelModule = module {
     viewModelOf(::GuidesViewModel)
     viewModelOf(::WCRequestEvmViewModel)
     viewModelOf(::PrivacyViewModel)
-    viewModelOf(::SetDuressPinIntroViewModel)
     viewModelOf(::AppIconViewModel)
     viewModelOf(::HardwareWalletViewModel)
     viewModelOf(::ResetToFactorySettingsViewModel)
@@ -71,6 +68,5 @@ val viewModelModule = module {
     viewModelOf(::CalculatorAutoLockViewModel)
     viewModel { CalculatorLockScreenViewModel(get(), get(), get()) }
     viewModelOf(::DeleteContactsTermsViewModel)
-    viewModelOf(::HiddenWalletTermsViewModel)
     viewModelOf(::SecureResetTermsViewModel)
 }

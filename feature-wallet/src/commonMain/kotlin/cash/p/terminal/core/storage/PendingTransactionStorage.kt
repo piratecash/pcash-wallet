@@ -2,43 +2,51 @@ package cash.p.terminal.core.storage
 
 import cash.p.terminal.entities.PendingTransactionEntity
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 
-class PendingTransactionStorage(private val databaseProvider: AppDatabaseProvider) {
-    private val dao get() = databaseProvider.database.pendingTransactionDao()
+class PendingTransactionStorage(private val router: StorageRouter) {
+    private fun dao(walletId: String) = router.account(walletId)?.pendingTransactionDao()
 
-    suspend fun insert(entity: PendingTransactionEntity) = dao.insert(entity)
+    suspend fun insert(entity: PendingTransactionEntity) {
+        dao(entity.walletId)?.insert(entity)
+    }
 
-    suspend fun updateTxId(id: String, txId: String) = dao.updateTxId(id, txId)
+    suspend fun updateTxId(id: String, txId: String) {
+        router.forEachAccount { pendingTransactionDao().updateTxId(id, txId) }
+    }
 
-    suspend fun getById(id: String): PendingTransactionEntity? = dao.getById(id)
+    suspend fun getById(id: String): PendingTransactionEntity? =
+        router.firstInAccounts { pendingTransactionDao().getById(id) }
 
     fun getActivePendingFlow(walletId: String): Flow<List<PendingTransactionEntity>> =
-        dao.getActivePendingFlow(System.currentTimeMillis(), walletId)
+        dao(walletId)?.getActivePendingFlow(System.currentTimeMillis(), walletId) ?: flowOf(emptyList())
 
     suspend fun getPendingForWallet(walletId: String): List<PendingTransactionEntity> =
-        dao.getPendingForWallet(walletId, System.currentTimeMillis())
+        dao(walletId)?.getPendingForWallet(walletId, System.currentTimeMillis()).orEmpty()
 
     suspend fun markBalanceConfirmed(ids: List<String>, confirmedAt: Long) {
         if (ids.isEmpty()) return
-        dao.markBalanceConfirmed(ids, confirmedAt)
+        router.forEachAccount { pendingTransactionDao().markBalanceConfirmed(ids, confirmedAt) }
     }
 
     suspend fun rebaseSdkBalanceAtCreation(ids: List<String>, atomic: String) {
         if (ids.isEmpty()) return
-        dao.rebaseSdkBalanceAtCreation(ids, atomic)
+        router.forEachAccount { pendingTransactionDao().rebaseSdkBalanceAtCreation(ids, atomic) }
     }
 
-    suspend fun deleteById(id: String) = dao.deleteById(id)
+    suspend fun deleteById(id: String) {
+        router.forEachAccount { pendingTransactionDao().deleteById(id) }
+    }
 
     suspend fun getExpired(): List<PendingTransactionEntity> =
-        dao.getExpired(System.currentTimeMillis())
+        router.acrossAccounts { pendingTransactionDao().getExpired(System.currentTimeMillis()) }
 
     suspend fun hasPendingTransactions(): Boolean {
-        return dao.getAllPending().isNotEmpty()
+        return router.accounts.any { it.pendingTransactionDao().getAllPending().isNotEmpty() }
     }
 
     suspend fun deleteByIds(ids: List<String>) {
         if (ids.isEmpty()) return
-        dao.deleteByIds(ids)
+        router.forEachAccount { pendingTransactionDao().deleteByIds(ids) }
     }
 }

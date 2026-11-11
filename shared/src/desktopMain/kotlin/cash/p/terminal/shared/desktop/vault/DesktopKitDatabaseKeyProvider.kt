@@ -11,28 +11,30 @@ import cash.p.terminal.core.managers.BitcoinKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.DatabaseKey
 import cash.p.terminal.core.managers.EvmKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.KitDatabaseKeyProvider
+import cash.p.terminal.core.managers.KitPlatformContexts
+import cash.p.terminal.core.managers.KitStorageNaming
 import cash.p.terminal.core.managers.SolanaKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.StellarKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.TonKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.TronKitDatabaseKeyProvider
-import io.horizontalsystems.core.DesktopSettingsStore
+import java.io.File
 import java.nio.file.Files
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
+private fun DesktopVault.requireKitKey(accountId: String, kitName: String): DatabaseKey =
+    openSession()?.kitKey(accountId, kitName) ?: throw StorageLockedException()
+
 /**
- * Keys are derived from the open vault session, so none is stored: [remove] has nothing to erase, and
- * [kitName] must never change, or the kit's existing databases no longer open.
+ * The key stays in the account's store and dies with it. [remove] keeps it, since it only follows a kit's clear,
+ * which under opaque names leaves files it cannot list: those still belong to the account until its directory goes.
  */
 open class DesktopKitDatabaseKeyProvider(
     private val vault: DesktopVault,
     private val kitName: String,
 ) : KitDatabaseKeyProvider {
 
-    override suspend fun awaitDatabaseKey(accountId: String): DatabaseKey {
-        val key = vault.openSession()?.kitDatabaseKey(kitName, accountId) ?: throw StorageLockedException()
-        return DatabaseKey(key, isNew = false)
-    }
+    override suspend fun awaitDatabaseKey(accountId: String): DatabaseKey = vault.requireKitKey(accountId, kitName)
 
     override fun remove(accountId: String) = Unit
 }
@@ -55,23 +57,24 @@ class DesktopSolanaKitDatabaseKeyProvider(vault: DesktopVault) :
 class DesktopStellarKitDatabaseKeyProvider(vault: DesktopVault) :
     DesktopKitDatabaseKeyProvider(vault, "stellar"), StellarKitDatabaseKeyProvider
 
-/** Derived like the other kit keys: the key always reopens the database, and dropping it leaves nothing behind. */
+/** Dropped for real: erasing a wallet must leave any database file that survived unreadable, as on Android. */
 class DesktopZcashDbKeyProvider(private val vault: DesktopVault) : ZcashDbKeyProvider {
-    override fun keyFor(accountId: String): ZcashDbKey {
-        val key = vault.openSession()?.kitDatabaseKey("zcash", accountId) ?: throw StorageLockedException()
-        return ZcashDbKey(key, newlyGenerated = false)
+    override fun keyFor(accountId: String): ZcashDbKey =
+        vault.requireKitKey(accountId, KIT_NAME).let { ZcashDbKey(it.bytes, newlyGenerated = it.isNew) }
+
+    override fun drop(accountId: String): Boolean {
+        vault.openSession()?.account(accountId)?.removeKitKey(KIT_NAME)
+        return true
     }
 
-    override fun drop(accountId: String) = true
+    private companion object {
+        const val KIT_NAME = "zcash"
+    }
 }
 
-/**
- * Derived like the other kit keys ("beam-<network>" must never change); only the fact that a key was
- * issued for a storage is stored, so a wallet created here opens fresh and everything else restores.
- */
+/** A key in the account's store is the record of a storage: only the open accounts' storages are known here. */
 class DesktopBeamKitDatabaseKeyProvider(
     private val vault: DesktopVault,
-    private val settingsStore: DesktopSettingsStore,
     private val storageLocator: BeamStorageLocator,
     private val deletionState: BeamDeletionState,
 ) : BeamKitDatabaseKeyProvider {
@@ -80,22 +83,22 @@ class DesktopBeamKitDatabaseKeyProvider(
 
     override fun ensureAvailable(accountId: String) = deletionState.ensureAvailable(accountId)
 
+    // An existing database without a key restores: createNew must never run over it.
     override fun keyForInitialization(accountId: String, network: BeamNetwork): DatabaseKey = lock.withLock {
         ensureAvailable(accountId)
-        val key = vault.openSession()?.kitDatabaseKey("beam-${network.directoryName}", accountId)
-            ?: throw StorageLockedException()
-        try {
-            DatabaseKey(key, isNew = issue(accountId, network))
-        } catch (e: Throwable) {
-            key.fill(0)
-            throw e
-        }
+        val databaseExists = storageLocator.databaseFile(accountId, network).exists()
+        val key = vault.requireKitKey(accountId, network.kitName)
+        DatabaseKey(key.bytes, isNew = key.isNew && !databaseExists)
     }
 
     override fun hasAnyKey(): Boolean = storageIds().isNotEmpty()
 
     override fun storageIds(): Set<String> = lock.withLock {
-        settingsStore.string(ISSUED_STORAGE_IDS)?.split(SEPARATOR)?.filter { it.isNotEmpty() }?.toSet().orEmpty()
+        forEachStorage { accountId, network ->
+            storageLocator.storageId(accountId, network).takeIf {
+                vault.openSession()?.account(accountId)?.hasKitKey(network.kitName) == true
+            }
+        }.toSet()
     }
 
     override fun removeStorageKey(id: String) = lock.withLock {
@@ -105,24 +108,39 @@ class DesktopBeamKitDatabaseKeyProvider(
         shredStorageKey(id)
     }
 
-    // Drops the record only: the derived key itself is destroyed only by wiping the vault.
-    override fun shredStorageKey(id: String) = lock.withLock { writeStorageIds(storageIds() - id) }
-
-    // An existing database without a record restores: createNew must never run over it.
-    private fun issue(accountId: String, network: BeamNetwork): Boolean {
-        val id = storageLocator.storageId(accountId, network)
-        val issued = storageIds()
-        if (id in issued) return false
-        val databaseExists = storageLocator.databaseFile(accountId, network).exists()
-        writeStorageIds(issued + id)
-        return !databaseExists
+    override fun shredStorageKey(id: String) = lock.withLock {
+        forEachStorage { accountId, network ->
+            if (storageLocator.storageId(accountId, network) == id) {
+                vault.openSession()?.account(accountId)?.removeKitKey(network.kitName)
+            }
+        }
+        Unit
     }
 
-    private fun writeStorageIds(ids: Set<String>) =
-        settingsStore.setString(ISSUED_STORAGE_IDS, ids.joinToString(SEPARATOR).ifEmpty { null })
+    private inline fun <T : Any> forEachStorage(block: (String, BeamNetwork) -> T?): List<T> =
+        vault.openSession()?.accountIds.orEmpty().flatMap { accountId ->
+            BeamNetwork.entries.mapNotNull { block(accountId, it) }
+        }
 
-    private companion object {
-        const val ISSUED_STORAGE_IDS = "beamIssuedStorageIds"
-        const val SEPARATOR = ","
-    }
+    private val BeamNetwork.kitName get() = "beam-$directoryName"
+}
+
+/** Storages exist only inside the directories of the accounts this session can open. */
+class DesktopBeamStorageLocator(
+    private val vault: DesktopVault,
+    platformContexts: KitPlatformContexts,
+    storageNaming: KitStorageNaming,
+) : BeamStorageLocator(platformContexts, storageNaming) {
+
+    override fun hasAnyData(): Boolean = storageIds().isNotEmpty()
+
+    override fun storageIds(): Set<String> = storages().filterValues(File::exists).keys
+
+    override fun validatedPath(id: String): File =
+        requireNotNull(storages()[id]) { "Invalid BEAM storage scope" }.also(::validateContained)
+
+    private fun storages(): Map<String, File> =
+        vault.openSession()?.accountIds.orEmpty().flatMap { accountId ->
+            BeamNetwork.entries.map { storageId(accountId, it) to storagePath(accountId, it) }
+        }.toMap()
 }

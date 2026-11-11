@@ -32,6 +32,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -56,6 +57,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.withContext
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicBoolean
 
 class AdapterManager(
     private val walletManager: IWalletManager,
@@ -97,6 +99,9 @@ class AdapterManager(
 
     private val initRequests = MutableSharedFlow<List<Wallet>>(extraBufferCapacity = 1)
 
+    private val started = AtomicBoolean(false)
+    private val unlinks = ConcurrentHashMap.newKeySet<Job>()
+
     init {
         coroutineScope.launch {
             initRequests
@@ -119,6 +124,7 @@ class AdapterManager(
     }
 
     override fun startAdapterManager() {
+        started.set(true)
         coroutineScope.launch {
             walletManager.activeWalletsFlow.collect { wallets ->
                 requestInitAdapters(wallets)
@@ -148,6 +154,17 @@ class AdapterManager(
             }
         }
     }
+
+    override suspend fun awaitReleased(keptAccountIds: Set<String>) {
+        if (!started.get()) return
+        // The wallet list reaches this manager asynchronously, through several flows.
+        while (!isReleased(keptAccountIds)) delay(RELEASE_POLL_INTERVAL)
+        unlinks.toList().joinAll()
+    }
+
+    private fun isReleased(keptAccountIds: Set<String>): Boolean =
+        !mutex.isLocked &&
+            (walletManager.activeWallets + adaptersMap.keys).all { it.account.id in keptAccountIds }
 
     private suspend fun reinitAdapters(blockchainType: BlockchainType) {
         val removedAdapters = removeMatchingAdapters { it.token.blockchainType == blockchainType }
@@ -204,7 +221,7 @@ class AdapterManager(
 
         // Only one account is active at a time
         val activeAccountId = wallets.firstOrNull()?.account?.id
-        val previousAccountId = currentAdapters.keys.firstOrNull()?.account?.id
+        val previousAccountIds = currentAdapters.keys.map { it.account.id }.toSet()
 
         if (activeAccountId != null) {
             pendingBalanceCalculator.startObserving(activeAccountId)
@@ -252,9 +269,7 @@ class AdapterManager(
         )
 
         // Stop observing if account changed
-        if (previousAccountId != null && previousAccountId != activeAccountId) {
-            pendingBalanceCalculator.stopObserving(previousAccountId)
-        }
+        previousAccountIds.filter { it != activeAccountId }.forEach(pendingBalanceCalculator::stopObserving)
     }
 
     private suspend fun publishAdaptersAsSourcesBecomeReady(
@@ -267,7 +282,8 @@ class AdapterManager(
             .filterKeys { it.transactionSource !in pendingBySource }
             .toMutableMap()
 
-        if (publishedAdapters.isNotEmpty()) {
+        // Also when nothing is left: the transaction adapters of the previous wallets must go too.
+        if (publishedAdapters.isNotEmpty() || toCreate.isEmpty()) {
             adaptersReadySubject.onNext(HashMap(publishedAdapters))
         }
 
@@ -327,7 +343,9 @@ class AdapterManager(
         if (wallet.token.blockchainType == BlockchainType.Beam) {
             withContext(NonCancellable) { adapterFactory.unlinkAdapter(wallet, adapter) }
         } else {
-            coroutineScope.launch { adapterFactory.unlinkAdapter(wallet, adapter) }
+            val unlink = coroutineScope.launch { adapterFactory.unlinkAdapter(wallet, adapter) }
+            unlinks += unlink
+            unlink.invokeOnCompletion { unlinks -= unlink }
         }
     }
 
@@ -606,5 +624,9 @@ class AdapterManager(
     private fun cancelBalanceSubscription(wallet: Wallet) {
         balanceSubscriptionJobs.remove(wallet)?.cancel()
         offlineModeManager.onAdapterGone(wallet)
+    }
+
+    private companion object {
+        const val RELEASE_POLL_INTERVAL = 50L
     }
 }

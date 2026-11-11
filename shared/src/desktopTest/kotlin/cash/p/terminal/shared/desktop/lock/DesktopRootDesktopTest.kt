@@ -39,11 +39,13 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlinx.coroutines.flow.emptyFlow
 import org.koin.compose.koinInject
 import org.koin.core.context.GlobalContext
 
 @OptIn(ExperimentalTestApi::class)
 class DesktopRootDesktopTest {
+    private val session = mockk<DesktopStorageSession>(relaxed = true)
 
     private val createdViewModels = mutableListOf<TrackingViewModel>()
     private var clicks = 0
@@ -74,6 +76,20 @@ class DesktopRootDesktopTest {
         onNodeWithText(TAPPED).assertExists()
         assertEquals(1, createdViewModels.size)
         assertFalse(createdViewModels.single().cleared)
+    }
+
+    @Test
+    fun unlock_anotherSession_startsOverWithFreshViewModels() = runDesktopComposeUiTest {
+        var vaultState by mutableStateOf<DesktopVaultState>(unlocked())
+        setContent { Root(vaultState) }
+        onNodeWithText(MARKER).performClick()
+
+        runOnIdle { vaultState = DesktopVaultState.Locked }
+        runOnIdle { vaultState = DesktopVaultState.Unlocked(mockk(relaxed = true)) }
+
+        onNodeWithText(TAPPED).assertDoesNotExist()
+        assertEquals(2, createdViewModels.size)
+        assertTrue(createdViewModels.first().cleared)
     }
 
     @Test
@@ -194,6 +210,7 @@ class DesktopRootDesktopTest {
                         vaultState = unlocked(),
                         localeTag = "en",
                         appGeneration = 0,
+                        levelChanges = emptyFlow(),
                         rootPage = { BlankPage() },
                         appContent = {},
                         wipeFailed = false,
@@ -215,6 +232,7 @@ class DesktopRootDesktopTest {
                     vaultState = vaultState,
                     localeTag = localeTag,
                     appGeneration = appGeneration,
+                    levelChanges = emptyFlow(),
                     rootPage = { BlankPage() },
                     appContent = { AppContent() },
                     wipeFailed = false,
@@ -246,7 +264,7 @@ class DesktopRootDesktopTest {
         initializer { TrackingViewModel().also { createdViewModels += it } }
     }
 
-    private fun unlocked() = DesktopVaultState.Unlocked(mockk<DesktopStorageSession>(relaxed = true))
+    private fun unlocked() = DesktopVaultState.Unlocked(session)
 
     private class TrackingViewModel : ViewModel() {
         var cleared = false

@@ -11,6 +11,8 @@ import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.Wallet as WalletMember
 import cash.p.terminal.wallet.entities.SecretString
 import cash.p.terminal.core.storage.MoneroFileDao
+import cash.p.terminal.core.storage.AccountDaos
+import cash.p.terminal.core.storage.StorageRouter
 import cash.p.terminal.entities.MoneroFileRecord
 import com.m2049r.xmrwallet.model.Wallet
 import com.m2049r.xmrwallet.model.Wallet.ConnectionStatus
@@ -2212,7 +2214,7 @@ class MoneroKitWrapperRefreshTest {
                 null
             }
         }
-        startKoin { modules(module { single { dao } }) }
+        startKoinWithMoneroFiles(ledgerAccount, dao)
         try {
             val wrapper = createWrapper(MoneroWalletService(File("unused")), ledgerAccount)
             setSyncState(wrapper, AdapterState.NotSynced(LedgerNotFoundException()))
@@ -3605,12 +3607,19 @@ class MoneroKitWrapperRefreshTest {
             coEvery { getAssociatedRecord(trezorAccount.id) } returns
                 MoneroFileRecord(trezorAccount.id, SecretString("trezor-wallet"), SecretString("password"))
         }
-        startKoin { modules(module { single { fileDao } }) }
+        startKoinWithMoneroFiles(trezorAccount, fileDao)
         try {
             block()
         } finally {
             stopKoin()
         }
+    }
+
+    private fun startKoinWithMoneroFiles(account: Account, fileDao: MoneroFileDao) {
+        val router = mockk<StorageRouter> {
+            every { account(account.id) } returns mockk<AccountDaos> { every { moneroFileDao() } returns fileDao }
+        }
+        startKoin { modules(module { single { router } }) }
     }
 
     /** An open Trezor wallet; each device pass returns the next of [results]. */
@@ -3890,7 +3899,7 @@ class MoneroKitWrapperRefreshTest {
             coEvery { getAssociatedRecord(ledgerAccount.id) } returns
                 MoneroFileRecord(ledgerAccount.id, SecretString("wallet"), SecretString("password"))
         }
-        startKoin { modules(module { single { dao } }) }
+        startKoinWithMoneroFiles(ledgerAccount, dao)
         try {
             return block()
         } finally {

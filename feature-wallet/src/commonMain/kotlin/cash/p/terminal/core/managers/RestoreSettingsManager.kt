@@ -4,12 +4,8 @@ import com.google.gson.annotations.SerializedName
 import cash.p.terminal.core.IRestoreSettingsStorage
 import cash.p.terminal.core.usecase.ValidateMoneroHeightUseCase
 import cash.p.terminal.entities.RestoreSettingRecord
-import cash.p.terminal.resources.ManageAccount_BirthdayHeight
-import cash.p.terminal.resources.Res
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
-import cash.p.terminal.wallet.Token
-import io.horizontalsystems.core.Translator
 import io.horizontalsystems.core.entities.BlockchainType
 
 class RestoreSettingsManager(
@@ -39,6 +35,9 @@ class RestoreSettingsManager(
             }
         }
     }
+
+    /** Call before saving settings of an account whose row is not written yet. */
+    fun prepareForNewAccount(account: Account) = storage.prepareForNewAccount(account.id)
 
     fun save(settings: RestoreSettings, account: Account, blockchainType: BlockchainType) {
         val records = settings.values.map { (type, value) ->
@@ -190,13 +189,6 @@ class RestoreSettingsManager(
                     else -> null
                 }
             }
-        }
-    }
-
-    fun getSettingsTitle(settingType: RestoreSettingType, token: Token): String {
-        return when (settingType) {
-            RestoreSettingType.BirthdayHeight ->
-                Translator.getString(Res.string.ManageAccount_BirthdayHeight, token.coin.code)
         }
     }
 

@@ -1,5 +1,6 @@
 package cash.p.terminal.core.managers
 
+import io.horizontalsystems.databasenaming.DatabaseNameResolver
 import cash.p.terminal.core.UnsupportedAccountException
 import cash.p.terminal.core.providers.SharedAppConfig
 import cash.p.terminal.wallet.Account
@@ -186,7 +187,7 @@ class SolanaKitManagerDatabaseTest {
         backgroundManager = mockk(relaxed = true),
         hardwarePublicKeyStorage = mockk(relaxed = true),
         deviceSigners = DeviceSignerFactory(mockk(relaxed = true), mockk(relaxed = true), mockk(relaxed = true)),
-        platformContexts = mockk(relaxed = true),
+        platformContexts = mockk<KitPlatformContexts>(relaxed = true) { every { resolverFor(any()) } returns DatabaseNameResolver.Identity },
         backgroundKeepAliveManager = mockk(relaxed = true),
         networkErrorTracker = mockk(relaxed = true),
         offlineModeManager = mockk(relaxed = true),

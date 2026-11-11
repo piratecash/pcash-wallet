@@ -7,7 +7,7 @@ class GenerateMoneroWalletUseCase(
 ) {
     operator fun invoke(): String? {
         val walletName = generateWalletName()
-        val walletFile = File(moneroWalletStorage.walletsRoot(), walletName)
+        val walletFile = File(moneroWalletStorage.walletsRootOrNull() ?: return null, walletName)
 
         return if (!walletFile.exists()) {
             walletName

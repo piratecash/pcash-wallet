@@ -1,6 +1,7 @@
 package cash.p.terminal.core.managers
 
 import cash.p.terminal.core.UnsupportedAccountException
+import cash.p.terminal.core.managers.IdentityKitStorageNaming
 import cash.p.terminal.ledger.account.LedgerStellarSigner
 import cash.p.terminal.ledger.domain.LedgerAppAccess
 import cash.p.terminal.wallet.Account
@@ -278,6 +279,7 @@ class StellarKitManagerDatabaseTest {
         hardwareSigners = AndroidStellarHardwareSigners(mockk(relaxed = true)),
         deviceSigners = DeviceSignerFactory(mockk(relaxed = true), mockk(relaxed = true), mockk(relaxed = true)),
         platformContexts = mockk(relaxed = true),
+        storageNaming = IdentityKitStorageNaming,
         backgroundKeepAliveManager = mockk(relaxed = true),
         networkErrorTracker = mockk(relaxed = true),
         offlineModeManager = mockk(relaxed = true),

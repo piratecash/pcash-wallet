@@ -1,6 +1,7 @@
 package cash.p.terminal.core.providers
 
 import cash.p.terminal.core.TestDispatcherProvider
+import cash.p.terminal.core.managers.IdentityKitStorageNaming
 import cash.p.terminal.core.managers.TonKitManager
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
@@ -37,6 +38,7 @@ class TonFallbackAddressProviderTest {
         backgroundManager = mockk(relaxed = true),
         hardwarePublicKeyStorage = mockk(relaxed = true),
         platformContexts = mockk(relaxed = true),
+        storageNaming = IdentityKitStorageNaming,
         backgroundKeepAliveManager = mockk(relaxed = true),
         networkErrorTracker = mockk(relaxed = true),
         offlineModeManager = mockk(relaxed = true),

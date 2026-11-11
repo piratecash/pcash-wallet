@@ -1,17 +1,15 @@
 package cash.p.terminal.core.managers
 
-import cash.p.terminal.core.storage.AppDatabaseProvider
-import cash.p.terminal.core.storage.UserDeletedWalletDao
+import cash.p.terminal.core.storage.StorageRouter
 import cash.p.terminal.entities.UserDeletedWallet
 import cash.p.terminal.wallet.IDeletedWalletRestorer
 import cash.p.terminal.wallet.Wallet
 import java.util.concurrent.ConcurrentHashMap
 
 class UserDeletedWalletManager(
-    private val databaseProvider: AppDatabaseProvider
+    private val router: StorageRouter
 ) : IDeletedWalletRestorer {
-    private val userDeletedWalletDao: UserDeletedWalletDao
-        get() = databaseProvider.database.userDeletedWalletDao()
+    private fun dao(accountId: String) = router.account(accountId)?.userDeletedWalletDao()
 
     // In-memory cache to prevent race condition where sync jobs check isDeletedByUser()
     // before the DB insert from markAsDeleted() commits.
@@ -29,7 +27,7 @@ class UserDeletedWalletManager(
     suspend fun markAsDeleted(accountId: String, tokenQueryId: String) {
         // Add to in-memory cache first to avoid sync jobs reading DB before insert commits.
         pendingDeletions.add(cacheKey(accountId, tokenQueryId))
-        userDeletedWalletDao.insert(UserDeletedWallet(accountId, tokenQueryId))
+        dao(accountId)?.insert(UserDeletedWallet(accountId, tokenQueryId))
     }
 
     suspend fun markAsDeleted(accountId: String, tokenQueryIds: Iterable<String>) {
@@ -42,12 +40,12 @@ class UserDeletedWalletManager(
         if (pendingDeletions.contains(cacheKey(accountId, tokenQueryId))) {
             return true
         }
-        return userDeletedWalletDao.exists(accountId, tokenQueryId)
+        return dao(accountId)?.exists(accountId, tokenQueryId) == true
     }
 
     suspend fun unmarkAsDeleted(accountId: String, tokenQueryId: String) {
         pendingDeletions.remove(cacheKey(accountId, tokenQueryId))
-        userDeletedWalletDao.delete(accountId, tokenQueryId)
+        dao(accountId)?.delete(accountId, tokenQueryId)
     }
 
     override suspend fun unmarkAsDeleted(accountId: String, tokenQueryIds: Iterable<String>) {

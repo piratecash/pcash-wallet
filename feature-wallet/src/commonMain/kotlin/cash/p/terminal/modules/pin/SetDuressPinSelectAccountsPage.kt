@@ -13,18 +13,22 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation3.runtime.NavBackStack
-import cash.p.terminal.R
-import cash.p.terminal.modules.evmfee.ButtonsGroupWithShade
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.resources.Button_Next
+import cash.p.terminal.resources.DuressPinSelectAccounts_Description
+import cash.p.terminal.resources.DuressPinSelectAccounts_SectionWallets_Title
+import cash.p.terminal.resources.DuressPinSelectAccounts_SectionWatchWallets_Title
+import cash.p.terminal.resources.DuressPinSelectAccounts_Title
+import cash.p.terminal.resources.ManageAccount_BackupRequired_Title
+import cash.p.terminal.resources.Res
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
+import cash.p.terminal.ui_compose.components.ButtonsGroupWithShade
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
 import cash.p.terminal.ui_compose.components.HFillSpacer
 import cash.p.terminal.ui_compose.components.HeaderText
@@ -40,29 +44,31 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
-import cash.p.terminal.navigation.navigateUpSafely
+import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 
 class SetDuressPinSelectAccountsPage : HSPage() {
     @Composable
     override fun GetContent(navigation: HSNavigation) {
-        val viewModel =
-            viewModel<SetDuressPinSelectAccountsViewModel>(factory = SetDuressPinSelectAccountsViewModel.Factory())
-        val regularAccounts = viewModel.regularAccounts
-        val watchAccounts = viewModel.watchAccounts
+        val viewModel = koinViewModel<SetDuressPinSelectAccountsViewModel>()
+        val pages = koinInject<DuressSecretPages>()
 
         SetDuressPinSelectAccountsScreen(
-            regularAccounts = regularAccounts,
-            watchAccounts = watchAccounts,
-            navigation = navigation
+            regularAccounts = viewModel.regularAccounts,
+            watchAccounts = viewModel.watchAccounts,
+            onNext = { selected -> navigation.slideFromRight(pages.setDuress(selected)) },
+            onBack = navigation::navigateUpSafely,
         )
     }
 }
 
 @Composable
-fun SetDuressPinSelectAccountsScreen(
+internal fun SetDuressPinSelectAccountsScreen(
     regularAccounts: List<Account>,
     watchAccounts: List<Account>,
-    navigation: HSNavigation
+    onNext: (List<String>) -> Unit,
+    onBack: () -> Unit,
 ) {
     val selected = remember { mutableStateListOf<String>() }
 
@@ -70,10 +76,8 @@ fun SetDuressPinSelectAccountsScreen(
         containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
-                title = stringResource(R.string.DuressPinSelectAccounts_Title),
-                navigationIcon = {
-                    HsBackButton(onClick = navigation::navigateUpSafely )
-                },
+                title = stringResource(Res.string.DuressPinSelectAccounts_Title),
+                navigationIcon = { HsBackButton(onClick = onBack) },
             )
         }
     ) { innerPaddings ->
@@ -88,37 +92,25 @@ fun SetDuressPinSelectAccountsScreen(
                     .verticalScroll(rememberScrollState())
             ) {
                 InfoText(
-                    text = stringResource(R.string.DuressPinSelectAccounts_Description),
+                    text = stringResource(Res.string.DuressPinSelectAccounts_Description),
                     paddingBottom = 32.dp
                 )
 
                 if (regularAccounts.isNotEmpty()) {
                     ItemsSection(
-                        title = stringResource(R.string.DuressPinSelectAccounts_SectionWallets_Title),
+                        title = stringResource(Res.string.DuressPinSelectAccounts_SectionWallets_Title),
                         items = regularAccounts,
                         selected = selected
-                    ) { account, checked ->
-                        if (checked) {
-                            selected.add(account.id)
-                        } else {
-                            selected.remove(account.id)
-                        }
-                    }
+                    )
                     VSpacer(height = 32.dp)
                 }
 
                 if (watchAccounts.isNotEmpty()) {
                     ItemsSection(
-                        title = stringResource(R.string.DuressPinSelectAccounts_SectionWatchWallets_Title),
+                        title = stringResource(Res.string.DuressPinSelectAccounts_SectionWatchWallets_Title),
                         items = watchAccounts,
                         selected = selected
-                    ) { account, checked ->
-                        if (checked) {
-                            selected.add(account.id)
-                        } else {
-                            selected.remove(account.id)
-                        }
-                    }
+                    )
                     VSpacer(height = 32.dp)
                 }
             }
@@ -127,17 +119,12 @@ fun SetDuressPinSelectAccountsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 16.dp, end = 16.dp, top = 8.dp),
-                    title = stringResource(R.string.Button_Next),
-                    onClick = {
-                        navigation.slideFromRight(
-                            SetDuressPinPage(SetDuressPinPage.Input(selected.toList()))
-                        )
-                    },
+                    title = stringResource(Res.string.Button_Next),
+                    onClick = { onNext(selected.toList()) },
                 )
             }
         }
     }
-
 }
 
 @Composable
@@ -145,23 +132,24 @@ private fun ItemsSection(
     title: String,
     items: List<Account>,
     selected: SnapshotStateList<String>,
-    onToggle: (Account, Boolean) -> Unit,
 ) {
+    fun toggle(account: Account, checked: Boolean) {
+        if (checked) selected.add(account.id) else selected.remove(account.id)
+    }
+
     HeaderText(text = title)
     CellUniversalLawrenceSection(items) { account ->
         val checked = selected.contains(account.id)
         RowUniversal(
             modifier = Modifier
                 .padding(horizontal = 16.dp)
-                .clickable {
-                    onToggle.invoke(account, !checked)
-                }
+                .clickable { toggle(account, !checked) }
         ) {
             Column {
                 body_leah(text = account.name)
                 VSpacer(height = 1.dp)
                 if (account.supportsBackup && !account.hasAnyBackup) {
-                    subhead2_lucian(text = stringResource(id = R.string.ManageAccount_BackupRequired_Title))
+                    subhead2_lucian(text = stringResource(Res.string.ManageAccount_BackupRequired_Title))
                 } else {
                     subhead2_grey(
                         text = account.type.detailedDescription,
@@ -173,36 +161,29 @@ private fun ItemsSection(
             HFillSpacer(minWidth = 8.dp)
             HsCheckbox(
                 checked = checked,
-                onCheckedChange = {
-                    onToggle.invoke(account, it)
-                },
+                onCheckedChange = { toggle(account, it) },
             )
         }
     }
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
 private fun SetDuressPinSelectAccountsScreenPreview() {
-    val mockAccount = Account(
+    val account = Account(
         id = "1",
         name = "Main Wallet",
-        type = AccountType.Mnemonic(emptyList(),""),
+        type = AccountType.Mnemonic(emptyList(), ""),
         origin = AccountOrigin.Created,
         level = 0
     )
-    val regularAccounts = List(5) {
-        mockAccount.copy(id = it.toString())
-    }
-    val watchAccounts = List(5) {
-        mockAccount.copy(id = it.toString())
-    }
 
     ComposeAppTheme {
         SetDuressPinSelectAccountsScreen(
-            regularAccounts = regularAccounts,
-            watchAccounts = watchAccounts,
-            navigation = HSNavigation(NavBackStack())
+            regularAccounts = List(3) { account.copy(id = "regular$it") },
+            watchAccounts = List(2) { account.copy(id = "watch$it") },
+            onNext = {},
+            onBack = {},
         )
     }
 }

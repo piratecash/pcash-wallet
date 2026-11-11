@@ -80,6 +80,7 @@ import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.badge
 import cash.p.terminal.wallet.balance.BalanceItem
+import cash.p.terminal.wallet.balance.BalanceWarning
 import cash.p.terminal.wallet.balance.BalanceViewType
 import cash.p.terminal.wallet.balance.DeemedValue
 import cash.p.terminal.wallet.canSwap
@@ -723,11 +724,9 @@ class TokenBalanceViewModel(
         get() = adapterManager.getBalanceAdapterForWallet(wallet) as? INativeBalanceProvider
 
     private fun updateNetworkFeeWarning() {
-        if (
-            wallet.token.type.isNative ||
-            networkFeeWarningDismissed ||
-            !hasReachedSyncedState()
-        ) {
+        val topUpNotAdvised = networkFeeWarningDismissed ||
+            balanceService.balanceItem?.warning == BalanceWarning.TronControlledByOthersWarning
+        if (wallet.token.type.isNative || topUpNotAdvised || !hasReachedSyncedState()) {
             networkFeeWarning = null
             return
         }

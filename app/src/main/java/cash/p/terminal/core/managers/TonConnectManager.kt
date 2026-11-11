@@ -4,7 +4,8 @@ import android.content.Context
 import android.net.Uri
 import cash.p.terminal.core.factories.AdapterFactory
 import cash.p.terminal.core.providers.SharedAppConfig
-import cash.p.terminal.core.storage.AppDatabase
+import cash.p.terminal.core.storage.StorageRouter
+import cash.p.terminal.core.storage.liveAccountIds
 import cash.p.terminal.core.storage.liveAccountIds
 import cash.p.terminal.wallet.IAccountManager
 import co.touchlab.kermit.Logger
@@ -40,7 +41,7 @@ class TonConnectManager(
     private val appVersion: String,
     private val databaseKeyProvider: TonConnectDatabaseKeyProvider,
     private val accountManager: IAccountManager,
-    private val appDatabase: AppDatabase,
+    private val router: StorageRouter,
     private val dispatcherProvider: DispatcherProvider,
 ) {
     private val logger = Logger.withTag("TonConnectManager")
@@ -143,7 +144,7 @@ class TonConnectManager(
     }
 
     private suspend fun liveWalletIds(): List<String> = withContext(dispatcherProvider.io) {
-        appDatabase.accountsDao().liveAccountIds().flatMap(TonConnectWalletId::allOf)
+        router.liveAccountIds().flatMap(TonConnectWalletId::allOf)
     }
 
     private suspend fun logFailure(action: String, block: suspend () -> Unit) {

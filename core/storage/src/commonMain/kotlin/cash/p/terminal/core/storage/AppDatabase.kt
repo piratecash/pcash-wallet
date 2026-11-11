@@ -30,21 +30,17 @@ import cash.p.terminal.entities.TokenAutoEnabledBlockchain
 import cash.p.terminal.entities.UserDeletedWallet
 import cash.p.terminal.entities.ZcashSingleUseAddress
 import cash.p.terminal.modules.chart.ChartIndicatorSetting
-import cash.p.terminal.modules.chart.ChartIndicatorSettingsDao
 import cash.p.terminal.modules.pin.core.Pin
-import cash.p.terminal.modules.pin.core.PinDao
-import cash.p.terminal.modules.walletconnect.storage.WCSessionDao
 import cash.p.terminal.modules.walletconnect.storage.WalletConnectV2Session
 import cash.p.terminal.wallet.entities.AccountRecord
 import cash.p.terminal.wallet.entities.EnabledWallet
 import cash.p.terminal.wallet.entities.HardwarePublicKey
 import io.horizontalsystems.core.storage.LogEntry
-import io.horizontalsystems.core.storage.LogsDao
 
 const val APP_DATABASE_NAME = "db_p_cash"
 
 @Database(
-    version = 123,
+    version = 124,
     exportSchema = false,
     entities = [
         EnabledWallet::class,
@@ -82,38 +78,7 @@ const val APP_DATABASE_NAME = "db_p_cash"
 )
 @TypeConverters(DatabaseConverters::class)
 @ConstructedBy(AppDatabaseConstructor::class)
-abstract class AppDatabase : RoomDatabase() {
-
-    abstract fun chartIndicatorSettingsDao(): ChartIndicatorSettingsDao
-    abstract fun walletsDao(): EnabledWalletsDao
-    abstract fun enabledWalletsCacheDao(): EnabledWalletsCacheDao
-    abstract fun accountsDao(): AccountsDao
-    abstract fun blockchainSettingDao(): BlockchainSettingDao
-    abstract fun evmSyncSourceDao(): EvmSyncSourceDao
-    abstract fun restoreSettingDao(): RestoreSettingDao
-    abstract fun logsDao(): LogsDao
-    abstract fun marketFavoritesDao(): MarketFavoritesDao
-    abstract fun wcSessionDao(): WCSessionDao
-    abstract fun addressLabelDao(): AddressLabelDao
-    abstract fun evmMethodLabelDao(): EvmMethodLabelDao
-    abstract fun syncerStateDao(): SyncerStateDao
-    abstract fun tokenAutoEnabledBlockchainDao(): TokenAutoEnabledBlockchainDao
-    abstract fun spamAddressDao(): SpamAddressDao
-    abstract fun pinDao(): PinDao
-    abstract fun swapProviderTransactionsDao(): SwapProviderTransactionsDao
-    abstract fun hardwarePublicKeyDao(): HardwarePublicKeyDao
-    abstract fun recentAddressDao(): RecentAddressDao
-    abstract fun moneroFileDao(): MoneroFileDao
-    abstract fun pendingMultiSwapDao(): PendingMultiSwapDao
-    abstract fun pendingTransactionDao(): PendingTransactionDao
-    abstract fun zcashSingleUseAddressDao(): ZcashSingleUseAddressDao
-    abstract fun userDeletedWalletDao(): UserDeletedWalletDao
-    abstract fun poisonAddressDao(): PoisonAddressDao
-    abstract fun locallyCreatedTransactionDao(): LocallyCreatedTransactionDao
-    abstract fun offlineSignedTransactionDao(): OfflineSignedTransactionDao
-    abstract fun offlineBlockchainDao(): OfflineBlockchainDao
-    abstract fun stackingCacheDao(): StackingCacheDao
-}
+abstract class AppDatabase : RoomDatabase(), AccountDaos, LevelDaos, SharedDaos
 
 @Suppress("KotlinNoActualForExpect")
 expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {

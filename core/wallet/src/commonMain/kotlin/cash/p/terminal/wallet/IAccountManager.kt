@@ -4,6 +4,9 @@ import io.reactivex.Flowable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
+/** The ids of the accounts loaded for [level], read as one value so the two can never disagree. */
+data class VisibleAccounts(val level: Int, val accountIds: Set<String>)
+
 interface IAccountManager {
     val hasNonStandardAccount: Boolean
     val activeAccount: Account?
@@ -13,6 +16,9 @@ interface IAccountManager {
     val accountsFlow: Flow<List<Account>>
     val accountsDeletedFlowable: Flowable<Unit>
     val newAccountBackupRequiredFlow: StateFlow<Account?>
+
+    /** Null before any level is loaded and after [unload]. */
+    val visibleAccounts: VisibleAccounts?
 
     fun setActiveAccountId(activeAccountId: String?)
     fun updateSignedHashes(signedHashes: Int)
@@ -32,8 +38,6 @@ interface IAccountManager {
 
     /** Drops every account of the current storage from memory; the next [setLevel] reloads. */
     fun unload()
-    fun updateAccountLevels(accountIds: List<String>, level: Int)
-    fun updateMaxLevel(level: Int)
     fun accountsAtLevel(level: Int): List<Account>
 }
 

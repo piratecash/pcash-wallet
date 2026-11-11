@@ -1,16 +1,18 @@
 package cash.p.terminal.modules.balance
 
-import cash.p.terminal.core.storage.EnabledWalletsCacheDao
+import cash.p.terminal.core.storage.StorageRouter
+import cash.p.terminal.core.storage.acrossAccounts
+import cash.p.terminal.core.storage.writePerStore
 import cash.p.terminal.entities.EnabledWalletCache
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.BalanceData
 import cash.p.terminal.wallet.getUniqueKey
 
-class BalanceCache(private val dao: EnabledWalletsCacheDao) {
+class BalanceCache(private val router: StorageRouter) {
     private var cacheMap: Map<String, BalanceData>
 
     init {
-        cacheMap = convertToCacheMap(dao.getAll())
+        cacheMap = convertToCacheMap(router.acrossAccounts { enabledWalletsCacheDao().getAll() })
     }
 
     private fun convertToCacheMap(list: List<EnabledWalletCache>): Map<String, BalanceData> {
@@ -45,7 +47,7 @@ class BalanceCache(private val dao: EnabledWalletsCacheDao) {
         }
         cacheMap = cacheMap + convertToCacheMap(list)
 
-        dao.insertAll(list)
+        router.writePerStore(list, { it.accountId }) { enabledWalletsCacheDao().insertAll(it) }
     }
 
 }

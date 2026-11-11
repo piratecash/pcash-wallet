@@ -84,7 +84,6 @@ import io.horizontalsystems.core.IPinComponent
 import io.horizontalsystems.core.IPinSettingsStorage
 import io.horizontalsystems.core.ISystemInfoManager
 import io.horizontalsystems.core.entities.BlockchainType
-import io.horizontalsystems.core.logger.AppLog
 import io.horizontalsystems.core.security.KeyStoreManager
 import io.horizontalsystems.ethereumkit.core.EthereumKit
 import kotlinx.coroutines.CoroutineScope
@@ -408,7 +407,6 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
             }
 
             walletServicesStarter.syncLabels()
-            AppLog.cleanupOldLogs()
             get<ClearLegacyZcashDataUseCase>().invoke()
         }
     }

@@ -1,5 +1,6 @@
 package cash.p.terminal.core.managers
 
+import io.horizontalsystems.databasenaming.DatabaseNameResolver
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
@@ -62,7 +63,7 @@ class SolanaKitManagerOfflineGateTest {
             backgroundManager = mockk<IBackgroundManager>(relaxed = true),
             hardwarePublicKeyStorage = mockk(relaxed = true),
             deviceSigners = DeviceSignerFactory(mockk(relaxed = true), mockk(relaxed = true), mockk(relaxed = true)),
-            platformContexts = mockk(relaxed = true),
+            platformContexts = mockk<KitPlatformContexts>(relaxed = true) { every { resolverFor(any()) } returns DatabaseNameResolver.Identity },
             backgroundKeepAliveManager = mockk(relaxed = true),
             networkErrorTracker = mockk(relaxed = true),
             offlineModeManager = offlineModeManager,

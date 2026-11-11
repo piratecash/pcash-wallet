@@ -319,6 +319,7 @@ open class WalletBackupProvider(
     /** Saved even for rows [trustedEnabledWallets] dropped, so a birthday height isn't lost. */
     private fun restoreWalletSettings(walletBackupItem: WalletBackupItem) {
         val account = walletBackupItem.account
+        restoreSettingsManager.prepareForNewAccount(account)
         walletBackupItem.enabledWallets.forEach { enabledWalletBackup ->
             val tokenQuery = TokenQuery.fromId(enabledWalletBackup.tokenQueryId) ?: return@forEach
             val accountType = account.type

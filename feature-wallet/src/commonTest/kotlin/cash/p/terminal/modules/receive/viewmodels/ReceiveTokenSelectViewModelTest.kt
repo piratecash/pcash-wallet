@@ -1,5 +1,6 @@
 package cash.p.terminal.modules.receive.viewmodels
 
+import cash.p.terminal.modules.receive.FullCoinsPage
 import cash.p.terminal.modules.receive.FullCoinsProvider
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
@@ -17,8 +18,10 @@ import io.horizontalsystems.core.entities.BlockchainType
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
+import io.mockk.verify
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -31,6 +34,8 @@ import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ReceiveTokenSelectViewModelTest {
@@ -45,7 +50,7 @@ class ReceiveTokenSelectViewModelTest {
         every { activeWallets } returns emptyList()
     }
     private val fullCoinsProvider = mockk<FullCoinsProvider>(relaxed = true) {
-        coEvery { getItems() } returns emptyList()
+        coEvery { getPage(any()) } returns FullCoinsPage(emptyList(), hasMore = false)
     }
 
     @Before
@@ -83,6 +88,131 @@ class ReceiveTokenSelectViewModelTest {
         assertEquals(CoinForReceiveType.Single(wallet), result)
     }
 
+    @Test
+    fun uiState_beforeFirstPageArrives_isLoading() {
+        pendingPages()
+
+        val viewModel = viewModel()
+
+        assertTrue(viewModel.uiState.isLoading)
+        assertTrue(viewModel.uiState.fullCoins.isEmpty())
+    }
+
+    @Test
+    fun uiState_firstPageArrives_showsItemsAndStopsLoading() {
+        val pages = pendingPages()
+        val viewModel = viewModel()
+
+        pages.first().complete(FullCoinsPage(listOf(fullCoin(BlockchainType.Ethereum)), hasMore = true))
+
+        assertFalse(viewModel.uiState.isLoading)
+        assertTrue(viewModel.uiState.hasMore)
+        assertEquals(1, viewModel.uiState.fullCoins.size)
+    }
+
+    @Test
+    fun onBottomReached_hasMore_requestsNextPageWithBiggerLimit() {
+        val viewModel = loadedViewModel(hasMore = true)
+
+        viewModel.onBottomReached()
+
+        coVerify(exactly = 1) { fullCoinsProvider.getPage(400) }
+    }
+
+    @Test
+    fun onBottomReached_noMore_doesNotRequest() {
+        val viewModel = loadedViewModel(hasMore = false)
+
+        viewModel.onBottomReached()
+
+        coVerify(exactly = 1) { fullCoinsProvider.getPage(any()) }
+    }
+
+    @Test
+    fun onBottomReached_repeatedWhileLoading_requestsOnce() {
+        val viewModel = loadedViewModel(hasMore = true)
+        pendingPages()
+
+        viewModel.onBottomReached()
+        viewModel.onBottomReached()
+
+        coVerify(exactly = 1) { fullCoinsProvider.getPage(400) }
+        coVerify(exactly = 0) { fullCoinsProvider.getPage(600) }
+    }
+
+    @Test
+    fun updateFilter_afterPaging_resetsLimit() {
+        val viewModel = loadedViewModel(hasMore = true)
+        viewModel.onBottomReached()
+
+        viewModel.updateFilter("btc")
+
+        verify { fullCoinsProvider.setQuery("btc") }
+        coVerify(exactly = 2) { fullCoinsProvider.getPage(200) }
+    }
+
+    @Test
+    fun updateFilter_sameQuery_isNoOp() {
+        val viewModel = loadedViewModel(hasMore = true)
+        viewModel.updateFilter("btc")
+
+        viewModel.updateFilter("btc")
+
+        verify(exactly = 1) { fullCoinsProvider.setQuery("btc") }
+        coVerify(exactly = 2) { fullCoinsProvider.getPage(200) }
+    }
+
+    @Test
+    fun updateFilter_blankQueryOnStart_isNoOp() {
+        val viewModel = loadedViewModel(hasMore = true)
+
+        viewModel.updateFilter("")
+
+        coVerify(exactly = 1) { fullCoinsProvider.getPage(any()) }
+    }
+
+    @Test
+    fun updateFilter_whilePreviousLoadPending_dropsStaleResult() {
+        val pages = pendingPages()
+        val viewModel = viewModel()
+        viewModel.updateFilter("btc")
+
+        pages[0].complete(FullCoinsPage(listOf(fullCoin(BlockchainType.Tron)), hasMore = false))
+
+        assertTrue(viewModel.uiState.isLoading)
+        assertTrue(viewModel.uiState.fullCoins.isEmpty())
+
+        pages[1].complete(FullCoinsPage(listOf(fullCoin(BlockchainType.Ethereum)), hasMore = false))
+
+        assertEquals(listOf(BlockchainType.Ethereum.uid), viewModel.uiState.fullCoins.map { it.coin.uid })
+    }
+
+    @Test
+    fun updateFilter_newQueryLoading_disablesPaginationOfRetainedList() {
+        val viewModel = loadedViewModel(hasMore = true)
+        pendingPages()
+
+        viewModel.updateFilter("btc")
+        viewModel.onBottomReached()
+
+        assertFalse(viewModel.uiState.hasMore)
+        assertTrue(viewModel.uiState.fullCoins.isNotEmpty())
+        coVerify(exactly = 0) { fullCoinsProvider.getPage(400) }
+    }
+
+    private fun loadedViewModel(hasMore: Boolean): ReceiveTokenSelectViewModel {
+        coEvery { fullCoinsProvider.getPage(any()) } returns
+            FullCoinsPage(listOf(fullCoin(BlockchainType.Ethereum)), hasMore)
+        return viewModel()
+    }
+
+    private fun pendingPages(): List<CompletableDeferred<FullCoinsPage>> {
+        val pages = List(MAX_PENDING_PAGES) { CompletableDeferred<FullCoinsPage>() }
+        var next = 0
+        coEvery { fullCoinsProvider.getPage(any()) } coAnswers { pages[next++].await() }
+        return pages
+    }
+
     private fun viewModel() = ReceiveTokenSelectViewModel(
         walletManager,
         account,
@@ -99,6 +229,10 @@ class ReceiveTokenSelectViewModelTest {
             decimals = 8,
         )
         return FullCoin(coin = coin, tokens = listOf(token))
+    }
+
+    private companion object {
+        const val MAX_PENDING_PAGES = 4
     }
 
     private object EthereumOnlyChainSupport : PlatformChainSupport {

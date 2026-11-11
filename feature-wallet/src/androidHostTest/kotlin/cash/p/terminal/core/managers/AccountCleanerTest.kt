@@ -2,6 +2,7 @@ package cash.p.terminal.core.managers
 
 import cash.p.terminal.core.storage.AppDatabaseProvider
 import cash.p.terminal.core.storage.MoneroFileDao
+import cash.p.terminal.core.storage.SingleDatabaseStorageRouter
 import cash.p.terminal.domain.usecase.ClearZCashWalletDataUseCase
 import cash.p.terminal.domain.usecase.ZcashEraseResult
 import cash.p.terminal.wallet.Account
@@ -87,7 +88,7 @@ class AccountCleanerTest {
             accountManager,
             adapterManager,
             walletManager,
-            databaseProvider,
+            SingleDatabaseStorageRouter(databaseProvider),
             platformAccountDataCleaner,
             accountStorageCleaner,
             bitcoinKitDatabaseManager,

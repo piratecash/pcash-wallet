@@ -15,8 +15,10 @@ import cash.p.terminal.core.managers.BeamDeletionState
 import cash.p.terminal.core.managers.BeamSessionFactory
 import cash.p.terminal.core.managers.BeamSessionOwner
 import cash.p.terminal.core.managers.BeamStorageLocator
+import cash.p.terminal.core.managers.IdentityKitStorageNaming
 import cash.p.terminal.core.managers.SharedPreferencesBeamResetMarker
 import cash.p.terminal.core.storage.AppDatabase
+import cash.p.terminal.core.storage.SingleDatabaseStorageRouter
 import cash.p.terminal.core.storage.StaticAppDatabaseProvider
 import cash.p.terminal.modules.receive.ReceiveModule
 import cash.p.terminal.ui_compose.entities.ViewState
@@ -103,13 +105,13 @@ class SessionBeamReceiveAddressProviderTest {
         Dispatchers.setMain(main)
         val context = ApplicationProvider.getApplicationContext<Context>()
         database = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java).build()
-        val locator = BeamStorageLocator(AndroidKitPlatformContexts(context))
+        val locator = BeamStorageLocator(AndroidKitPlatformContexts(context), IdentityKitStorageNaming)
         val encryption = mockk<IEncryptionManager> {
             every { encrypt(any()) } answers { firstArg<String>() }
             every { decrypt(any()) } answers { firstArg<String>() }
         }
         val deletionState = spyk(
-            BeamDeletionState(StaticAppDatabaseProvider(database), SharedPreferencesBeamResetMarker(context)),
+            BeamDeletionState(SingleDatabaseStorageRouter(StaticAppDatabaseProvider(database)), SharedPreferencesBeamResetMarker(context)),
         )
         every { deletionState.ensureAvailable(any()) } answers {
             availabilityThreads.add(Thread.currentThread().name)

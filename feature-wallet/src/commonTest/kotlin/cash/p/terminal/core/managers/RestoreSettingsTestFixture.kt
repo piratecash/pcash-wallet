@@ -11,6 +11,7 @@ internal class RestoreSettingsTestFixture {
     private val records = ConcurrentHashMap<Triple<String, String, String>, RestoreSettingRecord>()
 
     init {
+        every { storage.prepareForNewAccount(any()) } returns Unit
         every { storage.save(any()) } answers {
             firstArg<List<RestoreSettingRecord>>().forEach { record ->
                 records[Triple(record.accountId, record.blockchainTypeUid, record.key)] = record

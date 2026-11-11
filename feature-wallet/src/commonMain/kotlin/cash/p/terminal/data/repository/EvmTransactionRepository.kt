@@ -99,7 +99,7 @@ class EvmTransactionRepository(
     }
 
     suspend fun buildErc20Kit(contractAddress: String): Erc20Kit = Erc20Kit.getInstance(
-        platformContexts.ethereum,
+        platformContexts.ethereum(evmKit.walletId),
         evmKit,
         Address(contractAddress),
         evmKitWrapper.databaseKey

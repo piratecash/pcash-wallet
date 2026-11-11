@@ -17,6 +17,9 @@ interface IAdapterManager {
     /** [attended] = false is an automatic refresh: it must never prompt a hardware wallet. */
     suspend fun refresh(attended: Boolean = true)
 
+    /** Returns once no wallet of an account other than [keptAccountIds] has an adapter or is being unlinked. */
+    suspend fun awaitReleased(keptAccountIds: Set<String>)
+
     /**
      * Wait for adapter for the given wallet to be available
      * If adapter is already available, return it

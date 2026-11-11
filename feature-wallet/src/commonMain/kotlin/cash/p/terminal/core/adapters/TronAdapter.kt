@@ -1,6 +1,7 @@
 package cash.p.terminal.core.adapters
 
 import cash.p.terminal.wallet.AdapterState
+import io.horizontalsystems.databasenaming.DatabaseNameResolver
 import io.horizontalsystems.tronkit.PlatformContext
 import cash.p.terminal.wallet.entities.BalanceData
 import cash.p.terminal.core.managers.TronKitWrapper
@@ -93,9 +94,9 @@ class TronAdapter(kitWrapper: TronKitWrapper) : BaseTronAdapter(kitWrapper, deci
     companion object {
         const val decimal = 6
 
-        fun clear(platformContext: PlatformContext, walletId: String) {
+        fun clear(platformContext: PlatformContext, walletId: String, nameResolver: DatabaseNameResolver) {
             Network.values().forEach { network ->
-                TronKit.clear(platformContext, network, walletId)
+                TronKit.clear(platformContext, network, walletId, nameResolver)
             }
         }
     }

@@ -63,6 +63,7 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.runtime.LaunchedEffect
+import java.util.Date
 import cash.p.terminal.resources.Password
 import cash.p.terminal.resources.desktop_unlock_data_unreadable
 import cash.p.terminal.resources.desktop_unlock_failed
@@ -90,6 +91,11 @@ internal fun LockScreenLayout(title: String, content: @Composable ColumnScope.()
             content()
         }
     }
+}
+
+@Composable
+internal fun LockedOutUntilText(until: Date) {
+    subhead2_grey(text = stringResource(Res.string.Unlock_WalletDisabledUntil, DateHelper.getOnlyTime(until)))
 }
 
 /** Masked single-line field; Caps Lock is re-read on every key stroke, the only way to notice it. */
@@ -165,8 +171,7 @@ internal fun PasswordCheckForm(
         }
         uiState.lockedOut?.let {
             VSpacer(8.dp)
-            val until = DateHelper.getOnlyTime(it.until)
-            subhead2_grey(text = stringResource(Res.string.Unlock_WalletDisabledUntil, until))
+            LockedOutUntilText(it.until)
         }
         VSpacer(24.dp)
         ButtonPrimaryYellow(

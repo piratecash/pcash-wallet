@@ -67,11 +67,13 @@ class EvmBlockchainManager(
     /** Works without the key, so an account whose key is unreadable can still be deleted. */
     suspend fun clear(accountId: String) {
         blockchainTypes.mapNotNull(::getEvmKitManagerOrNull).forEach { it.stopFor(accountId) }
-        val context = platformContexts.ethereum
+        val context = platformContexts.ethereum(accountId)
+        val nameResolver = platformContexts.resolverFor(accountId)
         blockchainTypes.map(::getChain).forEach { chain ->
-            EthereumKit.clear(context, chain, accountId)
-            Erc20Kit.clear(context, chain, accountId)
-            MerkleTransactionAdapter.clear(context, chain, accountId)
+            EthereumKit.clear(context, chain, accountId, nameResolver)
+            // Under opaque names it deletes no token database: deleting the account's directory does.
+            Erc20Kit.clear(context, chain, accountId, nameResolver)
+            MerkleTransactionAdapter.clear(context, chain, accountId, nameResolver)
         }
         databaseKeys.remove(accountId)
     }

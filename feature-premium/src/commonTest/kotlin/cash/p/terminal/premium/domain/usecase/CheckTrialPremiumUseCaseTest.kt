@@ -4,7 +4,7 @@ import cash.p.terminal.network.pirate.domain.enity.TrialPremiumResult
 import cash.p.terminal.network.pirate.domain.repository.PiratePlaceRepository
 import cash.p.terminal.premium.data.dao.DemoPremiumUserDao
 import cash.p.terminal.premium.data.model.DemoPremiumUser
-import cash.p.terminal.premium.domain.premiumDatabaseProviderOf
+import cash.p.terminal.premium.domain.premiumDatabaseRouterOf
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
@@ -102,7 +102,7 @@ class CheckTrialPremiumUseCaseTest {
 
     private fun createUseCase(isDebug: Boolean) = CheckTrialPremiumUseCase(
         piratePlaceRepository = piratePlaceRepository,
-        premiumDatabaseProvider = premiumDatabaseProviderOf(demoDao = demoPremiumUserDao),
+        premiumDatabaseRouter = premiumDatabaseRouterOf(demoDao = demoPremiumUserDao),
         getBnbAddressUseCase = getBnbAddressUseCase,
         isDebug = isDebug
     )

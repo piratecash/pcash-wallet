@@ -1471,12 +1471,15 @@ class LitecoinAdapter(
                 dataDir = environment.dataDir,
                 databaseKey = environment.databaseKey,
                 connectionManager = environment.connectionManager,
+                nameResolver = environment.nameResolver,
                 walletId = account.id,
                 networkType = NetworkType.MainNet
             )
             val mwebConfig = when (mode) {
-                is Mode.Public -> restoreSettings?.let { mwebConfig(it, dispatcherProvider) }
-                Mode.Mweb -> mwebConfig(restoreSettings, dispatcherProvider)
+                is Mode.Public -> restoreSettings?.let {
+                    mwebConfig(it, dispatcherProvider, environment.mwebDebugLogDisabled)
+                }
+                Mode.Mweb -> mwebConfig(restoreSettings, dispatcherProvider, environment.mwebDebugLogDisabled)
             }
 
             val context = LitecoinKitCreateContext(
@@ -1507,6 +1510,7 @@ class LitecoinAdapter(
                 mwebDataDir = context.environment.mwebDataDir,
                 databaseKey = context.environment.databaseKey,
                 connectionManager = context.environment.connectionManager,
+                nameResolver = context.environment.nameResolver,
                 extendedKey = accountType.hdExtendedKey,
                 purpose = context.purpose,
                 walletId = context.account.id,
@@ -1514,7 +1518,7 @@ class LitecoinAdapter(
                 networkType = NetworkType.MainNet,
                 confirmationsThreshold = KIT_CONFIRMATIONS_THRESHOLD,
                 sharedPeerGroupHolder = context.sharedPeerGroupHolder,
-                mwebPublicSendConfig = mwebPublicSendConfig(context.dispatcherProvider),
+                mwebPublicSendConfig = mwebPublicSendConfig(context),
             )
         }
 
@@ -1527,6 +1531,7 @@ class LitecoinAdapter(
                 mwebDataDir = context.environment.mwebDataDir,
                 databaseKey = context.environment.databaseKey,
                 connectionManager = context.environment.connectionManager,
+                nameResolver = context.environment.nameResolver,
                 seed = accountType.seed,
                 walletId = context.account.id,
                 syncMode = context.syncMode,
@@ -1535,7 +1540,7 @@ class LitecoinAdapter(
                 purpose = context.purpose,
                 sharedPeerGroupHolder = context.sharedPeerGroupHolder,
                 mwebConfig = context.mwebConfig,
-                mwebPublicSendConfig = mwebPublicSendConfig(context.dispatcherProvider)
+                mwebPublicSendConfig = mwebPublicSendConfig(context)
             )
         }
 
@@ -1548,13 +1553,14 @@ class LitecoinAdapter(
                 mwebDataDir = context.environment.mwebDataDir,
                 databaseKey = context.environment.databaseKey,
                 connectionManager = context.environment.connectionManager,
+                nameResolver = context.environment.nameResolver,
                 watchAddress = accountType.address,
                 walletId = context.account.id,
                 syncMode = context.syncMode,
                 networkType = NetworkType.MainNet,
                 confirmationsThreshold = KIT_CONFIRMATIONS_THRESHOLD,
                 sharedPeerGroupHolder = context.sharedPeerGroupHolder,
-                mwebPublicSendConfig = mwebPublicSendConfig(context.dispatcherProvider)
+                mwebPublicSendConfig = mwebPublicSendConfig(context)
             )
         }
 
@@ -1575,6 +1581,7 @@ class LitecoinAdapter(
                 mwebDataDir = context.environment.mwebDataDir,
                 databaseKey = context.environment.databaseKey,
                 connectionManager = context.environment.connectionManager,
+                nameResolver = context.environment.nameResolver,
                 extendedKey = context.wallet.getHDExtendedKey()
                     ?: throw IllegalStateException(
                         Translator.getString(Res.string.litecoin_hardware_extended_public_key_required)
@@ -1587,7 +1594,7 @@ class LitecoinAdapter(
                 iInputSigner = hardwareWalletEcdaBitcoinSigner,
                 iSchnorrInputSigner = hardwareWalletSchnorrSigner,
                 sharedPeerGroupHolder = context.sharedPeerGroupHolder,
-                mwebPublicSendConfig = mwebPublicSendConfig(context.dispatcherProvider)
+                mwebPublicSendConfig = mwebPublicSendConfig(context)
             )
         }
 
@@ -1598,6 +1605,7 @@ class LitecoinAdapter(
                 mwebDataDir = context.environment.mwebDataDir,
                 databaseKey = context.environment.databaseKey,
                 connectionManager = context.environment.connectionManager,
+                nameResolver = context.environment.nameResolver,
                 extendedKey = requireNotNull(context.wallet.getHDExtendedKey()),
                 purpose = context.purpose,
                 walletId = context.account.id,
@@ -1607,23 +1615,28 @@ class LitecoinAdapter(
                 iInputSigner = deviceSigner.inputSigner,
                 iSchnorrInputSigner = deviceSigner.schnorrInputSigner,
                 sharedPeerGroupHolder = context.sharedPeerGroupHolder,
-                mwebPublicSendConfig = mwebPublicSendConfig(context.dispatcherProvider)
+                mwebPublicSendConfig = mwebPublicSendConfig(context)
             )
             deviceSigner.bindKit(kit)
             return kit
         }
 
-        private fun mwebPublicSendConfig(dispatcherProvider: DispatcherProvider): MwebPublicSendConfig {
-            return MwebPublicSendConfig(dispatcherProvider = mwebDispatcherProvider(dispatcherProvider))
+        private fun mwebPublicSendConfig(context: LitecoinKitCreateContext): MwebPublicSendConfig {
+            return MwebPublicSendConfig(
+                dispatcherProvider = mwebDispatcherProvider(context.dispatcherProvider),
+                disableDebugLog = context.environment.mwebDebugLogDisabled,
+            )
         }
 
         private fun mwebConfig(
             restoreSettings: RestoreSettings?,
             dispatcherProvider: DispatcherProvider,
+            disableDebugLog: Boolean,
         ): MwebConfig {
             return MwebConfig(
                 dispatcherProvider = mwebDispatcherProvider(dispatcherProvider),
-                restorePoint = restoreSettings.mwebRestorePoint()
+                restorePoint = restoreSettings.mwebRestorePoint(),
+                disableDebugLog = disableDebugLog,
             )
         }
 

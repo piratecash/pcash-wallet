@@ -26,12 +26,7 @@ class TokenBalanceService(
     private val _balanceItemFlow = MutableStateFlow<BalanceItem?>(null)
     val balanceItemFlow = _balanceItemFlow.asStateFlow()
 
-    var balanceItem: BalanceItem? = null
-        private set(value) {
-            field = value
-
-            _balanceItemFlow.update { value }
-        }
+    val balanceItem: BalanceItem? get() = _balanceItemFlow.value
 
     private val job = SupervisorJob()
     private val coroutineScope = CoroutineScope(Dispatchers.Default + job)
@@ -42,8 +37,10 @@ class TokenBalanceService(
         xRateRepository.setCoinUids(listOf(wallet.coin.uid))
 
         val latestRates = xRateRepository.getLatestRates()
+        // Without an adapter the request below answers nothing, right after a seed import above all.
+        val adapterMissing = !balanceAdapterRepository.hasAdapter(wallet)
 
-        balanceItem = BalanceItem(
+        _balanceItemFlow.value = BalanceItem(
             wallet = wallet,
             balanceData = balanceAdapterRepository.balanceData(wallet),
             state = balanceAdapterRepository.state(wallet),
@@ -53,6 +50,9 @@ class TokenBalanceService(
             transactionsSyncState = balanceAdapterRepository.transactionsSyncState(wallet),
         )
 
+        if (adapterMissing) {
+            coroutineScope.launch { loadWarningWhenAdapterAppears() }
+        }
         coroutineScope.launch {
             xRateRepository.itemObservable.asFlow().collect {
                 handleXRateUpdate(it)
@@ -74,19 +74,29 @@ class TokenBalanceService(
         xRateRepository.refresh()
     }
 
+    private suspend fun loadWarningWhenAdapterAppears() {
+        balanceAdapterRepository.awaitAdapter(wallet)
+        if (balanceItem?.warning != null) return
+        // A failed request answers null too: it must not erase anything.
+        val warning = balanceAdapterRepository.warning(wallet) ?: return
+        _balanceItemFlow.update { it?.copy(warning = warning) }
+    }
+
     private fun handleXRateUpdate(latestRates: Map<String, CoinPrice?>) {
-        balanceItem = balanceItem?.copy(
-            coinPrice = latestRates[wallet.coin.uid]
-        )
+        _balanceItemFlow.update {
+            it?.copy(coinPrice = latestRates[wallet.coin.uid])
+        }
     }
 
     private fun handleAdapterUpdate() {
-        balanceItem = balanceItem?.copy(
-            balanceData = balanceAdapterRepository.balanceData(wallet),
-            state = balanceAdapterRepository.state(wallet),
-            sendAllowed = balanceAdapterRepository.sendAllowed(wallet),
-            transactionsSyncState = balanceAdapterRepository.transactionsSyncState(wallet),
-        )
+        _balanceItemFlow.update {
+            it?.copy(
+                balanceData = balanceAdapterRepository.balanceData(wallet),
+                state = balanceAdapterRepository.state(wallet),
+                sendAllowed = balanceAdapterRepository.sendAllowed(wallet),
+                transactionsSyncState = balanceAdapterRepository.transactionsSyncState(wallet),
+            )
+        }
     }
 
     override fun clear() {

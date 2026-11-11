@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import android.security.keystore.UserNotAuthenticatedException
 import android.util.Base64
 import androidx.test.core.app.ApplicationProvider
+import cash.p.terminal.core.managers.IdentityKitStorageNaming
 import io.horizontalsystems.core.IEncryptionManager
 import io.mockk.every
 import io.mockk.mockk
@@ -29,7 +30,7 @@ import kotlin.test.assertFailsWith
 @Config(manifest = Config.NONE, sdk = [27])
 class BeamDatabaseKeyProviderTest {
     private val context = ApplicationProvider.getApplicationContext<Context>()
-    private val locator = BeamStorageLocator(AndroidKitPlatformContexts(context))
+    private val locator = BeamStorageLocator(AndroidKitPlatformContexts(context), IdentityKitStorageNaming)
     private val preferences = context.getSharedPreferences("beam_database_keys", Context.MODE_PRIVATE)
     private val encryption = FakeEncryption()
     private val id = locator.storageId(ACCOUNT, BeamNetwork.Mainnet)

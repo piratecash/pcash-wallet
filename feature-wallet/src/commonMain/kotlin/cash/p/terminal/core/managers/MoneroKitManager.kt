@@ -6,8 +6,9 @@ import cash.p.terminal.core.MoneroRescanException
 import cash.p.terminal.core.MoneroSpendReadiness
 import cash.p.terminal.core.UnsupportedAccountException
 import cash.p.terminal.core.adapters.MoneroAdapter
-import cash.p.terminal.core.storage.MoneroFileDao
+import cash.p.terminal.core.storage.StorageRouter
 import cash.p.terminal.core.tryOrNull
+import cash.p.terminal.core.usecase.MoneroWalletServiceProvider
 import cash.p.terminal.core.usecase.MoneroWalletStorage
 import cash.p.terminal.core.usecase.MoneroWalletUseCase
 import cash.p.terminal.core.usecase.ValidateMoneroHeightUseCase
@@ -98,13 +99,13 @@ import kotlin.time.TimeSource
 private val moneroLogger = Logger.withTag("MoneroKitManager")
 
 class MoneroKitManager(
-    private val moneroWalletService: MoneroWalletService,
+    private val moneroWalletServiceProvider: MoneroWalletServiceProvider,
     private val backgroundManager: IBackgroundManager,
     private val restoreSettingsManager: RestoreSettingsManager,
     private val backgroundKeepAliveManager: BackgroundKeepAliveManager,
     private val connectivityManager: IConnectivityManager,
     private val dispatcherProvider: DispatcherProvider,
-    private val moneroFileDao: MoneroFileDao,
+    private val storageRouter: StorageRouter,
     private val removeMoneroWalletFilesUseCase: IRemoveMoneroWalletFilesUseCase,
     private val networkErrorTracker: NetworkErrorTracker,
     private val offlineModeManager: OfflineModeManager,
@@ -227,7 +228,7 @@ class MoneroKitManager(
     ): MoneroKitWrapper {
         val ledgerAccount = account.moneroDeviceProtocol == MoneroDeviceProtocol.Proxy
         return MoneroKitWrapper(
-            moneroWalletService = moneroWalletService,
+            moneroWalletService = moneroWalletServiceProvider.service,
             restoreSettingsManager = restoreSettingsManager,
             account = account,
             dispatcherProvider = dispatcherProvider,
@@ -272,7 +273,7 @@ class MoneroKitManager(
             if (!removed) {
                 throw MoneroRescanException("Failed to remove Monero wallet files for account ${account.id}")
             }
-            moneroFileDao.deleteAssociatedRecord(account.id)
+            storageRouter.account(account.id)?.moneroFileDao()?.deleteAssociatedRecord(account.id)
             restoreSettingsManager.saveMoneroRestoreHeight(account, newHeight)
         }
     }
@@ -800,7 +801,8 @@ class MoneroKitWrapper(
     private val timeSource: TimeSource = TimeSource.Monotonic,
     private val subaddressSource: MoneroSubaddressSource = ServiceMoneroSubaddressSource(moneroWalletService),
 ) : MoneroWalletService.Observer {
-    private val moneroFileDao: MoneroFileDao by inject(MoneroFileDao::class.java)
+    private val storageRouter: StorageRouter by inject(StorageRouter::class.java)
+    private val moneroFileDao get() = storageRouter.account(account.id)?.moneroFileDao()
     private val moneroWalletUseCase: MoneroWalletUseCase by inject(MoneroWalletUseCase::class.java)
     private val validateMoneroHeightUseCase: ValidateMoneroHeightUseCase by inject(
         ValidateMoneroHeightUseCase::class.java
@@ -812,7 +814,7 @@ class MoneroKitWrapper(
     private val getMoneroWalletFilesNameUseCase: IGetMoneroWalletFilesNameUseCase by inject(
         IGetMoneroWalletFilesNameUseCase::class.java
     )
-    private val logger = AppLogger("monero-kit").getScoped(account.id)
+    private val logger = AppLogger("monero-kit").getScoped(account.id).forAccount(account.id)
 
     @Volatile
     private var lastLoggedConnectionStatus: ConnectionStatus? = null
@@ -920,7 +922,7 @@ class MoneroKitWrapper(
         val restoredAccount = checkNotNull(moneroWalletUseCase.restoreFromSeedAccount(accountType, height)) {
             "Failed to restore Monero wallet from seed"
         }
-        moneroFileDao.insert(
+        moneroFileDao?.insert(
             MoneroFileRecord(
                 fileName = SecretString(restoredAccount.walletInnerName),
                 password = SecretString(restoredAccount.password),
@@ -1069,7 +1071,7 @@ class MoneroKitWrapper(
 
     private suspend fun mnemonicCredentials(): MoneroWalletCredentials {
         logger.info("start: using seed account")
-        if (moneroFileDao.getAssociatedRecord(account.id) == null) {
+        if (moneroFileDao?.getAssociatedRecord(account.id) == null) {
             logger.info("start: no associated wallet files, restoring from mnemonic")
             val restoreSettings = restoreSettingsManager.settings(account, BlockchainType.Monero)
             val height = restoreSettings.birthdayHeight
@@ -1077,14 +1079,14 @@ class MoneroKitWrapper(
             check(height != -1L) { "Monero restore height can't be -1" }
             restoreFromSeedAccount(account = account, height = height)
         }
-        val record = requireNotNull(moneroFileDao.getAssociatedRecord(accountId = account.id)) {
+        val record = requireNotNull(moneroFileDao?.getAssociatedRecord(accountId = account.id)) {
             "Account does not have a valid Monero file association"
         }
         return MoneroWalletCredentials(record.fileName.value, record.password.value)
     }
 
     private suspend fun deviceCredentials(): MoneroWalletCredentials {
-        val record = requireNotNull(moneroFileDao.getAssociatedRecord(account.id)) {
+        val record = requireNotNull(moneroFileDao?.getAssociatedRecord(account.id)) {
             "Hardware account has no Monero wallet files"
         }
         return MoneroWalletCredentials(record.fileName.value, record.password.value)
@@ -1937,7 +1939,7 @@ class MoneroKitWrapper(
             failRescanAfterRemoval(fileName)
         }
 
-        moneroFileDao.deleteAssociatedRecord(account.id)
+        moneroFileDao?.deleteAssociatedRecord(account.id)
 
         val restoreSettings = restoreSettingsManager.settings(account, BlockchainType.Monero)
         restoreSettings.birthdayHeight = birthdayHeight

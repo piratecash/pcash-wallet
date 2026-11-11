@@ -1763,7 +1763,7 @@
     <string name="PinSet_ErrorFailedToSavePin">Під час збереження вашого коду сталася помилка. Повторіть спробу.</string>
     <string name="PinSet_ForBiometrics">Встановити секретний код для увімкнення біометричних даних</string>
     <string name="PinSet_ForDuress">Встановіть код для увімкнення режиму Duress</string>
-    <string name="pin_set_for_login_logging">Set a passcode to enable login logging</string>
+    <string name="pin_set_for_login_logging">Встановіть код для увімкнення журналу входу</string>
     <string name="pin_set_for_login_logging_passcode">Встановіть код для захисту журналу входу</string>
     <string name="confirm_pin_to_disable_login_logging_passcode">Введіть код для вимкнення журналу входу</string>
     <string name="pin_set_for_delete_all_contacts">Встановіть код для видалення всіх контактів</string>
@@ -2441,6 +2441,7 @@
     <string name="desktop_change_password_current_hint">Поточний пароль</string>
     <string name="desktop_change_password_new_hint">Новий пароль</string>
     <string name="desktop_change_password_failed">Не вдалося зберегти пароль. Поточний пароль досі діє</string>
+    <string name="desktop_change_password_in_use">Цей пароль уже використовується</string>
     <string name="desktop_change_password_corrupted">Файл ключа пошкоджено: після блокування застосунку ви не зможете увійти. Збережіть резервну копію кожної фрази відновлення.</string>
     <string name="desktop_change_password_success">Пароль змінено</string>
     <string name="desktop_security_lock_now">Заблокувати зараз</string>
@@ -2564,4 +2565,25 @@
     <string name="evm_node_request_failed">Вузол мережі не зміг виконати запит. Повторіть спробу або виберіть інше джерело в налаштуваннях блокчейну.\n\nВідповідь вузла: %1$s</string>
     <string name="desktop_transfer_password">Пароль перед надсиланням</string>
     <string name="desktop_transfer_password_description">Перед кожним надсиланням запитується пароль застосунку. Це захистить ваші кошти, якщо хтось отримає доступ до комп’ютера з розблокованим застосунком.</string>
+    <string name="desktop_unlock_legacy_format">Дані створено старішою версією застосунку, їх неможливо відкрити</string>
+    <string name="desktop_duress_password_set">Встановити режим Duress</string>
+    <string name="desktop_duress_password_edit">Змінити Duress-пароль</string>
+    <string name="desktop_duress_password_disable">Вимкнути Duress-пароль</string>
+    <string name="desktop_duress_password_description">Цей режим дозволяє задати кілька паролів застосунку, при цьому заданий пароль показує лише певні гаманці. Створено, щоб захистити вибрані гаманці під примусом або загрозами.</string>
+    <string name="desktop_duress_password_note_change_title">Зміна пароля</string>
+    <string name="desktop_duress_password_note_change_description">Зміна пароля в режимі Duress також змінить поточний пароль цього режиму.</string>
+    <string name="desktop_duress_password_title">Duress-пароль</string>
+    <string name="desktop_duress_password_set_description">Задайте пароль для режиму Duress</string>
+    <string name="desktop_duress_password_edit_description">Введіть новий пароль для режиму Duress</string>
+    <string name="desktop_hidden_wallet_password_title">Пароль прихованого гаманця</string>
+    <string name="desktop_hidden_wallet_password_description">Створіть пароль для прихованого гаманця</string>
+    <string name="desktop_hidden_wallet_password_terms_warning">Глобальний гаманець не бачитиме цей гаманець, а якщо ви забудете його пароль, доступ до гаманця можна відновити за seed-фразою.</string>
+    <string-array name="desktop_hidden_wallet_password_terms">
+        <item>Користувач розуміє, що гаманець не буде видно серед інших гаманців.</item>
+        <item>Користувач розуміє, що якщо він забуде пароль, гаманець можна відновити, знаючи seed-фразу.</item>
+    </string-array>
+    <string name="desktop_levels_limit_reached">Досягнуто ліміт рівнів. Додати нові паролі неможливо</string>
+    <string name="desktop_password_save_failed">Не вдалося зберегти пароль. Спробуйте ще раз</string>
+    <string name="tron_controlled_by_others_title">Цим акаунтом можуть керувати інші</string>
+    <string name="tron_controlled_by_others_warning">Права на цей акаунт змінено: ним можуть керувати інші ключі. Кошти, які ви на нього переведете, можуть вивести без вашої участі. Поповнюйте його, лише якщо знаєте, чиї це ключі.</string>
 </resources>

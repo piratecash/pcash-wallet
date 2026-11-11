@@ -1778,7 +1778,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="login_logging_log_successful">Başarılı girişleri kaydet</string>
     <string name="login_logging_log_unsuccessful">Başarısız girişleri kaydet</string>
     <string name="login_logging_duress_mode">ZORLAMA MODU</string>
-    <string name="login_logging_log_into_duress">Zorlama moduna gir</string>
+    <string name="login_logging_log_into_duress">Zorlama moduna girişleri kaydet</string>
     <string name="login_logging_send_notification">Giriş bildirimi gönder</string>
     <string name="login_logging_delete_auth_data">Tüm kimlik doğrulama verilerini sil</string>
     <string name="login_logging_delete_auth_data_description">Bu işlev, zorlama moduna girerken tüm kimlik doğrulama verilerini fotoğraflarla birlikte siler.</string>
@@ -1875,14 +1875,14 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="Unlock_Random">Rastgele</string>
     <!--Set Pin-->
     <string name="PinSet_Title">Şifre belirle</string>
-    <string name="PinSet_Info">Şifre, programı açmak ve para göndermek için kullanılacak</string>
-    <string name="PinSet_Transactions_Hide">Set Passcode for \“Transactions Auto Hide\” mode</string>
+    <string name="PinSet_Info">Şifre, cüzdanınızın kilidini açmak için kullanılacak</string>
+    <string name="PinSet_Transactions_Hide">“İşlemleri Otomatik Gizle” modu için şifre belirleyin</string>
     <string name="PinSet_ConfirmInfo">Onayla</string>
     <string name="PinSet_ErrorPinsDontMatch">Kod uyuşmadı. Tekrar deneyin.</string>
     <string name="PinSet_ErrorFailedToSavePin">Şifre kaydedilirken hata oluştu. Tekrar deneyin.</string>
     <string name="PinSet_ForBiometrics">Biyometriyi etkinleştirmek için bir şifre belirleyin</string>
     <string name="PinSet_ForDuress">Duress Modunu etkinleştirmek için bir şifre kodu ayarlayın</string>
-    <string name="pin_set_for_login_logging">Set a passcode to enable login logging</string>
+    <string name="pin_set_for_login_logging">Giriş günlüğünü etkinleştirmek için şifre belirleyin</string>
     <string name="pin_set_for_login_logging_passcode">Giriş günlüğünü korumak için şifre belirleyin</string>
     <string name="confirm_pin_to_disable_login_logging_passcode">Giriş günlüğünü devre dışı bırakmak için şifreyi girin</string>
     <string name="pin_set_for_delete_all_contacts">Tüm kişileri silmek için bir kod belirleyin</string>
@@ -2296,6 +2296,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="desktop_change_password_current_hint">Mevcut şifre</string>
     <string name="desktop_change_password_new_hint">Yeni şifre</string>
     <string name="desktop_change_password_failed">Şifre kaydedilemedi. Mevcut şifre kullanılmaya devam ediyor</string>
+    <string name="desktop_change_password_in_use">Bu şifre zaten kullanılıyor</string>
     <string name="desktop_change_password_corrupted">Anahtar dosyası zarar görmüş: uygulama kilitlendiğinde oturum açamayacaksınız. Her kurtarma ifadesinin bir yedeğini kaydedin.</string>
     <string name="desktop_change_password_success">Şifre değiştirildi</string>
     <string name="desktop_security_lock_now">Şimdi kilitle</string>
@@ -2409,4 +2410,25 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="evm_node_request_failed">Ağ düğümü isteği işleyemedi. Tekrar deneyin veya Blockchain Ayarları\'ndan başka bir kaynak seçin.\n\nDüğüm yanıtı: %1$s</string>
     <string name="desktop_transfer_password">Göndermeden önce şifre</string>
     <string name="desktop_transfer_password_description">Her gönderimden önce uygulama şifresi istenir. Böylece uygulamanın kilidi açıkken biri bilgisayarınıza erişirse varlıklarınız korunur.</string>
+    <string name="desktop_unlock_legacy_format">Veriler uygulamanın daha eski bir sürümü tarafından oluşturulmuş ve açılamıyor</string>
+    <string name="desktop_duress_password_set">Baskı Modunu Ayarla</string>
+    <string name="desktop_duress_password_edit">Baskı Modu Şifresini Düzenle</string>
+    <string name="desktop_duress_password_disable">Baskı Modu Şifresini Devre Dışı Bırak</string>
+    <string name="desktop_duress_password_description">Bu mod, birden fazla uygulama şifresi belirlemenizi sağlar; belirli bir şifre yalnızca seçilen cüzdanları gösterir. Seçilen cüzdanları zorlama veya tehdit altında güvende tutmak için tasarlanmıştır.</string>
+    <string name="desktop_duress_password_note_change_title">Şifre Değişikliği</string>
+    <string name="desktop_duress_password_note_change_description">Baskı Modunda şifreyi değiştirmek, bu modun mevcut şifresini de değiştirir.</string>
+    <string name="desktop_duress_password_title">Baskı Modu Şifresi</string>
+    <string name="desktop_duress_password_set_description">Baskı Modu için bir şifre belirleyin</string>
+    <string name="desktop_duress_password_edit_description">Baskı Modu için yeni bir şifre girin</string>
+    <string name="desktop_hidden_wallet_password_title">Gizli Cüzdan Şifresi</string>
+    <string name="desktop_hidden_wallet_password_description">Gizli cüzdan için bir şifre oluşturun</string>
+    <string name="desktop_hidden_wallet_password_terms_warning">Genel cüzdan bu cüzdanı görmez; şifresini unutursanız cüzdana erişimi kurtarma ifadesiyle geri alabilirsiniz.</string>
+    <string-array name="desktop_hidden_wallet_password_terms">
+        <item>Kullanıcı, cüzdanın diğer cüzdanlar arasında görünmeyeceğini anlar.</item>
+        <item>Kullanıcı, şifreyi unutması halinde cüzdanın kurtarma ifadesi bilinerek geri yüklenebileceğini anlar.</item>
+    </string-array>
+    <string name="desktop_levels_limit_reached">Seviye sınırına ulaşıldı. Daha fazla şifre eklenemez</string>
+    <string name="desktop_password_save_failed">Şifre kaydedilemedi. Lütfen tekrar deneyin</string>
+    <string name="tron_controlled_by_others_title">Bu hesabı başkaları kontrol edebilir</string>
+    <string name="tron_controlled_by_others_warning">Bu hesabın izinleri değiştirilmiş: başka anahtarlar hesabı kontrol edebilir. Hesaba gönderdiğiniz fonlar sizin haberiniz olmadan çekilebilir. Hesaba yalnızca bu anahtarların kime ait olduğunu biliyorsanız para yatırın.</string>
 </resources>

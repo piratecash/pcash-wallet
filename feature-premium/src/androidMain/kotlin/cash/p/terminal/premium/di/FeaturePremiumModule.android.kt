@@ -3,6 +3,8 @@ package cash.p.terminal.premium.di
 import cash.p.terminal.premium.data.TangemBnbAddressProvider
 import cash.p.terminal.premium.data.UserPremiumSettings
 import cash.p.terminal.premium.data.database.PremiumDatabaseProvider
+import cash.p.terminal.premium.data.database.PremiumDatabaseRouter
+import cash.p.terminal.premium.data.database.SinglePremiumDatabaseRouter
 import cash.p.terminal.premium.data.database.StaticPremiumDatabaseProvider
 import cash.p.terminal.premium.data.database.createPremiumDatabase
 import cash.p.terminal.premium.domain.HardwareBnbAddressProvider
@@ -18,6 +20,7 @@ import org.koin.dsl.module
 internal actual fun platformPremiumModule(): Module = module {
     single { createPremiumDatabase(get()) }
     singleOf(::StaticPremiumDatabaseProvider) bind PremiumDatabaseProvider::class
+    singleOf(::SinglePremiumDatabaseRouter) bind PremiumDatabaseRouter::class
 
     singleOf(::UserPremiumSettings) bind PremiumSettings::class
     singleOf(::TangemBnbAddressProvider) bind HardwareBnbAddressProvider::class
