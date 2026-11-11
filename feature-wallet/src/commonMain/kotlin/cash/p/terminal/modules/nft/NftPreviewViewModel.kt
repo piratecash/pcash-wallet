@@ -9,6 +9,7 @@ import cash.p.terminal.core.nft.NftCollectionPrefsRepository
 import cash.p.terminal.core.nft.NftCollectionsRepository
 import cash.p.terminal.core.nft.NftDomainExpiry
 import cash.p.terminal.core.nft.NftLinkButton
+import cash.p.terminal.core.nft.NftLottieLoader
 import cash.p.terminal.core.nft.collectionPrefKey
 import cash.p.terminal.core.nft.owner
 import cash.p.terminal.core.nft.withUserTrust
@@ -28,6 +29,8 @@ data class NftPreviewUiState(
     val trust: NftTrust = NftTrust.Whitelist,
     val menuActions: List<NftAction> = emptyList(),
     val linkButtons: List<NftLinkButton> = emptyList(),
+    val onSale: Boolean = false,
+    val lottieJson: String? = null,
 ) {
     val showSpamPlate: Boolean get() = trust == NftTrust.None
 
@@ -66,14 +69,17 @@ class NftPreviewViewModel(
     private val transferAvailabilityProvider: NftTransferAvailabilityProvider,
     private val repository: NftCollectionsRepository,
     private val prefsRepository: NftCollectionPrefsRepository,
+    private val lottieLoader: NftLottieLoader,
 ) : ViewModel() {
 
     private val hiddenFlow = source.hiddenFlow(balanceHiddenManager)
     private var revealed = false
     private var transferAvailability: NftTransferAvailability = NftTransferAvailability.Loading
+    private var onSale = item.inSale
     private var linkButtons: List<NftLinkButton> = emptyList()
     private var domainExpiry: NftDomainExpiry? = null
     private var pref: NftCollectionPrefRecord? = null
+    private var lottieJson: String? = null
     private var transferCheckJob: Job? = null
 
     var uiState by mutableStateOf(buildState())
@@ -89,6 +95,12 @@ class NftPreviewViewModel(
         viewModelScope.launch {
             prefsRepository.prefsFlow(item.accountId).collect {
                 pref = it[item.collectionPrefKey]
+                uiState = buildState()
+            }
+        }
+        item.lottieUrl?.let { url ->
+            viewModelScope.launch {
+                lottieJson = lottieLoader.load(url)
                 uiState = buildState()
             }
         }
@@ -124,6 +136,7 @@ class NftPreviewViewModel(
 
     private fun updateTransferAvailability(availability: NftTransferAvailability) {
         transferAvailability = availability
+        availability.liveSaleState()?.let { onSale = it }
         uiState = buildState()
     }
 
@@ -145,6 +158,8 @@ class NftPreviewViewModel(
             domainExpiry = domainExpiry,
             trust = trust,
             linkButtons = linkButtons,
+            onSale = onSale,
+            lottieJson = lottieJson,
             menuActions = nftActions(
                 trust = trust,
                 hasCollection = item.collectionAddress != null,
@@ -152,6 +167,18 @@ class NftPreviewViewModel(
                 hasExplorer = repository.explorerUrl(item.blockchainType, item.address) != null,
             ),
         )
+    }
+
+    /** Null when the check did not learn the listing, so the last known flag stands. */
+    private fun NftTransferAvailability.liveSaleState(): Boolean? = when (this) {
+        is NftTransferAvailability.Available -> false
+        // The check tests the listing before the owner, so NotOwner proves the NFT is not listed.
+        is NftTransferAvailability.Unavailable -> when (reason) {
+            NftTransferUnavailableReason.OnSale -> true
+            NftTransferUnavailableReason.NotOwner -> false
+            NftTransferUnavailableReason.WatchOnly, NftTransferUnavailableReason.CheckFailed -> null
+        }
+        else -> null
     }
 
     private fun effectiveTrust(): NftTrust =

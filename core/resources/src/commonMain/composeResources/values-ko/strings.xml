@@ -2368,6 +2368,9 @@
     <string name="nft_details">세부 정보</string>
     <string name="nft_owner">소유자</string>
     <string name="nft_empty_title">내 NFT가 여기에 표시됩니다</string>
+    <string name="nft_empty_subtitle">TON 주소로 첫 NFT를 받거나 마켓플레이스에서 구매하세요</string>
+    <string name="nft_open_market">마켓 열기</string>
+    <string name="nft_untitled">제목 없음</string>
     <string name="nft_manage_title">컬렉션 관리</string>
     <string name="nft_manage_intro">숨긴 컬렉션은 메인 화면, TON 화면, 목록에 표시되지 않습니다. 스팸은 TonAPI 신뢰 수준과 사용자의 표시로 결정됩니다.</string>
     <string name="nft_manage_visible">표시 중 · %1$d</string>

@@ -52,6 +52,7 @@ class NftDomainRenewalViewModelTest {
         every { ownersFlow(any()) } answers { callOriginal() }
         every { supportsSection(any()) } answers { firstArg<Wallet>() !== jettonWallet }
         every { domainExpiryTriggers(any()) } returns triggers
+        every { expiringDomainsFlow(any(), any(), any()) } answers { callOriginal() }
     }
     private val walletManager = mockk<IWalletManager> {
         every { activeWalletsFlow } returns walletsFlow

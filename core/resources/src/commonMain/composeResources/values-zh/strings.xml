@@ -2359,6 +2359,9 @@
     <string name="nft_details">详情</string>
     <string name="nft_owner">所有者</string>
     <string name="nft_empty_title">您的 NFT 将显示在这里</string>
+    <string name="nft_empty_subtitle">将第一个 NFT 接收到您的 TON 地址，或在市场上购买</string>
+    <string name="nft_open_market">打开市场</string>
+    <string name="nft_untitled">未命名</string>
     <string name="nft_manage_title">管理收藏集</string>
     <string name="nft_manage_intro">隐藏的收藏集不会显示在主屏幕、TON 屏幕和列表中。垃圾内容根据 TonAPI 的信任等级和您的标记来判定。</string>
     <string name="nft_manage_visible">可见 · %1$d</string>

@@ -12,6 +12,7 @@ import cash.p.terminal.core.storage.migrations.Migration_121_122
 import cash.p.terminal.core.storage.migrations.Migration_122_123
 import cash.p.terminal.core.storage.migrations.Migration_123_124
 import cash.p.terminal.core.storage.migrations.Migration_124_125
+import cash.p.terminal.core.storage.migrations.Migration_125_126
 import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.premium.data.database.PremiumDatabase
 import cash.p.terminal.premium.data.database.PremiumDatabaseConstructor
@@ -95,6 +96,7 @@ class DesktopStorageSession private constructor(
                     Migration_122_123,
                     Migration_123_124,
                     Migration_124_125,
+                    Migration_125_126,
                 )
                 // Opening is what reveals a key that does not fit the file.
                 database.syncerStateDao().get("")

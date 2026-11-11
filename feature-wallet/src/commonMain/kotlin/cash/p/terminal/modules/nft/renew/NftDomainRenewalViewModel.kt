@@ -17,9 +17,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
@@ -74,11 +72,7 @@ class NftDomainRenewalViewModel(
         uiState = uiState.copy(deselected = if (address in deselected) deselected - address else deselected + address)
     }
 
-    private fun reads(owners: Set<NftOwner>) = merge(
-        flowOf(Unit),
-        resumes,
-        repository.domainExpiryTriggers(owners),
-    ).map { repository.expiringDomains(owners, DOMAIN_RENEW_SOON_DAYS) }
-        // A null read keeps what this owner set showed before.
-        .onEach { domains -> if (domains != null) uiState = uiState.copy(domains = domains) }
+    private fun reads(owners: Set<NftOwner>) = repository
+        .expiringDomainsFlow(owners, DOMAIN_RENEW_SOON_DAYS, resumes)
+        .onEach { domains -> uiState = uiState.copy(domains = domains) }
 }

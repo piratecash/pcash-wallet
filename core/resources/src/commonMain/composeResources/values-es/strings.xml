@@ -2378,6 +2378,9 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="nft_details">Detalles</string>
     <string name="nft_owner">Propietario</string>
     <string name="nft_empty_title">Aquí aparecerán tus NFT</string>
+    <string name="nft_empty_subtitle">Recibe tu primer NFT en tu dirección TON o cómpralo en un marketplace</string>
+    <string name="nft_open_market">Abrir mercado</string>
+    <string name="nft_untitled">Sin título</string>
     <string name="nft_manage_title">Gestionar colecciones</string>
     <string name="nft_manage_intro">Las colecciones ocultas no se muestran en la pantalla principal, en la pantalla de TON ni en la lista. El spam se determina por el nivel de confianza de TonAPI y por tus marcas.</string>
     <string name="nft_manage_visible">Visibles · %1$d</string>

@@ -2797,6 +2797,9 @@ Proceed only if you\u0027re sure.</string>
     <string name="nft_details">Details</string>
     <string name="nft_owner">Owner</string>
     <string name="nft_empty_title">Your NFTs will appear here</string>
+    <string name="nft_empty_subtitle">Get your first NFT to your TON address or buy one on a marketplace</string>
+    <string name="nft_open_market">Open market</string>
+    <string name="nft_untitled">Untitled</string>
     <string name="nft_manage_title">Manage collections</string>
     <string name="nft_manage_intro">Hidden collections are not shown on the main screen, the TON screen or in the list. Spam is determined by the TonAPI trust level and your own marks.</string>
     <string name="nft_manage_visible">Visible · %1$d</string>

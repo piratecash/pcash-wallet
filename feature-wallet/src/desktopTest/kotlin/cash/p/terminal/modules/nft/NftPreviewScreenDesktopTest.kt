@@ -5,6 +5,7 @@ import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -50,6 +51,7 @@ class NftPreviewScreenDesktopTest {
     private fun showScreen(
         availability: NftTransferAvailability,
         hidden: Boolean = false,
+        onSale: Boolean = false,
         onLinkClick: (NftLinkButton) -> Unit = {},
         assertions: ComposeUiTest.() -> Unit,
     ) = runDesktopComposeUiTest {
@@ -64,6 +66,7 @@ class NftPreviewScreenDesktopTest {
                             transferAvailability = availability,
                             trust = NftTrust.None,
                             linkButtons = listOf(claim, market),
+                            onSale = onSale,
                         ),
                         network = NftNetworkInfo(title = "TON", explorerUrl = null),
                         actions = NftPreviewActions(
@@ -107,5 +110,16 @@ class NftPreviewScreenDesktopTest {
     @Test
     fun linkButtons_balanceHidden_notShown() = showScreen(available, hidden = true) {
         onNodeWithText(claim.label).assertDoesNotExist()
+    }
+
+    @Test
+    fun saleBadge_onSale_isShown() =
+        showScreen(NftTransferAvailability.Unavailable(NftTransferUnavailableReason.OnSale), onSale = true) {
+            onNodeWithContentDescription("on sale").assertExists()
+        }
+
+    @Test
+    fun saleBadge_notOnSale_isNotShown() = showScreen(available) {
+        onNodeWithContentDescription("on sale").assertDoesNotExist()
     }
 }

@@ -5,11 +5,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cash.p.terminal.core.nft.DOMAIN_RENEW_SOON_DAYS
 import cash.p.terminal.core.nft.NftChange
 import cash.p.terminal.core.nft.NftCollectionPrefKey
 import cash.p.terminal.core.nft.NftCollectionPrefsRepository
 import cash.p.terminal.core.nft.NftCollectionState
 import cash.p.terminal.core.nft.NftCollectionsRepository
+import cash.p.terminal.core.nft.NftDomainExpiry
 import cash.p.terminal.core.nft.NftItemsState
 import cash.p.terminal.core.nft.NftOwner
 import cash.p.terminal.core.nft.collectionPrefKey
@@ -19,10 +21,12 @@ import cash.p.terminal.core.nft.withUserTrust
 import cash.p.terminal.entities.NftCollectionPrefRecord
 import cash.p.terminal.entities.NftItemRecord
 import cash.p.terminal.wallet.IWalletManager
+import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
@@ -45,6 +49,7 @@ data class NftCollectionsUiState(
     val networkTitle: String? = null,
     val hiddenCollectionsCount: Int = 0,
     val hasNfts: Boolean = false,
+    val expiringDomainAddresses: Set<String> = emptySet(),
 ) {
     val totalCount: Int get() = items.size
     val isEmpty: Boolean get() = !isLoading && !hasNfts
@@ -77,6 +82,11 @@ class NftCollectionsViewModel(
 
     private val hiddenFlow = source.hiddenFlow(balanceHiddenManager)
     private var currentOwners: Set<NftOwner>? = null
+    private val resumes = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
+    // Not in the UI state: Wallet.toString() would print key material.
+    var receiveWallet: Wallet? by mutableStateOf(null)
+        private set
 
     var uiState by mutableStateOf(NftCollectionsUiState(hidden = hiddenFlow.value))
         private set
@@ -85,14 +95,19 @@ class NftCollectionsViewModel(
         viewModelScope.launch {
             launch { hiddenFlow.collect { uiState = uiState.copy(hidden = it) } }
 
-            repository.ownersFlow(source.walletsFlow(walletManager))
+            val wallets = source.walletsFlow(walletManager)
+                .onEach { receiveWallet = it.firstOrNull(repository::supportsSection) }
+            repository.ownersFlow(wallets)
                 .onEach(::onOwnersChanged)
                 .flatMapLatest(::observe)
                 .collect()
         }
     }
 
-    fun onResume() = refreshCurrentOwners(force = false)
+    fun onResume() {
+        resumes.tryEmit(Unit)
+        refreshCurrentOwners(force = false)
+    }
 
     fun refresh() = refreshCurrentOwners(force = true)
 
@@ -105,13 +120,23 @@ class NftCollectionsViewModel(
             .joinToString()
             .ifEmpty { null }
         val retained = uiState.items.filter { it.owner in owners }
-        uiState = uiState.copy(items = retained, isLoading = retained.isEmpty(), networkTitle = networkTitle)
+        uiState = uiState.copy(
+            items = retained,
+            isLoading = retained.isEmpty(),
+            networkTitle = networkTitle,
+            expiringDomainAddresses = emptySet(),
+        )
     }
 
     private fun observe(owners: Set<NftOwner>): Flow<Any> = merge(
         observeItemsWithPrefs(repository, prefsRepository, owners).onEach(::showItems),
         refreshRequests(owners).onEach { force -> repository.refresh(owners, force) },
+        repository.expiringDomainsFlow(owners, DOMAIN_RENEW_SOON_DAYS, resumes).onEach(::showExpiringDomains),
     )
+
+    private fun showExpiringDomains(domains: List<NftDomainExpiry>) {
+        uiState = uiState.copy(expiringDomainAddresses = domains.mapTo(mutableSetOf()) { it.nftAddress })
+    }
 
     private fun showItems(data: NftItemsWithPrefs) {
         val (visible, notVisible) = data.state.items.partition {

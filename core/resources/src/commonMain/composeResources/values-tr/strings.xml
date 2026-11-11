@@ -2381,6 +2381,9 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="nft_details">Ayrıntılar</string>
     <string name="nft_owner">Sahip</string>
     <string name="nft_empty_title">NFT\u0027leriniz burada görünecek</string>
+    <string name="nft_empty_subtitle">İlk NFT\'nizi TON adresinize alın veya bir pazar yerinden satın alın</string>
+    <string name="nft_open_market">Pazarı aç</string>
+    <string name="nft_untitled">Adsız</string>
     <string name="nft_manage_title">Koleksiyonları yönet</string>
     <string name="nft_manage_intro">Gizlenen koleksiyonlar ana ekranda, TON ekranında ve listede gösterilmez. Spam, TonAPI güven düzeyine ve sizin işaretlerinize göre belirlenir.</string>
     <string name="nft_manage_visible">Görünür · %1$d</string>

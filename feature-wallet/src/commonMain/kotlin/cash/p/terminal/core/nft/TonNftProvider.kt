@@ -42,6 +42,7 @@ private const val LINK_URI_MAX_LENGTH = 2048
 private const val CARD_IMAGE_SIDE = 500
 private const val LARGE_IMAGE_SIDE = 1500
 private const val SECURE_URL_PREFIX = "https://"
+private val LOTTIE_URL_PREFIXES = listOf("https://", "http://")
 private val ALL_EVENTS = TagQuery(null, null, null, null)
 
 class TonNftProvider(
@@ -117,6 +118,8 @@ private fun NftItem.toDraftOrNull(): NftItemRecordDraft? {
         verified = verified,
         imageUrl = previews.nearestSecureUrl(CARD_IMAGE_SIDE),
         largeImageUrl = previews.nearestSecureUrl(LARGE_IMAGE_SIDE),
+        inSale = isOnSale,
+        lottieUrl = lottie.lottieUrlOrNull(),
     )
 }
 
@@ -153,6 +156,11 @@ private fun List<NftButton>.toLinkButtons(): List<NftLinkButton> = asSequence()
 
 private fun String?.sanitized(maxLength: Int): String? =
     this?.normalizedTokenLabel()?.take(maxLength)?.trim()?.ifBlank { null }
+
+/** Creator-chosen; only fetched through the tonapi proxy, which accepts plain web URLs. */
+private fun String?.lottieUrlOrNull(): String? = this?.trim()?.takeIf { url ->
+    url.length <= LINK_URI_MAX_LENGTH && LOTTIE_URL_PREFIXES.any { url.startsWith(it, ignoreCase = true) }
+}
 
 private fun List<NftPreview>.nearestSecureUrl(side: Int): String? =
     filter { it.url.startsWith(SECURE_URL_PREFIX) }

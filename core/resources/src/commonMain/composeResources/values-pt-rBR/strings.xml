@@ -2386,6 +2386,9 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="nft_details">Detalhes</string>
     <string name="nft_owner">Proprietário</string>
     <string name="nft_empty_title">Seus NFTs aparecerão aqui</string>
+    <string name="nft_empty_subtitle">Receba seu primeiro NFT no endereço TON ou compre em um marketplace</string>
+    <string name="nft_open_market">Abrir mercado</string>
+    <string name="nft_untitled">Sem título</string>
     <string name="nft_manage_title">Gerenciar coleções</string>
     <string name="nft_manage_intro">As coleções ocultas não aparecem na tela principal, na tela TON nem na lista. O spam é determinado pelo nível de confiança da TonAPI e pelas suas marcações.</string>
     <string name="nft_manage_visible">Visíveis · %1$d</string>

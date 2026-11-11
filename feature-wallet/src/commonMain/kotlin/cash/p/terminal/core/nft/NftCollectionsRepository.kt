@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -144,6 +145,15 @@ class NftCollectionsRepository(
         networkResumed(owners),
     )
 
+    /** Reads on start, on [extraTriggers] and on [domainExpiryTriggers]; a null read keeps what the caller showed before. */
+    fun expiringDomainsFlow(
+        owners: Set<NftOwner>,
+        periodDays: Int,
+        extraTriggers: Flow<Unit>,
+    ): Flow<List<NftDomainExpiry>> = merge(flowOf(Unit), extraTriggers, domainExpiryTriggers(owners))
+        .map { expiringDomains(owners, periodDays) }
+        .filterNotNull()
+
     private suspend fun <T> networkRead(owner: NftOwner, what: String, read: suspend NftProvider.() -> T?): T? =
         withContext(dispatcherProvider.io) {
             if (offlineModeManager.isNetworkPaused(owner.accountId, owner.blockchainType)) return@withContext null
@@ -185,4 +195,6 @@ private fun NftItemRecordDraft.toRecord(owner: NftOwner, position: Int) = NftIte
     verified = verified,
     imageUrl = imageUrl,
     largeImageUrl = largeImageUrl,
+    inSale = inSale,
+    lottieUrl = lottieUrl,
 )

@@ -24,6 +24,8 @@ data class NftItemRecordDraft(
     val verified: Boolean,
     val imageUrl: String?,
     val largeImageUrl: String?,
+    val inSale: Boolean = false,
+    val lottieUrl: String? = null,
 )
 
 data class NftLiveState(

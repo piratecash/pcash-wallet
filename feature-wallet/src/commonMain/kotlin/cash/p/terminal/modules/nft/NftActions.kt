@@ -17,7 +17,7 @@ import cash.p.terminal.resources.nft_hide_and_report
 import cash.p.terminal.resources.nft_hide_collection
 import cash.p.terminal.resources.nft_hide_nft
 import cash.p.terminal.resources.nft_open_in_tonviewer
-import cash.p.terminal.resources.nft_unnamed_collection
+import cash.p.terminal.resources.nft_untitled
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -54,5 +54,5 @@ fun nftActions(
 internal fun NftItemRecord.managedTitle(balanceHidden: Boolean): String = when {
     collectionAddress == null -> displayName(balanceHidden)
     balanceHidden -> HIDDEN_NAME
-    else -> collectionName.takeUnless { it.isNullOrBlank() } ?: stringResource(Res.string.nft_unnamed_collection)
+    else -> collectionName.takeUnless { it.isNullOrBlank() } ?: stringResource(Res.string.nft_untitled)
 }

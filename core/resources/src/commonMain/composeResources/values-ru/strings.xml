@@ -2562,6 +2562,9 @@
     <string name="nft_details">Детали</string>
     <string name="nft_owner">Владелец</string>
     <string name="nft_empty_title">Здесь появятся ваши NFT</string>
+    <string name="nft_empty_subtitle">Получите первый NFT на адрес TON или купите на маркетплейсе</string>
+    <string name="nft_open_market">Открыть маркет</string>
+    <string name="nft_untitled">Без названия</string>
     <string name="nft_manage_title">Управление коллекциями</string>
     <string name="nft_manage_intro">Скрытые коллекции не показываются на главном, экране TON и в списке. Спам определяется по trust-уровню TonAPI и вашим отметкам.</string>
     <string name="nft_manage_visible">Видимые · %1$d</string>

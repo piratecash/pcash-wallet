@@ -1,5 +1,6 @@
 package cash.p.terminal.entities
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import io.horizontalsystems.core.entities.BlockchainType
 
@@ -27,4 +28,7 @@ data class NftItemRecord(
     val verified: Boolean,
     val imageUrl: String?,
     val largeImageUrl: String?,
+    @ColumnInfo(defaultValue = "0")
+    val inSale: Boolean = false,
+    val lottieUrl: String? = null,
 )

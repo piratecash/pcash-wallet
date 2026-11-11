@@ -24,6 +24,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
@@ -351,6 +352,33 @@ class NftCollectionsRepositoryTest {
         paused.value = emptySet()
 
         assertEquals(3, emissions.size)
+    }
+
+    @Test
+    fun expiringDomainsFlow_nullReadThenDomains_emitsOnlyTheDomains() = test {
+        val changes = MutableSharedFlow<NftChange>()
+        every { provider.changes(ADDRESS) } returns changes
+        coEvery { provider.expiringDomains(ADDRESS, 30) } returnsMany listOf(null, listOf(domain("a", 100)))
+        val emissions = mutableListOf<List<NftDomainExpiry>>()
+        backgroundScope.launch { repository.expiringDomainsFlow(setOf(OWNER), 30, emptyFlow()).toList(emissions) }
+
+        changes.emit(NftChange.NewEvent)
+
+        assertEquals(listOf(listOf("a")), emissions.map { read -> read.map { it.nftAddress } })
+    }
+
+    @Test
+    fun expiringDomainsFlow_extraTrigger_readsAgain() = test {
+        every { provider.changes(ADDRESS) } returns MutableSharedFlow()
+        coEvery { provider.expiringDomains(ADDRESS, 30) } returnsMany
+            listOf(listOf(domain("a", 100)), listOf(domain("b", 200)))
+        val extra = MutableSharedFlow<Unit>()
+        val emissions = mutableListOf<List<NftDomainExpiry>>()
+        backgroundScope.launch { repository.expiringDomainsFlow(setOf(OWNER), 30, extra).toList(emissions) }
+
+        extra.emit(Unit)
+
+        assertEquals(listOf(listOf("a"), listOf("b")), emissions.map { read -> read.map { it.nftAddress } })
     }
 
     @Test

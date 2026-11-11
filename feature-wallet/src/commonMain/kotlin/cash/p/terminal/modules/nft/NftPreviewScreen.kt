@@ -20,6 +20,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cash.p.terminal.entities.NftTrust
+import cash.p.terminal.modules.nft.ui.NftSaleBadge
 import cash.p.terminal.resources.Contacts_ActionMore
 import cash.p.terminal.resources.ic_arrow_up_right_24
 import cash.p.terminal.resources.ic_info_20
@@ -80,6 +82,10 @@ import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.components.title3_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.WalletFactory
+import io.github.alexzhirkevich.compottie.Compottie
+import io.github.alexzhirkevich.compottie.LottieCompositionSpec
+import io.github.alexzhirkevich.compottie.rememberLottieComposition
+import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -226,7 +232,26 @@ private fun NftImage(item: NftItemRecord, uiState: NftPreviewUiState, onClick: (
             hidden = uiState.hidden,
             alternativeUrl = item.imageUrl,
         )
+        // An animation cannot be blurred, so a hidden balance shows only the artwork.
+        if (!uiState.hidden) uiState.lottieJson?.let { NftLottie(it) }
+        if (uiState.onSale) NftSaleBadge(Modifier.align(Alignment.TopEnd).padding(8.dp))
     }
+}
+
+/** Draws nothing until the file parses, so a broken animation leaves the artwork as is. */
+@Composable
+private fun NftLottie(json: String) {
+    val composition by rememberLottieComposition(json) { LottieCompositionSpec.JsonString(json) }
+    Image(
+        painter = rememberLottiePainter(
+            composition = composition,
+            iterations = Compottie.IterateForever,
+            // Expressions are scripts from the NFT creator; one endless loop would freeze the screen.
+            enableExpressions = false,
+        ),
+        contentDescription = null,
+        modifier = Modifier.fillMaxSize(),
+    )
 }
 
 @Composable
@@ -416,6 +441,7 @@ private fun PreviewContent(
     domainExpiry: NftDomainExpiry? = null,
     trust: NftTrust = NftTrust.Whitelist,
     linkButtons: List<NftLinkButton> = emptyList(),
+    lottieJson: String? = null,
 ) {
     ComposeAppTheme {
         NftPreviewScreen(
@@ -427,6 +453,8 @@ private fun PreviewContent(
                 domainExpiry = domainExpiry,
                 trust = trust,
                 linkButtons = linkButtons,
+                onSale = availability == NftTransferAvailability.Unavailable(NftTransferUnavailableReason.OnSale),
+                lottieJson = lottieJson,
             ),
             network = NftNetworkInfo(title = "TON", explorerUrl = "https://tonviewer.com/nft/EQBx"),
             actions = NftPreviewActions(
@@ -457,6 +485,16 @@ private fun NftPreviewScreenOnSalePreview() = PreviewContent(
     hidden = false,
     availability = NftTransferAvailability.Unavailable(NftTransferUnavailableReason.OnSale),
 )
+
+@Preview
+@Composable
+private fun NftPreviewScreenLottiePreview() = PreviewContent(hidden = false, lottieJson = PREVIEW_LOTTIE)
+
+// One brand-colored square spinning for a second.
+private const val PREVIEW_LOTTIE = """{"v":"5.5.2","fr":30,"ip":0,"op":30,"w":100,"h":100,"layers":[{"ty":4,"ind":1,
+"ip":0,"op":30,"st":0,"ks":{"o":{"a":0,"k":100},"p":{"a":0,"k":[50,50]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},
+"r":{"a":1,"k":[{"t":0,"s":[0]},{"t":30,"s":[360]}]}},"shapes":[{"ty":"rc","p":{"a":0,"k":[0,0]},"s":{"a":0,"k":[40,40]},
+"r":{"a":0,"k":4}},{"ty":"fl","c":{"a":0,"k":[0.29,0.6,0.91,1]},"o":{"a":0,"k":100}}]}]}"""
 
 private fun previewExpiry(daysLeft: Long) = NftDomainExpiry(
     owner = previewNftItem("EQBx").owner,

@@ -10,6 +10,7 @@ import cash.p.terminal.entities.NftTrust
 import cash.p.terminal.entities.NftUserTrust
 import cash.p.terminal.core.nft.NftDomainExpiry
 import cash.p.terminal.core.nft.NftLinkButton
+import cash.p.terminal.core.nft.NftLottieLoader
 import cash.p.terminal.core.nft.NftOwner
 import cash.p.terminal.modules.nft.ui.previewNftItem
 import cash.p.terminal.wallet.Wallet
@@ -69,8 +70,13 @@ class NftPreviewViewModelTest {
     }
     private var item = previewNftItem("EQBx")
 
+    private val lottieLoader = mockk<NftLottieLoader> {
+        coEvery { load(any()) } returns null
+    }
+
     private fun createViewModel() = NftPreviewViewModel(
         NftCollectionSource.AllWallets, item, hiddenManager, availabilityProvider, repository, prefsRepository,
+        lottieLoader,
     )
 
     private fun pref(userTrust: NftUserTrust) = NftCollectionPrefRecord(
@@ -114,6 +120,75 @@ class NftPreviewViewModelTest {
         viewModel.onResume()
 
         assertEquals(onSale, viewModel.uiState.transferAvailability)
+    }
+
+    private fun onSaleAfterCheck(cachedInSale: Boolean, availability: NftTransferAvailability?): Boolean {
+        item = previewNftItem("EQBx", inSale = cachedInSale)
+        availability?.let { coEvery { availabilityProvider.check(item) } returns NftLiveCheck(it) }
+        val viewModel = createViewModel()
+        if (availability != null) viewModel.onResume()
+        return viewModel.uiState.onSale
+    }
+
+    @Test
+    fun onSale_liveCheckSaysOnSale_isTrueEvenIfCacheSaysNot() {
+        val onSale = NftTransferAvailability.Unavailable(NftTransferUnavailableReason.OnSale)
+
+        assertTrue(onSaleAfterCheck(cachedInSale = false, availability = onSale))
+    }
+
+    @Test
+    fun onSale_liveCheckSaysAvailable_isFalseEvenIfCacheSaysOnSale() {
+        assertFalse(onSaleAfterCheck(cachedInSale = true, availability = available))
+    }
+
+    @Test
+    fun onSale_checkNotAnsweredYet_followsCachedFlag() {
+        assertTrue(onSaleAfterCheck(cachedInSale = true, availability = null))
+        assertFalse(onSaleAfterCheck(cachedInSale = false, availability = null))
+    }
+
+    @Test
+    fun onSale_checkFailed_followsCachedFlag() {
+        val failed = NftTransferAvailability.Unavailable(NftTransferUnavailableReason.CheckFailed)
+
+        assertTrue(onSaleAfterCheck(cachedInSale = true, availability = failed))
+    }
+
+    @Test
+    fun onSale_liveCheckSaysNotOwner_isFalseEvenIfCacheSaysOnSale() {
+        val notOwner = NftTransferAvailability.Unavailable(NftTransferUnavailableReason.NotOwner)
+
+        assertFalse(onSaleAfterCheck(cachedInSale = true, availability = notOwner))
+    }
+
+    @Test
+    fun onSale_recheckFailsAfterLiveAnswer_keepsLiveAnswer() {
+        item = previewNftItem("EQBx", inSale = true)
+        val failed = NftTransferAvailability.Unavailable(NftTransferUnavailableReason.CheckFailed)
+        coEvery { availabilityProvider.check(item) } returns NftLiveCheck(available) andThen NftLiveCheck(failed)
+        val viewModel = createViewModel()
+        viewModel.onResume()
+
+        viewModel.onResume()
+
+        assertFalse(viewModel.uiState.onSale)
+    }
+
+    @Test
+    fun init_itemWithLottie_exposesLoadedAnimation() {
+        item = previewNftItem("EQBx").copy(lottieUrl = LOTTIE_URL)
+        coEvery { lottieLoader.load(LOTTIE_URL) } returns LOTTIE_JSON
+
+        assertEquals(LOTTIE_JSON, createViewModel().uiState.lottieJson)
+    }
+
+    @Test
+    fun init_itemWithoutLottie_doesNotRequestAnimation() {
+        val viewModel = createViewModel()
+
+        assertEquals(null, viewModel.uiState.lottieJson)
+        coVerify(exactly = 0) { lottieLoader.load(any()) }
     }
 
     @Test
@@ -443,4 +518,9 @@ class NftPreviewViewModelTest {
 
     private fun stateWith(availability: NftTransferAvailability) =
         NftPreviewUiState(transferAvailability = availability, domainExpiry = expiry(1_000))
+
+    private companion object {
+        const val LOTTIE_URL = "https://nft.fragment.com/gift/plushpepe-399.lottie.json"
+        const val LOTTIE_JSON = """{"v":"5.5.2","fr":60}"""
+    }
 }

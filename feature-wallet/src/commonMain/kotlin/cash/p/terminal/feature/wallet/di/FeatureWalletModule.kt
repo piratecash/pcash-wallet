@@ -26,6 +26,7 @@ import cash.p.terminal.core.managers.WalletActivator
 import cash.p.terminal.core.managers.WordsManager
 import cash.p.terminal.core.nft.NftCollectionPrefsRepository
 import cash.p.terminal.core.nft.NftCollectionsRepository
+import cash.p.terminal.core.nft.NftLottieLoader
 import cash.p.terminal.core.nft.NftProvider
 import cash.p.terminal.core.nft.TonNftProvider
 import cash.p.terminal.core.managers.ZcashBirthdayProvider
@@ -452,6 +453,7 @@ val featureWalletModule = module {
     single { NftCollectionsRepository(get(), getAll(), get(), get()) }
     singleOf(::NftOwnerWalletResolver)
     singleOf(::NftTransferAvailabilityProvider)
+    singleOf(::NftLottieLoader)
     factoryOf(::SwapProviderTransactionsStorage)
     factoryOf(::SwapTransactionMatcher)
     singleOf(::ContactsRepository)
@@ -515,7 +517,7 @@ val featureWalletModule = module {
     viewModel { (url: String) -> MarkdownViewModel(url, get(), get()) }
     viewModel { params -> NftCollectionsViewModel(params.get(), get(), get(), get(), get()) }
     viewModel { params -> NftManageViewModel(params.get(), get(), get(), get(), get()) }
-    viewModel { params -> NftPreviewViewModel(params.get(), params.get(), get(), get(), get(), get()) }
+    viewModel { params -> NftPreviewViewModel(params.get(), params.get(), get(), get(), get(), get(), get()) }
     viewModelOf(::NftDomainRenewalViewModel)
     viewModel { params ->
         NftDomainRenewViewModel(

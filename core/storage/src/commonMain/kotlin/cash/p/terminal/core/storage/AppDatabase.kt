@@ -46,7 +46,7 @@ import io.horizontalsystems.core.storage.LogsDao
 const val APP_DATABASE_NAME = "db_p_cash"
 
 @Database(
-    version = 125,
+    version = 126,
     exportSchema = false,
     entities = [
         EnabledWallet::class,

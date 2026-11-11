@@ -9,9 +9,14 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
@@ -25,13 +30,17 @@ import cash.p.terminal.entities.NftItemRecord
 import cash.p.terminal.entities.NftTrust
 import cash.p.terminal.modules.transactions.supportsBlur
 import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_fire_24
+import cash.p.terminal.resources.ic_nft_sale_14
 import cash.p.terminal.resources.nft_artwork_placeholder
+import cash.p.terminal.resources.nft_domain_on_sale_badge
 import cash.p.terminal.resources.nft_unnamed
 import cash.p.terminal.resources.nft_unnamed_collection
 import cash.p.terminal.resources.nft_unverified
 import cash.p.terminal.ui_compose.components.HsImage
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.core.entities.BlockchainType
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 internal const val HIDDEN_NAME = "****"
@@ -43,6 +52,7 @@ fun NftCard(
     hidden: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    expiringSoon: Boolean = false,
 ) {
     Column(
         modifier = modifier
@@ -57,6 +67,15 @@ fun NftCard(
                 .background(ComposeAppTheme.colors.surfacePlaceholder)
         ) {
             NftArtwork(url = item.imageUrl, hidden = hidden)
+            if (item.inSale) NftSaleBadge(Modifier.align(Alignment.TopEnd).padding(8.dp))
+            if (expiringSoon) {
+                Icon(
+                    painter = painterResource(Res.drawable.ic_fire_24),
+                    contentDescription = null,
+                    tint = ComposeAppTheme.colors.statusError,
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp).size(16.dp),
+                )
+            }
         }
         Column(
             modifier = Modifier.padding(start = 12.dp, top = 8.dp, end = 12.dp, bottom = 10.dp),
@@ -71,6 +90,21 @@ fun NftCard(
             )
             CollectionLine(item = item, hidden = hidden)
         }
+    }
+}
+
+@Composable
+internal fun NftSaleBadge(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier.size(26.dp).background(ComposeAppTheme.colors.statusSuccess, CircleShape),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            painter = painterResource(Res.drawable.ic_nft_sale_14),
+            contentDescription = stringResource(Res.string.nft_domain_on_sale_badge),
+            tint = ComposeAppTheme.colors.contentOnColor,
+            modifier = Modifier.size(14.dp),
+        )
     }
 }
 
@@ -126,6 +160,7 @@ internal fun previewNftItem(
     name: String? = "Getgems Cat #$address",
     collectionName: String? = "Cool Cats",
     trust: NftTrust = NftTrust.Whitelist,
+    inSale: Boolean = false,
 ) = NftItemRecord(
     accountId = "account",
     blockchainType = BlockchainType.Ton,
@@ -142,6 +177,7 @@ internal fun previewNftItem(
     verified = false,
     imageUrl = null,
     largeImageUrl = null,
+    inSale = inSale,
 )
 
 @Preview
@@ -171,5 +207,21 @@ private fun NftCardHiddenPreview() {
             onClick = {},
             modifier = Modifier.padding(16.dp)
         )
+    }
+}
+
+@Preview
+@Composable
+private fun NftCardBadgesPreview() {
+    ComposeAppTheme {
+        Column(modifier = Modifier.padding(16.dp).width(160.dp)) {
+            NftCard(
+                previewNftItem("1", inSale = true),
+                hidden = false,
+                onClick = {},
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            NftCard(previewNftItem("2"), hidden = false, onClick = {}, expiringSoon = true)
+        }
     }
 }

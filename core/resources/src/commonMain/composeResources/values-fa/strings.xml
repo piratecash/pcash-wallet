@@ -2384,6 +2384,9 @@
     <string name="nft_details">جزئیات</string>
     <string name="nft_owner">مالک</string>
     <string name="nft_empty_title">NFTهای شما اینجا نمایش داده می‌شوند</string>
+    <string name="nft_empty_subtitle">اولین NFT خود را به آدرس TON دریافت کنید یا از یک بازارچه بخرید</string>
+    <string name="nft_open_market">باز کردن بازارچه</string>
+    <string name="nft_untitled">بدون نام</string>
     <string name="nft_manage_title">مدیریت مجموعه‌ها</string>
     <string name="nft_manage_intro">مجموعه‌های پنهان در صفحه اصلی، صفحه TON و فهرست نمایش داده نمی‌شوند. اسپم بر اساس سطح اعتماد TonAPI و علامت‌گذاری‌های شما تعیین می‌شود.</string>
     <string name="nft_manage_visible">قابل مشاهده · %1$d</string>

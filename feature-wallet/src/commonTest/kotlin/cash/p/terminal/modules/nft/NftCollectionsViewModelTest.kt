@@ -1,9 +1,11 @@
 package cash.p.terminal.modules.nft
 
+import cash.p.terminal.core.nft.DOMAIN_RENEW_SOON_DAYS
 import cash.p.terminal.core.nft.NftChange
 import cash.p.terminal.core.nft.NftCollectionPrefKey
 import cash.p.terminal.core.nft.NftCollectionPrefsRepository
 import cash.p.terminal.core.nft.NftCollectionsRepository
+import cash.p.terminal.core.nft.NftDomainExpiry
 import cash.p.terminal.core.nft.NftItemsState
 import cash.p.terminal.core.nft.NftOwner
 import cash.p.terminal.entities.NftCollectionPrefRecord
@@ -40,6 +42,8 @@ import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -56,6 +60,7 @@ class NftCollectionsViewModelTest {
     private val items = MutableStateFlow(NftItemsState(emptyList(), isLoaded = false))
     private val changes = MutableSharedFlow<NftChange>(extraBufferCapacity = 8)
     private val prefs = MutableStateFlow<Map<NftCollectionPrefKey, NftCollectionPrefRecord>>(emptyMap())
+    private val domainTriggers = MutableSharedFlow<Unit>(extraBufferCapacity = 8)
 
     private val repository = mockk<NftCollectionsRepository> {
         coEvery { owners(listOf(wallet)) } returns setOf(owner)
@@ -67,6 +72,10 @@ class NftCollectionsViewModelTest {
         every { networkTitle(any()) } returns "TON"
         every { networkResumed(any()) } returns emptyFlow()
         coEvery { refresh(any(), any()) } just Runs
+        every { supportsSection(any()) } returns true
+        every { domainExpiryTriggers(any()) } returns domainTriggers
+        every { expiringDomainsFlow(any(), any(), any()) } answers { callOriginal() }
+        coEvery { expiringDomains(any(), any()) } returns emptyList()
     }
     private val prefsRepository = mockk<NftCollectionPrefsRepository> {
         every { prefsFlow(any()) } returns prefs
@@ -113,6 +122,76 @@ class NftCollectionsViewModelTest {
         imageUrl = null,
         largeImageUrl = null,
     )
+
+    private fun domain(address: String) = NftDomainExpiry(owner, address, "$address.ton", expiresAt = 0, isOnSale = false)
+
+    private fun expiringReturns(domains: List<NftDomainExpiry>?) {
+        coEvery { repository.expiringDomains(setOf(owner), DOMAIN_RENEW_SOON_DAYS) } returns domains
+    }
+
+    @Test
+    fun receiveWallet_singleWallet_isThatWallet() = runTest(dispatcher) {
+        val viewModel = createViewModel(NftCollectionSource.SingleWallet(wallet))
+
+        assertSame(wallet, viewModel.receiveWallet)
+    }
+
+    @Test
+    fun receiveWallet_allWallets_isFirstWalletWithNftSection() = runTest(dispatcher) {
+        val unsupported = mockk<Wallet>()
+        val supported = mockk<Wallet>()
+        val laterSupported = mockk<Wallet>()
+        val wallets = listOf(unsupported, supported, laterSupported)
+        every { repository.supportsSection(unsupported) } returns false
+        every { repository.supportsSection(supported) } returns true
+        every { repository.supportsSection(laterSupported) } returns true
+        coEvery { repository.owners(wallets) } returns setOf(owner)
+        walletsFlow.value = wallets
+
+        val viewModel = createViewModel()
+
+        assertSame(supported, viewModel.receiveWallet)
+    }
+
+    @Test
+    fun receiveWallet_noWalletWithNftSection_isNull() = runTest(dispatcher) {
+        every { repository.supportsSection(any()) } returns false
+
+        val viewModel = createViewModel()
+
+        assertNull(viewModel.receiveWallet)
+    }
+
+    @Test
+    fun expiringDomainAddresses_domainsExpireSoon_exposesTheirAddresses() = runTest(dispatcher) {
+        expiringReturns(listOf(domain("a"), domain("b")))
+
+        val viewModel = createViewModel()
+
+        assertEquals(setOf("a", "b"), viewModel.uiState.expiringDomainAddresses)
+    }
+
+    @Test
+    fun expiringDomainAddresses_nullRead_keepsPreviousAddresses() = runTest(dispatcher) {
+        expiringReturns(listOf(domain("a")))
+        val viewModel = createViewModel()
+
+        expiringReturns(null)
+        domainTriggers.emit(Unit)
+
+        assertEquals(setOf("a"), viewModel.uiState.expiringDomainAddresses)
+    }
+
+    @Test
+    fun expiringDomainAddresses_onResume_rereadsDomains() = runTest(dispatcher) {
+        expiringReturns(listOf(domain("a")))
+        val viewModel = createViewModel()
+
+        expiringReturns(listOf(domain("b")))
+        viewModel.onResume()
+
+        assertEquals(setOf("b"), viewModel.uiState.expiringDomainAddresses)
+    }
 
     @Test
     fun hidden_singleWallet_followsWalletFlowNotGlobal() = runTest(dispatcher) {

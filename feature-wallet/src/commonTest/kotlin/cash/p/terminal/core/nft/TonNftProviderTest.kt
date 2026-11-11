@@ -102,6 +102,33 @@ class TonNftProviderTest {
     }
 
     @Test
+    fun fetch_kitSaleState_isCopiedToDraft() = test {
+        startKit(items = listOf(nft("sale", isOnSale = true), nft("free", isOnSale = false)))
+
+        assertEquals(listOf(true, false), provider.fetch(OWNER)?.map { it.inSale })
+    }
+
+    @Test
+    fun fetch_lottieUrl_keepsTrimmedWebUrlsOnly() = test {
+        val tooLong = "https://a.io/" + "x".repeat(2048)
+        startKit(
+            items = listOf(
+                nft("https", lottie = " https://nft.fragment.com/gift/a.lottie.json "),
+                nft("http", lottie = "HTTP://example.com/b.json"),
+                nft("ipfs", lottie = "ipfs://QmHash"),
+                nft("script", lottie = "javascript:alert(1)"),
+                nft("long", lottie = tooLong),
+                nft("none", lottie = null),
+            )
+        )
+
+        assertEquals(
+            listOf("https://nft.fragment.com/gift/a.lottie.json", "HTTP://example.com/b.json", null, null, null, null),
+            provider.fetch(OWNER)?.map { it.lottieUrl }
+        )
+    }
+
+    @Test
     fun fetch_exactPreviewsPresent_picksCardAndLargeSizes() = test {
         val previews = listOf(
             NftPreview("100x100", "https://cdn/100"),
@@ -442,6 +469,7 @@ class TonNftProviderTest {
         verified: Boolean = false,
         isOnSale: Boolean = false,
         buttons: List<NftButton> = emptyList(),
+        lottie: String? = null,
     ) = NftItem(
         address = address,
         ownerAddress = null,
@@ -455,7 +483,7 @@ class TonNftProviderTest {
         isOnSale = isOnSale,
         dns = null,
         buttons = buttons,
-        lottie = null,
+        lottie = lottie,
     )
 
     private companion object {

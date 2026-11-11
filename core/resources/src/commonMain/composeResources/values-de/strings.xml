@@ -2372,6 +2372,9 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="nft_details">Details</string>
     <string name="nft_owner">Besitzer</string>
     <string name="nft_empty_title">Hier erscheinen Ihre NFTs</string>
+    <string name="nft_empty_subtitle">Erhalte dein erstes NFT an deine TON-Adresse oder kaufe eins auf einem Marktplatz</string>
+    <string name="nft_open_market">Marktplatz öffnen</string>
+    <string name="nft_untitled">Ohne Titel</string>
     <string name="nft_manage_title">Sammlungen verwalten</string>
     <string name="nft_manage_intro">Ausgeblendete Sammlungen werden auf dem Hauptbildschirm, dem TON-Bildschirm und in der Liste nicht angezeigt. Spam wird anhand der TonAPI-Vertrauensstufe und Ihrer eigenen Markierungen bestimmt.</string>
     <string name="nft_manage_visible">Sichtbar · %1$d</string>
