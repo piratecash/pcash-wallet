@@ -245,7 +245,12 @@ class ThorchainKitManager(
         clearFiles(accountId)
     }
 
-    private fun clearFiles(accountId: String) = ThorchainKit.clear(platformContexts.thorchain, network, accountId)
+    private fun clearFiles(accountId: String) = ThorchainKit.clear(
+        platformContexts.thorchain(accountId),
+        network,
+        accountId,
+        platformContexts.resolverFor(accountId),
+    )
 
     private fun kitAddress(accountType: AccountType): Address = when (accountType) {
         is SeedAccountType -> ThorchainKit.getAddress(accountType.seed, network)
@@ -261,7 +266,7 @@ class ThorchainKitManager(
 
     private fun getInstance(address: Address, account: Account, databaseKey: ByteArray) =
         ThorchainKit.getInstance(
-            platformContexts.thorchain,
+            platformContexts.thorchain(account.id),
             address,
             network,
             account.id,
@@ -270,6 +275,7 @@ class ThorchainKitManager(
             thornodeUrls,
             network.midgardUrls,
             NetworkErrorEventListener.Factory(blockchainType, account.id, networkErrorTracker),
+            platformContexts.resolverFor(account.id),
         )
 
     private companion object {

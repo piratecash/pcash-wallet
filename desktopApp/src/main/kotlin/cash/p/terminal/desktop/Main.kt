@@ -46,16 +46,20 @@ import io.horizontalsystems.core.DesktopLanguageManager
 import io.horizontalsystems.dashlibnative.DashjBlsLibrary
 import io.horizontalsystems.ethereumkit.core.EthereumKit
 import io.horizontalsystems.sqlcipher.SqlCipherDriver
+import java.awt.Desktop
 import java.io.File
 import java.util.Locale
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.context.startKoin
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import kotlin.system.exitProcess
 
 private const val APPLICATION_NAME = "P.CASH"
 private const val INSTANCE_LOCK_FILE = ".instance.lock"
@@ -104,11 +108,12 @@ fun main(args: Array<String>) {
     inactivityLock.watchUserInput()
     val vault = koin.get<DesktopVault>()
     val appExit = koin.get<DesktopAppExit>()
-    application {
+    routeSystemQuit(appExit)
+    application(exitProcessOnExit = false) {
         val quit: () -> Unit = {
             applicationScope.launch {
                 try {
-                    vault.close()
+                    vault.lock()
                 } finally {
                     exitApplication()
                 }
@@ -125,6 +130,28 @@ fun main(args: Array<String>) {
                 DesktopRoot(launchArguments.wipeFailed)
             }
         }
+    }
+    closeAndExit(vault)
+}
+
+/** macOS Quit (Cmd+Q, menu, Dock) would otherwise exit at once and skip closing the vault. */
+private fun routeSystemQuit(appExit: DesktopAppExit) {
+    if (!Desktop.isDesktopSupported()) return
+    val desktop = Desktop.getDesktop()
+    if (!desktop.isSupported(Desktop.Action.APP_QUIT_HANDLER)) return
+    // The response stays unanswered: cancelling it would also cancel a macOS log out or shut down.
+    desktop.setQuitHandler { _, _ -> appExit.request() }
+}
+
+/** After the screens and their ViewModels are gone: a storage closed under them fails what they still run. */
+private fun closeAndExit(vault: DesktopVault) {
+    try {
+        applicationScope.cancel()
+        runBlocking { vault.close() }
+    } catch (e: Exception) {
+        Logger.withTag("Main").e(e) { "Closing the storage on quit failed" }
+    } finally {
+        exitProcess(0)
     }
 }
 

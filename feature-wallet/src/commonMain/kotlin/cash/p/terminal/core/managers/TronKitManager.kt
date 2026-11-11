@@ -39,6 +39,7 @@ class TronKitManager(
     private val networkErrorTracker: NetworkErrorTracker,
     private val hardwareSigners: TronHardwareSigners,
     private val platformContexts: KitPlatformContexts,
+    private val storageNaming: KitStorageNaming,
     private val offlineModeManager: OfflineModeManager,
     private val tronKitDatabaseKeyProvider: TronKitDatabaseKeyProvider,
 ) {
@@ -77,7 +78,13 @@ class TronKitManager(
         if (this.tronKitWrapper == null) {
             val accountType = account.type
             val databaseKey = tronKitDatabaseKeyProvider.awaitKey(account.id)
-            TronKit.migrateDatabase(platformContexts.tron, network, account.id, databaseKey)
+            TronKit.migrateDatabase(
+                platformContexts.tron(account.id),
+                network,
+                account.id,
+                databaseKey,
+                storageNaming.resolverFor(account.id),
+            )
             this.tronKitWrapper = when (accountType) {
                 is SeedAccountType -> {
                     createKitInstance(accountType, account, databaseKey)
@@ -116,7 +123,8 @@ class TronKitManager(
         val signer = Signer.getInstance(seed, network)
 
         val kit = TronKit.getInstance(
-            application = platformContexts.tron,
+            application = platformContexts.tron(account.id),
+            nameResolver = storageNaming.resolverFor(account.id),
             walletId = account.id,
             seed = seed,
             network = network,
@@ -168,7 +176,8 @@ class TronKitManager(
         databaseKey: ByteArray,
     ): TronKitWrapper {
         val kit = TronKit.getInstance(
-            application = platformContexts.tron,
+            application = platformContexts.tron(account.id),
+            nameResolver = storageNaming.resolverFor(account.id),
             address = address,
             network = network,
             walletId = account.id,
@@ -184,7 +193,7 @@ class TronKitManager(
         if (currentAccount?.id == accountId) {
             stop()
         }
-        TronAdapter.clear(platformContexts.tron, accountId)
+        TronAdapter.clear(platformContexts.tron(accountId), accountId, storageNaming.resolverFor(accountId))
         tronKitDatabaseKeyProvider.remove(accountId)
     }
 

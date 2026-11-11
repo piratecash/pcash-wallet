@@ -13,25 +13,18 @@ import cash.p.terminal.core.managers.RestoreSettingsManager
 import cash.p.terminal.core.storage.AccountsDao
 import cash.p.terminal.core.storage.AppDatabaseProvider
 import cash.p.terminal.core.storage.RestoreSettingDao
+import cash.p.terminal.core.storage.SingleDatabaseStorageRouter
 import cash.p.terminal.shared.desktop.DesktopBeamResetMarker
 import cash.p.terminal.shared.desktop.session.mnemonicAccount
 import cash.p.terminal.wallet.AccountOrigin
-import io.horizontalsystems.core.DesktopSettingsStore
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.job
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
-import java.io.File
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -42,9 +35,7 @@ import kotlin.test.assertTrue
 
 class DesktopBeamKitDatabaseKeyProviderTest {
 
-    private val fixture = DesktopVaultFixture()
-    private val vault = fixture.vault()
-    private val locator = BeamStorageLocator(DesktopKitPlatformContexts(fixture.files))
+    private val fixture = VaultLevelsFixture()
     private val deleted = mutableSetOf<String>()
     private val accounts = mockk<AccountsDao> {
         every { isAvailable(any()) } answers { firstArg<String>() !in deleted }
@@ -56,25 +47,22 @@ class DesktopBeamKitDatabaseKeyProviderTest {
         every { database.accountsDao() } returns accounts
         every { database.restoreSettingDao() } returns restore
     }
-    private val scopes = mutableListOf<CoroutineScope>()
-    private var store = openStore()
-    private var marker = DesktopBeamResetMarker(store)
+    private var locator = locator()
+    private var marker = DesktopBeamResetMarker(fixture.vault)
     private var keys = keyProvider()
     private val storageId = locator.storageId(ACCOUNT_ID, BeamNetwork.Mainnet)
 
     @AfterTest
-    fun tearDown() {
-        scopes.forEach { it.cancel() }
-        fixture.tearDown()
-    }
+    fun tearDown() = runBlocking { fixture.tearDown() }
 
     @Test
     fun keyForInitialization_firstKeyForStorage_isNewOnceAndRecordSurvivesReopen() = runTest {
-        vault.create(password())
+        fixture.create()
+        fixture.addAccount(ACCOUNT_ID)
 
         val first = keys.keyForInitialization(ACCOUNT_ID, BeamNetwork.Mainnet)
         val second = keys.keyForInitialization(ACCOUNT_ID, BeamNetwork.Mainnet)
-        reopenStore()
+        relogin()
         val afterReopen = keys.keyForInitialization(ACCOUNT_ID, BeamNetwork.Mainnet)
 
         assertTrue(first.isNew)
@@ -88,7 +76,8 @@ class DesktopBeamKitDatabaseKeyProviderTest {
 
     @Test
     fun keyForInitialization_databaseWithoutRecord_isNotNewAndRecordsIt() = runTest {
-        vault.create(password())
+        fixture.create()
+        fixture.addAccount(ACCOUNT_ID)
         writeDatabase()
 
         assertFalse(keys.keyForInitialization(ACCOUNT_ID, BeamNetwork.Mainnet).isNew)
@@ -104,7 +93,8 @@ class DesktopBeamKitDatabaseKeyProviderTest {
 
     @Test
     fun keyForInitialization_deletedOrResetPending_throwsWithoutRecord() = runTest {
-        vault.create(password())
+        fixture.create()
+        fixture.addAccount(ACCOUNT_ID)
         deleted += ACCOUNT_ID
         assertFailsWith<IllegalStateException> { keys.keyForInitialization(ACCOUNT_ID, BeamNetwork.Mainnet) }
         deleted.clear()
@@ -116,18 +106,9 @@ class DesktopBeamKitDatabaseKeyProviderTest {
     }
 
     @Test
-    fun keyForInitialization_afterSettingsWipe_isNewAgain() = runTest {
-        vault.create(password())
-        keys.keyForInitialization(ACCOUNT_ID, BeamNetwork.Mainnet)
-
-        store.clearAll()
-
-        assertTrue(keys.keyForInitialization(ACCOUNT_ID, BeamNetwork.Mainnet).isNew)
-    }
-
-    @Test
     fun removeStorageKey_storageStillPresent_throwsAndKeepsRecordUntilErased() = runTest {
-        vault.create(password())
+        fixture.create()
+        fixture.addAccount(ACCOUNT_ID)
         keys.keyForInitialization(ACCOUNT_ID, BeamNetwork.Mainnet)
         writeDatabase()
 
@@ -141,10 +122,12 @@ class DesktopBeamKitDatabaseKeyProviderTest {
 
     @Test
     fun open_createdAccountWithoutRecord_createsNew() = runTest {
-        vault.create(password())
+        fixture.create()
         val sdk = sdk()
+        val account = mnemonicAccount(isBackedUp = true)
+        fixture.router.prepareAccountStore(account.id)
 
-        sessionFactory(sdk).open(mnemonicAccount(isBackedUp = true), BeamNetwork.Mainnet)
+        sessionFactory(sdk).open(account, BeamNetwork.Mainnet)
 
         coVerify(exactly = 1) { sdk.createNew(any(), any(), any()) }
         coVerify(exactly = 0) { sdk.restore(any(), any(), any(), any()) }
@@ -152,10 +135,11 @@ class DesktopBeamKitDatabaseKeyProviderTest {
 
     @Test
     fun open_restoredAccountOrIssuedRecord_restoresFromSnapshot() = runTest {
-        vault.create(password())
+        fixture.create()
         val sdk = sdk()
         val restored = mnemonicAccount(isBackedUp = true).copy(origin = AccountOrigin.Restored)
         val created = mnemonicAccount(isBackedUp = true)
+        listOf(restored, created).forEach { fixture.router.prepareAccountStore(it.id) }
         keys.keyForInitialization(created.id, BeamNetwork.Mainnet)
 
         sessionFactory(sdk).open(restored, BeamNetwork.Mainnet)
@@ -167,7 +151,8 @@ class DesktopBeamKitDatabaseKeyProviderTest {
 
     @Test
     fun cleanupDeleted_issuedStorage_erasesStorageThenDropsRecord() = runTest {
-        vault.create(password())
+        fixture.create()
+        fixture.addAccount(ACCOUNT_ID)
         keys.keyForInitialization(ACCOUNT_ID, BeamNetwork.Mainnet)
         writeDatabase()
         deleted += ACCOUNT_ID
@@ -180,7 +165,8 @@ class DesktopBeamKitDatabaseKeyProviderTest {
 
     @Test
     fun prepareExplicitReset_issuedStorage_dropsRecordsAndKeepsMarker() = runTest {
-        vault.create(password())
+        fixture.create()
+        fixture.addAccount(ACCOUNT_ID)
         keys.keyForInitialization(ACCOUNT_ID, BeamNetwork.Mainnet)
         writeDatabase()
 
@@ -191,24 +177,22 @@ class DesktopBeamKitDatabaseKeyProviderTest {
         assertTrue(marker.isSet)
     }
 
-    private fun keyProvider() =
-        DesktopBeamKitDatabaseKeyProvider(vault, store, locator, BeamDeletionState(databases, marker))
-
-    private fun openStore(): DesktopSettingsStore {
-        val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-        scopes += scope
-        return DesktopSettingsStore(File(fixture.dataDirectory, "settings.preferences_pb"), scope)
+    private fun locator(): BeamStorageLocator {
+        val vault = fixture.vault
+        return DesktopBeamStorageLocator(
+            vault,
+            DesktopKitPlatformContexts(fixture.files, vault),
+            DesktopKitStorageNaming(fixture.files, vault),
+        )
     }
 
-    /** DataStore releases its file in a completion handler; join() may return before that handler has run. */
-    private fun reopenStore() {
-        val job = scopes.removeAt(scopes.lastIndex).coroutineContext.job
-        val released = CompletableDeferred<Unit>()
-        job.invokeOnCompletion { released.complete(Unit) }
-        job.cancel()
-        runBlocking { released.await() }
-        store = openStore()
-        marker = DesktopBeamResetMarker(store)
+    private fun keyProvider() =
+        DesktopBeamKitDatabaseKeyProvider(fixture.vault, locator, BeamDeletionState(SingleDatabaseStorageRouter(databases), marker))
+
+    private suspend fun relogin() {
+        fixture.reloginOk()
+        locator = locator()
+        marker = DesktopBeamResetMarker(fixture.vault)
         keys = keyProvider()
     }
 
@@ -231,7 +215,7 @@ class DesktopBeamKitDatabaseKeyProviderTest {
     private fun TestScope.preflight() = BeamAccountDeletionPreflight(
         locator, lazy { keys }, mockk(relaxed = true),
         TestDispatcherProvider(StandardTestDispatcher(testScheduler), backgroundScope),
-        BeamDeletionState(databases, marker), lazy { mockk(relaxed = true) }, lazy { mockk(relaxed = true) },
+        BeamDeletionState(SingleDatabaseStorageRouter(databases), marker), lazy { mockk(relaxed = true) }, lazy { mockk(relaxed = true) },
     )
 
     private companion object {

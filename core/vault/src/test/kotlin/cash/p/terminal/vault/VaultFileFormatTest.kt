@@ -1,91 +1,132 @@
 package cash.p.terminal.vault
 
 import org.junit.Assert.assertArrayEquals
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.nio.ByteBuffer
 
 class VaultFileFormatTest {
 
     private val params = checkNotNull(Argon2Params.ofOrNull(1024, 1, 1))
-    private val slot = VaultSlot(params, ByteArray(16) { it.toByte() }, ByteArray(60) { (it + 100).toByte() })
-    private val oneSlotFile = VaultFileFormat.encode(VaultFile(listOf(slot)))
+    private val salt = ByteArray(16) { it.toByte() }
+    private val envelopes = List(32) { index -> ByteArray(93) { (it + index).toByte() } }
+    private val bytes = VaultFileFormat.encode(VaultFile(params, salt, envelopes))
 
     @Test
-    fun encode_oneSlot_writesHeaderAndSlotLayout() {
-        val expected = ByteBuffer.allocate(91)
-            .put("PCKV".toByteArray()).put(1)
-            .put(1).putInt(1024).putInt(1).put(1).put(slot.salt).put(slot.sealedMasterKey)
+    fun encode_file_writesPrefixThenEnvelopes() {
+        val expected = ByteBuffer.allocate(3007)
+            .put("PCKV".toByteArray()).put(2)
+            .put(1).putInt(1024).putInt(1).put(1).put(salt)
+            .also { buffer -> envelopes.forEach(buffer::put) }
             .array()
 
-        assertArrayEquals(expected, oneSlotFile)
+        assertArrayEquals(expected, bytes)
     }
 
     @Test
     fun encode_decodedFile_returnsSameBytes() {
-        val bytes = VaultFileFormat.encode(VaultFile(List(8) { slot }))
-
         assertArrayEquals(bytes, VaultFileFormat.encode(checkNotNull(VaultFileFormat.decode(bytes))))
     }
 
     @Test
-    fun slotAad_slot_isFileHeaderPlusSlotHeader() {
-        assertArrayEquals(oneSlotFile.copyOfRange(0, 31), VaultFileFormat.slotAad(params, slot.salt))
+    fun envelopeAad_index_isFilePrefixPlusIndex() {
+        assertArrayEquals(bytes.copyOfRange(0, 31) + 7, VaultFileFormat.envelopeAad(params, salt, 7))
     }
 
     @Test
     fun decode_truncatedFile_returnsNull() {
-        assertNull(VaultFileFormat.decode(oneSlotFile.copyOf(oneSlotFile.size - 1)))
+        assertNull(VaultFileFormat.decode(bytes.copyOf(bytes.size - 1)))
     }
 
     @Test
     fun decode_extraByte_returnsNull() {
-        assertNull(VaultFileFormat.decode(oneSlotFile + 0))
+        assertNull(VaultFileFormat.decode(bytes + 0))
     }
 
     @Test
     fun decode_wrongMagic_returnsNull() {
-        assertNull(VaultFileFormat.decode(oneSlotFile.with(0, 'X'.code)))
+        assertNull(VaultFileFormat.decode(bytes.with(0, 'X'.code)))
     }
 
     @Test
-    fun decode_version2_returnsNull() {
-        assertNull(VaultFileFormat.decode(oneSlotFile.with(4, 2)))
-    }
-
-    @Test
-    fun decode_zeroSlots_returnsNull() {
-        assertNull(VaultFileFormat.decode(oneSlotFile.copyOf(5)))
-    }
-
-    @Test
-    fun decode_nineSlots_returnsNull() {
-        assertNull(VaultFileFormat.decode(VaultFileFormat.encode(VaultFile(List(9) { slot }))))
+    fun decode_version1Header_returnsNull() {
+        assertNull(VaultFileFormat.decode(bytes.with(4, 1)))
     }
 
     @Test
     fun decode_unknownKdf_returnsNull() {
-        assertNull(VaultFileFormat.decode(oneSlotFile.with(5, 2)))
+        assertNull(VaultFileFormat.decode(bytes.with(5, 2)))
     }
 
     @Test
     fun decode_memoryAbove512MiB_returnsNull() {
-        val bytes = oneSlotFile.copyOf().also { ByteBuffer.wrap(it).putInt(6, 524_289) }
-
-        assertNull(VaultFileFormat.decode(bytes))
+        assertNull(VaultFileFormat.decode(bytes.copyOf().also { ByteBuffer.wrap(it).putInt(6, 524_289) }))
     }
 
     @Test
     fun decode_iterations11_returnsNull() {
-        val bytes = oneSlotFile.copyOf().also { ByteBuffer.wrap(it).putInt(10, 11) }
-
-        assertNull(VaultFileFormat.decode(bytes))
+        assertNull(VaultFileFormat.decode(bytes.copyOf().also { ByteBuffer.wrap(it).putInt(10, 11) }))
     }
 
     @Test
     fun decode_parallelism5_returnsNull() {
-        assertNull(VaultFileFormat.decode(oneSlotFile.with(14, 5)))
+        assertNull(VaultFileFormat.decode(bytes.with(14, 5)))
+    }
+
+    @Test
+    fun isLegacy_version1Header_returnsTrue() {
+        assertTrue(VaultFileFormat.isLegacy("PCKV".toByteArray() + 1))
+    }
+
+    @Test
+    fun isLegacy_version2File_returnsFalse() {
+        assertFalse(VaultFileFormat.isLegacy(bytes))
+    }
+
+    @Test
+    fun isLegacy_version2FileWithVersionByteDamagedToOne_returnsFalse() {
+        assertFalse(VaultFileFormat.isLegacy(bytes.with(4, 1)))
+    }
+
+    @Test
+    fun isLegacy_version1HeaderOnFilesOfTheOldSizes_returnsTrue() {
+        listOf(5, 100, 693).forEach { size ->
+            assertTrue(VaultFileFormat.isLegacy("PCKV".toByteArray() + 1 + ByteArray(size - 5)))
+        }
+    }
+
+    @Test
+    fun isLegacy_shorterThanHeader_returnsFalse() {
+        assertFalse(VaultFileFormat.isLegacy("PCKV".toByteArray()))
+    }
+
+    @Test
+    fun decodePayload_encodedPayload_returnsSameFields() {
+        val encoded = VaultFileFormat.encodePayload(EnvelopePayload(23, ByteArray(32) { 1 }, ByteArray(32) { 2 }))
+
+        val decoded = VaultFileFormat.decodePayload(encoded)
+
+        assertEquals(23, decoded.slot)
+        assertArrayEquals(ByteArray(32) { 1 }, decoded.slotKey)
+        assertArrayEquals(ByteArray(32) { 2 }, decoded.sharedKey)
+    }
+
+    @Test
+    fun encodePayload_valuesThatWouldBreakTheFixedLayout_throw() {
+        val key = ByteArray(32)
+        listOf(
+            EnvelopePayload(24, key, key),
+            EnvelopePayload(-1, key, key),
+            EnvelopePayload(0, ByteArray(31), key),
+            EnvelopePayload(0, key, ByteArray(33)),
+        ).forEach { payload ->
+            assertThrows(IllegalArgumentException::class.java) { VaultFileFormat.encodePayload(payload) }
+        }
     }
 
     @Test

@@ -30,6 +30,7 @@ internal class DesktopVaultFixture(
     val dataDirectory: File = createTempDirectory("desktop-vault").toFile(),
     val preferencesReset: DesktopPreferencesReset = mockk(relaxed = true),
     val lockoutStorage: ILockoutStorage = FakeLockoutStorage(),
+    val walletLayer: RecordingWalletLayer = RecordingWalletLayer(),
 ) {
     val files = DesktopVaultFiles(dataDirectory)
     val uptimeProvider = FixedUptimeProvider()
@@ -45,6 +46,7 @@ internal class DesktopVaultFixture(
         driverFactory: SqlCipherDriverFactory = DefaultSqlCipherDriverFactory(),
         passwordVault: PasswordVault = PasswordVault(files.vaultFile),
         io: CoroutineDispatcher = Dispatchers.Unconfined,
+        checkpoints: StorageCheckpoints = NoStorageCheckpoints,
     ): DesktopVault = DesktopVault(
         files = files,
         passwordVault = passwordVault,
@@ -52,6 +54,8 @@ internal class DesktopVaultFixture(
         preferencesReset = preferencesReset,
         dispatcherProvider = TestDispatcherProvider(Dispatchers.Unconfined, scope, io = io),
         driverFactory = driverFactory,
+        checkpoints = checkpoints,
+        walletLayer = lazyOf(walletLayer),
     )
 
     fun tearDown() {
@@ -59,7 +63,37 @@ internal class DesktopVaultFixture(
     }
 }
 
+/** The wallet of a test without one: it lets go at once, and tells what it was asked. */
+internal class RecordingWalletLayer : DesktopWalletLayer {
+    val narrowedTo = mutableListOf<Int>()
+    val keptAccountIds = mutableListOf<Set<String>>()
+    var sessionClosings = 0
+    var onNarrowed: suspend (Int) -> Unit = {}
+    var onReleased: suspend (Set<String>) -> Unit = {}
+
+    override fun onLevelNarrowing() = Unit
+
+    override suspend fun onLevelNarrowed(level: Int) {
+        narrowedTo += level
+        onNarrowed(level)
+    }
+
+    override suspend fun awaitReleased(keptAccountIds: Set<String>) {
+        this.keptAccountIds += keptAccountIds
+        onReleased(keptAccountIds)
+    }
+
+    override suspend fun onSessionClosing() {
+        sessionClosings++
+    }
+}
+
 internal const val PASSWORD = "Correct-horse1"
 internal const val NEW_PASSWORD = "Battery-staple2"
 
 internal fun password(value: String = PASSWORD) = value.toCharArray()
+
+/** Waits until the levels the last narrowing left behind are closed. */
+internal suspend fun DesktopVault.awaitLevelRelease() {
+    levelRelease?.join()
+}

@@ -70,8 +70,8 @@ class BlockchainStatusViewModelTest {
         viewModel.awaitInitLoaded()
         assertNotNull(viewModel.uiState.value.statusAsText)
 
-        verify(exactly = 0) { appLog.dao.getGroupedPage(any(), any(), any()) }
-        verify(exactly = 0) { appLog.dao.getGroupedPageByTag(any(), any(), any(), any()) }
+        verify(exactly = 0) { appLog.dao.getGroupedPage(any(), any(), any(), any()) }
+        verify(exactly = 0) { appLog.dao.getGroupedPageByTag(any(), any(), any(), any(), any()) }
     }
 
     @Test

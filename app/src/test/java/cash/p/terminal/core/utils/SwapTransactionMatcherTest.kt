@@ -1,5 +1,6 @@
 package cash.p.terminal.core.utils
 
+import cash.p.terminal.core.storage.SingleDatabaseStorageRouter
 import cash.p.terminal.core.storage.StaticAppDatabaseProvider
 import android.content.Context
 import androidx.room.Room
@@ -153,7 +154,7 @@ class SwapTransactionMatcherTest {
         try {
             val dispatcher = UnconfinedTestDispatcher()
             val realStorage = SwapProviderTransactionsStorage(
-                databaseProvider = StaticAppDatabaseProvider(database),
+                router = SingleDatabaseStorageRouter(StaticAppDatabaseProvider(database)),
                 dispatcherProvider = TestDispatcherProvider(dispatcher, CoroutineScope(dispatcher)),
             )
             realStorage.save(

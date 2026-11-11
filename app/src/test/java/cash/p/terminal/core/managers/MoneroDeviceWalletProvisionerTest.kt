@@ -2,6 +2,8 @@ package cash.p.terminal.core.managers
 
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.storage.MoneroFileDao
+import cash.p.terminal.core.storage.SingleDatabaseStorageRouter
+import cash.p.terminal.core.storage.StaticAppDatabaseProvider
 import cash.p.terminal.entities.MoneroFileRecord
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
@@ -286,7 +288,9 @@ class MoneroDeviceWalletProvisionerTest {
     }
 
     private fun createProvisioner() = MoneroDeviceWalletProvisioner(
-        moneroFileDao = dao,
+        router = SingleDatabaseStorageRouter(
+            StaticAppDatabaseProvider(mockk { every { moneroFileDao() } returns dao })
+        ),
         nativeWallet = nativeWallet,
         nativeRuntime = object : MoneroNativeWalletRuntime {
             override suspend fun <T> withExclusiveWallet(block: suspend () -> T): T = block()

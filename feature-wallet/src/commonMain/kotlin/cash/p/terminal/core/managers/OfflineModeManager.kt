@@ -35,9 +35,7 @@ class OfflineModeManager(
 ) {
     private val writeMutex = Mutex()
 
-    private val persisted = MutableStateFlow<Map<OfflineKey, OfflineBlockchain>>(
-        storage.getAll().associateBy { OfflineKey(it.accountId, it.blockchainType) }
-    )
+    private val persisted = MutableStateFlow(storedRows())
     private val inFlight = MutableStateFlow<Map<OfflineKey, Set<Long>>>(emptyMap())
     private val temporaryOnline = MutableStateFlow<Map<OfflineKey, Set<Long>>>(emptyMap())
 
@@ -59,10 +57,6 @@ class OfflineModeManager(
         if (temporaryOnline.value.containsKey(key)) return false
         return inFlight.value.containsKey(key) || persisted.value[key]?.offline == true
     }
-
-    fun lastSyncedAt(key: OfflineKey): Long? = persisted.value[key]?.lastSyncedAt
-
-    fun isForgotten(accountId: String): Boolean = accountId in forgotten.get()
 
     /** Records the pre-start sync state of a freshly created adapter. Never suspends, so the
      * caller can install its collector without losing an emission. */
@@ -116,6 +110,18 @@ class OfflineModeManager(
         }
     }
 
+    /** The visible accounts shrank without a delete, as a desktop level change does: the rest is not ours now. */
+    suspend fun retainAccounts(accountIds: Set<String>) = writeMutex.withLock {
+        persisted.value = persisted.value.filterKeys { it.accountId in accountIds }
+        inFlight.value = inFlight.value.filterKeys { it.accountId in accountIds }
+        temporaryOnline.value = temporaryOnline.value.filterKeys { it.accountId in accountIds }
+    }
+
+    /** Another desktop session holds other rows than the ones read when this singleton was built. */
+    suspend fun reload() = writeMutex.withLock {
+        persisted.value = withContext(dispatcherProvider.io) { storedRows() }
+    }
+
     suspend fun forgetAccounts(accountIds: List<String>) {
         accountIds.forEach { forgetAccount(it) }
     }
@@ -158,6 +164,11 @@ class OfflineModeManager(
 
     suspend fun exitTemporaryOnline(key: OfflineKey, token: Long) =
         writeMutex.withLock { temporaryOnline.value = temporaryOnline.value.withoutToken(key, token) }
+
+    private fun isForgotten(accountId: String): Boolean = accountId in forgotten.get()
+
+    private fun storedRows(): Map<OfflineKey, OfflineBlockchain> =
+        storage.getAll().associateBy { OfflineKey(it.accountId, it.blockchainType) }
 
     /**
      * Compare-and-write against the live-adapter baseline: an emission from an adapter that is gone —
@@ -217,6 +228,8 @@ fun OfflineModeManager.isNetworkPaused(accountId: String, blockchainType: Blockc
 
 fun OfflineModeManager.isNetworkPaused(account: Account, blockchainType: BlockchainType): Boolean =
     isNetworkPaused(account.id, blockchainType)
+
+fun OfflineModeManager.lastSyncedAt(key: OfflineKey): Long? = stateFlow.value[key]?.lastSyncedAt
 
 fun OfflineModeManager.lastSyncedAt(accountId: String, blockchainType: BlockchainType): Long? =
     lastSyncedAt(OfflineKey(accountId, blockchainType))

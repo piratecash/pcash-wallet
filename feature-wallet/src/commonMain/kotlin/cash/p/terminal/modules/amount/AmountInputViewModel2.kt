@@ -148,15 +148,10 @@ class AmountInputViewModel2(
     }
 
     fun isValid(text: String): Boolean {
-        val amount = if (text.isNotBlank()) text.toBigDecimalOrNull() else null
-        if (amount == null) return true
+        if (inputType == AmountInputType.CURRENCY) return true
 
-        val maxAllowedScale = when (inputType) {
-            AmountInputType.COIN -> coinDecimal
-            AmountInputType.CURRENCY -> fiatDecimal
-        }
-
-        return amount.scale() <= maxAllowedScale
+        val amount = if (text.isNotBlank()) text.toBigDecimalOrNullExt() else null
+        return amount == null || amount.scale() <= coinDecimal
     }
 
 }

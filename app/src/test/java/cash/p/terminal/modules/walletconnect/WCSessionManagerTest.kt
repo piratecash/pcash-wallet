@@ -6,6 +6,9 @@ import androidx.test.core.app.ApplicationProvider
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.storage.AccountsDao
 import cash.p.terminal.core.storage.AppDatabase
+import cash.p.terminal.core.storage.SingleDatabaseStorageRouter
+import cash.p.terminal.core.storage.StaticAppDatabaseProvider
+import cash.p.terminal.core.storage.StorageRouter
 import cash.p.terminal.modules.walletconnect.storage.WCSessionStorage
 import cash.p.terminal.modules.walletconnect.storage.WalletConnectV2Session
 import cash.p.terminal.wallet.Account
@@ -45,7 +48,7 @@ class WCSessionManagerTest {
     private val accountsDeleted = PublishSubject.create<Unit>()
     private val accountsDao = mockk<AccountsDao>()
     private lateinit var database: AppDatabase
-    private lateinit var appDatabase: AppDatabase
+    private lateinit var router: StorageRouter
     private lateinit var storage: WCSessionStorage
 
     @Before
@@ -54,11 +57,12 @@ class WCSessionManagerTest {
         database = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java)
             .allowMainThreadQueries()
             .build()
-        appDatabase = mockk<AppDatabase> {
+        val appDatabase = mockk<AppDatabase> {
             every { wcSessionDao() } returns database.wcSessionDao()
             every { accountsDao() } returns accountsDao
         }
-        storage = WCSessionStorage(appDatabase)
+        router = SingleDatabaseStorageRouter(StaticAppDatabaseProvider(appDatabase))
+        storage = WCSessionStorage(router)
 
         mockkObject(WCDelegate, WalletKit)
         // getListOfActiveSessions is @JvmStatic, which mockkObject does not intercept.
@@ -154,7 +158,7 @@ class WCSessionManagerTest {
         val manager = WCSessionManager(
             accountManager,
             storage,
-            appDatabase,
+            router,
             TestDispatcherProvider(dispatcher, backgroundScope),
         )
         manager.start()

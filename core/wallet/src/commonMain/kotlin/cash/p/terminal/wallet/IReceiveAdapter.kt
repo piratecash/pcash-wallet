@@ -4,14 +4,13 @@ import cash.p.terminal.wallet.entities.UsedAddress
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
+enum class ReceiveAccountStatus { Active, NotActive, ControlledByOthers }
 
 interface IReceiveAdapter {
     val receiveAddress: String
     val isMainNet: Boolean
 
-    suspend fun isAddressActive(address: String): Boolean {
-        return true
-    }
+    suspend fun accountStatus(address: String): ReceiveAccountStatus = ReceiveAccountStatus.Active
 
     fun usedAddresses(change: Boolean): List<UsedAddress> {
         return listOf()

@@ -19,9 +19,10 @@ import cash.p.terminal.modules.displayoptions.DisplayDiffOptionType
 import cash.p.terminal.wallet.Wallet
 import io.horizontalsystems.core.entities.BlockchainType
 import cash.p.terminal.wallet.entities.TokenType
-import kotlinx.coroutines.Dispatchers
+import io.horizontalsystems.core.DispatcherProvider
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.koin.java.KoinJavaComponent.inject
 import java.math.BigDecimal
 
 class TokenSelectViewModel(
@@ -36,7 +37,10 @@ class TokenSelectViewModel(
     private val totalBalance: TotalBalance,
 ) : ViewModel(), ITotalBalance by totalBalance {
 
+    private val dispatcherProvider: DispatcherProvider by inject(DispatcherProvider::class.java)
+
     private var noItems = false
+    private var walletsLoaded = false
     private var query: String? = null
     private var balanceViewItems = listOf<BalanceViewItem2>()
     private val itemsBalanceHidden by lazy { mutableMapOf<Wallet, Boolean>() }
@@ -44,7 +48,8 @@ class TokenSelectViewModel(
     var uiState by mutableStateOf(
         TokenSelectUiState(
             items = balanceViewItems,
-            noItems = noItems
+            noItems = noItems,
+            isLoading = true,
         )
     )
         private set
@@ -54,6 +59,8 @@ class TokenSelectViewModel(
         addCloseable(service)
 
         viewModelScope.launch {
+            service.awaitWalletsLoaded()
+            walletsLoaded = true
             service.balanceItemsFlow.collect { items ->
                 refreshViewItems(items)
             }
@@ -71,7 +78,7 @@ class TokenSelectViewModel(
     }
 
     private suspend fun refreshViewItems(balanceItems: List<BalanceItem>?) {
-        withContext(Dispatchers.IO) {
+        withContext(dispatcherProvider.io) {
             if (balanceItems != null) {
                 var itemsFiltered: List<BalanceItem> = balanceItems.filter { it.hasSelectableBalance() }
                 blockchainTypes?.let { types ->
@@ -127,7 +134,7 @@ class TokenSelectViewModel(
     fun updateFilter(q: String) {
         viewModelScope.launch {
             query = q
-            refreshViewItems(service.balanceItemsFlow.value)
+            if (walletsLoaded) refreshViewItems(service.balanceItemsFlow.value)
         }
     }
 
@@ -136,6 +143,7 @@ class TokenSelectViewModel(
             uiState = TokenSelectUiState(
                 items = balanceViewItems,
                 noItems = noItems,
+                isLoading = false,
             )
         }
     }
@@ -144,6 +152,7 @@ class TokenSelectViewModel(
 data class TokenSelectUiState(
     val items: List<BalanceViewItem2>,
     val noItems: Boolean,
+    val isLoading: Boolean,
 )
 
 internal fun BalanceItem.hasSelectableBalance(): Boolean =

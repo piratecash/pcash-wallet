@@ -18,6 +18,8 @@ import cash.p.terminal.shared.desktop.desktopFeatureModule
 import cash.p.terminal.shared.desktop.vault.DesktopPreferencesReset
 import cash.p.terminal.shared.desktop.vault.DesktopVault
 import cash.p.terminal.shared.desktop.vault.DesktopVaultFiles
+import cash.p.terminal.shared.desktop.vault.StorageCheckpoints
+import cash.p.terminal.shared.desktop.vault.TestCheckpoints
 import cash.p.terminal.shared.desktop.vault.WipeOutcome
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
@@ -39,6 +41,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import org.koin.core.Koin
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
@@ -72,8 +76,20 @@ internal class DesktopWalletGraph(
     /** What the mocked wallet list holds; the adapters follow it. */
     val activeWallets = MutableStateFlow<List<Wallet>>(emptyList())
 
+    val checkpoints = TestCheckpoints()
+
     /** A test never starts a second app process. */
     val relauncher = mockk<DesktopAppRelauncher> { every { relaunch(any()) } returns true }
+
+    /** As the real wallet list: the wallets of an account that is no longer visible leave it. */
+    fun followVisibleAccounts() {
+        scope.launch {
+            accountManager.accountsFlow.collect { accounts ->
+                val visible = accounts.mapTo(mutableSetOf()) { it.id }
+                activeWallets.update { wallets -> wallets.filter { it.account.id in visible } }
+            }
+        }
+    }
 
     fun start(): DesktopWalletGraph = apply {
         // As desktop main(): the kits' crypto provider.
@@ -123,6 +139,7 @@ internal class DesktopWalletGraph(
         single<DispatcherProvider> { TestDispatcherProvider(Dispatchers.Unconfined, scope) }
         single { piratePlaceRepository }
         single { relauncher }
+        single<StorageCheckpoints> { checkpoints }
         single { chartIndicatorStorage } bind ChartIndicatorStorage::class
         single<MarketFavoritesManager> { mockk { coEvery { getAll() } returns emptyList() } }
         single<IWalletManager> {
@@ -148,5 +165,5 @@ internal fun mnemonicAccount(isBackedUp: Boolean, words: List<String> = TEST_WOR
 )
 
 /** Every file of the data directory, so a check covers the database, its WAL and the kit databases. */
-internal fun File.rawBytes(): String =
-    walkTopDown().filter(File::isFile).joinToString("") { String(it.readBytes(), Charsets.ISO_8859_1) }
+internal fun File.anyFileContains(text: String): Boolean =
+    walkTopDown().filter(File::isFile).any { String(it.readBytes(), Charsets.ISO_8859_1).contains(text) }

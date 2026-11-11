@@ -20,30 +20,36 @@ interface LogsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(logEntry: LogEntry)
 
-    @Query("SELECT * FROM LogEntry ORDER BY id DESC LIMIT :limit")
-    suspend fun getRecent(limit: Int): List<LogEntry>
+    @Query("SELECT * FROM LogEntry WHERE userLevel = :userLevel ORDER BY id DESC LIMIT :limit")
+    suspend fun getRecent(limit: Int, userLevel: Int): List<LogEntry>
 
-    @Query("SELECT * FROM LogEntry WHERE actionId LIKE '%' || :tag || '%' ORDER BY id DESC LIMIT :limit")
-    fun getRecentByTag(tag: String, limit: Int): List<LogEntry>
+    @Query(
+        "SELECT * FROM LogEntry WHERE userLevel = :userLevel " +
+            "AND actionId LIKE '%' || :tag || '%' ORDER BY id DESC LIMIT :limit"
+    )
+    fun getRecentByTag(tag: String, limit: Int, userLevel: Int): List<LogEntry>
 
     /** Groups ordered by first appearance, entries by id — same grouping the log export needs. */
     @Query(
         "SELECT g.firstId AS firstId, l.id AS id, l.date AS date, l.actionId AS actionId, " +
             "l.message AS message FROM LogEntry l " +
-            "JOIN (SELECT actionId, MIN(id) AS firstId FROM LogEntry GROUP BY actionId) g " +
+            "JOIN (SELECT actionId, MIN(id) AS firstId FROM LogEntry " +
+            "WHERE userLevel = :userLevel GROUP BY actionId) g " +
             "ON l.actionId = g.actionId " +
-            "WHERE g.firstId > :afterFirstId OR (g.firstId = :afterFirstId AND l.id > :afterId) " +
+            "WHERE l.userLevel = :userLevel " +
+            "AND (g.firstId > :afterFirstId OR (g.firstId = :afterFirstId AND l.id > :afterId)) " +
             "ORDER BY g.firstId, l.id LIMIT :limit"
     )
-    fun getGroupedPage(afterFirstId: Long, afterId: Int, limit: Int): List<GroupedLogRow>
+    fun getGroupedPage(afterFirstId: Long, afterId: Int, limit: Int, userLevel: Int): List<GroupedLogRow>
 
     @Query(
         "SELECT g.firstId AS firstId, l.id AS id, l.date AS date, l.actionId AS actionId, " +
             "l.message AS message FROM LogEntry l " +
             "JOIN (SELECT actionId, MIN(id) AS firstId FROM LogEntry " +
-            "WHERE actionId LIKE '%' || :tag || '%' GROUP BY actionId) g " +
+            "WHERE userLevel = :userLevel AND actionId LIKE '%' || :tag || '%' GROUP BY actionId) g " +
             "ON l.actionId = g.actionId " +
-            "WHERE g.firstId > :afterFirstId OR (g.firstId = :afterFirstId AND l.id > :afterId) " +
+            "WHERE l.userLevel = :userLevel " +
+            "AND (g.firstId > :afterFirstId OR (g.firstId = :afterFirstId AND l.id > :afterId)) " +
             "ORDER BY g.firstId, l.id LIMIT :limit"
     )
     fun getGroupedPageByTag(
@@ -51,6 +57,7 @@ interface LogsDao {
         afterFirstId: Long,
         afterId: Int,
         limit: Int,
+        userLevel: Int,
     ): List<GroupedLogRow>
 
     @Query("DELETE FROM LogEntry WHERE date < :timestamp")

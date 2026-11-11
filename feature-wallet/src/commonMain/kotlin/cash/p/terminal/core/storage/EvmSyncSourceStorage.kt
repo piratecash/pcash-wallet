@@ -3,10 +3,10 @@ package cash.p.terminal.core.storage
 import cash.p.terminal.entities.EvmSyncSourceRecord
 import io.horizontalsystems.core.entities.BlockchainType
 
-class EvmSyncSourceStorage(private val databaseProvider: AppDatabaseProvider) {
+class EvmSyncSourceStorage(private val router: StorageRouter) {
 
     private val dao: EvmSyncSourceDao
-        get() = databaseProvider.database.evmSyncSourceDao()
+        get() = router.shared.evmSyncSourceDao()
 
     fun evmSyncSources(blockchainType: BlockchainType): List<EvmSyncSourceRecord> {
         return dao.getEvmSyncSources(blockchainType.uid)

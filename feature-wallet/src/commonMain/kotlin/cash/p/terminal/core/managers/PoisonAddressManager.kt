@@ -1,8 +1,7 @@
 package cash.p.terminal.core.managers
 
-import cash.p.terminal.core.storage.AppDatabaseProvider
+import cash.p.terminal.core.storage.StorageRouter
 import cash.p.terminal.core.isEvm
-import cash.p.terminal.core.storage.PoisonAddressDao
 import cash.p.terminal.entities.PoisonAddress
 import cash.p.terminal.entities.PoisonAddressType
 import cash.p.terminal.entities.transactionrecords.PendingTransactionRecord
@@ -21,13 +20,12 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.withContext
 
 class PoisonAddressManager(
-    private val databaseProvider: AppDatabaseProvider,
+    private val router: StorageRouter,
     private val contactsRepository: ContactsRepository,
     private val locallyCreatedTransactionRepository: LocallyCreatedTransactionRepository,
     private val dispatcherProvider: DispatcherProvider,
 ) {
-    private val poisonAddressDao: PoisonAddressDao
-        get() = databaseProvider.database.poisonAddressDao()
+    private fun poisonAddressDao(accountId: String) = router.account(accountId)?.poisonAddressDao()
 
     private val _poisonDbChangedFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val poisonDbChangedFlow: Flow<Unit> = merge(
@@ -59,7 +57,7 @@ class PoisonAddressManager(
         if (isInAddressBook(normalized, blockchainType)) return PoisonStatus.ADDRESS_BOOK
         if (isOutgoing && isCreatedByWallet) return PoisonStatus.CREATED
 
-        val existing = poisonAddressDao.get(normalized, blockchainUid, accountId)
+        val existing = poisonAddressDao(accountId)?.get(normalized, blockchainUid, accountId)
         if (isWhitelisted(existing)) return PoisonStatus.BLOCKCHAIN
         if (existing?.type == PoisonAddressType.SCAM) return PoisonStatus.SUSPICIOUS
 
@@ -120,7 +118,7 @@ class PoisonAddressManager(
         val normalized = address.lowercase()
         val blockchainUid = blockchainType.uid
 
-        val existing = poisonAddressDao.get(normalized, blockchainUid, accountId)
+        val existing = poisonAddressDao(accountId)?.get(normalized, blockchainUid, accountId)
         if (existing?.type == PoisonAddressType.SCAM) return true
         if (isWhitelisted(existing)) return false
         if (isInAddressBook(normalized, blockchainType)) return false
@@ -129,7 +127,7 @@ class PoisonAddressManager(
     }
 
     fun saveKnownAddress(address: String, blockchainType: BlockchainType, accountId: String) {
-        poisonAddressDao.upsertKnownIncrementingCount(
+        poisonAddressDao(accountId)?.upsertKnownIncrementingCount(
             address = address.lowercase(),
             blockchainTypeUid = blockchainType.uid,
             accountId = accountId,
@@ -138,7 +136,7 @@ class PoisonAddressManager(
     }
 
     private fun saveScamAddress(normalizedAddress: String, blockchainType: BlockchainType, accountId: String) {
-        poisonAddressDao.insertIgnore(
+        poisonAddressDao(accountId)?.insertIgnore(
             PoisonAddress(normalizedAddress, blockchainType.uid, accountId, PoisonAddressType.SCAM)
         )
         _poisonDbChangedFlow.tryEmit(Unit)
@@ -263,9 +261,10 @@ class PoisonAddressManager(
         blockchainType: BlockchainType,
         accountId: String,
     ): List<String> {
-        val knownAddresses = poisonAddressDao
-            .getWhitelisted(blockchainType.uid, accountId, SIMILARITY_MIN_SEND_COUNT)
-            .map { it.address }
+        val knownAddresses = poisonAddressDao(accountId)
+            ?.getWhitelisted(blockchainType.uid, accountId, SIMILARITY_MIN_SEND_COUNT)
+            ?.map { it.address }
+            .orEmpty()
         val contactAddresses = contactsRepository
             .getContactsFiltered(blockchainType = blockchainType)
             .flatMap { contact ->

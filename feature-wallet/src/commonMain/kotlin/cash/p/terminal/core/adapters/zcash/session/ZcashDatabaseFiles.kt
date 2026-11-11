@@ -1,21 +1,33 @@
 package cash.p.terminal.core.adapters.zcash.session
 
 import cash.p.terminal.core.managers.KitPlatformContexts
+import cash.p.terminal.core.managers.KitStorageNaming
 import cash.p.terminal.core.tryOrNull
 import java.io.File
 
 /** The on-disk layout of the Zcash wallet: one owner for the paths the opener and the eraser share. */
-class ZcashDatabaseFiles(platformContexts: KitPlatformContexts) {
+class ZcashDatabaseFiles(
+    private val platformContexts: KitPlatformContexts,
+    private val storageNaming: KitStorageNaming,
+) {
 
-    /** Also holds the Sapling parameters and the Tor state, so it must survive an app restart. */
-    val dataDir: File = File(platformContexts.zcashBaseDir, DATA_DIR_NAME)
+    /** Holds the Sapling parameters and the Tor state, so it must survive an app restart. */
+    val dataDir: File
+        get() = File(platformContexts.zcashSharedBaseDir, storageNaming.sharedResolver.resolve(DATA_DIR_NAME))
 
     /** Where the ECC SDK left the Sapling parameters; reusing them saves a ~50 MB download. */
-    val legacyDir: File = File(platformContexts.zcashBaseDir, ECC_NO_BACKUP_DIR_NAME)
+    val legacyDir: File
+        get() = File(platformContexts.zcashSharedBaseDir, storageNaming.sharedResolver.resolve(ECC_NO_BACKUP_DIR_NAME))
 
-    fun databaseFile(accountId: String): File = File(dataDir, "$DB_PREFIX$accountId$DB_SUFFIX")
+    fun databaseFile(accountId: String): File =
+        File(databaseDir(accountId), storageNaming.resolverFor(accountId).resolve(databaseName(accountId)))
 
-    /** Inverse of [databaseFile]; null for a path this wallet does not own. */
+    fun databaseDir(accountId: String): File = File(
+        platformContexts.zcashBaseDir(accountId),
+        storageNaming.resolverFor(accountId).resolve(DATA_DIR_NAME),
+    )
+
+    /** Inverse of [databaseFile]; null for a path this wallet does not own, as every opaque path is. */
     fun accountIdOf(path: String): String? {
         val file = File(path)
         if (file.parentFile != dataDir) return null
@@ -29,19 +41,25 @@ class ZcashDatabaseFiles(platformContexts: KitPlatformContexts) {
      */
     fun markPristine(accountId: String) {
         tryOrNull {
-            dataDir.mkdirs()
+            databaseDir(accountId).mkdirs()
             pristineMark(accountId).createNewFile()
         }
     }
 
     fun isPristine(accountId: String): Boolean = pristineMark(accountId).exists()
 
-    private fun pristineMark(accountId: String) = File(databaseFile(accountId).path + PRISTINE_SUFFIX)
+    private fun pristineMark(accountId: String) = File(
+        databaseDir(accountId),
+        storageNaming.resolverFor(accountId).resolve(databaseName(accountId) + PRISTINE_SUFFIX),
+    )
+
+    private fun databaseName(accountId: String) = "$DB_PREFIX$accountId$DB_SUFFIX"
 
     /** True once nothing is left on disk, so an already-clean account counts as deleted. */
     fun delete(accountId: String): Boolean {
         val path = databaseFile(accountId).path
-        return DB_SUFFIXES.map { File(path + it) }.all { it.delete() || !it.exists() }
+        return (listOf(pristineMark(accountId)) + DB_SUFFIXES.map { File(path + it) })
+            .all { it.delete() || !it.exists() }
     }
 
     /** One `db-fs:` line of filesystem facts for the App Log; never opens the database files and never throws. */
@@ -61,7 +79,7 @@ class ZcashDatabaseFiles(platformContexts: KitPlatformContexts) {
         const val ECC_NO_BACKUP_DIR_NAME = "co.electricoin.zcash"
         const val PRISTINE_SUFFIX = ".pristine"
 
-        /** The mark first: `all` stops at the first failure, so an undeletable mark keeps the database. */
-        val DB_SUFFIXES = listOf(PRISTINE_SUFFIX, "", "-wal", "-shm", "-journal")
+        /** Goes after the pristine mark: `all` stops at the first failure, so an undeletable mark keeps the database. */
+        val DB_SUFFIXES = listOf("", "-wal", "-shm", "-journal")
     }
 }

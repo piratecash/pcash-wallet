@@ -1,5 +1,6 @@
 package cash.p.terminal.core.managers
 
+import cash.p.terminal.core.storage.StorageRouter
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.managers.UserManager
 import io.mockk.every
@@ -20,7 +21,9 @@ class DefaultUserManagerTest {
         every { it.setLevel(any()) } returns Unit
     }
 
-    private fun newManager() = DefaultUserManager(accountManager)
+    private val router = mockk<StorageRouter>(relaxUnitFun = true)
+
+    private fun newManager() = DefaultUserManager(accountManager, router)
 
     @Test
     fun setUserLevel_fromDefaultUserLevel_doesNotEmit() = runTest {
@@ -169,5 +172,25 @@ class DefaultUserManagerTest {
 
         assertEquals(listOf(0), collected)
         job.cancel()
+    }
+
+    @Test
+    fun allowAccountsForDuress_atLevel_movesThemOneLevelAboveThroughTheRouter() {
+        val manager = newManager()
+        manager.setUserLevel(2)
+
+        manager.allowAccountsForDuress(listOf("a", "b"))
+
+        verify(exactly = 1) { router.setLevel(listOf("a", "b"), 3) }
+    }
+
+    @Test
+    fun disallowAccountsForDuress_atLevel_collapsesAboveItThroughTheRouter() {
+        val manager = newManager()
+        manager.setUserLevel(2)
+
+        manager.disallowAccountsForDuress()
+
+        verify(exactly = 1) { router.collapseLevelsAbove(2) }
     }
 }

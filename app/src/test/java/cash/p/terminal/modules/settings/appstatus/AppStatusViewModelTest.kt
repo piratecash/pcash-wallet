@@ -125,8 +125,8 @@ class AppStatusViewModelTest {
         assertNotNull(viewModel.uiState.value.appStatusAsText)
         assertNotNull(viewModel.uiState.value.report)
 
-        verify(exactly = 0) { logsDao.getGroupedPage(any(), any(), any()) }
-        verify(exactly = 0) { logsDao.getGroupedPageByTag(any(), any(), any(), any()) }
+        verify(exactly = 0) { logsDao.getGroupedPage(any(), any(), any(), any()) }
+        verify(exactly = 0) { logsDao.getGroupedPageByTag(any(), any(), any(), any(), any()) }
     }
 
     @Test

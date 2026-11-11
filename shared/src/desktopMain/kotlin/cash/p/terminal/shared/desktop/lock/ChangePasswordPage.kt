@@ -18,6 +18,7 @@ import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.desktop_change_password_corrupted
 import cash.p.terminal.resources.desktop_change_password_current_hint
 import cash.p.terminal.resources.desktop_change_password_failed
+import cash.p.terminal.resources.desktop_change_password_in_use
 import cash.p.terminal.resources.desktop_change_password_new_hint
 import cash.p.terminal.resources.desktop_change_password_success
 import cash.p.terminal.resources.desktop_change_password_title
@@ -101,6 +102,8 @@ internal fun ChangePasswordContent(
                 onValueChange = onNewPasswordChange,
                 onSubmit = onChangeClick,
                 enabled = !uiState.inProgress,
+                error = stringResource(Res.string.desktop_change_password_in_use)
+                    .takeIf { uiState.outcome == ChangePasswordOutcome.PASSWORD_IN_USE },
             )
             VSpacer(16.dp)
             DesktopPasswordField(
@@ -121,15 +124,19 @@ internal fun ChangePasswordContent(
                 enabled = uiState.canSubmit,
                 loadingIndicator = uiState.inProgress,
             )
-            OutcomeMessage(uiState.outcome)
+            OutcomeMessage(uiState)
             VSpacer(24.dp)
         }
     }
 }
 
 @Composable
-private fun OutcomeMessage(outcome: ChangePasswordOutcome?) {
-    when (outcome) {
+private fun OutcomeMessage(uiState: ChangePasswordUiState) {
+    uiState.lockedOutUntil?.let {
+        VSpacer(12.dp)
+        LockedOutUntilText(it)
+    }
+    when (uiState.outcome) {
         ChangePasswordOutcome.FAILED -> {
             VSpacer(12.dp)
             subhead2_lucian(text = stringResource(Res.string.desktop_change_password_failed))

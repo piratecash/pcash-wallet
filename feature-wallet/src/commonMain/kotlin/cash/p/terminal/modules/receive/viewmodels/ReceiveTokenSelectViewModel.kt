@@ -20,6 +20,7 @@ import cash.p.terminal.wallet.isZcashAddressSpec
 import cash.p.terminal.wallet.policy.PlatformChainSupport
 import io.horizontalsystems.core.entities.BlockchainType
 import cash.p.terminal.wallet.useCases.WalletUseCase
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.koin.java.KoinJavaComponent.inject
 
@@ -29,43 +30,45 @@ class ReceiveTokenSelectViewModel(
     private val fullCoinsProvider: FullCoinsProvider,
     private val adapterManager: IAdapterManager,
 ) : ViewModel() {
-    private var fullCoins: List<FullCoin> = listOf()
-
-    var uiState by mutableStateOf(
-        ReceiveTokenSelectUiState(
-            fullCoins = fullCoins,
-        )
-    )
+    var uiState by mutableStateOf(ReceiveTokenSelectUiState())
     private val walletUseCase: WalletUseCase by inject(WalletUseCase::class.java)
     private val chainSupport: PlatformChainSupport by inject(PlatformChainSupport::class.java)
 
+    private var query = ""
+    private var limit = PAGE_SIZE
+    private var loadJob: Job? = null
+
     init {
         fullCoinsProvider.setActiveWallets(walletManager.activeWallets)
-
-        viewModelScope.launch {
-            refreshItems()
-            emitState()
-        }
+        load()
     }
 
     fun updateFilter(q: String) {
-        viewModelScope.launch {
-            fullCoinsProvider.setQuery(q)
-            refreshItems()
+        // The search bar re-reports a restored query when the page returns; that must not reset the depth.
+        if (q == query) return
 
-            emitState()
-        }
+        query = q
+        fullCoinsProvider.setQuery(q)
+        limit = PAGE_SIZE
+        uiState = uiState.copy(hasMore = false)
+        load()
     }
 
-    private suspend fun refreshItems() {
-        fullCoins = fullCoinsProvider.getItems()
+    fun onBottomReached() {
+        if (!uiState.hasMore || loadJob?.isActive == true) return
+
+        limit += PAGE_SIZE
+        load()
     }
 
-
-    private fun emitState() {
-        viewModelScope.launch {
+    private fun load() {
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
+            val page = fullCoinsProvider.getPage(limit)
             uiState = ReceiveTokenSelectUiState(
-                fullCoins = fullCoins,
+                fullCoins = page.items,
+                isLoading = false,
+                hasMore = page.hasMore,
             )
         }
     }
@@ -141,6 +144,10 @@ class ReceiveTokenSelectViewModel(
 
         return wallet
     }
+
+    private companion object {
+        const val PAGE_SIZE = 200
+    }
 }
 
 sealed interface CoinForReceiveType {
@@ -152,5 +159,7 @@ sealed interface CoinForReceiveType {
 }
 
 data class ReceiveTokenSelectUiState(
-    val fullCoins: List<FullCoin>
+    val fullCoins: List<FullCoin> = emptyList(),
+    val isLoading: Boolean = true,
+    val hasMore: Boolean = false,
 )

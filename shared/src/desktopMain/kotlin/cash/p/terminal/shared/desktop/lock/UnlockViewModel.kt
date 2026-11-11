@@ -12,7 +12,7 @@ class UnlockViewModel(
     override suspend fun check(password: CharArray): UnlockOutcome = vault.unlock(password)
 
     /** Shown once: returning from the reset screen must land on a plain unlock form. */
-    fun onDataUnreadableShown() {
+    fun onStorageUnusableShown() {
         uiState = uiState.copy(outcome = null)
     }
 }

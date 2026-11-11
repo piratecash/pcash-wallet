@@ -1,5 +1,6 @@
 package cash.p.terminal.core.managers
 
+import cash.p.terminal.core.storage.SingleDatabaseStorageRouter
 import io.mockk.every
 import cash.p.terminal.core.storage.StaticAppDatabaseProvider
 import cash.p.terminal.core.TestDispatcherProvider
@@ -40,7 +41,7 @@ class AddressLabelManagerTest {
         coEvery { replaceAndGetAll(any(), any()) } returns emptyList()
     }
     private val manager = AddressLabelManager(
-        databaseProvider = StaticAppDatabaseProvider(mockk { every { addressLabelDao() } returns dao }),
+        router = SingleDatabaseStorageRouter(StaticAppDatabaseProvider(mockk { every { addressLabelDao() } returns dao })),
         dispatcherProvider = TestDispatcherProvider(
             dispatcher = dispatcher,
             applicationScope = CoroutineScope(dispatcher),

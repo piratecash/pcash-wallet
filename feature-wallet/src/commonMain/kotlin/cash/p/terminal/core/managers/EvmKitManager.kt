@@ -143,7 +143,7 @@ class EvmKitManager(
             NetworkErrorEventListener.Factory(blockchainType, account.id, networkErrorTracker, recordHttpErrors = true)
 
         val evmKit = EthereumKit.getInstance(
-            application = platformContexts.ethereum,
+            application = platformContexts.ethereum(account.id),
             address = address,
             chain = chain,
             rpcSource = syncSource.rpcSource,
@@ -151,7 +151,8 @@ class EvmKitManager(
             walletId = account.id,
             databaseKey = databaseKey,
             scanHistoricalEip20 = account.origin == AccountOrigin.Restored,
-            eventListenerFactory = eventListenerFactory
+            eventListenerFactory = eventListenerFactory,
+            nameResolver = platformContexts.resolverFor(account.id),
         )
 
         addDecorators(evmKit)
@@ -161,13 +162,14 @@ class EvmKitManager(
                 merkleIoPubKey = SharedAppConfig.merkleIoKey,
                 address = address,
                 chain = chain,
-                context = platformContexts.ethereum,
+                context = platformContexts.ethereum(account.id),
                 walletId = account.id,
                 databaseKey = databaseKey,
                 transactionManager = evmKit.transactionManager,
                 sourceTag = "pcash-wallet-android",
                 transactionSyncSourceStorage = evmKit.transactionSyncSourceStorage,
-                eventListenerFactory = eventListenerFactory
+                eventListenerFactory = eventListenerFactory,
+                nameResolver = platformContexts.resolverFor(account.id),
             )
         } catch (error: Throwable) {
             // Not in evmKitWrapper yet, so neither unlink() nor stopFor() would ever stop it.
@@ -205,10 +207,11 @@ class EvmKitManager(
 
     /** The kit refuses plaintext files, so every database must be encrypted before it opens. */
     private suspend fun migrateDatabases(walletId: String, databaseKey: ByteArray) {
-        val context = platformContexts.ethereum
-        EthereumKit.migrateDatabase(context, chain, walletId, databaseKey)
-        Erc20Kit.migrateDatabases(context, chain, walletId, databaseKey)
-        MerkleTransactionAdapter.migrateDatabase(context, chain, walletId, databaseKey)
+        val context = platformContexts.ethereum(walletId)
+        val nameResolver = platformContexts.resolverFor(walletId)
+        EthereumKit.migrateDatabase(context, chain, walletId, databaseKey, nameResolver)
+        Erc20Kit.migrateDatabases(context, chain, walletId, databaseKey, nameResolver)
+        MerkleTransactionAdapter.migrateDatabase(context, chain, walletId, databaseKey, nameResolver)
     }
 
     suspend fun stopFor(accountId: String) = lifecycleMutex.withLock {

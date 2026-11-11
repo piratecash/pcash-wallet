@@ -28,10 +28,21 @@ import kotlin.concurrent.thread
 class AppLogTest {
 
     private val logsDao = mockk<LogsDao>(relaxed = true)
+    private var currentDao: LogsDao = logsDao
+    private var resolveFails = false
+    private var scopeResolveFails = false
+    private val scope = TestLogScope(USER_LEVEL)
 
     @Before
     fun setUp() {
-        startKoin { modules(module { single { logsDao } }) }
+        startKoin {
+            modules(
+                module {
+                    factory<LogsDao> { if (resolveFails) error("no open session") else currentDao }
+                    factory<LogScope> { if (scopeResolveFails) error("no accounts") else scope }
+                }
+            )
+        }
     }
 
     /** AppLog is a singleton with one shared executor: finish pending tasks before the next test restubs. */
@@ -89,8 +100,8 @@ class AppLogTest {
     fun readMethods_useExpectedSelectionAndOrderAndPreserveMultilineMessages() = runTest {
         val first = logEntry(1, "first\ncontinued")
         val second = logEntry(2, "second")
-        coEvery { logsDao.getRecent(500) } returns listOf(second, first)
-        every { logsDao.getRecentByTag("tag", 300) } returns listOf(second, first)
+        coEvery { logsDao.getRecent(500, USER_LEVEL) } returns listOf(second, first)
+        every { logsDao.getRecentByTag("tag", 300, USER_LEVEL) } returns listOf(second, first)
 
         val taggedLogs = AppLog.getRecentLog("tag")
         assertEquals(listOf("1", "2"), AppLog.getLog().messages().keys.toList())
@@ -135,7 +146,7 @@ class AppLogTest {
             logEntry(2, "two", "a"),
             logEntry(3, "three", "b"),
         )
-        every { logsDao.getGroupedPage(any(), any(), any()) } answers {
+        every { logsDao.getGroupedPage(any(), any(), any(), USER_LEVEL) } answers {
             rows.pageAfter(firstArg(), secondArg(), thirdArg())
         }
 
@@ -157,7 +168,7 @@ class AppLogTest {
     @Test
     fun writeLog_withTag_readsOnlyTheTaggedPages() {
         val rows = groupedRows(logEntry(1, "one", "tag"))
-        every { logsDao.getGroupedPageByTag("tag", any(), any(), any()) } answers {
+        every { logsDao.getGroupedPageByTag("tag", any(), any(), any(), USER_LEVEL) } answers {
             rows.pageAfter(secondArg(), thirdArg(), arg(3))
         }
 
@@ -165,7 +176,7 @@ class AppLogTest {
         runBlocking { AppLog.writeLog(out, "tag") }
 
         assertEquals("tag:\n  - 1: 1970-01-01 00:00:00.000 one\n", out.toString())
-        verify(exactly = 0) { logsDao.getGroupedPage(any(), any(), any()) }
+        verify(exactly = 0) { logsDao.getGroupedPage(any(), any(), any(), any()) }
     }
 
     @Test
@@ -173,7 +184,7 @@ class AppLogTest {
         val exportStarted = CountDownLatch(1)
         val releaseExport = CountDownLatch(1)
         val inserted = CountDownLatch(1)
-        every { logsDao.getGroupedPage(any(), any(), any()) } answers {
+        every { logsDao.getGroupedPage(any(), any(), any(), any()) } answers {
             exportStarted.countDown()
             releaseExport.await(TIMEOUT_SECONDS, TimeUnit.SECONDS)
             emptyList()
@@ -189,6 +200,132 @@ class AppLogTest {
         releaseExport.countDown()
         export.join(TimeUnit.SECONDS.toMillis(TIMEOUT_SECONDS))
         assertTrue(inserted.await(TIMEOUT_SECONDS, TimeUnit.SECONDS))
+    }
+
+    @Test
+    fun info_daoSwitchedWhileTheWriteIsQueued_writesToTheDaoOfTheCall() {
+        val exportStarted = CountDownLatch(1)
+        val releaseExport = CountDownLatch(1)
+        val inserted = CountDownLatch(1)
+        every { logsDao.getGroupedPage(any(), any(), any(), any()) } answers {
+            exportStarted.countDown()
+            releaseExport.await(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            emptyList()
+        }
+        every { logsDao.insert(any()) } answers { inserted.countDown() }
+        val lowerLevelDao = mockk<LogsDao>(relaxed = true)
+        val export = thread { runBlocking { AppLog.writeLog(StringBuilder()) } }
+        assertTrue(exportStarted.await(TIMEOUT_SECONDS, TimeUnit.SECONDS))
+
+        AppLog.info("upper-account", "stopping")
+        currentDao = lowerLevelDao
+        releaseExport.countDown()
+        export.join(TimeUnit.SECONDS.toMillis(TIMEOUT_SECONDS))
+
+        assertTrue(inserted.await(TIMEOUT_SECONDS, TimeUnit.SECONDS))
+        verify(exactly = 0) { lowerLevelDao.insert(any()) }
+        verify(exactly = 0) { lowerLevelDao.trimToNewest(any()) }
+    }
+
+    @Test
+    fun info_daoCannotBeResolved_doesNotThrowAndWritesNothing() {
+        resolveFails = true
+
+        AppLog.info("tag", "message")
+        AppLog.warning("tag", "message", IllegalStateException("boom"))
+
+        resolveFails = false
+        runBlocking { AppLog.writeLog(StringBuilder()) }
+        verify(exactly = 0) { logsDao.insert(any()) }
+    }
+
+    @Test
+    fun info_stampChangesWhileTheWriteIsQueued_stampsTheValueOfTheCall() {
+        val entry = captureNextEntry()
+        val exportStarted = CountDownLatch(1)
+        val releaseExport = CountDownLatch(1)
+        every { logsDao.getGroupedPage(any(), any(), any(), any()) } answers {
+            exportStarted.countDown()
+            releaseExport.await(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            emptyList()
+        }
+        val export = thread { runBlocking { AppLog.writeLog(StringBuilder()) } }
+        assertTrue(exportStarted.await(TIMEOUT_SECONDS, TimeUnit.SECONDS))
+
+        AppLog.info("tag", "message")
+        scope.stamp = OTHER_USER_LEVEL
+        releaseExport.countDown()
+        export.join(TimeUnit.SECONDS.toMillis(TIMEOUT_SECONDS))
+
+        assertTrue(entry.inserted.await(TIMEOUT_SECONDS, TimeUnit.SECONDS))
+        assertEquals(USER_LEVEL, entry.value.userLevel)
+    }
+
+    @Test
+    fun info_accountLoggerWithStamp_writesTheRowWithThatStampForThatAccount() {
+        scope.stamp = OTHER_USER_LEVEL
+        val entry = captureNextEntry()
+
+        AppLogger("kit").getScoped(ACCOUNT_ID).forAccount(ACCOUNT_ID).info("message")
+
+        assertTrue(entry.inserted.await(TIMEOUT_SECONDS, TimeUnit.SECONDS))
+        assertEquals("kit:$ACCOUNT_ID", entry.value.actionId)
+        assertEquals(OTHER_USER_LEVEL, entry.value.userLevel)
+        assertEquals(listOf(ACCOUNT_ID), scope.askedAccountIds.toList())
+    }
+
+    @Test
+    fun accountLogger_accountHiddenAtTheScope_dropsTheLineOnEveryRoute() {
+        scope.hiddenAccountId = ACCOUNT_ID
+        val written = CopyOnWriteArrayList<String>()
+        every { logsDao.insert(any()) } answers { written += firstArg<LogEntry>().message }
+        val logger = AppLogger("kit").forAccount(ACCOUNT_ID)
+
+        logger.info("info")
+        logger.warning("warning")
+        logger.warning("warning with error", IllegalStateException())
+        logger.getScoped("scoped").info("scoped")
+        logger.getScopedUnique().info("scoped unique")
+        AppLog.info("tag", "control")
+
+        runBlocking { AppLog.writeLog(StringBuilder()) }
+        assertEquals(listOf("control"), written.toList())
+    }
+
+    @Test
+    fun info_stampIsNull_dropsTheLine() {
+        scope.stamp = null
+
+        AppLog.info("tag", "message")
+
+        runBlocking { AppLog.writeLog(StringBuilder()) }
+        verify(exactly = 0) { logsDao.insert(any()) }
+    }
+
+    @Test
+    fun accountLogger_everyRoute_passesTheAccountIdToTheScope() {
+        val logger = AppLogger("kit").forAccount(ACCOUNT_ID)
+
+        logger.info("info")
+        logger.warning("warning")
+        logger.warning("warning with error", IllegalStateException())
+        logger.getScoped("scoped").info("scoped")
+        logger.getScopedUnique().info("scoped unique")
+
+        runBlocking { AppLog.writeLog(StringBuilder()) }
+        assertEquals(List(5) { ACCOUNT_ID }, scope.askedAccountIds)
+    }
+
+    @Test
+    fun info_scopeCannotBeResolved_doesNotThrowAndWritesNothing() {
+        scopeResolveFails = true
+
+        AppLog.info("tag", "message")
+        AppLogger("kit").forAccount(ACCOUNT_ID).info("message")
+
+        scopeResolveFails = false
+        runBlocking { AppLog.writeLog(StringBuilder()) }
+        verify(exactly = 0) { logsDao.insert(any()) }
     }
 
     private fun recordingDao(expectedCalls: Int): RecordingDao {
@@ -240,6 +377,17 @@ class AppLogTest {
     private fun Map<String, Any>.messages(): Map<String, String> =
         getValue("tag") as Map<String, String>
 
+    private class TestLogScope(override var userLevel: Int) : LogScope {
+        var stamp: Int? = userLevel
+        var hiddenAccountId: String? = null
+        val askedAccountIds = CopyOnWriteArrayList<String?>()
+
+        override fun stampFor(accountId: String?): Int? {
+            askedAccountIds += accountId
+            return stamp.takeUnless { accountId != null && accountId == hiddenAccountId }
+        }
+    }
+
     private data class CapturedEntry(
         private val captured: CapturingSlot<LogEntry>,
         val inserted: CountDownLatch,
@@ -258,6 +406,9 @@ class AppLogTest {
     }
 
     private companion object {
+        const val USER_LEVEL = 3
+        const val OTHER_USER_LEVEL = 4
+        const val ACCOUNT_ID = "account-1"
         const val TIMEOUT_SECONDS = 5L
         const val BLOCKED_MILLIS = 300L
         const val MAX_ENTRIES = 20_000

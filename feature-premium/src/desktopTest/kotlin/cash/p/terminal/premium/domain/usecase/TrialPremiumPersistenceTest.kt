@@ -6,7 +6,8 @@ import cash.p.terminal.network.pirate.domain.enity.TrialPremiumResult
 import cash.p.terminal.network.pirate.domain.repository.PiratePlaceRepository
 import cash.p.terminal.premium.data.database.PremiumDatabase
 import cash.p.terminal.premium.data.database.PremiumDatabaseConstructor
-import cash.p.terminal.premium.data.database.PremiumDatabaseProvider
+import cash.p.terminal.premium.data.database.PremiumDatabaseRouter
+import cash.p.terminal.premium.data.database.SinglePremiumDatabaseRouter
 import cash.p.terminal.premium.data.database.StaticPremiumDatabaseProvider
 import cash.p.terminal.premium.domain.HardwareBnbAddressProvider
 import cash.p.terminal.wallet.Account
@@ -48,20 +49,20 @@ class TrialPremiumPersistenceTest {
 
         val beforeRestart = openDatabase(dbFile)
         ActivateTrialPremiumUseCase(
-            premiumDatabaseProvider = StaticPremiumDatabaseProvider(beforeRestart),
+            premiumDatabaseRouter = routerOf(beforeRestart),
             piratePlaceRepository = piratePlaceRepository,
             accountManager = accountManager,
-            getBnbAddressUseCase = bnbAddressUseCase(StaticPremiumDatabaseProvider(beforeRestart))
+            getBnbAddressUseCase = bnbAddressUseCase(routerOf(beforeRestart))
         ).activateTrialPremium(account.id)
         beforeRestart.close()
 
         val afterRestart = openDatabase(dbFile)
         try {
-            val provider = StaticPremiumDatabaseProvider(afterRestart)
+            val router = routerOf(afterRestart)
             val result = CheckTrialPremiumUseCase(
                 piratePlaceRepository = piratePlaceRepository,
-                premiumDatabaseProvider = provider,
-                getBnbAddressUseCase = bnbAddressUseCase(provider),
+                premiumDatabaseRouter = router,
+                getBnbAddressUseCase = bnbAddressUseCase(router),
                 isDebug = false
             ).checkTrialPremiumStatus(account)
 
@@ -72,9 +73,12 @@ class TrialPremiumPersistenceTest {
         }
     }
 
-    private fun bnbAddressUseCase(provider: PremiumDatabaseProvider) = GetBnbAddressUseCaseImpl(
+    private fun routerOf(database: PremiumDatabase) =
+        SinglePremiumDatabaseRouter(StaticPremiumDatabaseProvider(database))
+
+    private fun bnbAddressUseCase(router: PremiumDatabaseRouter) = GetBnbAddressUseCaseImpl(
         seedToEvmAddressUseCase = SeedToEvmAddressUseCase(),
-        premiumDatabaseProvider = provider,
+        premiumDatabaseRouter = router,
         hardwareBnbAddressProvider = mockk<HardwareBnbAddressProvider>()
     )
 

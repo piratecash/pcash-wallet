@@ -7,6 +7,7 @@ import cash.p.beam.BeamLogLevel
 import cash.p.beam.BeamSdkConfig
 import cash.p.beam.BeamWalletSession
 import cash.p.beam.RestoreSource
+import cash.p.terminal.core.managers.IdentityKitStorageNaming
 import cash.p.terminal.entities.RestoreSettingRecord
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
@@ -207,7 +208,7 @@ class BeamSessionFactoryTest {
     @Test
     fun open_sameMnemonicAndPassphraseDistinctAccounts_keepsKeysAndStorageIsolated() = runTest {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        val locator = BeamStorageLocator(AndroidKitPlatformContexts(context))
+        val locator = BeamStorageLocator(AndroidKitPlatformContexts(context), IdentityKitStorageNaming)
         val mnemonic = AccountType.Mnemonic(
             List(11) { "abandon" } + "about", "synthetic-passphrase",
         )

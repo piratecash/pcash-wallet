@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import cash.p.terminal.core.HSCaution
 import cash.p.terminal.modules.multiswap.action.ISwapProviderAction
 import cash.p.terminal.modules.multiswap.providers.IMultiSwapProvider
+import cash.p.terminal.modules.multiswap.settings.SwapSettingRecipient
 import cash.p.terminal.modules.multiswap.exchange.ButtonState
 import cash.p.terminal.modules.multiswap.exchange.LegStatus
 import cash.p.terminal.modules.multiswap.exchange.LegUiState
@@ -46,6 +47,7 @@ class SwapViewModel(
     private val fiatServiceOut: FiatService,
     private val timerService: TimerService,
     private val networkAvailabilityService: NetworkAvailabilityService,
+    private val tronAccountWarningService: SwapTronAccountWarningService,
     private val marketKit: MarketKitWrapper,
     tokenIn: Token?,
     tokenOut: Token?
@@ -59,6 +61,7 @@ class SwapViewModel(
     private var balanceState = balanceService.stateFlow.value
     private var priceImpactState = priceImpactService.stateFlow.value
     private var timerState = timerService.stateFlow.value
+    private var tronAccountControlledByOthers = tronAccountWarningService.stateFlow.value
     private var multiSwapRouteInfoSnapshot = quoteState.multiSwapRoute
     private var multiSwapRouteRefreshState by mutableStateOf(MultiSwapRouteRefreshState.Idle)
 
@@ -77,6 +80,7 @@ class SwapViewModel(
 
     init {
         balanceService.start(viewModelScope)
+        tronAccountWarningService.start(viewModelScope)
 
         viewModelScope.launch {
             quoteService.start()
@@ -100,6 +104,12 @@ class SwapViewModel(
         viewModelScope.launch {
             balanceService.stateFlow.collect {
                 handleUpdatedBalanceState(it)
+            }
+        }
+        viewModelScope.launch {
+            tronAccountWarningService.stateFlow.collect {
+                tronAccountControlledByOthers = it
+                emitState()
             }
         }
         viewModelScope.launch {
@@ -194,6 +204,7 @@ class SwapViewModel(
             amountOutAccuracy = quoteState.quote?.amountOutAccuracy ?: SwapAmountAccuracy.Exact,
             quoteCautions = quoteState.quote?.cautions.orEmpty(),
             tokenOutAction = quoteState.tokenOutAction,
+            tronAccountControlledByOthers = tronAccountControlledByOthers,
         )
     }
 
@@ -226,6 +237,10 @@ class SwapViewModel(
 
         balanceService.setToken(quoteState.tokenIn)
         balanceService.setAmount(quoteState.amountInMax ?: quoteState.amountIn)
+        tronAccountWarningService.setTarget(
+            tokenOut = quoteState.tokenOut,
+            customRecipient = hasCustomRecipient(quoteState.multiSwapRoute?.selectedLeg2Quote ?: quoteState.quote),
+        )
 
         priceImpactService.setPriceImpact(
             quoteState.quote?.priceImpact?.negate(),
@@ -248,6 +263,10 @@ class SwapViewModel(
             timerService.reset()
         }
     }
+
+    /** The stored setting outlives provider changes; only a quote listing it actually pays to that address. */
+    private fun hasCustomRecipient(payingQuote: SwapProviderQuote?): Boolean =
+        payingQuote?.swapQuote?.settings.orEmpty().any { it is SwapSettingRecipient && it.value != null }
 
     private fun handleUpdatedPriceImpactState(priceImpactState: PriceImpactService.State) {
         this.priceImpactState = priceImpactState
@@ -493,6 +512,12 @@ class SwapViewModel(
                 fiatServiceOut = FiatService(assetFiatRateService),
                 timerService = TimerService(getKoinInstance()),
                 networkAvailabilityService = NetworkAvailabilityService(getKoinInstance<IConnectivityManager>()),
+                tronAccountWarningService = SwapTronAccountWarningService(
+                    adapterManager = getKoinInstance(),
+                    accountManager = getKoinInstance(),
+                    tronKitManager = getKoinInstance(),
+                    dispatcherProvider = getKoinInstance(),
+                ),
                 marketKit = marketKit,
                 tokenIn = tokenIn,
                 tokenOut = tokenOut
@@ -588,6 +613,7 @@ data class SwapUiState(
     val amountOutAccuracy: SwapAmountAccuracy,
     val quoteCautions: List<HSCaution>,
     val tokenOutAction: ISwapProviderAction? = null,
+    val tronAccountControlledByOthers: Boolean = false,
 ) {
     private val requestedAmount: BigDecimal?
         get() = when (direction) {

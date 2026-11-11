@@ -34,13 +34,13 @@ class DesktopVaultTest {
     @Test
     fun unlock_samePasswordAsCreate_opensTheDatabaseThatWasWritten() = runTest {
         assertEquals(CreateOutcome.SUCCESS, vault.create(password()))
-        unlockedSession().database.syncerStateDao().insert(SyncerState("height", "42"))
+        unlockedSession().shared.syncerStateDao().insert(SyncerState("height", "42"))
 
         vault.lock()
         assertEquals(DesktopVaultState.Locked, vault.state.value)
         assertEquals(UnlockOutcome.Success, vault.unlock(password()))
 
-        assertEquals("42", unlockedSession().database.syncerStateDao().get("height")?.value)
+        assertEquals("42", unlockedSession().shared.syncerStateDao().get("height")?.value)
     }
 
     @Test
@@ -110,31 +110,32 @@ class DesktopVaultTest {
     fun create_pressedTwice_keepsTheSessionOfTheFirstPress() = runTest {
         vault.create(password())
         val session = unlockedSession()
-        session.database.syncerStateDao().insert(SyncerState("height", "42"))
+        session.shared.syncerStateDao().insert(SyncerState("height", "42"))
 
         assertEquals(CreateOutcome.SUCCESS, vault.create(password(NEW_PASSWORD)))
 
         assertSame(session, unlockedSession())
-        assertEquals("42", session.database.syncerStateDao().get("height")?.value)
+        assertEquals("42", session.shared.syncerStateDao().get("height")?.value)
         assertTrue(fixture.files.vaultFile.exists())
     }
 
     @Test
     fun create_existingSlotFileAndNoVault_locksWithoutDeletingAnything() = runTest {
         fixture.files.vaultFile.writeBytes(byteArrayOf(7))
-        fixture.files.databaseFile.writeBytes(byteArrayOf(8))
+        val safe = fixture.files.safeFile(0).apply { parentFile.mkdirs() }
+        safe.writeBytes(byteArrayOf(8))
 
         assertEquals(CreateOutcome.SUCCESS, vault.create(password()))
 
         assertEquals(DesktopVaultState.Locked, vault.state.value)
         assertContentEquals(byteArrayOf(7), fixture.files.vaultFile.readBytes())
-        assertContentEquals(byteArrayOf(8), fixture.files.databaseFile.readBytes())
+        assertContentEquals(byteArrayOf(8), safe.readBytes())
     }
 
     @Test
-    fun create_residualDatabaseCannotBeDeleted_failsBeforeCreatingTheSlot() = runTest {
+    fun create_residualSlotCopyCannotBeDeleted_failsBeforeCreatingTheSlot() = runTest {
         // A non-empty directory makes File.delete fail on every OS.
-        File(fixture.files.databaseFile, "content").apply { parentFile.mkdirs() }.writeBytes(byteArrayOf(1))
+        File(fixture.dataDirectory, "vault.pcv.x.tmp/content").apply { parentFile.mkdirs() }.writeBytes(byteArrayOf(1))
 
         assertEquals(CreateOutcome.FAILED, vault.create(password()))
 
@@ -143,22 +144,23 @@ class DesktopVaultTest {
     }
 
     @Test
-    fun create_databaseCannotBeOpened_locksAndReportsFailure() = runTest {
+    fun create_databaseCannotBeOpened_publishesNoVaultAndReportsFailure() = runTest {
         val failingVault = fixture.vault(failingDriverFactory())
 
         assertEquals(CreateOutcome.FAILED, failingVault.create(password()))
 
-        assertEquals(DesktopVaultState.Locked, failingVault.state.value)
-        assertTrue(fixture.files.vaultFile.exists())
+        assertEquals(DesktopVaultState.NoVault, failingVault.state.value)
+        assertFalse(fixture.files.vaultFile.exists())
     }
 
     @Test
-    fun create_nativeLibraryFailsToLoad_locksAndReportsFailure() = runTest {
+    fun create_nativeLibraryFailsToLoad_publishesNoVaultAndReportsFailure() = runTest {
         val failingVault = fixture.vault(nativeLoadFailureDriverFactory())
 
         assertEquals(CreateOutcome.FAILED, failingVault.create(password()))
 
-        assertEquals(DesktopVaultState.Locked, failingVault.state.value)
+        assertEquals(DesktopVaultState.NoVault, failingVault.state.value)
+        assertFalse(fixture.files.vaultFile.exists())
     }
 
     @Test
@@ -184,7 +186,7 @@ class DesktopVaultTest {
     @Test
     fun changePassword_correctOldPassword_newPasswordOpensTheSameData() = runTest {
         vault.create(password())
-        unlockedSession().database.syncerStateDao().insert(SyncerState("height", "42"))
+        unlockedSession().shared.syncerStateDao().insert(SyncerState("height", "42"))
 
         assertEquals(ChangePasswordOutcome.SUCCESS, vault.changePassword(password(), password(NEW_PASSWORD)))
         assertIs<DesktopVaultState.Unlocked>(vault.state.value)
@@ -192,7 +194,7 @@ class DesktopVaultTest {
 
         assertEquals(UnlockOutcome.WrongPassword(4), vault.unlock(password()))
         assertEquals(UnlockOutcome.Success, vault.unlock(password(NEW_PASSWORD)))
-        assertEquals("42", unlockedSession().database.syncerStateDao().get("height")?.value)
+        assertEquals("42", unlockedSession().shared.syncerStateDao().get("height")?.value)
     }
 
     @Test
@@ -217,7 +219,7 @@ class DesktopVaultTest {
         assertEquals(ChangePasswordOutcome.CORRUPTED, vault.changePassword(password(), password(NEW_PASSWORD)))
 
         assertSame(session, unlockedSession())
-        assertNotNull(session.kitDatabaseKey("btc", "account"))
+        assertNotNull(session.sharedNamesSecret())
     }
 
     @Test
@@ -230,20 +232,6 @@ class DesktopVaultTest {
 
         vault.lock()
         assertEquals(UnlockOutcome.Success, vault.unlock(password()))
-    }
-
-    @Test
-    fun kitDatabaseKey_sameKitAndAccount_isDeterministicAndNullAfterWipe() = runTest {
-        vault.create(password())
-        val session = unlockedSession()
-
-        val key = assertNotNull(session.kitDatabaseKey("bitcoin", "account-1"))
-        assertContentEquals(key, session.kitDatabaseKey("bitcoin", "account-1"))
-        assertFalse(key.contentEquals(session.kitDatabaseKey("litecoin", "account-1")))
-        assertFalse(key.contentEquals(session.kitDatabaseKey("bitcoin", "account-2")))
-
-        vault.wipe()
-        assertNull(session.kitDatabaseKey("bitcoin", "account-1"))
     }
 
     private fun unlockedSession(): DesktopStorageSession =

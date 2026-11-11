@@ -1,6 +1,6 @@
 package cash.p.terminal.core.managers
 
-import cash.p.terminal.core.storage.AppDatabaseProvider
+import cash.p.terminal.core.storage.StorageRouter
 import cash.p.terminal.core.storage.AddressLabelDao
 import cash.p.terminal.entities.AddressLabel
 import cash.p.terminal.entities.AddressLabelSource
@@ -26,11 +26,11 @@ internal data class LegacyAddressLabel(
 )
 
 class AddressLabelManager(
-    private val databaseProvider: AppDatabaseProvider,
+    private val router: StorageRouter,
     private val dispatcherProvider: DispatcherProvider,
 ) {
     private val addressLabelDao: AddressLabelDao
-        get() = databaseProvider.database.addressLabelDao()
+        get() = router.shared.addressLabelDao()
 
     private val _labelsChangedFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val labelsChangedFlow: Flow<Unit> = _labelsChangedFlow.asSharedFlow()

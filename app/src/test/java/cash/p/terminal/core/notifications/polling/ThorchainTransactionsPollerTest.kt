@@ -1,5 +1,7 @@
 package cash.p.terminal.core.notifications.polling
 
+import cash.p.terminal.core.managers.KitPlatformContexts
+import io.horizontalsystems.databasenaming.DatabaseNameResolver
 import cash.p.terminal.core.ITransactionsAdapter
 import cash.p.terminal.core.managers.ThorchainKitManager
 import cash.p.terminal.core.managers.ThorchainKitManagers
@@ -129,7 +131,7 @@ class ThorchainTransactionsPollerTest {
         Network.Mainnet,
         BlockchainType.Thorchain,
         emptyList(),
-        mockk(),
+        mockk<KitPlatformContexts> { every { resolverFor(any()) } returns DatabaseNameResolver.Identity },
         mockk(),
         mockk<BackgroundManager> {
             every { stateFlow } returns MutableStateFlow(BackgroundManagerState.EnterForeground)

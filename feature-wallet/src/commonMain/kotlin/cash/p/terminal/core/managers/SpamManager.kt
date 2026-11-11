@@ -189,7 +189,7 @@ class SpamManager(
         }
 
         try {
-            spamAddressStorage.save(spamAddresses)
+            spamAddressStorage.save(source.account.id, spamAddresses)
         } catch (e: CancellationException) {
             throw e
         } catch (_: Exception) {

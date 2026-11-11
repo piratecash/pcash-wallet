@@ -1,6 +1,6 @@
 package cash.p.terminal.core.managers
 
-import cash.p.terminal.core.storage.AppDatabaseProvider
+import cash.p.terminal.core.storage.StorageRouter
 import cash.p.terminal.domain.usecase.ClearZCashWalletDataUseCase
 import cash.p.terminal.wallet.IAccountCleaner
 import cash.p.terminal.wallet.AccountDeletionPreflight
@@ -20,7 +20,7 @@ class AccountCleaner(
     private val accountManager: IAccountManager,
     private val adapterManager: IAdapterManager,
     private val walletManager: IWalletManager,
-    private val databaseProvider: AppDatabaseProvider,
+    private val router: StorageRouter,
     private val platformAccountDataCleaner: PlatformAccountDataCleaner,
     private val accountStorageCleaner: AccountStorageCleaner,
     private val bitcoinKitDatabaseManager: BitcoinKitDatabaseManager,
@@ -97,7 +97,7 @@ class AccountCleaner(
             is BlockchainType.Monero -> {
                 accountManager.account(accountId)?.let {
                     removeMoneroWalletFilesUseCase(it)
-                    databaseProvider.database.moneroFileDao().deleteAssociatedRecord(it.id)
+                    router.account(it.id)?.moneroFileDao()?.deleteAssociatedRecord(it.id)
                 }
             }
 

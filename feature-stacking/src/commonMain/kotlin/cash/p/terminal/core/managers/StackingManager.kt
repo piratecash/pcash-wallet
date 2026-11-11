@@ -1,6 +1,7 @@
 package cash.p.terminal.core.managers
 
-import cash.p.terminal.core.storage.AppDatabaseProvider
+import cash.p.terminal.core.storage.StorageRouter
+import cash.p.terminal.core.storage.sessionLevel
 import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.entities.StackingCache
 import cash.p.terminal.featureStacking.ui.staking.StackingType
@@ -32,7 +33,7 @@ data class StackingInfo(
 
 class StackingManager(
     private val piratePlaceRepository: PiratePlaceRepository,
-    private val databaseProvider: AppDatabaseProvider,
+    private val router: StorageRouter,
     dispatcherProvider: DispatcherProvider,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + dispatcherProvider.io)
@@ -80,7 +81,9 @@ class StackingManager(
                 ensureFallbackZero(wallet)
             }
         ) {
-            val cache = databaseProvider.database.stackingCacheDao().get(coin, address)
+            // Resolved before suspending: a response after a level change must not be saved into the new level.
+            val cacheDao = router.sessionLevel.stackingCacheDao()
+            val cache = cacheDao.get(coin, address)
             restoreFromCacheIfNeeded(wallet, cache)
 
             if (!forceRefresh &&
@@ -111,7 +114,7 @@ class StackingManager(
                 )
             )
 
-            databaseProvider.database.stackingCacheDao().save(
+            cacheDao.save(
                 StackingCache(
                     coin = coin,
                     address = address,

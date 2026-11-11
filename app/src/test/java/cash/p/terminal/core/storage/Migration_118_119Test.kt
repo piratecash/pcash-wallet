@@ -35,6 +35,7 @@ class Migration_118_119Test {
             }
             openHelper.writableDatabase.run {
                 execSQL("ALTER TABLE SwapProviderTransaction DROP COLUMN receivedAt")
+                execSQL("ALTER TABLE LogEntry DROP COLUMN userLevel")
                 version = 118
             }
             close()

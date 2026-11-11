@@ -7,6 +7,7 @@ import io.horizontalsystems.bitcoincore.storage.DatabaseMigrationResult
 import io.horizontalsystems.bitcoinkit.BitcoinKit
 import io.horizontalsystems.cosantakit.CosantaKit
 import io.horizontalsystems.dashkit.DashKit
+import io.horizontalsystems.databasenaming.DatabaseNameResolver
 import io.horizontalsystems.ecash.ECashKit
 import io.horizontalsystems.litecoinkit.LitecoinKit
 import io.horizontalsystems.piratecashkit.PirateCashKit
@@ -64,7 +65,7 @@ class BitcoinKitDatabaseOperationsTest {
 
     @Test
     fun migrate_account_invokesEverySupportedMainnetDatabaseGroup() = runTest {
-        operations.migrate(DATA_DIR, WALLET_ID, databaseKey)
+        operations.migrate(DATA_DIR, WALLET_ID, databaseKey, DatabaseNameResolver.Identity)
 
         coVerify(exactly = 1) {
             BitcoinKit.migrateDatabases(DATA_DIR, BitcoinKit.NetworkType.MainNet, WALLET_ID, matchingKey())
@@ -91,7 +92,7 @@ class BitcoinKitDatabaseOperationsTest {
 
     @Test
     fun clear_account_invokesEverySupportedMainnetDatabaseGroup() {
-        operations.clear(DATA_DIR, MWEB_DATA_DIR, WALLET_ID)
+        operations.clear(DATA_DIR, MWEB_DATA_DIR, WALLET_ID, DatabaseNameResolver.Identity)
 
         verify(exactly = 1) {
             BitcoinKit.clear(DATA_DIR, BitcoinKit.NetworkType.MainNet, WALLET_ID)
@@ -116,7 +117,7 @@ class BitcoinKitDatabaseOperationsTest {
 
     @Test
     fun clearMweb_account_invokesOnlyLitecoinMwebClear() {
-        operations.clearMweb(DATA_DIR, MWEB_DATA_DIR, WALLET_ID)
+        operations.clearMweb(DATA_DIR, MWEB_DATA_DIR, WALLET_ID, DatabaseNameResolver.Identity)
 
         verify(exactly = 1) {
             LitecoinKit.clearMweb(DATA_DIR, MWEB_DATA_DIR, LitecoinKit.NetworkType.MainNet, WALLET_ID)

@@ -4,4 +4,5 @@ import cash.p.terminal.wallet.Warning
 
 sealed class BalanceWarning : Warning() {
     data object TronInactiveAccountWarning : BalanceWarning()
+    data object TronControlledByOthersWarning : BalanceWarning()
 }

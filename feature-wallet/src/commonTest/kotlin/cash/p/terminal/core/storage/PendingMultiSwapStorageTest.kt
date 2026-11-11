@@ -1,6 +1,7 @@
 package cash.p.terminal.core.storage
 
 import cash.p.terminal.core.TestDispatcherProvider
+import cash.p.terminal.core.storage.SingleDatabaseStorageRouter
 import cash.p.terminal.entities.PendingMultiSwap
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
@@ -29,7 +30,7 @@ class PendingMultiSwapStorageTest {
     private val testScope = CoroutineScope(dispatcher)
     private val dao = mockk<PendingMultiSwapDao>(relaxed = true)
     private val storage = PendingMultiSwapStorage(
-        databaseProvider = StaticAppDatabaseProvider(mockk { every { pendingMultiSwapDao() } returns dao }),
+        router = SingleDatabaseStorageRouter(StaticAppDatabaseProvider(mockk { every { pendingMultiSwapDao() } returns dao })),
         dispatcherProvider = TestDispatcherProvider(dispatcher, testScope)
     )
 

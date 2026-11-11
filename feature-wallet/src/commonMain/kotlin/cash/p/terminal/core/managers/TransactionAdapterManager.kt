@@ -16,6 +16,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.sync.Mutex
@@ -79,6 +80,11 @@ class TransactionAdapterManager(
 
     fun close() {
         coroutineScope.cancel()
+    }
+
+    suspend fun awaitReleased(keptAccountIds: Set<String>) {
+        _adaptersState.first { adapters -> adapters.keys.all { it.account.id in keptAccountIds } }
+        operationsMutex.withLock {}
     }
 
     private suspend fun initAdapters(adaptersMap: Map<Wallet, IAdapter>) =

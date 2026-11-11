@@ -25,6 +25,7 @@ class Migration_121_122Test {
     fun migrate121To122_pairingMetadataTable_droppedOtherDataKept() {
         buildAppDatabase(context).run {
             openHelper.writableDatabase.run {
+                execSQL("ALTER TABLE LogEntry DROP COLUMN userLevel")
                 execSQL(
                     "INSERT INTO AccountRecord (id, name, type, origin, isBackedUp, isFileBackedUp, level, deleted) " +
                         "VALUES ('$ACCOUNT_ID', 'Seeded', 'mnemonic', 'Created', 1, 0, 0, 0)"

@@ -84,7 +84,7 @@ class LogsDaoTest {
 
         assertEquals(
             listOf("a" to 1, "a" to 3, "b" to 2, "b" to 5, "c" to 4),
-            dao.getGroupedPage(0, 0, Int.MAX_VALUE).rows(),
+            dao.getGroupedPage(0, 0, Int.MAX_VALUE, LEVEL_0).rows(),
         )
     }
 
@@ -93,9 +93,9 @@ class LogsDaoTest {
         listOf("a", "b", "a", "c", "b").forEachIndexed { index, actionId ->
             dao.insert(entry(index, actionId))
         }
-        val firstPage = dao.getGroupedPage(0, 0, 2)
+        val firstPage = dao.getGroupedPage(0, 0, 2, LEVEL_0)
 
-        val secondPage = dao.getGroupedPage(firstPage.last().firstId, firstPage.last().id, 2)
+        val secondPage = dao.getGroupedPage(firstPage.last().firstId, firstPage.last().id, 2, LEVEL_0)
 
         assertEquals(listOf("a" to 1, "a" to 3), firstPage.rows())
         assertEquals(listOf("b" to 2, "b" to 5), secondPage.rows())
@@ -109,7 +109,79 @@ class LogsDaoTest {
 
         assertEquals(
             listOf("Zcash-sync" to 1, "Zcash-send" to 3),
-            dao.getGroupedPageByTag("Zcash", 0, 0, Int.MAX_VALUE).rows(),
+            dao.getGroupedPageByTag("Zcash", 0, 0, Int.MAX_VALUE, LEVEL_0).rows(),
+        )
+    }
+
+    @Test
+    fun getRecent_rowsOfTwoLevels_eachLevelSeesOnlyItsOwnRows() {
+        insertAtLevels()
+
+        assertEquals(
+            listOf("message-4", "message-3", "message-0"),
+            runBlocking { dao.getRecent(Int.MAX_VALUE, LEVEL_0) }.map { it.message },
+        )
+        assertEquals(
+            listOf("message-2", "message-1"),
+            runBlocking { dao.getRecent(Int.MAX_VALUE, LEVEL_1) }.map { it.message },
+        )
+    }
+
+    @Test
+    fun getRecentByTag_rowsOfTwoLevels_eachLevelSeesOnlyItsOwnRows() {
+        insertAtLevels()
+
+        assertEquals(
+            listOf("message-4", "message-0"),
+            dao.getRecentByTag("Zcash", Int.MAX_VALUE, LEVEL_0).map { it.message },
+        )
+        assertEquals(
+            listOf("message-2", "message-1"),
+            dao.getRecentByTag("Zcash", Int.MAX_VALUE, LEVEL_1).map { it.message },
+        )
+    }
+
+    @Test
+    fun getGroupedPage_groupsSpanningLevels_eachLevelSeesItsOwnRowsInItsOwnGroupOrder() {
+        insertAtLevels()
+
+        assertEquals(
+            listOf("Zcash-sync" to 1, "Bitcoin-sync" to 4, "Zcash-send" to 5),
+            dao.getGroupedPage(0, 0, Int.MAX_VALUE, LEVEL_0).rows(),
+        )
+        assertEquals(
+            listOf("Zcash-send" to 2, "Zcash-sync" to 3),
+            dao.getGroupedPage(0, 0, Int.MAX_VALUE, LEVEL_1).rows(),
+        )
+    }
+
+    @Test
+    fun getGroupedPageByTag_groupsSpanningLevels_eachLevelSeesItsOwnRowsInItsOwnGroupOrder() {
+        insertAtLevels()
+
+        assertEquals(
+            listOf("Zcash-sync" to 1, "Zcash-send" to 5),
+            dao.getGroupedPageByTag("Zcash", 0, 0, Int.MAX_VALUE, LEVEL_0).rows(),
+        )
+        assertEquals(
+            listOf("Zcash-send" to 2, "Zcash-sync" to 3),
+            dao.getGroupedPageByTag("Zcash", 0, 0, Int.MAX_VALUE, LEVEL_1).rows(),
+        )
+    }
+
+    @Test
+    fun writeLog_rowsOfTwoLevels_exportsOnlyTheCurrentLevel() {
+        insertAtLevels()
+        koinLogsDao.dao = dao
+        koinLogsDao.scope.userLevel = LEVEL_1
+
+        val out = StringBuilder()
+        runBlocking { AppLog.writeLog(out) }
+
+        assertEquals(
+            "Zcash-send:\n  - 2: 1970-01-01 00:00:00.001 message-1\n" +
+                "Zcash-sync:\n  - 3: 1970-01-01 00:00:00.002 message-2\n",
+            out.toString(),
         )
     }
 
@@ -147,6 +219,19 @@ class LogsDaoTest {
         )
     }
 
+    /** Both Zcash groups span the levels: a first-appearance order that ignores the level comes out different. */
+    private fun insertAtLevels() {
+        listOf(
+            "Zcash-sync" to LEVEL_0,
+            "Zcash-send" to LEVEL_1,
+            "Zcash-sync" to LEVEL_1,
+            "Bitcoin-sync" to LEVEL_0,
+            "Zcash-send" to LEVEL_0,
+        ).forEachIndexed { index, (actionId, level) ->
+            dao.insert(entry(index, actionId).copy(userLevel = level))
+        }
+    }
+
     private fun insertEntries(count: Int) = repeat(count) { dao.insert(entry(it, "tag")) }
 
     private fun entry(index: Int, actionId: String) = LogEntry(
@@ -157,7 +242,7 @@ class LogsDaoTest {
     )
 
     private fun storedMessages() =
-        runBlocking { dao.getRecent(Int.MAX_VALUE) }.reversed().map { it.message }
+        runBlocking { dao.getRecent(Int.MAX_VALUE, LEVEL_0) }.reversed().map { it.message }
 
     private fun List<GroupedLogRow>.rows(): List<Pair<String, Int>> =
         map { it.actionId to it.id }
@@ -165,6 +250,8 @@ class LogsDaoTest {
     private fun groupName(index: Int) = "action-%05d".format(index)
 
     private companion object {
+        const val LEVEL_0 = 0
+        const val LEVEL_1 = 1
         const val GROUPS = 4_000
         const val ENTRIES_PER_GROUP = 5
         const val ENTRY_PREFIX = "  - "

@@ -70,10 +70,14 @@ class DesktopVaultCancellationTest {
         queued.cancel()
         runCurrent()
         // The holding operation has to be let go first: a parked coroutine cannot even be cancelled.
-        parking.flush()
-        runCurrent()
-        holding.join()
+        // Its later hops are NonCancellable: one left parked would hang runTest past any timeout.
+        repeat(DRAIN_ROUNDS) {
+            parking.flush()
+            runCurrent()
+        }
 
+        assertTrue(holding.isCompleted, "the holding unlock is still parked")
+        assertTrue(queued.isCompleted, "the queued unlock is still parked")
         assertTrue(queuedPassword.all { it == '\u0000' }, "queued password was left in memory")
         assertTrue(queued.isCancelled)
     }
@@ -106,7 +110,7 @@ class DesktopVaultCancellationTest {
         runCurrent()
 
         assertEquals(null, session.secretFieldsKey(), "the session survived a cancelled close")
-        assertEquals(null, session.kitDatabaseKey("bitcoin", "account-1"))
+        assertEquals(null, session.sharedNamesSecret())
     }
 
     @Test
@@ -131,5 +135,9 @@ class DesktopVaultCancellationTest {
     private fun slotVault(): PasswordVault = mockk(relaxed = true) {
         every { exists() } returns true
         every { unlock(any()) } returns UnlockResult.WrongPassword
+    }
+
+    private companion object {
+        const val DRAIN_ROUNDS = 8
     }
 }
