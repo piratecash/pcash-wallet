@@ -12,6 +12,7 @@ import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.getMaxSendableBalance
 import io.horizontalsystems.core.entities.BlockchainType
+import java.math.BigDecimal
 import java.math.RoundingMode
 import io.horizontalsystems.core.CurrencyManager
 import org.koin.core.scope.Scope
@@ -27,11 +28,10 @@ internal fun Scope.sendTronViewModel(
     val amountValidator = AmountValidator()
     val coinMaxAllowedDecimals = wallet.token.decimals
 
-    val availableBalance = adapterManager.getMaxSendableBalance(wallet, adapter.maxSpendableBalance)
     val amountService = SendAmountService(
         amountValidator,
         wallet.token.coin.code,
-        availableBalance.setScale(coinMaxAllowedDecimals, RoundingMode.DOWN),
+        adapterManager.tronSendableBalance(wallet, adapter.maxSpendableBalance),
         wallet.token.type.isNative,
     )
     val addressService = SendTronAddressService(adapter, wallet.token)
@@ -58,3 +58,6 @@ internal fun Scope.sendTronViewModel(
         offlineSignedTransactionRepository = get(),
     )
 }
+
+internal fun IAdapterManager.tronSendableBalance(wallet: Wallet, adapterSpendable: BigDecimal): BigDecimal =
+    getMaxSendableBalance(wallet, adapterSpendable).setScale(wallet.token.decimals, RoundingMode.DOWN)
