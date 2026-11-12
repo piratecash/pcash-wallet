@@ -35,6 +35,7 @@ import cash.p.terminal.shared.market.MarketCatalogSyncer
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.di.marketModule
+import cash.p.zcash.ZcashNativeLibrary
 import co.touchlab.kermit.Logger
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
@@ -42,6 +43,7 @@ import coil3.ImageLoader
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.crossfade
 import coil3.svg.SvgDecoder
+import com.piratecash.monero.MoneroNative
 import io.horizontalsystems.core.DesktopLanguageManager
 import io.horizontalsystems.dashlibnative.DashjBlsLibrary
 import io.horizontalsystems.ethereumkit.core.EthereumKit
@@ -64,6 +66,12 @@ import kotlin.system.exitProcess
 private const val APPLICATION_NAME = "P.CASH"
 private const val INSTANCE_LOCK_FILE = ".instance.lock"
 private const val BEAM_NATIVE_PATH_PROPERTY = "beam.sdk.native.path"
+private val NATIVE_DIR_PROPERTIES = listOf(
+    SqlCipherDriver.NATIVE_DIR_PROPERTY,
+    DashjBlsLibrary.NATIVE_DIR_PROPERTY,
+    MoneroNative.NATIVE_DIR_PROPERTY,
+    ZcashNativeLibrary.NATIVE_DIR_PROPERTY,
+)
 
 private val applicationScope = MainScope()
 
@@ -72,9 +80,9 @@ private var instanceLock: SingleInstanceLock? = null
 
 fun main(args: Array<String>) {
     val launchArguments = DesktopLaunchArguments.parse(args)
-    // The packager re-signs natives inside jars, so SQLCipher, BEAM and JNA load their copies from the app resources.
+    // The packager re-signs natives inside jars, so every kit native and JNA load their copies from the app resources.
     System.getProperty("compose.application.resources.dir")?.let {
-        System.setProperty(SqlCipherDriver.NATIVE_DIR_PROPERTY, it)
+        NATIVE_DIR_PROPERTIES.forEach { property -> System.setProperty(property, it) }
         System.setProperty(BEAM_NATIVE_PATH_PROPERTY, File(it, System.mapLibraryName("beam_sdk_kmp")).path)
         System.setProperty("jna.boot.library.path", it)
         System.setProperty("jna.library.path", it)
