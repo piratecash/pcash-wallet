@@ -654,6 +654,9 @@
     <string name="SwapConfirm_QuoteExpired">Cotação expirada</string>
     <string name="SwapConfirm_QuoteIsInvalid">Cotação inválida</string>
     <string name="SwapConfirm_FetchingFinalQuote">Fetching final quote</string>
+    <string name="swap_order_card_sign_prompt">Aproxime o seu cartão para assinar a ordem para %1$s. Nenhum fundo é debitado neste passo. Depois, aproxime o cartão novamente para enviar os fundos.</string>
+    <string name="swap_order_created_tap_card_again">Ordem criada. Toque em «Trocar» e aproxime o cartão novamente para enviar os fundos.</string>
+    <string name="swap_card_scan_failed">Erro ao ler o cartão. Tente novamente.</string>
     <string name="SwapWarning_SlippageNotAvailable_Title">Sem Controle de Deslizamento</string>
     <string name="SwapWarning_SlippageNotAvailable_Description">Operações entre cadeias dependem da liquidez de terceiros e atrasos, o que pode afetar o valor final.</string>
     <string name="unsupported_refund_address">Endereço de reembolso não suportado</string>

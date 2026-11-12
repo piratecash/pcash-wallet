@@ -650,6 +650,9 @@
     <string name="SwapConfirm_QuoteExpired">Котировка истекла</string>
     <string name="SwapConfirm_QuoteIsInvalid">Котировка недействительна</string>
     <string name="SwapConfirm_FetchingFinalQuote">Получение котировки</string>
+    <string name="swap_order_card_sign_prompt">Приложите карту, чтобы подписать заявку для %1$s. Средства на этом шаге не списываются. Затем приложите карту ещё раз, чтобы отправить средства.</string>
+    <string name="swap_order_created_tap_card_again">Заявка создана. Нажмите «Обменять» и приложите карту ещё раз, чтобы отправить средства.</string>
+    <string name="swap_card_scan_failed">Ошибка при сканировании карты. Попробуйте ещё раз.</string>
     <string name="SwapWarning_SlippageNotApplicable_Description">Минимальное допустимое проскальзывание для этой котировки составляет %s%%.</string>
     <string name="SwapWarning_SlippageNotAvailable_Title">Без контроля проскальзывания</string>
     <string name="SwapWarning_SlippageNotAvailable_Description">Межцепные операции зависят от ликвидности третьих сторон и задержек, что может повлиять на окончательную сумму.</string>

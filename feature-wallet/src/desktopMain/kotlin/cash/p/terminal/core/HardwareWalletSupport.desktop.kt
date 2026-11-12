@@ -30,5 +30,5 @@ internal actual object HardwareWalletSupport {
 
     actual fun supportsTypedData(device: AccountType.TrezorDevice): Boolean = false
 
-    actual suspend fun signTypedDataOnDevice(signer: Signer, rawJson: String): ByteArray? = null
+    actual suspend fun signTypedDataOnDevice(signer: Signer, rawJson: String, cardPrompt: String?): ByteArray? = null
 }

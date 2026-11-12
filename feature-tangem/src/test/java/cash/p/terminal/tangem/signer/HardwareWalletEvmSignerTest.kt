@@ -3,11 +3,13 @@ package cash.p.terminal.tangem.signer
 import cash.p.terminal.tangem.domain.usecase.SignOneHashTransactionUseCase
 import cash.p.terminal.wallet.crypto.EvmSignatureRecovery
 import cash.p.terminal.wallet.entities.HardwarePublicKey
+import com.tangem.Message
 import com.tangem.common.CompletionResult
 import com.tangem.common.core.TangemSdkError
 import com.tangem.operations.sign.SignHashResponse
 import io.horizontalsystems.ethereumkit.core.EthereumKit
 import io.horizontalsystems.ethereumkit.crypto.CryptoUtils
+import io.horizontalsystems.ethereumkit.crypto.EIP712Encoder
 import io.horizontalsystems.ethereumkit.models.Address
 import io.horizontalsystems.ethereumkit.models.Chain
 import io.horizontalsystems.ethereumkit.models.GasPrice
@@ -15,6 +17,7 @@ import io.horizontalsystems.ethereumkit.models.RawTransaction
 import io.horizontalsystems.ethereumkit.spv.core.toBytes
 import io.horizontalsystems.hdwalletkit.ECKey
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
@@ -165,6 +168,29 @@ class HardwareWalletEvmSignerTest {
         assertEquals(ellipticSignature[64], result[64])
     }
 
+    @Test
+    fun signTypedDataMessage_withCardPrompt_showsPromptAsHeaderAndSignsTypedDataHash() = runBlocking {
+        val privateKey = BigInteger("46".repeat(32), 16)
+        val publicKeyBytes = ECKey.fromPrivate(privateKey.toBytes(32), compressed = false).pubKey
+        val hash = EIP712Encoder().encodeTypedDataHash(TYPED_DATA_JSON)
+        val ellipticSignature = CryptoUtils.ellipticSign(hash, privateKey)
+        stubSuccess(ellipticSignature.sliceArray(0..63))
+
+        val result = createSigner(addressOf(publicKeyBytes), publicKeyBytes)
+            .signTypedDataMessage(TYPED_DATA_JSON, cardPrompt = "Sign the order")
+
+        coVerify {
+            signOneHashTransactionUseCase(
+                hash = match { it.contentEquals(hash) },
+                walletPublicKey = any(),
+                derivationPath = any(),
+                message = Message(header = "Sign the order"),
+            )
+        }
+        assertArrayEquals(ellipticSignature.sliceArray(0..63), result.sliceArray(0..63))
+        assertEquals(ellipticSignature[64], result[64])
+    }
+
     private fun stubSuccess(signatureBytes: ByteArray) {
         coEvery { signOneHashTransactionUseCase(any(), any(), any(), any()) } returns
             CompletionResult.Success(
@@ -205,5 +231,16 @@ class HardwareWalletEvmSignerTest {
         private const val APPROVE_DATA =
             "0x095ea7b300000000000000000000000013f4ea83d0bd40e75c8222255bc855a974568dd4" +
                 "000000000000000000000000000000000000000000000000000000003b034361"
+        private const val TYPED_DATA_JSON = """
+            {
+              "types": {
+                "EIP712Domain": [{"name": "name", "type": "string"}, {"name": "version", "type": "string"}],
+                "Order": [{"name": "provider", "type": "string"}, {"name": "amount", "type": "string"}]
+              },
+              "primaryType": "Order",
+              "domain": {"name": "p.cash", "version": "1"},
+              "message": {"provider": "changelly", "amount": "31"}
+            }
+        """
     }
 }

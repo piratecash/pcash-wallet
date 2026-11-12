@@ -24,8 +24,8 @@ object EvmMessageSigning {
         else -> signer.signByteArrayLegacy(hash)
     }
 
-    suspend fun signTypedData(signer: Signer, rawJson: String): ByteArray = when (signer) {
-        is HardwareWalletEvmSigner -> signer.signTypedDataMessage(rawJson)
+    suspend fun signTypedData(signer: Signer, rawJson: String, cardPrompt: String? = null): ByteArray = when (signer) {
+        is HardwareWalletEvmSigner -> signer.signTypedDataMessage(rawJson, cardPrompt)
         is TrezorEvmSigner -> signer.signTypedDataMessage(rawJson)
         else -> signer.signTypedData(rawJson)
     }

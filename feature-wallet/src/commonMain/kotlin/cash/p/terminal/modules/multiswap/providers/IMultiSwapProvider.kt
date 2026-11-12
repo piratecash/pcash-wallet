@@ -23,6 +23,10 @@ interface IMultiSwapProvider {
 
     val mevProtectionAvailable: Boolean
 
+    /** The final quote creates an order signed with the account key, before the deposit is signed. */
+    val signsOrderWithAccountKey: Boolean
+        get() = false
+
     val riskType: ProviderRiskType
         get() = ProviderRiskType.Auto
 

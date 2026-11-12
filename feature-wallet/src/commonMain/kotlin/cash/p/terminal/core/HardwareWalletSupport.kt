@@ -32,6 +32,6 @@ internal expect object HardwareWalletSupport {
 
     fun supportsTypedData(device: AccountType.TrezorDevice): Boolean
 
-    /** Null when [signer] holds a software key. */
-    suspend fun signTypedDataOnDevice(signer: Signer, rawJson: String): ByteArray?
+    /** Null when [signer] holds a software key. [cardPrompt] is shown in the Tangem card session. */
+    suspend fun signTypedDataOnDevice(signer: Signer, rawJson: String, cardPrompt: String?): ByteArray?
 }

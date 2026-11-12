@@ -650,6 +650,9 @@
     <string name="SwapConfirm_QuoteExpired">Devis expiré</string>
     <string name="SwapConfirm_QuoteIsInvalid">Devis invalide</string>
     <string name="SwapConfirm_FetchingFinalQuote">Récupération du devis final</string>
+    <string name="swap_order_card_sign_prompt">Approchez votre carte pour signer l’ordre pour %1$s. Aucun fonds n’est débité à cette étape. Approchez ensuite à nouveau la carte pour envoyer les fonds.</string>
+    <string name="swap_order_created_tap_card_again">Ordre créé. Appuyez sur « Echanger » et approchez à nouveau votre carte pour envoyer les fonds.</string>
+    <string name="swap_card_scan_failed">Erreur lors de la lecture de la carte. Veuillez réessayer.</string>
     <string name="SwapWarning_SlippageNotAvailable_Title">Sans Contrôle de Glissement</string>
     <string name="SwapWarning_SlippageNotAvailable_Description">Les opérations inter-chaînes dépendent de la liquidité de tiers et des délais, ce qui peut affecter le montant final.</string>
     <string name="unsupported_refund_address">Adresse de remboursement non prise en charge</string>
