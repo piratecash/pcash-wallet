@@ -34,7 +34,6 @@ val appModule = module {
         ledgerConnectorModule,
         networkModule,
         useCaseModule,
-        appUpdateModule,
         featurePremiumModule,
         featureLoggingModule,
         featureMiniAppModule

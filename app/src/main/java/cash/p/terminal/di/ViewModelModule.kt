@@ -23,7 +23,6 @@ import cash.p.terminal.modules.settings.displaytransactions.DisplayTransactionsV
 import cash.p.terminal.modules.settings.guides.GuidesViewModel
 import cash.p.terminal.modules.walletconnect.request.WCRequestEvmViewModel
 import cash.p.terminal.modules.settings.main.MainSettingsViewModel
-import cash.p.terminal.modules.settings.privacy.PrivacyViewModel
 import cash.p.terminal.modules.settings.security.passcode.SecuritySettingsViewModel
 import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedSheet
 import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedViewModel
@@ -48,7 +47,6 @@ val viewModelModule = module {
     viewModelOf(::DisplayTransactionsViewModel)
     viewModelOf(::GuidesViewModel)
     viewModelOf(::WCRequestEvmViewModel)
-    viewModelOf(::PrivacyViewModel)
     viewModelOf(::AppIconViewModel)
     viewModelOf(::HardwareWalletViewModel)
     viewModelOf(::ResetToFactorySettingsViewModel)
