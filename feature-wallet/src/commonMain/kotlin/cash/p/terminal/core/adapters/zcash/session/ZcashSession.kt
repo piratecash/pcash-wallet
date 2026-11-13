@@ -276,11 +276,25 @@ class ZcashSession internal constructor(
         rawTransaction: ByteArray,
         height: Int,
         requireOwnInputs: Boolean,
+        recipientAddresses: List<String> = emptyList(),
     ): ZcashSessionResult<BroadcastResult> = withOperation {
         reserveOrNotBroadcast(rawTransaction, requireOwnInputs)
+        rememberSentAddresses(rawTransaction, recipientAddresses)
         publishLocalState(readLocalState())
         wallet.broadcast(dbAccountId, rawTransaction, height, requireOwnInputs).also {
             if (it.inputsReleased) readReportingFailure { publishLocalState(readLocalState()) }
+        }
+    }
+
+    /** Only history shows these addresses, so failing to keep them must not stop the send. */
+    private suspend fun rememberSentAddresses(rawTransaction: ByteArray, addresses: List<String>) {
+        if (addresses.isEmpty()) return
+        try {
+            wallet.rememberSentAddresses(dbAccountId, rawTransaction, addresses)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            logger.warningSanitized("Remembering the sent addresses failed", e)
         }
     }
 
