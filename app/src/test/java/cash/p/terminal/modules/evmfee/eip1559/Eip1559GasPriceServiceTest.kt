@@ -104,6 +104,20 @@ class Eip1559GasPriceServiceTest {
         assertEquals(dappGasPrice.maxPriorityFeePerGas, gasPrice?.maxPriorityFeePerGas)
     }
 
+    @Test
+    fun start_historyBelowMinGasPrice_recommendsMinimumWithHeadroom() = runBlocking {
+        val minGasPrice = GasPrice.Eip1559(maxFeePerGas = 1_000, maxPriorityFeePerGas = 300)
+        val service = Eip1559GasPriceService(gasProvider, Flowable.empty(), minGasPrice = minGasPrice)
+        stubFetches(Single.just(feeHistory))
+
+        service.start()
+
+        val gasPrice = withTimeout(TIMEOUT_MS) { service.stateFlow.first { it is DataState.Success } }
+            .dataOrNull?.gasPrice as? GasPrice.Eip1559
+        assertEquals(1_250L, gasPrice?.maxFeePerGas)
+        assertEquals(300L, gasPrice?.maxPriorityFeePerGas)
+    }
+
     private fun stubFetches(vararg fetches: Single<FeeHistory>) {
         every { gasProvider.feeHistorySingle(any(), any(), any()) } returnsMany fetches.toList()
     }

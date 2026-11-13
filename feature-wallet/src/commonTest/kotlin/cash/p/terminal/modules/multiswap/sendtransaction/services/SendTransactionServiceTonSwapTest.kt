@@ -194,6 +194,38 @@ class SendTransactionServiceTonSwapTest : KoinTest {
         assertNull(service.stateFlow.value.feeCaution)
     }
 
+    @Test
+    fun createState_nativeTonEstimated_availableBalanceExcludesAttachedGasAndFee() = runTest {
+        tonBalance = BigDecimal("2")
+        // Offer 0.5747 + forward gas 0.24 + pTON transfer 0.01 + network fee 0.01.
+        coEvery { adapter.estimateFeeWithPayload(any(), any(), any()) } returns
+            TonFeeEstimate(fee = BigDecimal("0.01"), requiredTon = BigDecimal("0.8347"))
+        val service = SendTransactionServiceTonSwap(testToken)
+
+        service.setSendTransactionData(tonSwapData())
+
+        assertEquals(0, BigDecimal("1.74").compareTo(service.stateFlow.value.availableBalance))
+    }
+
+    @Test
+    fun createState_beforeEstimate_keepsAdjustedAvailableBalance() = runTest {
+        val service = SendTransactionServiceTonSwap(testToken)
+
+        assertEquals(testBalance, service.stateFlow.value.availableBalance)
+    }
+
+    @Test
+    fun createState_jettonInput_keepsAdjustedAvailableBalance() = runTest {
+        tonBalance = BigDecimal("2")
+        val jettonToken = testToken.copy(type = TokenType.Jetton(TON_ROUTER_RAW))
+        every { testWallet.token } returns jettonToken
+        val service = SendTransactionServiceTonSwap(jettonToken)
+
+        service.setSendTransactionData(tonSwapData())
+
+        assertEquals(testBalance, service.stateFlow.value.availableBalance)
+    }
+
     // Waiting for a sendable state first proves the amount and address collectors have run,
     // so a later "not sendable" can only come from the TON balance check.
     private suspend fun TestScope.createFundedService(): SendTransactionServiceTonSwap {
