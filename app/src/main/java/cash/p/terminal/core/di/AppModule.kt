@@ -28,7 +28,6 @@ val appModule = module {
         featureTrezorModule,
         networkModule,
         useCaseModule,
-        appUpdateModule,
         featurePremiumModule,
         featureLoggingModule,
         featureMiniAppModule
