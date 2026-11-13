@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.balance
 
-import cash.p.terminal.core.IRateAppManager
 import cash.p.terminal.core.managers.OfflineTransactionPayloadEncoder
 import cash.p.terminal.core.managers.TonConnectManager
 import cash.p.terminal.modules.walletconnect.list.WalletConnectListModule
@@ -13,7 +12,6 @@ import kotlinx.coroutines.launch
 
 class AndroidBalancePlatformActions(
     private val tonConnectManager: TonConnectManager,
-    private val rateAppManager: IRateAppManager,
     pinComponent: IPinComponent,
 ) : BalancePlatformActions {
 
@@ -46,8 +44,4 @@ class AndroidBalancePlatformActions(
     override fun isOfflineTransaction(text: String): Boolean =
         OfflineTransactionPayloadEncoder.isOfflineTransactionPayload(text) ||
             OfflineTransactionPayloadEncoder.isRawTransactionHex(text)
-
-    override fun onBalancePageActive() = rateAppManager.onBalancePageActive()
-
-    override fun onBalancePageInactive() = rateAppManager.onBalancePageInactive()
 }
