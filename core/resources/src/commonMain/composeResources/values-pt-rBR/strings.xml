@@ -1847,7 +1847,7 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="PinSet_ErrorPinsDontMatch">Senhas não conferem. Tente novamente.</string>
     <string name="PinSet_ErrorFailedToSavePin">Ocorreu um erro ao salvar sua senha. Tente novamente.</string>
     <string name="PinSet_ForBiometrics">Definir uma senha para habilitar Biometria</string>
-    <string name="PinSet_ForDuress">Defina uma senha para ativar o modo de Coação</string>
+    <string name="PinSet_ForDuress">Primeiro, defina uma senha para sua carteira. Ela é necessária para ativar o modo de Coação</string>
     <string name="pin_set_for_login_logging">Definir senha para ativar o registro de login</string>
     <string name="pin_set_for_login_logging_passcode">Definir senha para proteger o registro de login</string>
     <string name="confirm_pin_to_disable_login_logging_passcode">Digite a senha para desativar o registro de login</string>

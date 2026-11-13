@@ -1847,7 +1847,7 @@
     <string name="PinSet_ErrorPinsDontMatch">Senhas não conferem. Tente novamente.</string>
     <string name="PinSet_ErrorFailedToSavePin">Ocorreu um erro ao guardar a sua senha. Tente novamente.</string>
     <string name="PinSet_ForBiometrics">Set a passcode to enable Biometrics</string>
-    <string name="PinSet_ForDuress">Set a passcode to enable Duress Mode</string>
+    <string name="PinSet_ForDuress">Primeiro, defina uma senha para a sua carteira. É necessária para ativar o modo Duress</string>
     <string name="pin_set_for_login_logging">Definir código para ativar o registo de login</string>
     <string name="pin_set_for_login_logging_passcode">Definir código para proteger o registo de login</string>
     <string name="confirm_pin_to_disable_login_logging_passcode">Digite o código para desativar o registo de login</string>

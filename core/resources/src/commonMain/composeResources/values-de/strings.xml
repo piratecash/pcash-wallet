@@ -1839,7 +1839,7 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="PinSet_ErrorPinsDontMatch">Code stimmt nicht überein. Bitte noch einmal versuchen.</string>
     <string name="PinSet_ErrorFailedToSavePin">Beim Speichern Ihren Code ist leider ein Fehler aufgetreten. Bitte versuchen es erneut.</string>
     <string name="PinSet_ForBiometrics">Passcode zum Aktivieren von Biometrien festlegen</string>
-    <string name="PinSet_ForDuress">Code zum Aktivieren des Duress Modus festlegen</string>
+    <string name="PinSet_ForDuress">Lege zuerst einen Code für deine Wallet fest. Er wird zum Aktivieren des Duress-Modus benötigt</string>
     <string name="pin_set_for_login_logging">Code festlegen zum Aktivieren des Login-Protokolls</string>
     <string name="pin_set_for_login_logging_passcode">Code festlegen zum Schutz des Login-Protokolls</string>
     <string name="confirm_pin_to_disable_login_logging_passcode">Code eingeben zum Deaktivieren des Login-Protokolls</string>

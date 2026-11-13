@@ -2195,7 +2195,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="PinSet_ErrorPinsDontMatch">Passcode did not match. Try again.</string>
     <string name="PinSet_ErrorFailedToSavePin">Error occurred while saving your passcode. Please, try again.</string>
     <string name="PinSet_ForBiometrics">Set a passcode to enable Biometrics</string>
-    <string name="PinSet_ForDuress">Set a passcode to enable Duress Mode</string>
+    <string name="PinSet_ForDuress">First set a passcode for your wallet. It is required to enable Duress Mode</string>
     <string name="pin_set_for_login_logging">Set a passcode to enable login logging</string>
     <string name="pin_set_for_login_logging_passcode">Set a passcode to protect Login Logging</string>
     <string name="confirm_pin_to_disable_login_logging_passcode">Enter passcode to disable Login Logging</string>

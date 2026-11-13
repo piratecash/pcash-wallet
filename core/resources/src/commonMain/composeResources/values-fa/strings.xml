@@ -1850,7 +1850,7 @@
     <string name="PinSet_ErrorPinsDontMatch">کد عبور مطابقت نداشت. دوباره امتحان کنید.</string>
     <string name="PinSet_ErrorFailedToSavePin">هنگام ذخیره کد عبور شما خطایی روی داد. لطفا دوباره تلاش کنید.</string>
     <string name="PinSet_ForBiometrics">Set a passcode to enable Biometrics</string>
-    <string name="PinSet_ForDuress">Set a passcode to enable Duress Mode</string>
+    <string name="PinSet_ForDuress">ابتدا یک کد عبور برای کیف پول خود تنظیم کنید. این کد برای فعال‌سازی حالت Duress لازم است</string>
     <string name="pin_set_for_login_logging">رمز عبور برای فعال کردن ثبت ورود تعیین کنید</string>
     <string name="pin_set_for_login_logging_passcode">رمز عبور برای محافظت از ثبت ورود تعیین کنید</string>
     <string name="confirm_pin_to_disable_login_logging_passcode">رمز عبور را برای غیرفعال کردن ثبت ورود وارد کنید</string>
