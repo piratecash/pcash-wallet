@@ -77,6 +77,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
+import java.math.BigInteger
 import cash.p.terminal.resources.SendEvmSettings_Nonce
 import cash.p.terminal.resources.SendEvmSettings_Nonce_Info
 import cash.p.terminal.resources.SendEvmSettings_Title
@@ -156,7 +157,7 @@ class SendTransactionServiceEvm(
 
     override fun createState() = SendTransactionServiceState(
         availableBalance = tryOrNull {
-            adapterManager.getMaxSendableBalance(wallet, adapter.maxSpendableBalance)
+            spendableWithCurrentEstimate() ?: adapterManager.getMaxSendableBalance(wallet, adapter.maxSpendableBalance)
         },
         networkFee = feeAmountData,
         cautions = cautions,
@@ -166,6 +167,18 @@ class SendTransactionServiceEvm(
         extraFees = extraFees,
         retryAvailable = retryAvailable
     )
+
+    // Balance minus everything the current estimate debits besides the amount, so the swap input can shrink to fit.
+    private fun spendableWithCurrentEstimate(): BigDecimal? {
+        if (!token.type.isNative) return null
+        val transaction = transaction ?: return null
+        val amount = sendAmount ?: return null
+        val balance = evmKitWrapper.evmKit.accountState?.balance ?: return null
+        val amountWei = amount.movePointRight(token.decimals).toBigInteger()
+        val valueBeyondAmount = (transaction.transactionData.value - amountWei).max(BigInteger.ZERO)
+        val spendable = (balance - transaction.gasData.fee - valueBeyondAmount).max(BigInteger.ZERO)
+        return adapterManager.getMaxSendableBalance(wallet, BigDecimal(spendable, token.decimals))
+    }
 
     override fun start(coroutineScope: CoroutineScope) {
         gasPriceService.start()

@@ -236,11 +236,7 @@ class SwapConfirmViewModel(
         viewModelScope.launch {
             sendTransactionService.stateFlow.collectLatest {
                 val availableBalance = it.availableBalance ?: return@collectLatest
-                if (
-                    direction == SwapAmountDirection.In &&
-                    !sendResult.isSwapInProgress &&
-                    availableBalance < amountIn
-                ) {
+                if (shouldShrinkAmountInTo(availableBalance)) {
                     amountIn = availableBalance
                     fiatServiceIn.setAmount(amountIn)
                     refresh()
@@ -250,6 +246,13 @@ class SwapConfirmViewModel(
 
         sendTransactionService.start(viewModelScope)
     }
+
+    // A non-positive spendable cannot be quoted: keep the amount and let the balance caution show.
+    private fun shouldShrinkAmountInTo(availableBalance: BigDecimal) =
+        direction == SwapAmountDirection.In &&
+            !sendResult.isSwapInProgress &&
+            availableBalance.signum() > 0 &&
+            availableBalance < amountIn
 
     private fun handleUpdatedPriceImpactState(priceImpactState: PriceImpactService.State) {
         this.priceImpactState = priceImpactState

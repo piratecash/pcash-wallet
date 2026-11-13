@@ -1,8 +1,10 @@
 package cash.p.terminal.modules.evmfee.eip1559
 
 import cash.p.terminal.data.repository.Eip1559FeeHistory.BLOCKS_COUNT
-import cash.p.terminal.data.repository.Eip1559FeeHistory.LAST_N_RECOMMENDED_BASE_FEES
 import cash.p.terminal.data.repository.Eip1559FeeHistory.REWARD_PERCENTILE
+import cash.p.terminal.data.repository.Eip1559FeeHistory.recommendedBaseFee
+import cash.p.terminal.data.repository.Eip1559FeeHistory.recommendedGasPrice
+import cash.p.terminal.data.repository.Eip1559FeeHistory.recommendedPriorityFee
 import cash.p.terminal.wallet.Warning
 import cash.p.terminal.ui_compose.entities.DataState
 import cash.p.terminal.modules.evmfee.Bound
@@ -25,7 +27,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.rx2.await
 import java.math.BigDecimal
-import kotlin.math.max
 import kotlin.math.min
 
 class Eip1559GasPriceService(
@@ -37,11 +38,6 @@ class Eip1559GasPriceService(
 
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
     private var syncJob: Job? = null
-
-    companion object {
-        /** Headroom for baseFee growth between the fee estimate and the broadcast. */
-        private const val GAS_PRICE_HEADROOM_PERCENT = 125
-    }
 
     private val minBaseFee: Long? = minGasPrice?.let { it.maxFeePerGas - it.maxPriorityFeePerGas }
     private val minPriorityFee: Long? = minGasPrice?.maxPriorityFeePerGas
@@ -188,16 +184,13 @@ class Eip1559GasPriceService(
     }
 
     private fun handle(feeHistory: FeeHistory) {
-        val recommendedBaseFee = max(recommendedBaseFee(feeHistory), minBaseFee ?: 0)
-        currentBaseFee = recommendedBaseFee
+        val baseFee = recommendedBaseFee(feeHistory, minBaseFee)
+        currentBaseFee = baseFee
 
-        val recommendedPriorityFee = max(recommendedPriorityFee(feeHistory), minPriorityFee ?: 0)
-        currentPriorityFee = recommendedPriorityFee
+        val priorityFee = recommendedPriorityFee(feeHistory, minPriorityFee)
+        currentPriorityFee = priorityFee
 
-        val newRecommendGasPrice = GasPrice.Eip1559(
-            (recommendedBaseFee + recommendedPriorityFee) * GAS_PRICE_HEADROOM_PERCENT / 100,
-            recommendedPriorityFee
-        )
+        val newRecommendGasPrice = recommendedGasPrice(baseFee, priorityFee)
 
         recommendedGasPrice = newRecommendGasPrice
 
@@ -210,25 +203,5 @@ class Eip1559GasPriceService(
         }
 
         emitState()
-    }
-
-    private fun recommendedBaseFee(feeHistory: FeeHistory): Long {
-        val lastNRecommendedBaseFeesList = feeHistory.baseFeePerGas.takeLast(LAST_N_RECOMMENDED_BASE_FEES)
-        return lastNRecommendedBaseFeesList.max()
-    }
-
-    private fun recommendedPriorityFee(feeHistory: FeeHistory): Long {
-        var priorityFeesSum = 0L
-        var priorityFeesCount = 0
-        feeHistory.reward.forEach { priorityFeeArray ->
-            priorityFeeArray.firstOrNull()?.let { priorityFee ->
-                priorityFeesSum += priorityFee
-                priorityFeesCount += 1
-            }
-        }
-        return if (priorityFeesCount > 0)
-            priorityFeesSum / priorityFeesCount
-        else
-            0
     }
 }
