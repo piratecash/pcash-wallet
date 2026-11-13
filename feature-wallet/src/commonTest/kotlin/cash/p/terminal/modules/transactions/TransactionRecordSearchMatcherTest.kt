@@ -2,6 +2,7 @@ package cash.p.terminal.modules.transactions
 
 import cash.p.terminal.core.ICoinManager
 import cash.p.terminal.core.adapters.SolanaTransactionConverterTestFixture
+import cash.p.terminal.core.managers.localizedEvmMethodLabel
 import cash.p.terminal.entities.TransactionValue
 import cash.p.terminal.entities.transactionrecords.LiquidityOperation
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
@@ -28,6 +29,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.math.BigDecimal
+import io.horizontalsystems.ethereumkit.models.Transaction as EvmTransaction
 
 class TransactionRecordSearchMatcherTest {
 
@@ -70,6 +72,26 @@ class TransactionRecordSearchMatcherTest {
         )
 
         assertTrue(matcher.matches(record, SENDER))
+    }
+
+    @Test
+    fun matches_evmContractCall_findsRawAndLocalizedMethod() {
+        val bsc = Blockchain(BlockchainType.BinanceSmartChain, "BNB Smart Chain", null)
+        val bnb = Token(Coin("bsc", "BNB Smart Chain", "BNB"), bsc, TokenType.Native, 18)
+        val record = EvmTransactionRecord(
+            transaction = mockk<EvmTransaction>(relaxed = true) {
+                every { hashString } returns "HASH"
+            },
+            token = bnb,
+            source = TransactionSource(bsc, mockk(relaxed = true), null),
+            protected = false,
+            transactionRecordType = TransactionRecordType.EVM,
+            method = "Multicall",
+        )
+
+        assertTrue(matcher.matches(record, "multicall"))
+        assertTrue(matcher.matches(record, localizedEvmMethodLabel("Multicall")))
+        assertFalse(matcher.matches(record, "unrelated"))
     }
 
     @Test
