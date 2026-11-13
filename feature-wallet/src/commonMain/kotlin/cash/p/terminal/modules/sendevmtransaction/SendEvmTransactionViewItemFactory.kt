@@ -2,6 +2,7 @@ package cash.p.terminal.modules.sendevmtransaction
 
 import cash.p.terminal.core.ethereum.EvmCoinServiceFactory
 import cash.p.terminal.core.managers.EvmLabelManager
+import cash.p.terminal.core.managers.localizedEvmMethodLabel
 
 import cash.p.terminal.modules.contacts.ContactsRepository
 import cash.p.terminal.modules.contacts.model.Contact
@@ -56,7 +57,7 @@ class SendEvmTransactionViewItemFactory(
             if (transactionData != null) {
                 sections = getUnknownMethodItems(
                     transactionData,
-                    evmLabelManager.methodLabel(transactionData.input)
+                    evmLabelManager.methodLabel(transactionData.input)?.let(::localizedEvmMethodLabel)
                 )
             }
         }

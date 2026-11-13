@@ -1,5 +1,6 @@
 package cash.p.terminal.modules.transactions
 
+import cash.p.terminal.core.managers.localizedEvmMethodLabel
 import cash.p.terminal.entities.TransactionValue
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.beam.BeamTransactionRecord
@@ -64,7 +65,7 @@ class TransactionRecordSearchMatcher {
     private fun MutableList<String?>.addEvmFields(record: EvmTransactionRecord) {
         add(record.spender)
         add(record.contractAddress)
-        add(record.method)
+        addMethod(record.method)
         add(record.exchangeAddress)
         add(record.recipient)
         addEvents(record.incomingEvents)
@@ -77,10 +78,16 @@ class TransactionRecordSearchMatcher {
     private fun MutableList<String?>.addTronFields(record: TronTransactionRecord) {
         add(record.spender)
         add(record.contractAddress)
-        add(record.method)
+        addMethod(record.method)
         addEvents(record.incomingEvents)
         addEvents(record.outgoingEvents)
         addValue(record.value)
+    }
+
+    private fun MutableList<String?>.addMethod(method: String?) {
+        method ?: return
+        add(method)
+        add(localizedEvmMethodLabel(method))
     }
 
     private fun MutableList<String?>.addSolanaFields(record: SolanaTransactionRecord) {
