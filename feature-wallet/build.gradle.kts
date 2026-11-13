@@ -229,7 +229,7 @@ kotlin {
 }
 
 // The relocated send tests outgrow the default 512 MB test heap; same settings as the app unit tests.
-tasks.withType<Test>().matching { it.name == "testAndroidHostTest" }.configureEach {
+tasks.withType<Test>().matching { it.name in setOf("testAndroidHostTest", "desktopTest") }.configureEach {
     maxHeapSize = "2g"
     forkEvery = 80
 }

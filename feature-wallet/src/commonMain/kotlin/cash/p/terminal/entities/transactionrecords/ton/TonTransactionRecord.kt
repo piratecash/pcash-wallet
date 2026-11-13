@@ -1,8 +1,11 @@
 package cash.p.terminal.entities.transactionrecords.ton
 
 import cash.p.terminal.entities.TransactionValue
+import cash.p.terminal.entities.transactionrecords.LiquidityOperation
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
+import cash.p.terminal.entities.transactionrecords.evm.EvmTransactionRecord
+import cash.p.terminal.entities.transactionrecords.evm.TransferEvent
 import cash.p.terminal.modules.transactions.TransactionStatus
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.TonWalletVersion
@@ -15,7 +18,8 @@ class TonTransactionRecord(
     source: TransactionSource,
     event: Event,
     token: Token,
-    val actions: List<Action>
+    val actions: List<Action>,
+    liquidityOperation: LiquidityOperation? = null,
 ) : TransactionRecord(
     uid = recordUid(event.id, source),
     transactionHash = event.id,
@@ -28,6 +32,7 @@ class TonTransactionRecord(
     source = source,
     transactionRecordType = TransactionRecordType.TON,
     token = token,
+    liquidityOperation = liquidityOperation,
 ) {
 
     override val to: List<String>?
@@ -50,6 +55,29 @@ class TonTransactionRecord(
                 else -> null
             }
         }
+    val liquidityProtocol: String?
+        get() = actions.firstNotNullOfOrNull { (it.type as? Action.Type.LiquidityDeposit)?.protocol }
+
+    /** Incoming and outgoing amounts of a pool operation; the LP token itself is left out. */
+    fun liquidityValues(): Pair<List<TransactionValue>, List<TransactionValue>> {
+        val keepFailed = liquidityOperation?.failed == true
+        val values = actions.filter { keepFailed || it.status != TransactionStatus.Failed }.flatMap { action ->
+            when (val type = action.type) {
+                is Action.Type.Send -> listOf(type.value)
+                is Action.Type.Receive -> listOf(type.value)
+                is Action.Type.ContractCall -> listOf(type.value)
+                is Action.Type.LiquidityDeposit -> type.deposits.map { it.value }
+                is Action.Type.Burn,
+                is Action.Type.Mint,
+                is Action.Type.Swap,
+                is Action.Type.ContractDeploy,
+                is Action.Type.Unsupported -> emptyList()
+            }
+        }.filterNot { it.zeroValue }
+
+        return EvmTransactionRecord.combined(emptyList(), values.map { TransferEvent(null, null, it) })
+    }
+
     val lt = event.lt
     val inProgress = event.inProgress
     val fee = TransactionValue.CoinValue(
@@ -75,6 +103,7 @@ class TonTransactionRecord(
             is Action.Type.Burn -> value
             is Action.Type.Mint -> value
             is Action.Type.ContractCall -> value
+            is Action.Type.LiquidityDeposit -> deposits.singleOrNull()?.value
             is Action.Type.ContractDeploy,
             is Action.Type.Swap,
             is Action.Type.Unsupported -> null
@@ -117,6 +146,10 @@ class TonTransactionRecord(
                 val value: TransactionValue,
                 val operation: String
             ) : Type()
+
+            data class LiquidityDeposit(val deposits: List<Deposit>, val protocol: String?) : Type() {
+                data class Deposit(val value: TransactionValue, val vault: String)
+            }
 
             data class Unsupported(val type: String) : Type()
         }
