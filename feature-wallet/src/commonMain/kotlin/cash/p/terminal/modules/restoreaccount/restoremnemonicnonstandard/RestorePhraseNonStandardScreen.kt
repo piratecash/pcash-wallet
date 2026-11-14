@@ -155,6 +155,7 @@ fun RestorePhraseNonStandard(
 
                 HeaderText(stringResource(Res.string.ManageAccount_Name))
                 FormsInput(
+                    singleLine = true,
                     modifier = Modifier.padding(horizontal = 16.dp),
                     initial = viewModel.accountName,
                     pasteEnabled = false,

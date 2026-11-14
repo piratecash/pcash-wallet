@@ -101,6 +101,7 @@ fun DuplicateWalletScreen(
 
                 HeaderText(stringResource(Res.string.ManageAccount_Name))
                 FormsInput(
+                    singleLine = true,
                     modifier = Modifier.padding(horizontal = 16.dp),
                     initial = uiState.accountName,
                     pasteEnabled = false,
