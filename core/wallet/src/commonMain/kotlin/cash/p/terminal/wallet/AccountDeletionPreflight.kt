@@ -3,6 +3,8 @@ package cash.p.terminal.wallet
 interface AccountDeletionPreflight {
     suspend fun ensureCanDelete(accountIds: List<String>)
     suspend fun cleanupDeleted(accountIds: List<String>)
+    /** Detaches live sessions of tombstoned accounts so their adapters no longer own them; never waits. */
+    fun fenceDeleted(accountIds: List<String>)
     suspend fun prepareExplicitReset()
     suspend fun resumePendingReset()
     suspend fun ensureExplicitResetCleaned()

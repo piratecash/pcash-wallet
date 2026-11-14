@@ -29,6 +29,7 @@ interface IAccountManager {
     fun updateName(id: String, name: String)
     fun markAsBackedUp(id: String)
     fun markAsFileBackedUp(id: String)
+    /** Returns once the deletion is durable and visible; device data is cleaned up in the background. */
     suspend fun delete(id: String)
     fun clear()
     fun getDeletedAccountIds(): List<String>
