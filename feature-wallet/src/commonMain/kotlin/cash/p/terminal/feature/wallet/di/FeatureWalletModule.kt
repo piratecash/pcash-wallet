@@ -75,6 +75,10 @@ import cash.p.terminal.modules.markdown.MarkdownViewModel
 import cash.p.terminal.modules.nft.NftCollectionsViewModel
 import cash.p.terminal.modules.nft.NftGramHintsViewModel
 import cash.p.terminal.modules.nft.NftPreviewViewModel
+import cash.p.terminal.modules.tonconnect.TonConnectListViewModel
+import cash.p.terminal.modules.tonconnect.TonConnectNewViewModel
+import cash.p.terminal.modules.tonconnect.TonConnectSendRequestViewModel
+import cash.p.terminal.modules.xtransaction.helpers.TransactionInfoHelper
 import cash.p.terminal.modules.nft.manage.NftManageViewModel
 import cash.p.terminal.modules.nft.NftOwnerWalletResolver
 import cash.p.terminal.modules.nft.NftTransferAvailabilityProvider
@@ -534,6 +538,12 @@ val featureWalletModule = module {
     viewModel { (url: String) -> MarkdownViewModel(url, get(), get()) }
     viewModel { params -> NftCollectionsViewModel(params.get(), get(), get(), get(), get(), get()) }
     viewModel { params -> NftManageViewModel(params.get(), get(), get(), get(), get()) }
+    viewModelOf(::TonConnectListViewModel)
+    viewModel { params -> TonConnectNewViewModel(params.get(), get(), get(), get(), get(), get()) }
+    viewModel { params ->
+        TonConnectSendRequestViewModel(params.get(), get(), get(), get(), get(), get(), get(), get())
+    }
+    factoryOf(::TransactionInfoHelper)
     viewModel { params -> NftPreviewViewModel(params.get(), params.get(), get(), get(), get(), get(), get()) }
     viewModelOf(::NftDomainRenewalViewModel)
     viewModelOf(::NftGramHintsViewModel)

@@ -232,6 +232,8 @@ import cash.p.terminal.modules.send.address.EnterAddressValidator
 import cash.p.terminal.core.address.AddressCheckManager
 import cash.p.terminal.modules.sendevmtransaction.SendEvmTransactionViewItemFactory
 import cash.p.terminal.modules.address.AddressViewModel as SendAddressViewModel
+import cash.p.terminal.modules.tonconnect.TonConnectSendRequestViewModel
+import io.horizontalsystems.tonkit.models.SignTransaction
 
 class KoinGraphTest : KoinTest {
 
@@ -288,6 +290,7 @@ class KoinGraphTest : KoinTest {
             *coinSubPageInjections(),
             definition<TransactionPollingManager>(List::class),
             definition<VersionChangelogViewModel>(ChangelogRequest::class),
+            definition<TonConnectSendRequestViewModel>(SignTransaction::class),
         )
 
         fullModule.verify(

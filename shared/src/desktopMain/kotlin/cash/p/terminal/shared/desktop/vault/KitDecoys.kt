@@ -70,8 +70,8 @@ internal class KitDecoys(
     private fun randomName() = ByteArray(NAME_BYTES).also(random::nextBytes).toHexString()
 
     companion object {
-        /** One each for Ethereum, TON, Tron, Solana, Stellar, Thorchain, Bitcoin, MWEB, Zcash and Beam. */
-        const val MAX_KIT_DIRECTORIES = 10
+        /** One each for Ethereum, TON, TON Connect, Tron, Solana, Stellar, Thorchain, Bitcoin, MWEB, Zcash and Beam. */
+        const val MAX_KIT_DIRECTORIES = 11
 
         /** A real directory holds a pair per Monero wallet; more wallets than this stand out from the decoys. */
         const val MAX_MONERO_WALLETS = 4

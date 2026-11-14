@@ -82,7 +82,7 @@ class QRScannerPage(val input: QrScannerInput) : HSPage() {
     ) {
         val uri = decoded.toUri()
         if (uri.isTonConnectDeeplink()) {
-            // TonConnectManager.handle emits to dappRequestFlow, which MainActivity observes and
+            // TonConnectManager.handle emits to dappRequestFlow, which the root TonConnectRequestEffects observes and
             // opens the TonConnect page. Launch on the host scope so the suspending network call
             // survives this page being popped.
             hostLifecycleOwner.lifecycleScope.launch {

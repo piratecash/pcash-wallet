@@ -8,9 +8,7 @@ import android.view.View.VISIBLE
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,7 +21,6 @@ import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.BaseActivity
 import cash.p.terminal.core.ILocalStorage
-import cash.p.terminal.core.managers.DAppRequest
 import cash.p.terminal.core.notifications.TransactionNotificationManager
 import cash.p.terminal.core.rememberTermsAcceptedAction
 import cash.p.terminal.modules.calculator.lockscreen.CalculatorLockScreen
@@ -35,12 +32,10 @@ import cash.p.terminal.modules.keystore.KeyStoreActivity
 import cash.p.terminal.modules.pin.ui.PinUnlock
 import cash.p.terminal.modules.settings.appearance.AppIconService
 import cash.p.terminal.modules.softwareupdate.AppUpdateChecker
-import cash.p.terminal.modules.tonconnect.TonConnectNewPage
-import cash.p.terminal.modules.tonconnect.TonConnectSendRequestPage
+import cash.p.terminal.modules.tonconnect.TonConnectRequestEffects
 import cash.p.terminal.modules.walletconnect.request.WCRequestPage
 import cash.p.terminal.modules.walletconnect.session.WCSessionPage
 import cash.p.terminal.navigation.HSNavigation
-import cash.p.terminal.navigation.rememberResultLauncher
 import cash.p.terminal.tangem.domain.sdk.CardSdkProvider
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import com.reown.walletkit.client.Wallet
@@ -163,7 +158,12 @@ open class MainActivity : BaseActivity() {
             // Root-level: the hidden wallet PIN page asking for it may already be popped by the user level change.
             val openCreateAccount = navigation.rememberTermsAcceptedAction(::openCreateAccount)
             SideEffect { openCreateAccountWithTerms = openCreateAccount }
-            TonConnectDAppRequestEffect()
+            TonConnectRequestEffects(navigation) { request, approved ->
+                if (request.closeAppOnResult) {
+                    // Needs a delay so the connection is established before the activity closes
+                    if (approved) closeAfterDelay() else finish()
+                }
+            }
             Nav3Host(navigation, isLocked = pinLockScreenState)
         }
 
@@ -189,14 +189,6 @@ open class MainActivity : BaseActivity() {
                 }
 
                 viewModel.onWcEventHandled()
-            }
-        }
-
-        lifecycleScope.launch {
-            viewModel.tcSendRequest.collect { tcEvent ->
-                if (tcEvent != null) {
-                    navigation.slideFromBottom(TonConnectSendRequestPage())
-                }
             }
         }
 
@@ -250,27 +242,6 @@ open class MainActivity : BaseActivity() {
             }
         }
         observeLockState()
-    }
-
-    @Composable
-    private fun TonConnectDAppRequestEffect() {
-        val launcher = navigation.rememberResultLauncher<TonConnectNewPage.Result, DAppRequest> { result, request ->
-            if (request.closeAppOnResult) {
-                if (result.approved) {
-                    //Need delay to get connected before closing activity
-                    closeAfterDelay()
-                } else {
-                    finish()
-                }
-            }
-        }
-        val request by viewModel.tcDappRequest.observeAsState()
-        LaunchedEffect(request) {
-            request?.let {
-                launcher.slideFromBottom(TonConnectNewPage(it.uri), it)
-                viewModel.onTcDappRequestHandled()
-            }
-        }
     }
 
     private fun closeAfterDelay() {

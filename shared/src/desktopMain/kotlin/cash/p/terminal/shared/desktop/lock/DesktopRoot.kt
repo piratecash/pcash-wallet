@@ -25,6 +25,7 @@ import androidx.navigationevent.compose.rememberNavigationEventDispatcherOwner
 import cash.p.terminal.core.WalletOnboardingStorage
 import cash.p.terminal.core.rememberTermsAcceptedAction
 import cash.p.terminal.modules.intro.IntroScreen
+import cash.p.terminal.modules.tonconnect.TonConnectRequestEffects
 import cash.p.terminal.navigation.AppPages
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
@@ -77,6 +78,8 @@ fun DesktopRoot(wipeFailed: Boolean, modifier: Modifier = Modifier) {
         rootPage = { DesktopMainPage() },
         appContent = { navigation ->
             OpenCreateWalletForNewHiddenWallet(navigation)
+            // Desktop has no dApp-opened session to return to, so the outcome needs no handling.
+            TonConnectRequestEffects(navigation) { _, _ -> }
             PcashApp(navigation)
         },
         wipeFailed = wipeFailed,

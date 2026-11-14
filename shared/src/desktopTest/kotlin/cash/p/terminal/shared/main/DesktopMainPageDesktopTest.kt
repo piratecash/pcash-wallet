@@ -35,6 +35,7 @@ import cash.p.terminal.modules.settings.about.ContactOptionsSheet
 import cash.p.terminal.modules.settings.appearance.AppearancePage
 import cash.p.terminal.modules.settings.appstatus.AppStatusPage
 import cash.p.terminal.modules.settings.donate.DonateTokenSelectPage
+import cash.p.terminal.modules.tonconnect.TonConnectMainPage
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.shared.DesktopTestGraph
@@ -172,6 +173,16 @@ class DesktopMainPageDesktopTest {
     }
 
     @Test
+    fun settings_tonConnect_opensTheConnectionList() = runDesktopComposeUiTest {
+        showApp()
+        onNodeWithContentDescription(SETTINGS).performClick()
+
+        onNodeWithText("Ton Connect").performScrollTo().performClick()
+
+        assertIs<TonConnectMainPage>(navigation.lastOrNull())
+    }
+
+    @Test
     fun settings_blockchainSettings_opensBlockchainSettings() = runDesktopComposeUiTest {
         showApp()
         onNodeWithContentDescription(SETTINGS).performClick()
@@ -186,7 +197,7 @@ class DesktopMainPageDesktopTest {
         showApp()
         onNodeWithContentDescription(SETTINGS).performClick()
 
-        listOf("Mini App", "WalletConnect", "Ton Connect", "Software Updates", "Advanced Security", "Rate Us")
+        listOf("Mini App", "WalletConnect", "Software Updates", "Advanced Security", "Rate Us")
             .forEach { onNodeWithText(it).assertDoesNotExist() }
         onNodeWithText("About App").performScrollTo().assertExists()
     }

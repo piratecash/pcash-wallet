@@ -7,9 +7,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.TestDispatcherProvider
-import cash.p.terminal.core.managers.DAppRequest
 import cash.p.terminal.core.managers.DefaultUserManager
-import cash.p.terminal.core.managers.TonConnectManager
 import cash.p.terminal.modules.calculator.domain.CalculatorModeService
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
@@ -21,7 +19,6 @@ import io.horizontalsystems.core.IKeyStoreManager
 import io.horizontalsystems.core.IPinComponent
 import io.horizontalsystems.core.ISystemInfoManager
 import io.horizontalsystems.core.entities.AutoDeletePeriod
-import io.horizontalsystems.tonkit.models.SignTransaction
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -29,7 +26,6 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -58,13 +54,10 @@ class MainActivityViewModelTest {
     private val calculatorModeService = mockk<CalculatorModeService>(relaxed = true)
     private val pinComponent = mockk<IPinComponent>()
     private val keyStoreManager = mockk<IKeyStoreManager>(relaxed = true)
-    private val tonConnectManager = mockk<TonConnectManager>()
     private val loginRecordRepository = mockk<ILoginRecordRepository>(relaxed = true)
 
     private lateinit var userManager: DefaultUserManager
     private lateinit var isLockedFlow: MutableStateFlow<Boolean>
-    private lateinit var sendRequestFlow: MutableSharedFlow<SignTransaction>
-    private lateinit var dappRequestFlow: MutableSharedFlow<DAppRequest>
 
     @Before
     fun setUp() {
@@ -72,14 +65,10 @@ class MainActivityViewModelTest {
 
         userManager = DefaultUserManager(accountManager, mockk())
         isLockedFlow = MutableStateFlow(true)
-        sendRequestFlow = MutableSharedFlow()
-        dappRequestFlow = MutableSharedFlow()
 
         every { pinComponent.isLockedFlow } returns isLockedFlow
         every { localStorage.getAutoDeleteLogsPeriod(any()) } returns AutoDeletePeriod.NEVER.value
         every { localStorage.isCalculatorModeEnabled } returns false
-        every { tonConnectManager.sendRequestFlow } returns sendRequestFlow
-        every { tonConnectManager.dappRequestFlow } returns dappRequestFlow
         coEvery { checkPremiumUseCase.update() } returns PremiumType.NONE
     }
 
@@ -165,7 +154,6 @@ class MainActivityViewModelTest {
         dispatcherProvider = dispatcherProvider,
         pinComponent = pinComponent,
         keyStoreManager = keyStoreManager,
-        tonConnectManager = tonConnectManager,
         loginRecordRepository = loginRecordRepository,
     )
 }
