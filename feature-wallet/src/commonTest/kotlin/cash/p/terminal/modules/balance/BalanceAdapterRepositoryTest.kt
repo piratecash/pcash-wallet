@@ -527,6 +527,7 @@ class BalanceAdapterRepositoryTest {
         every { address } returns mockk<Address> {
             every { base58 } returns "TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE"
         }
+        every { accountActivationFees() } returns emptyList()
     }
 
     // Over the real adapter: the watch-account rule lives between it and the kit.

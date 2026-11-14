@@ -172,6 +172,7 @@ fun SendTronScreen(
             )
 
             Spacer(modifier = Modifier.height(12.dp))
+            TronResourcesSection(uiState.resources)
             FeeInfoSection(
                 tokenIn = wallet.token,
                 displayBalance = viewModel.displayBalance,
@@ -183,6 +184,13 @@ fun SendTronScreen(
                 insufficientFeeBalance = viewModel.isInsufficientFeeBalance(uiState.fee),
                 onBalanceClicked = rememberBalanceToggle(viewModel::toggleHideBalance),
                 feeLoading = uiState.feeLoading,
+                feeDetails = {
+                    TronFeeBreakdownRows(
+                        breakdown = uiState.feeBreakdown,
+                        coinCode = viewModel.feeToken.coin.code,
+                        decimals = viewModel.feeTokenMaxAllowedDecimals,
+                    )
+                },
             )
 
             Spacer(modifier = Modifier.height(12.dp))

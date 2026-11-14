@@ -5,10 +5,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.core.HSCaution
 import cash.p.terminal.core.ISendTronAdapter
 import cash.p.terminal.core.LocalizedException
 import cash.p.terminal.core.ethereum.CautionViewItem
+import cash.p.terminal.core.ethereum.toCautionViewItem
 import cash.p.terminal.core.isNative
+import cash.p.terminal.core.orHide
 import cash.p.terminal.core.providers.SharedAppConfig
 import cash.p.terminal.entities.Address
 import cash.p.terminal.entities.CoinValue
@@ -19,16 +22,24 @@ import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionData
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionResult
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionServiceState
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionSettings
-import cash.p.terminal.modules.multiswap.ui.DataField
 import cash.p.terminal.modules.send.SendModule
 import cash.p.terminal.modules.send.SendResult
 import cash.p.terminal.modules.send.tron.SendTronAddressService
+import cash.p.terminal.modules.send.tron.DataFieldTronFee
+import cash.p.terminal.modules.send.tron.DataFieldTronResources
 import cash.p.terminal.modules.send.tron.SendTronFeeService
+import cash.p.terminal.modules.send.tron.toTronFeeRows
+import cash.p.terminal.modules.send.tron.toTronResourceRows
 import cash.p.terminal.modules.xrate.XRateService
+import cash.p.terminal.resources.Alert_TitleWarning
 import cash.p.terminal.resources.Error_InsufficientBalanceForFee
 import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.tron_activation_caution
+import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.Token
+import cash.p.terminal.wallet.managers.IBalanceHiddenManager
 import io.horizontalsystems.core.logger.AppLogger
+import io.horizontalsystems.tronkit.models.AccountResources
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -48,8 +59,6 @@ class SendTransactionServiceTron(
     val coinMaxAllowedDecimals = wallet.token.decimals
 
     val amountService by lazy {
-        val adjustedBalance = adapterManager.getAdjustedBalanceData(wallet)?.available
-            ?: adapter.balanceData.available
         SendAmountService(
             amountValidator = amountValidator,
             coinCode = wallet.token.coin.code,
@@ -64,6 +73,7 @@ class SendTransactionServiceTron(
     val xRateService =
         XRateService(getKoinInstance<MarketKitWrapper>(), getKoinInstance<CurrencyManager>().baseCurrency)
     private val feeService = SendTronFeeService(adapter, feeToken)
+    private val balanceHiddenManager: IBalanceHiddenManager = getKoinInstance()
 
     val logger: AppLogger = AppLogger("send-tron")
 
@@ -91,21 +101,47 @@ class SendTransactionServiceTron(
         private set
 
     private var cautions: List<CautionViewItem> = listOf()
-    private var fields = listOf<DataField>()
+    private var resources: AccountResources? = null
     private var hasEnoughFeeBalance: Boolean = true
     private var feeCaution: CautionViewItem? = null
 
+    private val adjustedBalance: BigDecimal
+        get() = adapterManager.getAdjustedBalanceData(wallet)?.available ?: adapter.balanceData.available
+
+    // TRX left after the network fee (activation of the recipient included) is all the swap may send.
+    private val availableBalance: BigDecimal
+        get() {
+            val fee = feeState.breakdown?.totalFee?.takeIf { token.type.isNative } ?: return adjustedBalance
+            return (adjustedBalance - fee).max(BigDecimal.ZERO)
+        }
+
     override fun createState() = SendTransactionServiceState(
-        availableBalance = adapterManager.getAdjustedBalanceData(wallet)?.available
-            ?: adapter.balanceData.available,
+        availableBalance = availableBalance,
         networkFee = networkFee,
-        cautions = cautions,
+        cautions = cautions + listOfNotNull(activationCaution()),
         feeCaution = feeCaution,
-        sendable = hasEnoughFeeBalance && (sendTransactionData != null || (amountState.canBeSend && feeState
-            .canBeSend && addressState.canBeSend)),
-        loading = false,
-        fields = fields
+        sendable = hasEnoughFeeBalance && !feeState.estimating && (sendTransactionData != null ||
+            (amountState.canBeSend && feeState.canBeSend && addressState.canBeSend)),
+        loading = sendTransactionData != null && feeState.estimating,
+        fields = listOfNotNull(
+            resources?.toTronResourceRows(numberFormatter)?.takeIf { it.isNotEmpty() }?.let(::DataFieldTronResources)
+        ),
+        feeDetails = listOfNotNull(
+            feeState.breakdown?.toTronFeeRows(numberFormatter, feeToken.coin.code, feeToken.decimals)
+                ?.takeIf { it.isNotEmpty() }?.let(::DataFieldTronFee)
+        ),
     )
+
+    private fun activationCaution(): CautionViewItem? {
+        val breakdown = feeState.breakdown?.takeIf { it.activationFee != null } ?: return null
+        val fee = numberFormatter.formatCoinFull(breakdown.totalFee, feeToken.coin.code, feeToken.decimals)
+            .orHide(balanceHiddenManager.isWalletBalanceHidden(token.tokenQuery.id))
+        return HSCaution(
+            s = TranslatableString.ResString(Res.string.Alert_TitleWarning),
+            type = HSCaution.Type.Warning,
+            description = TranslatableString.ResString(Res.string.tron_activation_caution, fee),
+        ).toCautionViewItem()
+    }
 
     override fun start(coroutineScope: CoroutineScope) {
         coroutineScope.launch {
@@ -132,6 +168,17 @@ class SendTransactionServiceTron(
         coroutineScope.launch {
             feeService.stateFlow.collect {
                 handleUpdatedFeeState(it)
+            }
+        }
+
+        coroutineScope.launch {
+            balanceHiddenManager.anyWalletVisibilityChangedFlow.collect { emitState() }
+        }
+
+        coroutineScope.launch {
+            adapter.accountResourcesFlow.collect {
+                resources = it
+                emitState()
             }
         }
     }

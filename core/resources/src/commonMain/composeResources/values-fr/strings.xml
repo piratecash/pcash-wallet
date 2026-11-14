@@ -506,8 +506,16 @@
     <string name="FeeInfo_TronFee_Description">Le coût estimé pour envoyer une transaction donnée sur le réseau (sans exclure les coûts d\u0027énergie, de bande passante et d\u0027activation)</string>
     <string name="FeeInfo_TronActivationFee_Title">Frais d\u0027activation</string>
     <string name="FeeInfo_TronActivationFee_Description">This address is not active. Transferring TRX or TRC-10 tokens to an inactive account address will activate the account.</string>
-    <string name="FeeInfo_TronResourcesConsumed_Title">Ressources consommées</string>
     <string name="FeeInfo_TronResourcesConsumed_Description">La bande passante est l\u0027unité qui mesure la taille des octets de transaction stockés dans la base de données blockchain. Plus la transaction est grande, plus la bande passante sera consommée.\n\nL\u0027énergie est l\u0027unité qui mesure le montant de calcul requis par la machine virtuelle TRON pour effectuer des opérations spécifiques sur le réseau TRON.\n\nÉtant donné que les transactions de contrats intelligents nécessitent des ressources informatiques pour être exécutées, chaque transaction de contrat intelligent nécessite le paiement de frais d\u0027énergie.</string>
+    <string name="tron_resources_title">Ressources TRON</string>
+    <string name="tron_resource_free_bandwidth">Bandwidth gratuite</string>
+    <string name="tron_resource_staked_bandwidth">Bandwidth du staking</string>
+    <string name="tron_resource_available_of">%1$s sur %2$s</string>
+    <string name="tron_fee_covered_free">du quota gratuit</string>
+    <string name="tron_fee_covered_staked">du staking</string>
+    <string name="tron_fee_energy_own">%1$s propre</string>
+    <string name="tron_fee_energy_contract">%1$s par le contrat</string>
+    <string name="tron_activation_caution">L’adresse du destinataire n’est pas encore activée sur TRON. Le réseau prélèvera %1$s pour l’activer.</string>
 
     <!--Network Fee Warning-->
     <string name="network_fee_warning_title">Frais de réseau %1$s</string>

@@ -505,8 +505,16 @@
     <string name="FeeInfo_TronFee_Description">El coste estimado del envío de una transacción en la red. (sin excluir Energía, Ancho de Banda y Tarifa Activa)</string>
     <string name="FeeInfo_TronActivationFee_Title">Tarifa de activación</string>
     <string name="FeeInfo_TronActivationFee_Description">This address is not active. Transferring TRX or TRC-10 tokens to an inactive account address will activate the account.</string>
-    <string name="FeeInfo_TronResourcesConsumed_Title">Recursos consumidos</string>
     <string name="FeeInfo_TronResourcesConsumed_Description">El bandwidth es la unidad que mide el tamaño de los bytes de transacción almacenados en la base de datos de la cadena de bloques. Cuanto más grande sea la transacción, más recursos de ancho de banda se consumirán.\n\nEnerge es la unidad que mide la cantidad de computación requerida por la máquina virtual TRON para realizar operaciones específicas en la red TRON.\n\nDado que las transacciones de contratos inteligentes requieren recursos informáticos para ejecutarse, cada transacción de contrato inteligente debe pagar la tarifa de energy.</string>
+    <string name="tron_resources_title">Recursos de TRON</string>
+    <string name="tron_resource_free_bandwidth">Bandwidth gratuito</string>
+    <string name="tron_resource_staked_bandwidth">Bandwidth de staking</string>
+    <string name="tron_resource_available_of">%1$s de %2$s</string>
+    <string name="tron_fee_covered_free">de la cuota gratuita</string>
+    <string name="tron_fee_covered_staked">del staking</string>
+    <string name="tron_fee_energy_own">%1$s propia</string>
+    <string name="tron_fee_energy_contract">%1$s del contrato</string>
+    <string name="tron_activation_caution">La dirección del destinatario aún no está activada en TRON. La red cobrará %1$s por activarla.</string>
 
     <!--Network Fee Warning-->
     <string name="network_fee_warning_title">Comisión de red %1$s</string>

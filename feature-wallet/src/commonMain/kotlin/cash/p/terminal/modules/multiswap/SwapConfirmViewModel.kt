@@ -286,6 +286,7 @@ class SwapConfirmViewModel(
             priceImpactLevel = priceImpactState.priceImpactLevel,
             quoteFields = quoteFields,
             transactionFields = sendTransactionState.fields,
+            feeDetails = sendTransactionState.feeDetails,
             criticalError = criticalError,
             isAdvancedSettingsAvailable = isAdvancedSettingsAvailable,
             mevProtectionAvailable = mevProtectionAvailable,
@@ -831,6 +832,7 @@ data class SwapConfirmUiState(
     val moneroPreparationInProgress: Boolean = false,
     val moneroPreparationError: StringResource? = null,
     val moneroPreparationRetryAvailable: Boolean = false,
+    val feeDetails: List<DataField> = emptyList(),
 )
 
 internal val SendResult?.isSwapInProgress: Boolean

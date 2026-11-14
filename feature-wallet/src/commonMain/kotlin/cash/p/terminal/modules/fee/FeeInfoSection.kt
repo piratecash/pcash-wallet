@@ -44,6 +44,7 @@ fun FeeInfoSection(
     feeLoading: Boolean = false,
     feeWarningData: NetworkFeeWarningData? = null,
     insufficientFeeText: String? = null,
+    feeDetails: @Composable () -> Unit = {},
 ) {
     val isNativeCoinSwap = feeCoinBalance == null
     val feeWarningText = feeWarningData?.let {
@@ -84,6 +85,8 @@ fun FeeInfoSection(
             title = feeTitle ?: stringResource(Res.string.fee),
             balanceHidden = balanceHidden,
         )
+        // The details add up to the masked total.
+        if (!balanceHidden) feeDetails()
     }
 
     if (insufficientFeeBalance) {

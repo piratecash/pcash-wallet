@@ -3,24 +3,17 @@ package cash.p.terminal.modules.send.tron
 import cash.p.terminal.core.ISendTronAdapter
 import cash.p.terminal.core.ServiceState
 import cash.p.terminal.wallet.Token
-import io.horizontalsystems.core.IAppNumberFormatter
 import io.horizontalsystems.tronkit.models.Address
 import io.horizontalsystems.tronkit.models.Contract
 import io.horizontalsystems.tronkit.network.CreatedTransaction
 import io.horizontalsystems.tronkit.transaction.Fee
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.koin.java.KoinJavaComponent.inject
 import java.math.BigDecimal
-import kotlin.collections.find
-import kotlin.getValue
-import kotlin.let
-import kotlin.toBigDecimal
 import io.horizontalsystems.tronkit.models.Address as TronAddress
 
 class SendTronFeeService(private val adapter: ISendTronAdapter, private val feeToken: Token) :
     ServiceState<SendTronFeeService.State>() {
-    private val numberFormatter: IAppNumberFormatter by inject(IAppNumberFormatter::class.java)
 
     private var amount: BigDecimal? = null
     private var tronAddress: TronAddress? = null
@@ -28,9 +21,9 @@ class SendTronFeeService(private val adapter: ISendTronAdapter, private val feeT
 
     private var feeLimit: Long? = null
     private var fee: BigDecimal? = null
-    private var activationFee: BigDecimal? = null
-    private var resourcesConsumed: String? = null
+    private var breakdown: TronFeeBreakdown? = null
     private var error: Throwable? = null
+    private var estimateGeneration = 0
 
     suspend fun setAmount(amount: BigDecimal?) {
         this.amount = amount
@@ -43,13 +36,13 @@ class SendTronFeeService(private val adapter: ISendTronAdapter, private val feeT
     suspend fun setContract(contract: Contract) {
         this.contract = contract
 
-        resetFees()
+        invalidateFees()
         refreshFees()
         emitState()
     }
 
     suspend fun setCreatedTransaction(createdTransaction: CreatedTransaction) {
-        resetFees()
+        invalidateFees()
         // Keep the original fee_limit for sending — estimation only affects displayed fee
         this.feeLimit = createdTransaction.raw_data.fee_limit
         refreshFees(createdTransaction)
@@ -63,78 +56,60 @@ class SendTronFeeService(private val adapter: ISendTronAdapter, private val feeT
     suspend fun setTronAddress(address: Address?) {
         this.tronAddress = address
 
-        resetFees()
+        invalidateFees()
         refreshFees()
         emitState()
     }
 
-    private suspend fun refreshFees(
-        createdTransaction: CreatedTransaction? = null
-    ) = withContext(Dispatchers.Default) {
+    private suspend fun refreshFees(createdTransaction: CreatedTransaction? = null) {
+        val generation = estimateGeneration
         try {
-            val currentContract = contract
-            val fees: List<Fee> = when {
-                createdTransaction != null -> adapter.estimateFee(createdTransaction)
-                currentContract != null -> adapter.estimateFee(currentContract)
-                else -> {
-                    val amount = this@SendTronFeeService.amount ?: return@withContext
-                    val tronAddress = this@SendTronFeeService.tronAddress ?: return@withContext
-                    adapter.estimateFee(amount, tronAddress)
-                }
-            }
-
+            val fees = estimate(createdTransaction) ?: return
+            // Inputs changed while estimating: a newer estimate owns the state.
+            if (generation != estimateGeneration) return
+            val breakdown = fees.toTronFeeBreakdown(feeToken.decimals)
             if (createdTransaction == null) {
-                feeLimit = (fees.find { it is Fee.Energy } as? Fee.Energy)?.feeInSuns
+                feeLimit = breakdown.feeLimit
             }
-
-            var bandwidth: String? = null
-            var energy: String? = null
-
-            fees.forEach { fee ->
-                when (fee) {
-                    is Fee.AccountActivation -> {
-                        activationFee =
-                            fee.feeInSuns.toBigDecimal().movePointLeft(feeToken.decimals)
-                    }
-
-                    is Fee.Bandwidth -> {
-                        bandwidth = "${fee.points} Bandwidth"
-                    }
-
-                    is Fee.Energy -> {
-                        val formattedEnergy =
-                            numberFormatter.formatNumberShort(fee.required.toBigDecimal(), 0)
-                        energy = "$formattedEnergy Energy"
-                    }
-                }
-            }
-
-            resourcesConsumed = if (bandwidth != null) {
-                bandwidth + (energy?.let { " \n + $it" } ?: "")
-            } else {
-                energy
-            }
-
-            val totalFee = fees.sumOf { it.feeInSuns }
-            fee = totalFee.toBigDecimal().movePointLeft(feeToken.decimals)
+            this.breakdown = breakdown
+            fee = breakdown.totalFee
         } catch (error: Throwable) {
-            this@SendTronFeeService.error = error
+            if (generation == estimateGeneration) this.error = error
         }
     }
 
+    private suspend fun estimate(createdTransaction: CreatedTransaction?): List<Fee>? {
+        val currentContract = contract
+        val amount = amount
+        val tronAddress = tronAddress
+        return withContext(Dispatchers.Default) {
+            when {
+                createdTransaction != null -> adapter.estimateFee(createdTransaction)
+                currentContract != null -> adapter.estimateFee(currentContract)
+                amount != null && tronAddress != null -> adapter.estimateFee(amount, tronAddress)
+                else -> null
+            }
+        }
+    }
+
+    // A new recipient changes the fee; never let the previous one stay published while estimating.
+    private fun invalidateFees() {
+        resetFees()
+        emitState()
+    }
+
     private fun resetFees() {
+        estimateGeneration++
         feeLimit = null
         fee = null
-        activationFee = null
-        resourcesConsumed = null
+        breakdown = null
         error = null
     }
 
     override fun createState() = State(
         feeLimit = feeLimit,
         fee = fee,
-        activationFee = activationFee,
-        resourcesConsumed = resourcesConsumed,
+        breakdown = breakdown,
         error = error,
         canBeSend = feeLimit != null && error == null
     )
@@ -142,9 +117,11 @@ class SendTronFeeService(private val adapter: ISendTronAdapter, private val feeT
     data class State(
         val feeLimit: Long?,
         val fee: BigDecimal?,
-        val activationFee: BigDecimal?,
-        val resourcesConsumed: String?,
+        val breakdown: TronFeeBreakdown?,
         val error: Throwable?,
         val canBeSend: Boolean
-    )
+    ) {
+        val estimating: Boolean
+            get() = fee == null && error == null
+    }
 }

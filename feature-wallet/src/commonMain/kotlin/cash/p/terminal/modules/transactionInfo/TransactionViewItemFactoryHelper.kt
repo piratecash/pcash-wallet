@@ -756,6 +756,7 @@ object TransactionViewItemFactoryHelper {
                 if (!transaction.foreignTransaction && fee != null) {
                     items.add(getFeeItem(fee, rates[fee.coinUid], status))
                 }
+                items.addAll(TronResourceItemsFactory.getItems(transaction, hideSensitiveInfo))
             }
 
             is StellarTransactionRecord -> {

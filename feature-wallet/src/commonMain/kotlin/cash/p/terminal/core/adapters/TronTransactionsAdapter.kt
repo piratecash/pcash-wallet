@@ -4,10 +4,12 @@ import cash.p.terminal.core.ITransactionsAdapter
 import cash.p.terminal.core.managers.TronKitWrapper
 import cash.p.terminal.entities.LastBlockInfo
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
+import cash.p.terminal.entities.transactionrecords.tron.TronTransactionRecord
 import cash.p.terminal.modules.transactions.FilterTransactionType
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.TokenType
+import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.ethereumkit.core.hexStringToByteArrayOrNull
 import io.horizontalsystems.tronkit.TronKit
 import io.horizontalsystems.tronkit.hexStringToByteArray
@@ -18,10 +20,12 @@ import io.reactivex.Flowable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.rx2.asFlowable
+import kotlinx.coroutines.withContext
 
 class TronTransactionsAdapter(
     val tronKitWrapper: TronKitWrapper,
-    private val transactionConverter: TronTransactionConverter
+    private val transactionConverter: TronTransactionConverter,
+    private val dispatcherProvider: DispatcherProvider,
 ) : ITransactionsAdapter {
 
     private val tronKit = tronKitWrapper.tronKit
@@ -69,6 +73,11 @@ class TronTransactionsAdapter(
             .map {
                 transactionConverter.transactionRecord(it)
             }
+    }
+
+    override suspend fun fetchMissingDetails(record: TransactionRecord) {
+        if (record !is TronTransactionRecord || !record.needsReceipt) return
+        withContext(dispatcherProvider.io) { tronKit.fetchTransactionReceipt(record.transactionHash) }
     }
 
     override fun getTransactionRecordsFlow(

@@ -9,6 +9,7 @@ import cash.p.terminal.modules.transactions.TransactionStatus
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.transaction.TransactionSource
 import io.horizontalsystems.tronkit.models.Transaction
+import io.horizontalsystems.tronkit.models.TriggerSmartContract
 
 class TronTransactionRecord(
     from: String? = null,
@@ -44,6 +45,21 @@ class TronTransactionRecord(
 ) {
 
     val fee: TransactionValue?
+
+    val isOwnOutgoing: Boolean
+        get() = !foreignTransaction && transactionRecordType in OWN_OUTGOING_TYPES
+
+    /** TRC-20 transfers, approvals and other contract calls; only these spend Energy. */
+    val isSmartContractCall: Boolean
+        get() = transaction.contract is TriggerSmartContract
+
+    /** Net usage and fee both zero is a placeholder from the explorer, not a real receipt. */
+    val isReceiptMissing: Boolean
+        get() = with(transaction) {
+            listOf(netUsage, netFee, energyUsage, energyFee, energyUsageTotal).any { it == null } ||
+                    (netUsage == 0L && netFee == 0L) ||
+                    (isSmartContractCall && originEnergyUsage == null)
+        }
 
     init {
         val feeAmount: Long? = transaction.fee
@@ -82,6 +98,9 @@ class TronTransactionRecord(
         }
     }
 
+    val needsReceipt: Boolean
+        get() = isOwnOutgoing && blockHeight != null && isReceiptMissing
+
     override val mainValue: TransactionValue?
         get() {
             return if (transactionRecordType == TransactionRecordType.TRON_APPROVE ||
@@ -109,5 +128,11 @@ class TronTransactionRecord(
 
     companion object {
         const val CONFIRMATIONS_THRESHOLD = 19
+
+        private val OWN_OUTGOING_TYPES = setOf(
+            TransactionRecordType.TRON_OUTGOING,
+            TransactionRecordType.TRON_APPROVE,
+            TransactionRecordType.TRON_CONTRACT_CALL,
+        )
     }
 }
