@@ -4,6 +4,7 @@ import android.content.ComponentName
 import android.content.pm.PackageManager
 import cash.p.terminal.core.App
 import cash.p.terminal.core.ILocalStorage
+import cash.p.terminal.ledger.usb.LedgerUsbAttachActivity
 import cash.p.terminal.trezor.client.TrezorUsbAttachActivity
 import cash.p.terminal.widgets.MarketWidgetReceiver
 import io.horizontalsystems.core.CoreApp
@@ -44,15 +45,15 @@ class AppIconServiceTest {
     }
 
     @Test
-    fun init_pendingLauncherAliasUpdate_keepsTrezorUsbHandlerDisabled() {
+    fun init_pendingLauncherAliasUpdate_keepsUsbHandlersDisabled() {
         every { localStorage.calculatorModeLauncherAliasUpdatePending } returns true
 
         AppIconService(localStorage)
 
-        verify(exactly = 1) {
+        verify(exactly = 2) {
             packageManager.setComponentEnabledSetting(any(), any(), any())
         }
-        verifyTrezorUsbHandler(PackageManager.COMPONENT_ENABLED_STATE_DISABLED)
+        verifyUsbHandlers(PackageManager.COMPONENT_ENABLED_STATE_DISABLED)
     }
 
     @Test
@@ -65,9 +66,9 @@ class AppIconServiceTest {
         service.applyPendingLauncherAliasUpdate()
 
         verify { localStorage.calculatorModeLauncherAliasUpdatePending = false }
-        // Three enabled components in non-calculator mode: the selected launcher alias,
-        // market widget receiver, and Trezor USB handler.
-        verify(exactly = 3) {
+        // Four enabled components in non-calculator mode: the selected launcher alias,
+        // market widget receiver, and the Trezor and Ledger USB handlers.
+        verify(exactly = 4) {
             packageManager.setComponentEnabledSetting(
                 any(),
                 PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
@@ -81,23 +82,23 @@ class AppIconServiceTest {
                 PackageManager.DONT_KILL_APP,
             )
         }
-        verifyTrezorUsbHandler(PackageManager.COMPONENT_ENABLED_STATE_ENABLED)
+        verifyUsbHandlers(PackageManager.COMPONENT_ENABLED_STATE_ENABLED)
     }
 
     @Test
-    fun init_ordinaryMode_enablesTrezorUsbHandler() {
+    fun init_ordinaryMode_enablesUsbHandlers() {
         AppIconService(localStorage)
 
-        verifyTrezorUsbHandler(PackageManager.COMPONENT_ENABLED_STATE_ENABLED)
+        verifyUsbHandlers(PackageManager.COMPONENT_ENABLED_STATE_ENABLED)
     }
 
     @Test
-    fun init_calculatorMode_disablesTrezorUsbHandler() {
+    fun init_calculatorMode_disablesUsbHandlers() {
         every { localStorage.appIcon } returns AppIcon.Calculator
 
         AppIconService(localStorage)
 
-        verifyTrezorUsbHandler(PackageManager.COMPONENT_ENABLED_STATE_DISABLED)
+        verifyUsbHandlers(PackageManager.COMPONENT_ENABLED_STATE_DISABLED)
     }
 
     @Test
@@ -193,13 +194,15 @@ class AppIconServiceTest {
         verify(exactly = 0) { localStorage.isCalculatorModeEnabled = true }
     }
 
-    private fun verifyTrezorUsbHandler(state: Int) {
-        verify {
-            packageManager.setComponentEnabledSetting(
-                trezorUsbHandler(),
-                state,
-                PackageManager.DONT_KILL_APP,
-            )
+    private fun verifyUsbHandlers(state: Int) {
+        listOf(TrezorUsbAttachActivity::class.java, LedgerUsbAttachActivity::class.java).forEach { handler ->
+            verify {
+                packageManager.setComponentEnabledSetting(
+                    match { it.className == handler.name },
+                    state,
+                    PackageManager.DONT_KILL_APP,
+                )
+            }
         }
     }
 

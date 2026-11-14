@@ -2,6 +2,7 @@ package cash.p.terminal.modules.balance
 
 import cash.p.terminal.core.managers.OfflineKey
 import cash.p.terminal.core.managers.OfflineModeManager
+import cash.p.terminal.ledger.domain.LedgerNotFoundException
 import cash.p.terminal.modules.displayoptions.DisplayDiffOptionType
 import cash.p.terminal.modules.offline.OperationAvailability
 import cash.p.terminal.resources.Balance_LockedAmount_Title
@@ -21,6 +22,7 @@ import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.balance_sync_error_fixed_source
 import cash.p.terminal.resources.beam_locked_balance_info
 import cash.p.terminal.resources.hardware_connect_device_to_sync
+import cash.p.terminal.resources.ledger_monero_confirm_view_key
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.Wallet
@@ -217,6 +219,24 @@ class BalanceViewItemFactoryDisplaySyncStateTest {
     }
 
     @Test
+    fun viewItem_notSyncedLedgerNotConnected_displaysConnectDeviceHint() {
+        assertEquals(
+            Translator.getString(Res.string.hardware_connect_device_to_sync),
+            viewItemWithTxError(LedgerNotFoundException()).errorMessage
+        )
+    }
+
+    @Test
+    fun viewItem_notSyncedViewKeyExportDenied_displaysExportInstruction() {
+        val error = HardwareWalletOperationException(HardwareWalletErrorCode.ViewKeyExportDenied, "denied")
+
+        assertEquals(
+            Translator.getString(Res.string.ledger_monero_confirm_view_key),
+            viewItemWithTxError(error).errorMessage
+        )
+    }
+
+    @Test
     fun viewItem_notSyncedHardwareWalletNodeUnreachable_displaysFixedSourceMessage() {
         val error = HardwareWalletOperationException(HardwareWalletErrorCode.Network, "daemon unreachable")
 
@@ -229,8 +249,10 @@ class BalanceViewItemFactoryDisplaySyncStateTest {
     @Test
     fun viewItem_notSyncedDeviceErrors_marksFromDevice() {
         listOf(
+            LedgerNotFoundException(),
             HardwareWalletOperationException(HardwareWalletErrorCode.DeviceNotFound, "usb device not found"),
             HardwareWalletOperationException(HardwareWalletErrorCode.PendingDeviceVerification, "confirm on device"),
+            HardwareWalletOperationException(HardwareWalletErrorCode.ViewKeyExportDenied, "denied"),
         ).forEach { assertTrue(it.toString(), viewItemWithTxError(it).syncErrorFromDevice) }
     }
 

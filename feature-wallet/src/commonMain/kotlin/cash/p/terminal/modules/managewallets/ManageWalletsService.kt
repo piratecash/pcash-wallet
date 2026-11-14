@@ -4,6 +4,7 @@ import cash.p.terminal.core.eligibleTokens
 import cash.p.terminal.core.managers.RestoreSettings
 import cash.p.terminal.core.managers.UserDeletedWalletManager
 import cash.p.terminal.core.restoreSettingTypes
+import cash.p.terminal.core.seedPhraseTokens
 import cash.p.terminal.core.usecase.OfflineModeUseCase
 import cash.p.terminal.core.usecase.RescanMoneroUseCase
 import cash.p.terminal.modules.enablecoin.restoresettings.RestoreSettingsService
@@ -25,6 +26,8 @@ import cash.p.terminal.wallet.isZcashAddressSpec
 import cash.p.terminal.wallet.isLitecoinMweb
 import cash.p.terminal.wallet.isMonero
 import cash.p.terminal.wallet.latestAccountOr
+import cash.p.terminal.wallet.ownsFullZcashGroup
+import cash.p.terminal.wallet.policy.HardwareWalletTokenPolicy
 import cash.p.terminal.wallet.tokenQueryId
 import cash.p.terminal.wallet.useCases.GetHardwarePublicKeyForWalletUseCase
 import cash.p.terminal.wallet.zcashDisableTokenQueryIds
@@ -61,6 +64,9 @@ class ManageWalletsService(
     private val walletFactory: WalletFactory by inject(WalletFactory::class.java)
     private val offlineModeUseCase: OfflineModeUseCase by inject(OfflineModeUseCase::class.java)
     private val marketKit: MarketKitWrapper by inject(MarketKitWrapper::class.java)
+    private val hardwareWalletTokenPolicy: HardwareWalletTokenPolicy by inject(
+        HardwareWalletTokenPolicy::class.java
+    )
 
     private val _itemsFlow = MutableStateFlow<List<Item>>(listOf())
     val itemsFlow = _itemsFlow.asStateFlow()
@@ -103,7 +109,8 @@ class ManageWalletsService(
     private fun isEnabled(token: Token): Boolean {
         val contractAddress = (token.type as? TokenType.Eip20)?.address
         return when {
-            token.isZcashAddressSpec -> walletManager.activeWallets.any { it.token.isZcashAddressSpec }
+            token.isZcashAddressSpec && account?.type?.ownsFullZcashGroup == true ->
+                walletManager.activeWallets.any { it.token.isZcashAddressSpec }
             contractAddress != null -> {
                 walletManager.activeWallets.any {
                     it.token.blockchainType == token.blockchainType &&
@@ -130,26 +137,34 @@ class ManageWalletsService(
     }
 
     private suspend fun sortItems() {
-        mutex.withLock {
-            items = fullCoins
-                .map { getItemsForFullCoin(it) }
-                .flatten()
-        }
+        mutex.withLock { rebuildItems() }
+    }
+
+    // Kotlin's Mutex is not reentrant: callers already holding it must use this directly.
+    private fun rebuildItems() {
+        items = fullCoins
+            .map { getItemsForFullCoin(it) }
+            .flatten()
     }
 
     private fun getItemsForFullCoin(fullCoin: FullCoin): List<Item> {
-        val accountType = account?.type ?: return listOf()
-        val eligibleTokens = fullCoin.eligibleTokens(accountType)
-        return eligibleTokens.map { getItemForToken(it) }
+        val account = account ?: return listOf()
+        if (!account.isHardwareWalletAccount) {
+            return fullCoin.eligibleTokens(account.type).map { getItemForToken(it, available = true) }
+        }
+        return fullCoin.seedPhraseTokens()
+            .map { getItemForToken(it, hardwareWalletTokenPolicy.isSupported(account, it)) }
+            .sortedBy { !it.available }
     }
 
-    private fun getItemForToken(token: Token): Item {
+    private fun getItemForToken(token: Token, available: Boolean): Item {
         val enabled = isEnabled(token)
 
         return Item(
             token = token,
             enabled = enabled,
-            hasInfo = hasInfo(token)
+            hasInfo = hasInfo(token),
+            available = available
         )
     }
 
@@ -184,7 +199,7 @@ class ManageWalletsService(
         mutex.withLock {
             if (newFullCons.size > fullCoins.size) {
                 fullCoins = newFullCons
-                sortItems()
+                rebuildItems()
             }
         }
         syncState()
@@ -241,7 +256,7 @@ class ManageWalletsService(
         restoreSettings: RestoreSettings,
         account: Account,
     ) {
-        if (!token.isMonero() || account.type !is AccountType.TrezorDevice) return
+        if (!token.isMonero() || account.type !is AccountType.HardwareDevice) return
         val restoreHeight = restoreSettings.birthdayHeight?.takeIf { it >= 0 } ?: return
         rescanMoneroUseCase(account, restoreHeight)
     }
@@ -271,6 +286,12 @@ class ManageWalletsService(
             } else {
                 enable(token, RestoreSettings())
             }
+        }
+    }
+
+    fun enable(token: Token, birthdayHeight: Long) {
+        coroutineScope.launch {
+            enable(token, RestoreSettings().apply { this.birthdayHeight = birthdayHeight })
         }
     }
 
@@ -336,7 +357,8 @@ class ManageWalletsService(
     data class Item(
         val token: Token,
         val enabled: Boolean,
-        val hasInfo: Boolean
+        val hasInfo: Boolean,
+        val available: Boolean
     )
 
     private fun shouldForceBirthdayHeightDialog(token: Token): Boolean {

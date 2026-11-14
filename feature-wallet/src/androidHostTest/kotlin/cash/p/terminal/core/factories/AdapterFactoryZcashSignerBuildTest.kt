@@ -4,6 +4,8 @@ import cash.p.terminal.core.UnsupportedException
 import cash.p.terminal.core.adapters.zcash.AndroidZcashHardwareSigners
 import cash.p.terminal.core.adapters.zcash.TrezorZcashSigner
 import cash.p.terminal.core.adapters.zcash.ZcashSpendingKeySigner
+import cash.p.terminal.core.adapters.zcash.ZcashTransactionSigner
+import cash.p.terminal.core.managers.DeviceSignerFactory
 import cash.p.terminal.trezor.domain.TrezorAccountIdentityValidator
 import cash.p.terminal.trezor.domain.TrezorFirmwareVersionRecorder
 import cash.p.terminal.trezorkit.client.ITrezorClient
@@ -17,14 +19,20 @@ import cash.p.terminal.wallet.entities.TokenType
 import io.horizontalsystems.core.entities.BlockchainType
 import io.mockk.every
 import io.mockk.mockk
+import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
 
 /**
- * Locks [AdapterFactory.buildZcashSigner]'s account-type based selection: a Trezor account signs
- * on the device, everything else keeps today's spending-key behaviour.
+ * Locks [AdapterFactory.buildZcashSigner]'s account-type based selection: a Trezor or Ledger account
+ * signs on the device, everything else keeps today's spending-key behaviour.
  */
 class AdapterFactoryZcashSignerBuildTest {
 
@@ -32,6 +40,25 @@ class AdapterFactoryZcashSignerBuildTest {
     private val identityValidator = mockk<TrezorAccountIdentityValidator>(relaxed = true)
     private val firmwareVersionRecorder = mockk<TrezorFirmwareVersionRecorder>(relaxed = true)
     private val hardwareSigners = AndroidZcashHardwareSigners(trezorClient, identityValidator, firmwareVersionRecorder)
+    private val ledgerSigner = mockk<ZcashTransactionSigner>()
+    private val deviceSignerFactory = mockk<DeviceSignerFactory> {
+        every { ledgerZcash(any(), any()) } returns ledgerSigner
+    }
+
+    @Before
+    fun setUp() {
+        stopKoin()
+        startKoin {
+            modules(module {
+                single { deviceSignerFactory }
+            })
+        }
+    }
+
+    @After
+    fun tearDown() {
+        stopKoin()
+    }
 
     @Test
     fun buildZcashSigner_trezorAccount_returnsTrezorZcashSigner() {
@@ -86,6 +113,20 @@ class AdapterFactoryZcashSignerBuildTest {
         }
 
         assertEquals("Trezor does not have a key for Zcash", failure.message)
+    }
+
+    @Test
+    fun buildZcashSigner_ledgerAccount_signsOnTheDevice() {
+        val account = mockk<Account> {
+            every { id } returns "account-4"
+            every { type } returns AccountType.LedgerDevice("device-1", "nanoSP", "wallet-key")
+        }
+        val wallet = mockk<Wallet> {
+            every { this@mockk.account } returns account
+            every { this@mockk.hardwarePublicKey } returns mockk()
+        }
+
+        assertSame(ledgerSigner, AdapterFactory.buildZcashSigner(wallet, hardwareSigners))
     }
 
     @Test

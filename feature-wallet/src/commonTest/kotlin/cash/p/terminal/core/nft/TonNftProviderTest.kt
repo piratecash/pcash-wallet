@@ -91,7 +91,7 @@ class TonNftProviderTest {
         mockkObject(TonKit.Companion, SharedAppConfig)
         every { SharedAppConfig.tonApiKeys } returns emptyList()
         every { TonKit.getTonApi(any(), any()) } returns api
-        every { tonKitManager.getReceiveAddress(any(), TonWalletVersion.W5) } returns OWNER
+        coEvery { tonKitManager.getReceiveAddress(any(), TonWalletVersion.W5) } returns OWNER
         return api
     }
 
@@ -340,8 +340,8 @@ class TonNftProviderTest {
     @Test
     fun ownerAddresses_walletsOfSameVersion_derivesOnce() = test {
         val account = mockk<Account>()
-        every { tonKitManager.getReceiveAddress(account, TonWalletVersion.V4R2) } returns OWNER
-        every { tonKitManager.getReceiveAddress(account, TonWalletVersion.W5) } returns OTHER_OWNER
+        coEvery { tonKitManager.getReceiveAddress(account, TonWalletVersion.V4R2) } returns OWNER
+        coEvery { tonKitManager.getReceiveAddress(account, TonWalletVersion.W5) } returns OTHER_OWNER
 
         val result = provider.ownerAddresses(
             listOf(
@@ -352,7 +352,7 @@ class TonNftProviderTest {
         )
 
         assertEquals(setOf(OWNER, OTHER_OWNER), result)
-        verify(exactly = 1) { tonKitManager.getReceiveAddress(account, TonWalletVersion.V4R2) }
+        coVerify(exactly = 1) { tonKitManager.getReceiveAddress(account, TonWalletVersion.V4R2) }
     }
 
     @Test
@@ -364,14 +364,14 @@ class TonNftProviderTest {
         )
 
         assertEquals(emptySet<String>(), result)
-        verify(exactly = 0) { tonKitManager.getReceiveAddress(any(), any()) }
+        coVerify(exactly = 0) { tonKitManager.getReceiveAddress(any(), any()) }
     }
 
     @Test
     fun ownerAddresses_derivationThrows_skipsOnlyThatWallet() = test {
         val account = mockk<Account>()
-        every { tonKitManager.getReceiveAddress(account, TonWalletVersion.V4R2) } throws IllegalArgumentException()
-        every { tonKitManager.getReceiveAddress(account, TonWalletVersion.W5) } returns OWNER
+        coEvery { tonKitManager.getReceiveAddress(account, TonWalletVersion.V4R2) } throws IllegalArgumentException()
+        coEvery { tonKitManager.getReceiveAddress(account, TonWalletVersion.W5) } returns OWNER
 
         val result = provider.ownerAddresses(
             listOf(wallet(account, TokenType.Native), wallet(account, TokenType.TonW5Native)),
@@ -383,7 +383,7 @@ class TonNftProviderTest {
     @Test
     fun ownerAddresses_derivationCancelled_rethrows() = test {
         val account = mockk<Account>()
-        every { tonKitManager.getReceiveAddress(account, TonWalletVersion.V4R2) } throws CancellationException()
+        coEvery { tonKitManager.getReceiveAddress(account, TonWalletVersion.V4R2) } throws CancellationException()
 
         assertFailsWith<CancellationException> {
             provider.ownerAddresses(listOf(wallet(account, TokenType.Native)))

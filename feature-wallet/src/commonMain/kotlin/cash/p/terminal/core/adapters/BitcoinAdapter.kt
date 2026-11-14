@@ -193,13 +193,8 @@ class BitcoinAdapter(
                     )
                 }
 
-                is AccountType.TrezorDevice -> {
-                    val trezorSigner = hardwareSigners.trezorSigner(
-                        accountId = account.id,
-                        blockchainType = wallet.token.blockchainType,
-                        tokenType = wallet.token.type,
-                        coin = "Bitcoin"
-                    )
+                is AccountType.HardwareDevice -> {
+                    val deviceSigner = buildHardwareDeviceBtcSigner(wallet, trezorCoin = "Bitcoin")
                     val kit = BitcoinKit(
                         dataDir = environment.dataDir,
                         databaseKey = environment.databaseKey,
@@ -211,10 +206,10 @@ class BitcoinAdapter(
                         syncMode = syncMode,
                         networkType = NetworkType.MainNet,
                         confirmationsThreshold = KIT_CONFIRMATIONS_THRESHOLD,
-                        iInputSigner = trezorSigner.inputSigner,
-                        iSchnorrInputSigner = trezorSigner.schnorrInputSigner,
+                        iInputSigner = deviceSigner.inputSigner,
+                        iSchnorrInputSigner = deviceSigner.schnorrInputSigner,
                     )
-                    trezorSigner.bindKit(kit)
+                    deviceSigner.bindKit(kit)
                     return kit
                 }
 
@@ -253,7 +248,7 @@ class BitcoinAdapter(
                 }
 
                 is AccountType.HardwareCard,
-                is AccountType.TrezorDevice,
+                is AccountType.HardwareDevice,
                 is AccountType.EvmAddress,
                 is AccountType.EvmPrivateKey,
                 is AccountType.MnemonicMonero,

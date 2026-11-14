@@ -22,7 +22,8 @@ class ThorchainKitManagersTest {
         every { thorchain(any()) } returns context
         every { resolverFor(any()) } returns DatabaseNameResolver.Identity
     }
-    private val managers = ThorchainKitManagers(platformContexts, mockk(), mockk(), mockk(), mockk(), mockk())
+    private val managers =
+        ThorchainKitManagers(platformContexts, mockk(), mockk(), mockk(), mockk(), mockk(), mockk(), mockk())
 
     @After
     fun tearDown() {

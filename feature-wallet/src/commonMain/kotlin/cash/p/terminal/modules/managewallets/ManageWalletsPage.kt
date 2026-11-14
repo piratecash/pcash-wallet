@@ -1,12 +1,14 @@
 package cash.p.terminal.modules.managewallets
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import cash.p.terminal.modules.enablecoin.restoresettings.RestoreSettingsViewModel
+import cash.p.terminal.modules.moneroconfigure.MoneroConfigurePage
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
@@ -21,6 +23,7 @@ class ManageWalletsPage : HSPage() {
         val vmFactory = remember { ManageWalletsModule.Factory() }
         val viewModel: ManageWalletsViewModel = viewModel(factory = vmFactory)
         val restoreSettingsViewModel: RestoreSettingsViewModel = viewModel(factory = vmFactory)
+        MoneroRestoreHeightRequests(viewModel, navigation)
         val scanOrCancelLauncher = navigation.rememberResultLauncher<CancelOrScanSheet.Result> { result ->
             if (result.confirmed) {
                 viewModel.requestScanToAddTokens(true)
@@ -57,5 +60,17 @@ class ManageWalletsPage : HSPage() {
             },
             restoreSettingsViewModel = restoreSettingsViewModel
         )
+    }
+}
+
+@Composable
+fun MoneroRestoreHeightRequests(viewModel: ManageWalletsViewModel, navigation: HSNavigation) {
+    val launcher = navigation.rememberResultLauncher<MoneroConfigurePage.Result> { result ->
+        viewModel.onMoneroRestoreHeightConfigured(result.config)
+    }
+    LaunchedEffect(Unit) {
+        viewModel.moneroRestoreHeightRequests.collect {
+            launcher.slideFromBottom(MoneroConfigurePage(MoneroConfigurePage.Input(initialConfig = null)))
+        }
     }
 }

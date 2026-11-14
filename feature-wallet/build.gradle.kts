@@ -102,6 +102,7 @@ kotlin {
                 implementation(project(":core:vault"))
                 implementation(project(":feature-market"))
                 implementation(project(":feature-premium"))
+                implementation(project(":feature-ledger"))
                 // AdapterFactory takes StackingManager in its public constructor.
                 api(project(":feature-stacking"))
                 implementation(project(":components:chartview"))
@@ -228,8 +229,14 @@ kotlin {
     }
 }
 
-// The relocated send tests outgrow the default 512 MB test heap; same settings as the app unit tests.
-tasks.withType<Test>().matching { it.name in setOf("testAndroidHostTest", "desktopTest") }.configureEach {
+// Workaround for https://github.com/mockk/mockk/issues/1566: MockK <= 1.14.11 never frees regular mocks, so the
+// suite outgrows the 512 MB default heap. After upgrading to a release with mockk#1567, release the stubs with
+// clearAllStubsFromMemory() after each test and drop this block (see the note next to mockk in libs.versions.toml).
+tasks.withType<Test>().configureEach {
     maxHeapSize = "2g"
+}
+
+// The relocated send tests use the same fork interval as the app unit tests.
+tasks.withType<Test>().matching { it.name in setOf("testAndroidHostTest", "desktopTest") }.configureEach {
     forkEvery = 80
 }

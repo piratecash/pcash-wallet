@@ -10,6 +10,7 @@ import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.send_error_address_unavailable
 import cash.p.terminal.resources.send_error_amount_unavailable
 import io.horizontalsystems.core.collectWith
+import cash.p.terminal.modules.send.hardwareWalletCaution
 import cash.p.terminal.modules.send.isHardwareWalletCancelled
 import cash.p.terminal.core.EvmError
 import cash.p.terminal.core.HSCaution
@@ -37,7 +38,6 @@ import cash.p.terminal.modules.xrate.XRateService
 import cash.p.terminal.modules.send.offline.OfflineSignCapableViewModel
 import cash.p.terminal.modules.send.offline.OfflineSigningController
 import cash.p.terminal.modules.send.offline.OfflineTransactionFormat
-import cash.p.terminal.core.HardwareWalletSupport
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.Token
@@ -239,7 +239,7 @@ class SendSolanaViewModel(
             recentAddressManager.setRecentAddress(address, BlockchainType.Solana)
         } catch (e: Throwable) {
             pendingTxId?.let { pendingRegistrar.deleteFailed(it) }
-            if (HardwareWalletSupport.isUserCancellation(e)) {
+            if (e.isHardwareWalletCancelled()) {
                 sendResult = null
                 logger.i { "user cancelled" }
                 return@withContext
@@ -281,7 +281,7 @@ class SendSolanaViewModel(
         )
     }
 
-    private fun createCaution(error: Throwable) = when (error) {
+    private fun createCaution(error: Throwable) = error.hardwareWalletCaution() ?: when (error) {
         is UnknownHostException -> HSCaution(TranslatableString.ResString(Res.string.Hud_Text_NoInternet))
         is LocalizedException -> HSCaution(TranslatableString.ResString(error.errorTextRes))
         is EvmError.InsufficientBalanceWithFee -> SendErrorInsufficientBalance(

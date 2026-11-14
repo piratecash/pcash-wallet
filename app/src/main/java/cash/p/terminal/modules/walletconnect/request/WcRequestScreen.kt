@@ -47,9 +47,9 @@ fun WcRequestScreen(
     val uiState = viewModel.uiState
     val view = LocalView.current
 
-    LaunchedEffect(uiState.error) {
-        uiState.error?.let {
-            HudHelper.showErrorMessage(view, it.message ?: it.javaClass.simpleName)
+    LaunchedEffect(uiState.errorText) {
+        uiState.errorText?.let {
+            HudHelper.showErrorMessage(view, it)
             viewModel.errorShown()
         }
     }

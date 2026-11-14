@@ -46,7 +46,7 @@ class SelectBlockchainsViewModel(
             is AccountType.MayachainAddress,
             is SeedAccountType,
             is AccountType.HardwareCard,
-            is AccountType.TrezorDevice,
+            is AccountType.HardwareDevice,
             is AccountType.MnemonicMonero,
             is AccountType.StellarSecretKey,
             is AccountType.EvmPrivateKey -> Unit // N/A

@@ -26,6 +26,8 @@ import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.managers.DAppRequest
 import cash.p.terminal.core.notifications.TransactionNotificationManager
 import cash.p.terminal.core.rememberTermsAcceptedAction
+import cash.p.terminal.ledger.domain.LedgerUserOperations
+import cash.p.terminal.ledgerkit.LedgerSession
 import cash.p.terminal.modules.calculator.lockscreen.CalculatorLockScreen
 import cash.p.terminal.modules.calculator.lockscreen.CalculatorLockScreenActions
 import cash.p.terminal.modules.calculator.lockscreen.CalculatorLockScreenViewModel
@@ -85,6 +87,8 @@ open class MainActivity : BaseActivity() {
     private val pinComponent: IPinComponent by inject()
     private val backgroundManager: BackgroundManager by inject()
     private val appUpdateChecker: AppUpdateChecker by inject()
+    private val ledgerUserOperations: LedgerUserOperations by inject()
+    private val ledgerSession: LedgerSession by inject()
     private var pinLockComposeView: ComposeView? = null
     private val pinLockScreenState = mutableStateOf(false)
     private var showPinLockScreen by pinLockScreenState
@@ -164,7 +168,12 @@ open class MainActivity : BaseActivity() {
             val openCreateAccount = navigation.rememberTermsAcceptedAction(::openCreateAccount)
             SideEffect { openCreateAccountWithTerms = openCreateAccount }
             TonConnectDAppRequestEffect()
-            Nav3Host(navigation, isLocked = pinLockScreenState)
+            Nav3Host(
+                navigation,
+                isLocked = pinLockScreenState,
+                ledgerUserOperations = ledgerUserOperations,
+                ledgerOpeningApp = ledgerSession.openingApp,
+            )
         }
 
         viewModel.navigateToMainLiveData.observe(this) {

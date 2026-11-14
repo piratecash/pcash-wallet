@@ -298,6 +298,7 @@ class TonKitManagerDatabaseTest {
         networkErrorTracker = mockk(relaxed = true),
         offlineModeManager = offlineModeManager,
         tonKitDatabaseKeyProvider = keyProvider,
+        deviceSigners = mockk(relaxed = true),
     ).also { createdManager = it }
 
     private val mnemonicAccount = Account(

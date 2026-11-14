@@ -70,6 +70,8 @@ import cash.p.terminal.core.managers.BtcBlockchainManager
 import cash.p.terminal.core.managers.DeviceFlipDetector
 import cash.p.terminal.core.managers.EffectiveMonitoredChains
 import android.content.Context
+import android.hardware.usb.UsbManager
+import io.horizontalsystems.core.common.usb.AndroidUsbPermissionRequester
 import android.net.ConnectivityManager as AndroidConnectivityManager
 import cash.p.terminal.core.managers.ConnectivityManager
 import cash.p.terminal.core.notifications.NotificationDeduplicator
@@ -118,6 +120,8 @@ import cash.p.terminal.core.managers.MoneroDeviceWalletNative
 import cash.p.terminal.core.managers.MoneroDeviceWalletFileStore
 import cash.p.terminal.core.managers.MoneroDeviceWalletProvisioner
 import cash.p.terminal.core.managers.MoneroTrezorReadiness
+import cash.p.terminal.core.managers.MoneroDeviceOperationGateway
+import cash.p.terminal.core.managers.MoneroLedgerOperationGateway
 import cash.p.terminal.core.managers.MoneroTrezorOperationGateway
 import cash.p.terminal.core.managers.TrezorAttachments
 import cash.p.terminal.core.managers.UsbTrezorAttachments
@@ -419,12 +423,17 @@ val managerModule = module {
     singleOf(::Mnemonic)
 
     singleOf(::DefaultMoneroNativeWalletRuntime) bind MoneroNativeWalletRuntime::class
-    singleOf(::MoneroTrezorOperationGateway) bind MoneroHardwareGateway::class
+    singleOf(::MoneroTrezorOperationGateway)
+    singleOf(::MoneroLedgerOperationGateway)
+    singleOf(::MoneroDeviceOperationGateway) bind MoneroHardwareGateway::class
     singleOf(::UsbTrezorAttachments) bind TrezorAttachments::class
+
     singleOf(::MoneroTrezorReadiness)
     singleOf(::DefaultMoneroDeviceWalletNative) bind MoneroDeviceWalletNative::class
     single { MoneroDeviceWalletFileStore.create(get()) }
     singleOf(::MoneroDeviceWalletProvisioner)
+    single { get<Context>().getSystemService(Context.USB_SERVICE) as UsbManager }
+    singleOf(::AndroidUsbPermissionRequester)
     singleOf(::SilentCameraManager) bind ISilentPhotoCapture::class
     singleOf(::CurrentDateProvider) bind ICurrentDateProvider::class
     singleOf(::AndroidUptimeProvider) bind UptimeProvider::class

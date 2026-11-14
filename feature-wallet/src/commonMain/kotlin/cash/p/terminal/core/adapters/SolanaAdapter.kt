@@ -70,7 +70,7 @@ class SolanaAdapter(private val kitWrapper: SolanaKitWrapper) :
         val solanaRequest = requireNotNull(request as? OfflineSolanaSignRequest) {
             "OfflineSolanaSignRequest is required"
         }
-        val signer = signer ?: throw SolanaSignerNotInitializedException()
+        val signer = offlineSigner ?: throw SolanaSignerNotInitializedException()
         val signed = solanaKit.signedSolTransaction(
             toAddress = Address(solanaRequest.address),
             amount = solanaRequest.amount.movePointRight(decimal).toLong(),

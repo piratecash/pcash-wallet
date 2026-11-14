@@ -52,6 +52,8 @@ interface ISendZcashAdapter : IBalanceAdapter, OfflineTransactionAdapter<SignedO
     fun stop()
 
     suspend fun validate(address: String): ZcashAdapter.ZCashAddressType
+    /** The form of [address] the signing device will show, so the user can compare the two. */
+    fun addressShownOnDevice(address: String): String
     /** Returns the txid of the broadcast transaction. */
     suspend fun send(amount: BigDecimal, address: String, memo: String): String
     /** What [send] would charge. */
@@ -66,6 +68,9 @@ sealed interface ZcashFeeEstimate {
 
     /** No selection of notes covers the amount and its fee, so [ISendZcashAdapter.send] would refuse it too. */
     data object InsufficientBalance : ZcashFeeEstimate
+
+    /** [ISendZcashAdapter.send] would refuse this payment with [reason], e.g. too large for the signing device. */
+    data class Refused(val reason: Exception) : ZcashFeeEstimate
 
     /** The plan failed for another reason, e.g. no server. */
     data object Unavailable : ZcashFeeEstimate

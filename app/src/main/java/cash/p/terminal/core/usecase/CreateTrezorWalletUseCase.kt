@@ -4,7 +4,6 @@ import cash.p.terminal.core.IAccountFactory
 import cash.p.terminal.core.managers.MoneroDeviceWalletProvisioner
 import cash.p.terminal.core.managers.MoneroTrezorReadiness
 import cash.p.terminal.core.managers.RestoreSettingsManager
-import cash.p.terminal.core.managers.WalletActivator
 import cash.p.terminal.trezor.client.TrezorPublicKeySpecs
 import cash.p.terminal.trezor.domain.TrezorModelSupport
 import cash.p.terminal.trezor.domain.model.TrezorModel
@@ -19,11 +18,9 @@ import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IAccountsStorage
-import cash.p.terminal.wallet.IHardwarePublicKeyStorage
 import cash.p.terminal.wallet.entities.HardwarePublicKey
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.monero
-import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.entities.BlockchainType
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
@@ -32,10 +29,8 @@ internal class CreateTrezorWalletUseCase(
     private val trezorClient: ITrezorClient,
     private val accountManager: IAccountManager,
     private val accountsStorage: IAccountsStorage,
-    private val hardwarePublicKeyStorage: IHardwarePublicKeyStorage,
-    private val dispatcherProvider: DispatcherProvider,
     private val accountFactory: IAccountFactory,
-    private val walletActivator: WalletActivator,
+    private val accountActivator: HardwareAccountActivator,
     private val moneroReadiness: MoneroTrezorReadiness,
     private val moneroProvisioner: MoneroDeviceWalletProvisioner,
     private val restoreSettingsManager: RestoreSettingsManager,
@@ -117,7 +112,7 @@ internal class CreateTrezorWalletUseCase(
                     accountSaved = true
                 },
             )
-            persistAccountData(account, read.publicKeyTokens + TokenQuery.monero, publicKeys)
+            accountActivator.activate(account, read.publicKeyTokens + TokenQuery.monero, publicKeys)
         } catch (error: Throwable) {
             if (accountSaved) {
                 withContext(NonCancellable) {
@@ -161,26 +156,7 @@ internal class CreateTrezorWalletUseCase(
         publicKeys: List<HardwarePublicKey>,
     ) {
         accountManager.save(account = account, updateActive = false)
-        persistAccountData(account, tokenQueries, publicKeys)
-    }
-
-    private suspend fun persistAccountData(
-        account: Account,
-        tokenQueries: List<TokenQuery>,
-        publicKeys: List<HardwarePublicKey>,
-    ) {
-        withContext(dispatcherProvider.io) {
-            hardwarePublicKeyStorage.save(publicKeys)
-        }
-        val activatableTokens = tokenQueries.filter { token ->
-            token == TokenQuery.monero ||
-                publicKeys.any {
-                    it.blockchainType == token.blockchainType.uid &&
-                        it.tokenType == token.tokenType
-                }
-        }
-        walletActivator.activateWalletsSuspended(account, activatableTokens)
-        accountManager.setActiveAccountId(account.id)
+        accountActivator.activate(account, tokenQueries, publicKeys)
     }
 
     private companion object {

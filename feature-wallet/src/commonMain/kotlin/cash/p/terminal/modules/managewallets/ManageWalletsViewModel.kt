@@ -8,11 +8,14 @@ import androidx.lifecycle.viewModelScope
 import co.touchlab.kermit.Logger
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.iconPlaceholder
+import cash.p.terminal.core.restoreSettingTypes
 import cash.p.terminal.modules.offline.OfflineOperationGate
+import cash.p.terminal.modules.enablecoin.restoresettings.TokenConfig
 import cash.p.terminal.modules.restoreaccount.restoreblockchains.CoinViewItem
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.add_via_trezor
-import cash.p.terminal.resources.error_hardware_wallet_not_supported
+import cash.p.terminal.resources.add_via_ledger
+import cash.p.terminal.resources.error_hardware_wallet_token_unavailable
 import cash.p.terminal.resources.error_hardware_wallet_some_tokens_not_found
 import cash.p.terminal.resources.error_no_active_account
 import cash.p.terminal.resources.offline_mode_asset_added
@@ -36,11 +39,15 @@ import cash.p.terminal.wallet.isMonero
 import cash.p.terminal.wallet.policy.HardwareWalletTokenPolicy
 import cash.p.terminal.wallet.policy.PlatformChainSupport
 import io.horizontalsystems.core.Translator
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 private val logger = Logger.withTag("ManageWalletsViewModel")
@@ -67,12 +74,17 @@ class ManageWalletsViewModel(
     private var scanToAddInProgress = false
     private var scanToAddJob: Job? = null
 
+    private val _moneroRestoreHeightRequests = Channel<Unit>(capacity = 1)
+    val moneroRestoreHeightRequests = _moneroRestoreHeightRequests.receiveAsFlow()
+    private var moneroRestoreHeightAnswer = CompletableDeferred<Long?>()
+
     override var showScanToAddButton by mutableStateOf(false)
         private set
 
     override var hardwareActionButtonText by mutableStateOf(
         when (accountManager.activeAccount?.type) {
             is AccountType.TrezorDevice -> Translator.getString(Res.string.add_via_trezor)
+            is AccountType.LedgerDevice -> Translator.getString(Res.string.add_via_ledger)
             else -> Translator.getString(Res.string.scan_card_to_add)
         }
     )
@@ -115,6 +127,7 @@ class ManageWalletsViewModel(
     fun requestScanToAddTokens(closeAfterSuccess: Boolean): Job {
         if (scanToAddInProgress) return checkNotNull(scanToAddJob)
         scanToAddInProgress = true
+        errorMsg = null
         return viewModelScope.launch {
             val account = accountManager.activeAccount
             if (account?.isHardwareWalletAccount == true) {
@@ -127,9 +140,29 @@ class ManageWalletsViewModel(
     }
 
     private suspend fun requestHardwareKeys(account: Account, closeAfterSuccess: Boolean) {
-        when (val result = keyProvisioner.provisionPublicKeys(account, awaitingTokenQueries())) {
+        val moneroRequested = account.type is AccountType.TrezorDevice && awaitingEnabledTokens.any(Token::isMonero)
+        // A Trezor cold wallet keeps resuming from the height it was provisioned at, so ask first.
+        val moneroRestoreHeight = if (moneroRequested) requestMoneroRestoreHeight() else null
+        if (moneroRequested && moneroRestoreHeight == null) {
+            dropAwaitingMoneroTokens()
+            if (awaitingEnabledTokens.isEmpty()) return finishScanToAdd()
+        }
+        val result = try {
+            keyProvisioner.provisionPublicKeys(account, awaitingTokenQueries(), moneroRestoreHeight)
+        } catch (e: CancellationException) {
+            finishScanToAdd()
+            throw e
+        }
+        when (result) {
             is ProvisionResult.Success -> try {
-                applyFetchedKeys(result.keys, result.account, closeAfterSuccess)
+                applyFetchedKeys(
+                    result.keys,
+                    result.account,
+                    closeAfterSuccess,
+                    notFoundMessage = result.notFoundMessage,
+                    moneroReady = result.moneroReady,
+                    moneroRestoreHeight = moneroRestoreHeight,
+                )
             } catch (e: Exception) {
                 finishScanToAdd()
                 logger.e(e) { "Failed to apply hardware wallet public keys" }
@@ -143,6 +176,21 @@ class ManageWalletsViewModel(
         }
     }
 
+    private suspend fun requestMoneroRestoreHeight(): Long? {
+        val answer = CompletableDeferred<Long?>().also { moneroRestoreHeightAnswer = it }
+        _moneroRestoreHeightRequests.send(Unit)
+        return answer.await()
+    }
+
+    fun onMoneroRestoreHeightConfigured(config: TokenConfig?) {
+        moneroRestoreHeightAnswer.complete(config?.birthdayHeight?.toLongOrNull()?.takeIf { it >= 0 })
+    }
+
+    private fun dropAwaitingMoneroTokens() {
+        replaceAwaitingTokens(awaitingEnabledTokens.filterNot(Token::isMonero))
+        sync(service.itemsFlow.value)
+    }
+
     private fun awaitingTokenQueries(): List<TokenQuery> =
         awaitingEnabledTokens.map {
             TokenQuery(blockchainType = it.blockchainType, tokenType = it.type)
@@ -151,20 +199,28 @@ class ManageWalletsViewModel(
     private suspend fun applyFetchedKeys(
         publicKeys: List<HardwarePublicKey>,
         account: Account,
-        closeAfterSuccess: Boolean
+        closeAfterSuccess: Boolean,
+        notFoundMessage: String? = null,
+        moneroReady: Boolean = true,
+        moneroRestoreHeight: Long? = null,
     ) {
-        val pendingMoneroTokens = awaitingEnabledTokens.filter(Token::isMonero)
-        val (addedTokens, notFoundTokens) = awaitingEnabledTokens
+        val (pendingMoneroTokens, unavailableMoneroTokens) = awaitingEnabledTokens
+            .filter(Token::isMonero)
+            .partition { moneroReady }
+        val (addedTokens, keyNotFoundTokens) = awaitingEnabledTokens
             .filterNot(Token::isMonero)
             .partition { token ->
                 publicKeys.any {
                     it.blockchainType == token.blockchainType.uid && it.tokenType == token.type
                 }
             }
-        replaceAwaitingTokens(notFoundTokens + pendingMoneroTokens)
+        // Their enable may still ask a restore height, so the scan is not over until they are enabled.
+        val pendingApprovalTokens = pendingMoneroTokens + addedTokens.filter { it.restoreSettingTypes.isNotEmpty() }
+        val notFoundTokens = keyNotFoundTokens + unavailableMoneroTokens
+        replaceAwaitingTokens(notFoundTokens + pendingApprovalTokens)
 
         errorMsg = if (notFoundTokens.isNotEmpty()) {
-            Translator.getString(Res.string.error_hardware_wallet_some_tokens_not_found)
+            notFoundMessage ?: Translator.getString(Res.string.error_hardware_wallet_some_tokens_not_found)
         } else {
             null
         }
@@ -172,10 +228,12 @@ class ManageWalletsViewModel(
         hardwarePublicKeyStorage.save(publicKeys)
         existingPublicKeys = hardwarePublicKeyStorage.getAllPublicKeys(account.id)
 
-        updateCloseAfterScan(closeAfterSuccess, pendingMoneroTokens)
-        if (pendingMoneroTokens.isEmpty()) finishScanToAdd()
+        updateCloseAfterScan(closeAfterSuccess, pendingApprovalTokens)
+        if (pendingApprovalTokens.isEmpty()) finishScanToAdd()
         addedTokens.forEach { service.enable(it) }
-        pendingMoneroTokens.forEach(service::enable)
+        pendingMoneroTokens.forEach { token ->
+            moneroRestoreHeight?.let { service.enable(token, it) } ?: service.enable(token)
+        }
     }
 
     private fun replaceAwaitingTokens(tokens: List<Token>) {
@@ -184,12 +242,12 @@ class ManageWalletsViewModel(
         updateNeedToShowScanToAddButton()
     }
 
-    private fun updateCloseAfterScan(closeAfterSuccess: Boolean, pendingMoneroTokens: List<Token>) {
+    private fun updateCloseAfterScan(closeAfterSuccess: Boolean, pendingApprovalTokens: List<Token>) {
         closeAfterSuccessfulScan =
-            closeAfterSuccess && errorMsg == null && pendingMoneroTokens.isNotEmpty()
+            closeAfterSuccess && errorMsg == null && pendingApprovalTokens.isNotEmpty()
         closeScreen =
             closeScreen ||
-                (errorMsg == null && closeAfterSuccess && pendingMoneroTokens.isEmpty())
+                (errorMsg == null && closeAfterSuccess && pendingApprovalTokens.isEmpty())
     }
 
     private fun showError(msg: String?) {
@@ -218,11 +276,11 @@ class ManageWalletsViewModel(
     }
 
     private fun sync(items: List<ManageWalletsService.Item>) {
-        val enabledMoneroTokens = awaitingEnabledTokens.filter { token ->
-            token.isMonero() && items.any { it.token == token && it.enabled }
+        val enabledApprovalTokens = awaitingEnabledTokens.filter { token ->
+            token.restoreSettingTypes.isNotEmpty() && items.any { it.token == token && it.enabled }
         }
-        if (enabledMoneroTokens.isNotEmpty()) {
-            awaitingEnabledTokens.removeAll(enabledMoneroTokens.toSet())
+        if (enabledApprovalTokens.isNotEmpty()) {
+            awaitingEnabledTokens.removeAll(enabledApprovalTokens.toSet())
             finishScanToAdd()
             updateNeedToShowScanToAddButton()
         }
@@ -271,7 +329,8 @@ class ManageWalletsViewModel(
         subtitle = item.token.coin.name,
         enabled = item.enabled || awaitingEnabledTokens.contains(item.token),
         hasInfo = item.hasInfo,
-        label = item.token.badge
+        label = item.token.badge,
+        available = item.available
     )
 
     override fun enable(token: Token) {
@@ -282,10 +341,15 @@ class ManageWalletsViewModel(
             return
         }
         if (account != null && !hardwareWalletTokenPolicy.isSupported(account, token)) {
-            showError(Translator.getString(Res.string.error_hardware_wallet_not_supported))
+            showError(
+                Translator.getString(
+                    Res.string.error_hardware_wallet_token_unavailable,
+                    account.type.deviceName()
+                )
+            )
             return
         }
-        if (existingPublicKeys?.any { it.serves(token.blockchainType, token.type) } == true) {
+        if (keysUsableFor(token)?.any { it.serves(token.blockchainType, token.type) } == true) {
             service.enable(token)
             return
         }
@@ -329,15 +393,25 @@ class ManageWalletsViewModel(
     }
 
     private fun hasPublicKey(token: Token): Boolean =
-        existingPublicKeys?.any {
+        keysUsableFor(token)?.any {
             it.blockchainType == token.blockchainType.uid && it.tokenType == token.type
         } == true
+
+    // A device Monero wallet needs its files as well as its key, and only the scan creates them.
+    private fun keysUsableFor(token: Token): List<HardwarePublicKey>? =
+        existingPublicKeys.takeUnless { token.isMonero() }
 
     override val addTokenEnabled: Boolean
         get() = service.accountType?.canAddTokens == true
 
     override fun onCleared() {
         clearables.forEach(Clearable::clear)
+    }
+
+    private fun AccountType.deviceName() = when (this) {
+        is AccountType.TrezorDevice -> "Trezor"
+        is AccountType.LedgerDevice -> "Ledger"
+        else -> "Tangem"
     }
 
     private fun isHardwareWallet() = accountManager.activeAccount?.isHardwareWalletAccount == true

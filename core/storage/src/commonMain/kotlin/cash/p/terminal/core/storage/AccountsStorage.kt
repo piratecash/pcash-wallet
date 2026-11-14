@@ -28,6 +28,7 @@ class AccountsStorage(private val router: StorageRouter) : IAccountsStorage {
         private const val ZCASH_SAPLING_KEY = "zcash_sapling_key"
         private const val HARDWARE_CARD = "hardware_card"
         private const val TREZOR_DEVICE = "trezor_device"
+        private const val LEDGER_DEVICE = "ledger_device"
         private const val STELLAR_ADDRESS = "stellar_address"
         private const val THORCHAIN_ADDRESS = "thorchain_address"
         private const val MAYACHAIN_ADDRESS = "mayachain_address"
@@ -118,6 +119,15 @@ class AccountsStorage(private val router: StorageRouter) : IAccountsStorage {
                         deviceId = parts.getOrElse(0) { "" },
                         model = parts.getOrElse(1) { "" },
                         firmwareVersion = parts.getOrElse(2) { "" },
+                        walletPublicKey = requireNotNull(record.passphrase).value
+                    )
+                }
+
+                LEDGER_DEVICE -> {
+                    val parts = requireNotNull(record.key).value.split("@")
+                    AccountType.LedgerDevice(
+                        deviceId = parts.getOrElse(0) { "" },
+                        model = parts.getOrElse(1) { "" },
                         walletPublicKey = requireNotNull(record.passphrase).value
                     )
                 }
@@ -298,6 +308,13 @@ class AccountsStorage(private val router: StorageRouter) : IAccountsStorage {
                 )
                 passphrase = SecretString(trezorDevice.walletPublicKey)
                 accountType = TREZOR_DEVICE
+            }
+
+            is AccountType.LedgerDevice -> {
+                val ledgerDevice = account.type as AccountType.LedgerDevice
+                key = SecretString(listOf(ledgerDevice.deviceId, ledgerDevice.model).joinToString("@"))
+                passphrase = SecretString(ledgerDevice.walletPublicKey)
+                accountType = LEDGER_DEVICE
             }
         }
 

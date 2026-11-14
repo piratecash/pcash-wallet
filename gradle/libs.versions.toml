@@ -36,6 +36,8 @@ composeResources = "1.12.1"
 composeMaterial3 = "1.12.0-alpha03"
 leakcanaryAndroid = "3.0-alpha-9"
 material = "1.13.0"
+# On upgrade past 1.14.11: mockk#1567 lets clearAllStubsFromMemory() free mocks, so remove the maxHeapSize workaround
+# in feature-wallet/build.gradle.kts (it explains what replaces it).
 mockk = "1.14.9"
 powermockApiMockito2 = "2.0.9"
 powermockModuleJunit4 = "2.0.9"
@@ -81,6 +83,7 @@ hd-wallet-kit = "1.0.1"
 stellar-kit = "v2.0.0-pcash.6"
 thorchain-kit = "1.4.0"
 trezor-kit = "1.4.1"
+ledger-kit = "0.6.8"
 piratecash-ethereum = "v1.0.0-pcash.11"
 piratecash-solana = "v2.0.0-pcash.8"
 monero-kit-android = "v0.18.3.4-pcash.25"
@@ -253,6 +256,7 @@ hd-wallet-kit = { group = "com.github.piratecash.hd-wallet-kit-android", name = 
 stellar-kit = { group = "com.github.piratecash.stellar-kit-android", name = "stellarkit", version.ref = "stellar-kit" }
 thorchain-kit = { group = "com.github.piratecash.thorchain-kit-android", name = "thorchainkit", version.ref = "thorchain-kit" }
 trezor-kit = { group = "com.github.piratecash", name = "trezor-kit-android", version.ref = "trezor-kit" }
+ledger-kit = { group = "com.github.piratecash.ledger-kit", name = "ledgerkit", version.ref = "ledger-kit" }
 solana-kit = { group = "com.github.piratecash.solana-kit-android", name = "solanakit", version.ref = "piratecash-solana" }
 monero-kit = { group = "com.github.piratecash.monero-kit-android", name = "monerokit", version.ref = "monero-kit-android" }
 netcipher = { group = "info.guardianproject.netcipher", name = "netcipher", version.ref = "netcipher" }

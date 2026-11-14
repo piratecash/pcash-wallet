@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ledger_speculos_switch">speculos üzerinden Ledger</string>
+    <string name="ledger_speculos_address">speculos adresi (ana makine:bağlantı noktası)</string>
+</resources>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Ledger vendor id 0x2c97; every model shares it. -->
+    <usb-device vendor-id="11415" />
+</resources>

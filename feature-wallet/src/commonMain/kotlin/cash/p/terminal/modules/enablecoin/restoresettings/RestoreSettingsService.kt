@@ -37,7 +37,8 @@ class RestoreSettingsService(
     ) {
         val blockchainType = token.blockchainType
 
-        if (account != null && account.origin == AccountOrigin.Created) {
+        // A hardware account is created in-app around a seed that usually already holds funds.
+        if (account != null && account.origin == AccountOrigin.Created && !account.isHardwareWalletAccount) {
             val settings = RestoreSettings()
             token.restoreSettingTypes.forEach { settingType ->
                 manager.getSettingValueForCreatedAccount(settingType, blockchainType)?.let {

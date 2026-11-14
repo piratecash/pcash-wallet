@@ -171,6 +171,7 @@ class AdapterFactoryUnlinkTest {
         val wrapper = mockk<SolanaKitWrapper> {
             every { this@mockk.solanaKit } returns solanaKit
             every { signer } returns null
+            every { offlineSigner } returns null
         }
         coEvery { solanaKitManager.getSolanaKitWrapper(any()) } returns wrapper
 

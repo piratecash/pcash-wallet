@@ -113,7 +113,7 @@ class TonNftProvider(
     }
 
     // The failure's message can carry the account id, so only its type is logged.
-    private fun receiveAddressOrNull(account: Account, version: TonWalletVersion): String? = try {
+    private suspend fun receiveAddressOrNull(account: Account, version: TonWalletVersion): String? = try {
         tonKitManager.getReceiveAddress(account, version)
     } catch (e: CancellationException) {
         throw e
