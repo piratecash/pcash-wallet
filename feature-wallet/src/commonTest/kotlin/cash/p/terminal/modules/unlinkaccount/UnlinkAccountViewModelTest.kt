@@ -8,10 +8,12 @@ import cash.p.terminal.wallet.IAccountManager
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class UnlinkAccountViewModelTest {
@@ -44,11 +46,12 @@ class UnlinkAccountViewModelTest {
         coEvery { manager.delete(account.id) } throws AccountDeletionBlockedException()
         val viewModel = UnlinkAccountViewModel(account, manager)
 
-        viewModel.onUnlink().join()
+        checkNotNull(viewModel.onUnlink()).join()
 
         coVerify(exactly = 1) { manager.delete("account") }
         assertTrue(viewModel.deletionState.blocked)
         assertFalse(viewModel.closeScreen)
+        assertTrue(viewModel.unlinkEnabled)
     }
 
     @Test
@@ -56,9 +59,27 @@ class UnlinkAccountViewModelTest {
         val viewModel = UnlinkAccountViewModel(account, manager)
         coEvery { manager.delete(account.id) } answers { assertFalse(viewModel.closeScreen) }
 
-        viewModel.onUnlink().join()
+        checkNotNull(viewModel.onUnlink()).join()
 
         assertFalse(viewModel.deletionState.blocked)
+        assertTrue(viewModel.closeScreen)
+    }
+
+    @Test
+    fun onUnlink_secondTapWhileDeleting_deletesOnce() = runTest {
+        val deletionGate = CompletableDeferred<Unit>()
+        coEvery { manager.delete(account.id) } coAnswers { deletionGate.await() }
+        val viewModel = UnlinkAccountViewModel(account, manager)
+
+        val deletion = checkNotNull(viewModel.onUnlink())
+
+        assertNull(viewModel.onUnlink())
+        assertFalse(viewModel.unlinkEnabled)
+
+        deletionGate.complete(Unit)
+        deletion.join()
+
+        coVerify(exactly = 1) { manager.delete(account.id) }
         assertTrue(viewModel.closeScreen)
     }
 }
