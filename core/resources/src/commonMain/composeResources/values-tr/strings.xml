@@ -2319,6 +2319,15 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="desktop_change_password_corrupted">Anahtar dosyası zarar görmüş: uygulama kilitlendiğinde oturum açamayacaksınız. Her kurtarma ifadesinin bir yedeğini kaydedin.</string>
     <string name="desktop_change_password_success">Şifre değiştirildi</string>
     <string name="desktop_security_lock_now">Şimdi kilitle</string>
+    <string name="desktop_menu_file">Dosya</string>
+    <string name="desktop_menu_wallet">Cüzdan</string>
+    <string name="desktop_menu_view">Görünüm</string>
+    <string name="desktop_menu_window">Pencere</string>
+    <string name="desktop_menu_help">Yardım</string>
+    <string name="desktop_menu_quit">Çıkış</string>
+    <string name="desktop_menu_minimize">Simge durumuna küçült</string>
+    <string name="desktop_menu_wallet_settings">Cüzdan ayarları</string>
+    <string name="desktop_menu_whats_new">Yenilikler</string>
     <string name="swap_progress_title">Takas ilerlemesi</string>
     <string name="swap_progress_step_of">Adım %1$d / %2$d</string>
     <string name="swap_progress_step_header">Adım %1$d · %2$s</string>

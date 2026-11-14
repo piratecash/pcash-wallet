@@ -2311,6 +2311,15 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="desktop_change_password_corrupted">El archivo de claves está dañado: una vez que la aplicación se bloquee, no podrás iniciar sesión. Guarda una copia de seguridad de cada frase de recuperación.</string>
     <string name="desktop_change_password_success">Contraseña cambiada</string>
     <string name="desktop_security_lock_now">Bloquear ahora</string>
+    <string name="desktop_menu_file">Archivo</string>
+    <string name="desktop_menu_wallet">Monedero</string>
+    <string name="desktop_menu_view">Ver</string>
+    <string name="desktop_menu_window">Ventana</string>
+    <string name="desktop_menu_help">Ayuda</string>
+    <string name="desktop_menu_quit">Salir</string>
+    <string name="desktop_menu_minimize">Minimizar</string>
+    <string name="desktop_menu_wallet_settings">Ajustes del monedero</string>
+    <string name="desktop_menu_whats_new">Novedades</string>
     <string name="swap_progress_title">Progreso del swap</string>
     <string name="swap_progress_step_of">Paso %1$d de %2$d</string>
     <string name="swap_progress_step_header">Paso %1$d · %2$s</string>

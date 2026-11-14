@@ -2310,6 +2310,15 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="desktop_change_password_corrupted">Die Schlüsseldatei ist beschädigt: Sobald die App gesperrt ist, können Sie sich nicht mehr anmelden. Speichern Sie eine Sicherungskopie jeder Wiederherstellungsphrase.</string>
     <string name="desktop_change_password_success">Passwort geändert</string>
     <string name="desktop_security_lock_now">Jetzt sperren</string>
+    <string name="desktop_menu_file">Datei</string>
+    <string name="desktop_menu_wallet">Wallet</string>
+    <string name="desktop_menu_view">Ansicht</string>
+    <string name="desktop_menu_window">Fenster</string>
+    <string name="desktop_menu_help">Hilfe</string>
+    <string name="desktop_menu_quit">Beenden</string>
+    <string name="desktop_menu_minimize">Minimieren</string>
+    <string name="desktop_menu_wallet_settings">Wallet-Einstellungen</string>
+    <string name="desktop_menu_whats_new">Neuigkeiten</string>
     <string name="swap_progress_title">Swap-Fortschritt</string>
     <string name="swap_progress_step_of">Schritt %1$d von %2$d</string>
     <string name="swap_progress_step_header">Schritt %1$d · %2$s</string>

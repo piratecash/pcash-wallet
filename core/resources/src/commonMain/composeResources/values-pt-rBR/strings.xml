@@ -2319,6 +2319,15 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="desktop_change_password_corrupted">O arquivo de chave está danificado: depois que o app for bloqueado, você não conseguirá entrar. Salve um backup de cada frase de recuperação.</string>
     <string name="desktop_change_password_success">Senha alterada</string>
     <string name="desktop_security_lock_now">Bloquear agora</string>
+    <string name="desktop_menu_file">Arquivo</string>
+    <string name="desktop_menu_wallet">Carteira</string>
+    <string name="desktop_menu_view">Exibir</string>
+    <string name="desktop_menu_window">Janela</string>
+    <string name="desktop_menu_help">Ajuda</string>
+    <string name="desktop_menu_quit">Sair</string>
+    <string name="desktop_menu_minimize">Minimizar</string>
+    <string name="desktop_menu_wallet_settings">Configurações da carteira</string>
+    <string name="desktop_menu_whats_new">Novidades</string>
     <string name="swap_progress_title">Progresso do swap</string>
     <string name="swap_progress_step_of">Etapa %1$d de %2$d</string>
     <string name="swap_progress_step_header">Etapa %1$d · %2$s</string>

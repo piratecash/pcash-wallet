@@ -6,11 +6,14 @@ import org.koin.compose.viewmodel.koinViewModel
 import cash.p.terminal.modules.balance.BalanceAccountsViewModel
 import cash.p.terminal.modules.balance.BalanceScreenState
 import cash.p.terminal.navigation.HSNavigation
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 
 @Composable
 fun BalanceScreen(
     navigation: HSNavigation,
     paddingValues: PaddingValues,
+    refreshRequests: Flow<Unit> = emptyFlow(),
 ) {
     val viewModel = koinViewModel<BalanceAccountsViewModel>()
 
@@ -21,6 +24,7 @@ fun BalanceScreen(
                 navigation = navigation,
                 accountViewItem = tmpAccount.accountViewItem,
                 paddingValuesParent = paddingValues,
+                refreshRequests = refreshRequests,
             )
         }
 

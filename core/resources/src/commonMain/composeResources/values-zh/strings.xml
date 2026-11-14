@@ -2302,6 +2302,15 @@
     <string name="desktop_change_password_corrupted">密钥文件已损坏：应用锁定后您将无法登录。请为每个恢复短语保存备份。</string>
     <string name="desktop_change_password_success">密码已更改</string>
     <string name="desktop_security_lock_now">立即锁定</string>
+    <string name="desktop_menu_file">文件</string>
+    <string name="desktop_menu_wallet">钱包</string>
+    <string name="desktop_menu_view">视图</string>
+    <string name="desktop_menu_window">窗口</string>
+    <string name="desktop_menu_help">帮助</string>
+    <string name="desktop_menu_quit">退出</string>
+    <string name="desktop_menu_minimize">最小化</string>
+    <string name="desktop_menu_wallet_settings">钱包设置</string>
+    <string name="desktop_menu_whats_new">新功能</string>
     <string name="swap_progress_title">兑换进度</string>
     <string name="swap_progress_step_of">第 %1$d 步，共 %2$d 步</string>
     <string name="swap_progress_step_header">第 %1$d 步 · %2$s</string>
