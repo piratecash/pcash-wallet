@@ -98,6 +98,7 @@ import cash.p.terminal.resources.Restore_RecoveryPhrase
 import cash.p.terminal.resources.Send_Button_Paste
 import cash.p.terminal.resources.ic_delete_20
 import cash.p.terminal.resources.ic_key_phrase_20
+import cash.p.terminal.ui.compose.secureKeyboardEntry
 
 @Composable
 fun RestorePhraseNonStandard(
@@ -182,6 +183,7 @@ fun RestorePhraseNonStandard(
                     BasicTextField(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .secureKeyboardEntry()
                             .onFocusChanged {
                                 isMnemonicPhraseInputFocused = it.isFocused
                             }

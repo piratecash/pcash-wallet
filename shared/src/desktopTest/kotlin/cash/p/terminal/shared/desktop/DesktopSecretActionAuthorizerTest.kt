@@ -47,6 +47,7 @@ import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import cash.p.terminal.shared.main.ScreenCaptureProtection
 
 @OptIn(ExperimentalTestApi::class, ExperimentalCoroutinesApi::class)
 class DesktopSecretActionAuthorizerTest {
@@ -125,7 +126,7 @@ class DesktopSecretActionAuthorizerTest {
         setContent {
             TestWindowHost {
                 ComposeAppTheme {
-                    DesktopNavHost(navigation, remember { DesktopHudMessenger() }, NoUrlOpener)
+                    DesktopNavHost(navigation, remember { DesktopHudMessenger() }, NoUrlOpener, remember { ScreenCaptureProtection() })
                 }
             }
         }

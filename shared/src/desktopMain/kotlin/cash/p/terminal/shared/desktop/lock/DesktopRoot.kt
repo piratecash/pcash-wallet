@@ -38,6 +38,8 @@ import cash.p.terminal.shared.desktop.DesktopWipeCoordinator
 import cash.p.terminal.shared.desktop.WipeProgress
 import cash.p.terminal.shared.desktop.rememberDesktopDarkTheme
 import cash.p.terminal.shared.desktop.vault.DesktopVault
+import cash.p.terminal.shared.main.ScreenCaptureProtectedEffect
+import cash.p.terminal.shared.main.ScreenCaptureProtection
 import cash.p.terminal.shared.desktop.vault.DesktopStorageSession
 import cash.p.terminal.shared.desktop.vault.DesktopVaultState
 import cash.p.terminal.shared.desktop.vault.UnlockOutcome
@@ -128,6 +130,10 @@ internal fun DesktopRootContent(
                             appState.SaveableStateProvider(APP_STATE_KEY) { appContent(navigation) }
                         }
                     }
+                }
+                // As on Android while locked: the password screens stay out of screen capture.
+                if (vaultState !is DesktopVaultState.Unlocked) {
+                    ScreenCaptureProtectedEffect(koinInject<ScreenCaptureProtection>())
                 }
                 when (vaultState) {
                     DesktopVaultState.NoVault -> LockScreen { FirstRunGate() }

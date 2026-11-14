@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.shared.main.DesktopHudMessenger
 import cash.p.terminal.shared.main.DesktopNavHost
+import cash.p.terminal.shared.main.ScreenCaptureProtection
 import cash.p.terminal.ui_compose.components.UrlOpener
 import org.koin.compose.koinInject
 
@@ -18,6 +19,7 @@ fun PcashApp(
         navigation = navigation,
         hudMessenger = koinInject<DesktopHudMessenger>(),
         urlOpener = koinInject<UrlOpener>(),
+        captureProtection = koinInject<ScreenCaptureProtection>(),
         modifier = modifier,
     )
 }
