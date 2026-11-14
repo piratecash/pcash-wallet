@@ -9,6 +9,8 @@ import cash.p.terminal.resources.BackupRecoveryPhrase_ManualBackup
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.ic_edit_24
 import cash.p.terminal.resources.ic_file_24
+import cash.p.terminal.resources.icon_24_lock
+import cash.p.terminal.resources.shamir_backup_title
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -16,8 +18,20 @@ import org.jetbrains.compose.resources.stringResource
 fun BackupButtons(
     onManualBackupClick: () -> Unit,
     onLocalBackupClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onShamirBackupClick: (() -> Unit)? = null
 ) {
+    onShamirBackupClick?.let {
+        ButtonPrimaryYellowWithIcon(
+            modifier = modifier.fillMaxWidth(),
+            title = stringResource(Res.string.shamir_backup_title),
+            icon = painterResource(Res.drawable.icon_24_lock),
+            onClick = it
+        )
+
+        VSpacer(12.dp)
+    }
+
     ButtonPrimaryYellowWithIcon(
         modifier = modifier.fillMaxWidth(),
         title = stringResource(Res.string.BackupRecoveryPhrase_ManualBackup),
