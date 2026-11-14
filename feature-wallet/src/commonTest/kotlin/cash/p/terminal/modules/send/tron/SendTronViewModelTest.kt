@@ -47,6 +47,7 @@ import io.mockk.slot
 import io.mockk.unmockkAll
 import io.mockk.verify
 import java.math.BigDecimal
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -55,6 +56,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
@@ -115,12 +117,13 @@ class SendTronViewModelTest : KoinTest {
     private val wallet = createWallet(trxToken)
     private val amount = BigDecimal("1.2")
     private val address = Address(TRON_ADDRESS)
+    private val isConnected = MutableStateFlow(true)
 
     @get:Rule
     val koinRule = KoinTestRule.create {
         modules(
             module {
-                single<IConnectivityManager> { mockConnectivityManager() }
+                single<IConnectivityManager> { mockConnectivityManager(isConnected) }
                 single<UptimeProvider> { mockk(relaxed = true) }
                 single<IBalanceHiddenManager> { balanceHiddenManager }
                 single<MarketKitWrapper> { marketKit }
@@ -147,6 +150,9 @@ class SendTronViewModelTest : KoinTest {
         every { payloadEncoder.encode(any()) } returns "payload"
         coEvery { offlineSignedTransactionRepository.save(any(), any()) } returns Unit
         every { adapter.trxBalanceData } returns BalanceData(available = BigDecimal.TEN)
+        every { adapter.balanceData } returns BalanceData(available = BigDecimal.TEN)
+        every { adapter.maxSpendableBalance } returns BigDecimal("8.9")
+        every { adapterManager.getAdjustedBalanceData(any()) } returns null
         coEvery { adapter.estimateFee(any(), any()) } returns listOf(Fee.Energy(required = 10, price = 2))
         coEvery { adapter.getNowBlock() } returns nowBlock
         coEvery { adapter.signOffline(any()) } returns SignedOfflineTronTransaction(
@@ -290,6 +296,101 @@ class SendTronViewModelTest : KoinTest {
     }
 
     @Test
+    fun onEnterAddress_activatedRecipient_raisesLimitToBalanceMinusRecipientFee() = runTest(dispatcher) {
+        coEvery { adapter.estimateFee(any(), any()) } returns listOf(Fee.Bandwidth(points = 269, price = 1_000))
+        val viewModel = createViewModel()
+
+        viewModel.onEnterAddress(address)
+        advanceUntilIdle()
+
+        assertEquals(BigDecimal("9.731000"), availableBalanceUpdates().last())
+    }
+
+    @Test
+    fun onEnterAddress_estimateFailsAfterActivatedRecipient_resetsToDefaultLimit() = runTest(dispatcher) {
+        coEvery { adapter.estimateFee(any(), any()) } returns listOf(Fee.Bandwidth(points = 269, price = 1_000))
+        coEvery { adapter.estimateFee(any(), match { it.base58 == TRC20_CONTRACT }) } throws RuntimeException("offline")
+        val viewModel = createViewModel()
+
+        viewModel.onEnterAddress(address)
+        advanceUntilIdle()
+        viewModel.onEnterAddress(Address(TRC20_CONTRACT))
+        runCurrent()
+
+        assertEquals(DEFAULT_LIMIT, availableBalanceUpdates().last())
+        isConnected.value = false
+    }
+
+    @Test
+    fun onEnterAddress_estimateFailsOnce_retriesAndRaisesLimit() = runTest(dispatcher) {
+        coEvery { adapter.estimateFee(any(), any()) } throws RuntimeException("timeout") andThen
+            listOf(Fee.Bandwidth(points = 269, price = 1_000))
+        val viewModel = createViewModel()
+
+        viewModel.onEnterAddress(address)
+        advanceUntilIdle()
+
+        assertEquals(BigDecimal("9.731000"), availableBalanceUpdates().last())
+    }
+
+    @Test
+    fun onEnterAddress_offline_estimatesAfterReconnect() = runTest(dispatcher) {
+        coEvery { adapter.estimateFee(any(), any()) } returns listOf(Fee.Bandwidth(points = 269, price = 1_000))
+        isConnected.value = false
+        val viewModel = createViewModel()
+
+        viewModel.onEnterAddress(address)
+        advanceUntilIdle()
+        assertEquals(DEFAULT_LIMIT, availableBalanceUpdates().last())
+
+        isConnected.value = true
+        advanceUntilIdle()
+        assertEquals(BigDecimal("9.731000"), availableBalanceUpdates().last())
+    }
+
+    @Test
+    fun onEnterAddress_cleared_restoresDefaultLimit() = runTest(dispatcher) {
+        coEvery { adapter.estimateFee(any(), any()) } returns listOf(Fee.Bandwidth(points = 269, price = 1_000))
+        val viewModel = createViewModel()
+
+        viewModel.onEnterAddress(address)
+        advanceUntilIdle()
+        viewModel.onEnterAddress(null)
+        advanceUntilIdle()
+
+        assertEquals(DEFAULT_LIMIT, availableBalanceUpdates().last())
+    }
+
+    @Test
+    fun onEnterAddress_recipientChangedDuringEstimate_appliesOnlyLatestRecipient() = runTest(dispatcher) {
+        val firstEstimate = CompletableDeferred<List<Fee>>()
+        coEvery { adapter.estimateFee(any(), match { it.base58 == TRON_ADDRESS }) } coAnswers { firstEstimate.await() }
+        coEvery { adapter.estimateFee(any(), match { it.base58 == TRC20_CONTRACT }) } returns
+            listOf(Fee.AccountActivation(amount = 1_000_000), Fee.Bandwidth(points = 100, price = 1_000))
+        val viewModel = createViewModel()
+
+        viewModel.onEnterAddress(address)
+        advanceUntilIdle()
+        viewModel.onEnterAddress(Address(TRC20_CONTRACT))
+        advanceUntilIdle()
+        firstEstimate.complete(listOf(Fee.Bandwidth(points = 269, price = 1_000)))
+        advanceUntilIdle()
+
+        assertEquals(BigDecimal("8.900000"), availableBalanceUpdates().last())
+        assertFalse(BigDecimal("9.731000") in availableBalanceUpdates())
+    }
+
+    @Test
+    fun onEnterAddress_trc20_doesNotUpdateLimit() = runTest(dispatcher) {
+        val viewModel = createViewModel(wallet = createWallet(trc20Token()))
+
+        viewModel.onEnterAddress(address)
+        advanceUntilIdle()
+
+        verify(exactly = 0) { amountService.updateAvailableBalance(any()) }
+    }
+
+    @Test
     fun offlineSignSupported_watchAccount_returnsFalse() {
         val watchWallet = createWallet(trxToken, account(AccountType.TronAddress(TRON_ADDRESS)))
 
@@ -319,6 +420,12 @@ class SendTronViewModelTest : KoinTest {
         offlineTransactionPayloadEncoder = payloadEncoder,
         offlineSignedTransactionRepository = offlineSignedTransactionRepository,
     )
+
+    private fun availableBalanceUpdates(): List<BigDecimal> {
+        val updates = mutableListOf<BigDecimal>()
+        verify(atLeast = 0) { amountService.updateAvailableBalance(capture(updates)) }
+        return updates
+    }
 
     private fun assertSigned(viewModel: SendTronViewModel) {
         when (val state = viewModel.offlineSignState) {
@@ -372,5 +479,6 @@ class SendTronViewModelTest : KoinTest {
         const val TRC20_CONTRACT = "TXLAQ63Xg1NAzckPwKHvzw7CSEmLMEqcdj"
         const val TRON_TX_HASH = "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
         const val EXPIRATION = 1_700_000_060_000L
+        val DEFAULT_LIMIT = BigDecimal("8.900000")
     }
 }
