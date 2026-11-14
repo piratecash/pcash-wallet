@@ -63,8 +63,10 @@ internal const val EUR_TOTAL_CAP = 2_000_000_000_000L
 /** Starts the real desktop Koin graph with a mocked [MarketKitWrapper] and private temp storage. */
 internal object DesktopTestGraph {
 
+    private var dataDir: File? = null
+
     fun start(marketKit: MarketKitWrapper = marketKitMock()) {
-        val dataDir = createTempDirectory().toFile().apply { deleteOnExit() }
+        val dataDir = createTempDirectory().toFile().also { this.dataDir = it }
         startKoin {
             modules(
                 networkModule,
@@ -85,6 +87,9 @@ internal object DesktopTestGraph {
     fun stop() {
         runBlocking { GlobalContext.get().get<DesktopVault>().close() }
         stopKoin()
+        // deleteOnExit() skips a non-empty directory, and the vault fills this one.
+        dataDir?.deleteRecursively()
+        dataDir = null
     }
 
     fun marketKitMock(): MarketKitWrapper = mockk(relaxed = true) {
