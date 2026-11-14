@@ -4,9 +4,12 @@ import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.HardwareWalletSupport
 import cash.p.terminal.core.managers.EvmSignerFactory
 import cash.p.terminal.core.to0xHexString
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.swap_order_card_sign_prompt
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
 import io.horizontalsystems.core.DispatcherProvider
+import io.horizontalsystems.core.Translator
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.ethereumkit.models.Address
 import kotlinx.coroutines.withContext
@@ -23,7 +26,7 @@ class BackendSwapSigner(
 
     suspend fun walletAddress(account: Account): String? = evmKey(account)?.address?.eip55
 
-    suspend fun sign(account: Account, message: CreateSwapMessage): String {
+    suspend fun sign(account: Account, message: CreateSwapMessage, providerTitle: String): String {
         val signer = evmKey(account)?.let { key ->
             withContext(dispatcherProvider.io) {
                 evmSignerFactory.createSigner(
@@ -35,7 +38,13 @@ class BackendSwapSigner(
         }
         checkNotNull(signer) { "No EVM signer for the account" }
         val rawJson = message.toTypedDataJson()
-        val signature = HardwareWalletSupport.signTypedDataOnDevice(signer, rawJson) ?: signer.signTypedData(rawJson)
+        val cardPrompt = if (account.type is AccountType.HardwareCard) {
+            Translator.getString(Res.string.swap_order_card_sign_prompt, providerTitle)
+        } else {
+            null
+        }
+        val signature = HardwareWalletSupport.signTypedDataOnDevice(signer, rawJson, cardPrompt)
+            ?: signer.signTypedData(rawJson)
         return signature.to0xHexString()
     }
 

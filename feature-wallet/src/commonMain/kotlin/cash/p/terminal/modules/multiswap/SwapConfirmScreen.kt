@@ -85,6 +85,7 @@ import cash.p.terminal.resources.monero_prepare_trezor_description
 import cash.p.terminal.resources.monero_updating_with_trezor
 import cash.p.terminal.resources.send_confirmation_sync_error_warning
 import cash.p.terminal.resources.send_confirmation_syncing_warning
+import cash.p.terminal.resources.swap_order_created_tap_card_again
 import cash.p.terminal.resources.swap_reapprove_action
 import cash.p.terminal.ui_compose.components.rememberHudMessenger
 
@@ -238,7 +239,7 @@ private fun ColumnScope.SwapConfirmButtons(
     val moneroSpendReadiness = uiState.moneroSpendReadiness
     when {
         uiState.loading -> SwapLoadingButton()
-        uiState.criticalError != null -> RefreshSwapButton(stringResource(Res.string.Button_Refresh), actions.refresh)
+        uiState.criticalError != null || uiState.finalQuoteCancelled -> RefreshSwapButton(stringResource(Res.string.Button_Refresh), actions.refresh)
         moneroSpendReadiness != null && moneroSpendReadiness != MoneroSpendReadiness.Ready ->
             MoneroSpendReadinessStatus(
                 spendReadiness = moneroSpendReadiness,
@@ -357,6 +358,10 @@ private fun ReadySwapButton(
         AdapterStatus(runtime, actions.retryAdapter)
         // Disable button during swap and navigation delay (allow retry only on Failed).
         val swapInProgress = runtime.sendResult.isSwapInProgress
+        if (uiState.tapCardAgainHintVisible) {
+            TextImportantWarning(text = stringResource(Res.string.swap_order_created_tap_card_again))
+            VSpacer(height = 12.dp)
+        }
         ButtonPrimaryYellow(
             modifier = Modifier.fillMaxWidth(),
             title = stringResource(Res.string.Swap),

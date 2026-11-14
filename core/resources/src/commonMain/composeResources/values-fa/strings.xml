@@ -655,6 +655,9 @@
     <string name="SwapConfirm_QuoteExpired">قیمت پیشنهادی منقضی شده است</string>
     <string name="SwapConfirm_QuoteIsInvalid">قیمت پیشنهادی نامعتبر است</string>
     <string name="SwapConfirm_FetchingFinalQuote">Fetching final quote</string>
+    <string name="swap_order_card_sign_prompt">برای امضای سفارش %1$s کارت خود را نزدیک کنید. در این مرحله هیچ وجهی کسر نمی‌شود. سپس برای ارسال وجوه، کارت را دوباره نزدیک کنید.</string>
+    <string name="swap_order_created_tap_card_again">سفارش ایجاد شد. «جایگزینی» را بزنید و برای ارسال وجوه، کارت را دوباره نزدیک کنید.</string>
+    <string name="swap_card_scan_failed">خطا در اسکن کارت. لطفاً دوباره تلاش کنید.</string>
     <string name="SwapWarning_SlippageNotAvailable_Title">بدون کنترل لغزش</string>
     <string name="SwapWarning_SlippageNotAvailable_Description">عملیات زنجیره‌ای متقابل به نقدینگی اشخاص ثالث و تاخیرات بستگی دارد که ممکن است بر مبلغ نهایی تأثیر بگذارد.</string>
     <string name="unsupported_refund_address">آدرس بازگشت پشتیبانی نمی‌شود</string>

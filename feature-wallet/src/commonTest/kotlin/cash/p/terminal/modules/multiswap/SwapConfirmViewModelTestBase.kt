@@ -2,6 +2,7 @@ package cash.p.terminal.modules.multiswap
 
 import androidx.lifecycle.ViewModelStore
 import cash.p.terminal.core.HSCaution
+import cash.p.terminal.core.ethereum.CautionViewItem
 import cash.p.terminal.core.TransactionSettingsStorage
 import cash.p.terminal.core.ServiceStateFlow
 import cash.p.terminal.core.TestDispatcherProvider
@@ -26,6 +27,7 @@ import cash.p.terminal.wallet.managers.IBalanceHiddenManager
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.entities.Currency
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
@@ -73,6 +75,10 @@ abstract class SwapConfirmViewModelTestBase {
         extraFees = emptyMap(),
     )
 
+    /** Flows of the default send service of the last [createViewModel] call. */
+    protected lateinit var transactionStates: MutableSharedFlow<SendTransactionServiceState>
+    protected lateinit var sendTransactionSettings: MutableStateFlow<SendTransactionSettings>
+
     protected val viewModelStore = ViewModelStore()
     protected val uptimeProvider = VirtualUptimeProvider(dispatcher.scheduler)
 
@@ -118,16 +124,16 @@ abstract class SwapConfirmViewModelTestBase {
         quote: ISwapQuote = swapQuote,
         wallet: Wallet = previewWallet,
     ): SwapConfirmViewModel {
+        transactionStates = MutableSharedFlow<SendTransactionServiceState>(
+            replay = 1,
+            onBufferOverflow = BufferOverflow.DROP_OLDEST
+        ).also { it.tryEmit(transactionState) }
+        sendTransactionSettings = MutableStateFlow(SendTransactionSettings.Common)
         val sendTransactionService = serviceOverride ?: mockk<ISendTransactionService<Nothing>>(relaxed = true) {
             every { hasSettings() } returns false
             every { mevProtectionAvailable } returns false
-            every { stateFlow } returns ServiceStateFlow(
-                MutableSharedFlow<SendTransactionServiceState>(
-                    replay = 1,
-                    onBufferOverflow = BufferOverflow.DROP_OLDEST
-                ).also { it.tryEmit(transactionState) }.asSharedFlow()
-            )
-            every { sendTransactionSettingsFlow } returns MutableStateFlow(SendTransactionSettings.Common)
+            every { stateFlow } returns ServiceStateFlow(this@SwapConfirmViewModelTestBase.transactionStates.asSharedFlow())
+            every { sendTransactionSettingsFlow } returns this@SwapConfirmViewModelTestBase.sendTransactionSettings
         }
         val adapterManager = mockk<IAdapterManager>(relaxed = true)
         val assetFiatRateService = mockk<AssetFiatRateService>(relaxed = true)
@@ -159,6 +165,15 @@ abstract class SwapConfirmViewModelTestBase {
         viewModelStore.register(vm)
         return vm
     }
+
+    protected fun providerFailingWith(error: Throwable): IMultiSwapProvider =
+        mockk<IMultiSwapProvider>(relaxed = true) {
+            every { mevProtectionAvailable } returns false
+            coEvery { fetchFinalQuote(any(), any(), any(), any(), any(), any()) } throws error
+        }
+
+    protected fun SwapConfirmViewModel.errorCautions() =
+        uiState.cautions.filter { it.type == CautionViewItem.Type.Error }
 
     protected fun finalQuote(
         amountIn: BigDecimal = BigDecimal.ONE,

@@ -113,7 +113,7 @@ class BackendSwapSignerTest {
             evmSignerFactory.createSigner(account, BlockchainType.BinanceSmartChain, any())
         } returns softwareSigner()
 
-        val signature = signer.sign(account, BackendSwapGoldenVectors.m1)
+        val signature = signer.sign(account, BackendSwapGoldenVectors.m1, "Changelly")
 
         assertSameSignature(BackendSwapGoldenVectors.M1_SIGNATURE, signature)
     }
@@ -123,7 +123,7 @@ class BackendSwapSignerTest {
         val account = account(HARDWARE_CARD)
         coEvery { evmSignerFactory.resolveAddress(account, any(), any()) } returns null
 
-        signer.sign(account, BackendSwapGoldenVectors.m1)
+        signer.sign(account, BackendSwapGoldenVectors.m1, "Changelly")
     }
 
     private fun trezor(firmwareVersion: String) = AccountType.TrezorDevice(

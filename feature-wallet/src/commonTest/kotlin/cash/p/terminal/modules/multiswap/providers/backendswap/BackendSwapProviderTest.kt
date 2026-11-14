@@ -84,7 +84,7 @@ class BackendSwapProviderTest {
     init {
         coEvery { resolver.resolve(PROVIDER, any()) } coAnswers { asset(secondArg()) }
         coEvery { signer.walletAddress(any()) } returns WALLET
-        coEvery { signer.sign(any(), any()) } returns SIGNATURE
+        coEvery { signer.sign(any(), any(), any()) } returns SIGNATURE
         every { walletUseCase.getReceiveAddress(any()) } answers { " recv-${firstArg<Token>().coin.code} " }
         coEvery { providerSupport.getRefundAddress(any(), any()) } returns "refund"
         every { providerSupport.buildTransactionData(any(), any(), any(), any()) } returns
@@ -207,6 +207,13 @@ class BackendSwapProviderTest {
                 WALLET,
             )
         }
+    }
+
+    @Test
+    fun fetchFinalQuote_newOrder_signsWithProviderDisplayName() = runTest(dispatcher) {
+        fetchFinalQuote()
+
+        coVerify { signer.sign(any(), any(), "Changelly") }
     }
 
     @Test
