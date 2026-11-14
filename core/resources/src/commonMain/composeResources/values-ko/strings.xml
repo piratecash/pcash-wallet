@@ -1907,7 +1907,7 @@
     <string name="PinSet_ErrorPinsDontMatch">비밀번호가 일치하지 않습니다. 다시 시도하세요.</string>
     <string name="PinSet_ErrorFailedToSavePin">당신의 비밀번호를 저장하는 동안 오류가 발생했습니다. 다시 시도하세요.</string>
     <string name="PinSet_ForBiometrics">생체인식을 활성화하려면 비밀번호를 설정해주세요.</string>
-    <string name="PinSet_ForDuress">긴급 상황 모드를 활성화하려면 비밀번호를 설정하세요.</string>
+    <string name="PinSet_ForDuress">먼저 지갑 비밀번호를 설정하세요. 긴급 상황 모드를 활성화하려면 필요합니다</string>
     <string name="pin_set_for_login_logging">로그인 로깅 활성화를 위한 비밀번호 설정</string>
     <string name="pin_set_for_login_logging_passcode">로그인 로깅 보호를 위한 비밀번호 설정</string>
     <string name="confirm_pin_to_disable_login_logging_passcode">로그인 로깅 비활성화를 위해 비밀번호 입력</string>

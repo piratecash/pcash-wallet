@@ -1901,7 +1901,7 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="PinSet_ErrorPinsDontMatch">El código no coincide. Inténtelo de nuevo.</string>
     <string name="PinSet_ErrorFailedToSavePin">Se ha producido un error al intentar guardar su código. Inténtelo de nuevo.</string>
     <string name="PinSet_ForBiometrics">Establecer un código de acceso para habilitar Biometrics</string>
-    <string name="PinSet_ForDuress">Establecer un código de acceso para activar el modo Duress</string>
+    <string name="PinSet_ForDuress">Primero establezca un código de acceso para su monedero. Es necesario para activar el modo Duress</string>
     <string name="pin_set_for_login_logging">Establecer código para activar el registro de inicio de sesión</string>
     <string name="pin_set_for_login_logging_passcode">Establecer código para proteger el registro de inicio de sesión</string>
     <string name="confirm_pin_to_disable_login_logging_passcode">Ingrese el código para desactivar el registro de inicio de sesión</string>

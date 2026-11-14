@@ -1907,7 +1907,7 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="PinSet_ErrorPinsDontMatch">Le code ne correspond pas. Réessayez.</string>
     <string name="PinSet_ErrorFailedToSavePin">Une erreur est apparue lors de l\u0027enregistrement de votre code. Veuillez réessayer.</string>
     <string name="PinSet_ForBiometrics">Définir un code d\u0027accès pour activer la biométrie</string>
-    <string name="PinSet_ForDuress">Définir un mot de passe pour activer le mode Duress</string>
+    <string name="PinSet_ForDuress">Définissez d\u0027abord un code d\u0027accès pour votre portefeuille. Il est nécessaire pour activer le mode Duress</string>
     <string name="pin_set_for_login_logging">Définir un code pour activer le journal de connexion</string>
     <string name="pin_set_for_login_logging_passcode">Définir un code pour protéger le journal de connexion</string>
     <string name="confirm_pin_to_disable_login_logging_passcode">Entrer le code pour désactiver le journal de connexion</string>

@@ -1898,7 +1898,7 @@
     <string name="PinSet_ErrorPinsDontMatch">密码不匹配。请重试。</string>
     <string name="PinSet_ErrorFailedToSavePin">保存密码时出错。请重试。</string>
     <string name="PinSet_ForBiometrics">设置密码以启用生物计。</string>
-    <string name="PinSet_ForDuress">设置密码以启用胁迫模式</string>
+    <string name="PinSet_ForDuress">请先为钱包设置密码。启用胁迫模式需要此密码</string>
     <string name="pin_set_for_login_logging">设置密码以启用登录日志</string>
     <string name="pin_set_for_login_logging_passcode">设置密码以保护登录日志</string>
     <string name="confirm_pin_to_disable_login_logging_passcode">输入密码以禁用登录日志</string>
