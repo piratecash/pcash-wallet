@@ -31,6 +31,8 @@ interface AccountActivityDaos {
     fun poisonAddressDao(): PoisonAddressDao
     fun locallyCreatedTransactionDao(): LocallyCreatedTransactionDao
     fun offlineSignedTransactionDao(): OfflineSignedTransactionDao
+    fun nftItemDao(): NftItemDao
+    fun nftCollectionPrefDao(): NftCollectionPrefDao
 }
 
 /** Tables that belong to one access level. */

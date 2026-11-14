@@ -2422,6 +2422,131 @@
     <string name="evm_node_request_failed">네트워크 노드가 요청을 처리하지 못했습니다. 다시 시도하거나 블록 체인 설정에서 다른 소스를 선택하세요.\n\n노드 응답: %1$s</string>
     <string name="desktop_transfer_password">보내기 전 비밀번호</string>
     <string name="desktop_transfer_password_description">자산을 보낼 때마다 앱 비밀번호를 요청하여, 앱이 잠금 해제된 상태에서 누군가 컴퓨터에 접근하더라도 자산을 보호합니다.</string>
+
+    <!--NFT collections-->
+    <string name="nft_collections">컬렉션</string>
+    <string name="nft_collection">NFT 컬렉션</string>
+    <string name="nft_show_all">모두 보기</string>
+    <string name="nft_unverified">미인증</string>
+    <string name="nft_unnamed_collection">이름 없는 컬렉션</string>
+    <string name="nft_unnamed">이름 없는 NFT</string>
+    <string name="nft_about_collection">컬렉션 정보</string>
+    <string name="nft_open_in_explorer">익스플로러에서 열기</string>
+    <string name="nft_details">세부 정보</string>
+    <string name="nft_owner">소유자</string>
+    <string name="nft_empty_title">내 NFT가 여기에 표시됩니다</string>
+    <string name="nft_empty_subtitle">TON 주소로 첫 NFT를 받거나 마켓플레이스에서 구매하세요</string>
+    <string name="nft_open_market">마켓 열기</string>
+    <string name="nft_untitled">제목 없음</string>
+    <string name="nft_manage_title">컬렉션 관리</string>
+    <string name="nft_manage_intro">숨긴 컬렉션은 메인 화면, TON 화면, 목록에 표시되지 않습니다. 스팸은 TonAPI 신뢰 수준과 사용자의 표시로 결정됩니다.</string>
+    <string name="nft_manage_visible">표시 중 · %1$d</string>
+    <string name="nft_manage_hidden">숨김 · %1$d</string>
+    <string name="nft_manage_spam">스팸 · %1$d</string>
+    <string name="nft_spam_by_user">사용자가 스팸으로 표시함</string>
+    <string name="nft_spam_by_provider">TonAPI 기준 스팸</string>
+    <string name="nft_count">NFT %1$d개</string>
+    <string name="nft_count_single">NFT %1$d개 · 컬렉션 없음</string>
+    <string name="nft_manage_show_all">모두 보기 (%1$d)</string>
+    <string name="nft_manage_collapse">접기</string>
+    <string name="nft_not_spam">스팸 아님</string>
+    <string name="nft_toast_hidden">“%1$s” 숨김</string>
+    <string name="nft_toast_visible">“%1$s”이(가) 컬렉션과 메인 화면에 다시 표시됩니다</string>
+    <string name="nft_toast_not_spam">“%1$s”은(는) 더 이상 스팸이 아니며 다시 표시됩니다</string>
+    <string name="nft_hide_collection">컬렉션 숨기기</string>
+    <string name="nft_hide_nft">NFT 숨기기</string>
+    <string name="nft_hide_and_report">숨기고 신고</string>
+    <string name="nft_open_in_tonviewer">Tonviewer에서 열기</string>
+    <string name="nft_copy_address">NFT 주소 복사</string>
+    <string name="nft_burn_action">NFT 소각</string>
+    <string name="nft_unverified_nft">확인되지 않은 NFT</string>
+    <string name="nft_report_spam">스팸 신고</string>
+    <string name="nft_report_title">스팸으로 신고할까요?</string>
+    <string name="nft_report_body">“%1$s” 컬렉션이 숨겨지고 컬렉션 관리의 스팸 섹션으로 이동합니다. 그곳에서 ‘스팸 아님’ 버튼으로 복원할 수 있습니다.</string>
+    <string name="nft_report_confirm">신고하고 숨기기</string>
+    <string name="nft_link_warning_title">외부 링크를 열까요?</string>
+    <string name="nft_link_warning_body">컬렉션 제작자를 신뢰하는 경우에만 계속하세요: %1$s</string>
+    <string name="nft_link_open_anyway">그래도 열기</string>
+    <string name="nft_link_unsupported">지원되지 않는 링크입니다</string>
+    <string name="nft_toast_hidden_undo">“%1$s” 숨김. 컬렉션 관리에서 복원할 수 있습니다</string>
+    <string name="nft_toast_reported">컬렉션을 숨기고 스팸으로 표시했습니다</string>
+    <string name="nft_undo">실행 취소</string>
+    <string name="nft_hidden_collections_count">숨긴 컬렉션: %1$s</string>
+    <string name="nft_manage">관리</string>
+    <string name="nft_all_hidden">모든 컬렉션이 숨겨져 있습니다</string>
+    <string name="nft_configure">설정</string>
+    <string name="nft_transfer_on_sale">이 NFT는 마켓플레이스에 등록되어 있습니다. 전송하려면 판매를 취소하세요</string>
+    <string name="nft_transfer_watch_only">보기 전용 지갑은 NFT를 전송할 수 없습니다</string>
+    <string name="nft_transfer_not_owner">이 지갑은 더 이상 이 NFT를 소유하고 있지 않습니다</string>
+    <string name="nft_transfer_check_failed">이 NFT를 전송할 수 있는지 확인하지 못했습니다. 나중에 다시 시도하세요</string>
+    <string name="nft_transfer_title">NFT 전송</string>
+    <string name="nft_transfer_recipient_hint">주소 또는 .ton 도메인</string>
+    <string name="nft_transfer_address_found">주소 찾음: %1$s</string>
+    <string name="nft_transfer_comment_label">댓글(선택 사항)</string>
+    <string name="nft_transfer_comment_hint">블록체인에서 모두에게 공개됩니다</string>
+    <string name="nft_transfer_ton_balance">TON 잔액</string>
+    <string name="nft_transfer_domain_warning">전송 후 도메인은 회원님의 지갑에서 연결 해제됩니다. %1$s(으)로 보내는 금액은 새 소유자에게 전달됩니다. 도메인 갱신은 새 소유자가 해야 합니다.</string>
+    <string name="send_confirmation_domain">도메인</string>
+
+    <!--NFT domain renewal-->
+    <string name="nft_domain_expires">만료</string>
+    <plurals name="nft_domain_expires_in">
+        <item quantity="other">%1$d일 후</item>
+    </plurals>
+    <string name="nft_transfer_domain_expires">도메인 만료</string>
+    <string name="nft_domain_renew">도메인 갱신</string>
+    <string name="nft_domain_renew_title">%1$s을(를) 갱신할까요?</string>
+    <plurals name="nft_domain_renew_title_many">
+        <item quantity="other">도메인 %1$d개를 갱신할까요?</item>
+    </plurals>
+    <string name="nft_domain_renew_body">도메인이 1년 연장되어 %1$s까지 유효합니다. 갱신은 도메인 컨트랙트로 보내는 트랜잭션입니다.</string>
+    <string name="nft_domain_renew_body_many">%1$s — 1년 연장, %2$s까지. 각 도메인 컨트랙트로 메시지 하나씩 전송됩니다.</string>
+    <string name="nft_domain_renew_cost">비용</string>
+    <string name="nft_domain_renew_confirm">갱신</string>
+    <string name="nft_domain_renew_cancel">취소</string>
+    <string name="nft_domain_renewed">도메인이 %1$s까지 갱신되었습니다</string>
+    <plurals name="nft_domains_renewed">
+        <item quantity="other">도메인 %1$d개가 %2$s까지 갱신되었습니다</item>
+    </plurals>
+    <string name="nft_domain_renew_partial">갱신 전송: %1$d/%2$d건. 나머지는 전송이 중단되었으며, 네트워크 확인 후 만료일이 업데이트됩니다.</string>
+    <string name="nft_burn_title">NFT를 소각할까요?</string>
+    <string name="nft_burn_domain_title">%1$s을(를) 소각할까요?</string>
+    <string name="nft_burn_body">%1$s이(가) 소각 주소로 전송되어 지갑에서 영구히 사라집니다. 되돌릴 수 없습니다.</string>
+    <string name="nft_burn_domain_body">도메인이 소각 주소로 전송되어 잃게 됩니다. %1$s(으)로의 송금이 더 이상 지갑에 도착하지 않습니다. 되돌릴 수 없습니다.</string>
+    <string name="nft_burn_address">소각 주소</string>
+    <string name="nft_burn_confirm">소각</string>
+    <string name="nft_burn_sent">NFT 소각 전송됨</string>
+    <string name="nft_domain_burn_sent">도메인 소각 전송됨</string>
+    <plurals name="nft_domains_expiring_banner">
+        <item quantity="other">만료 예정 도메인이 %1$d개 있습니다. %2$s까지 모두 갱신하세요.</item>
+    </plurals>
+    <string name="nft_domains_expiring_banner_hidden">만료 예정 도메인이 있습니다. %1$s까지 모두 갱신하세요.</string>
+    <string name="nft_domain_renew_page_title">도메인 갱신</string>
+    <string name="nft_domain_renew_info">TON DNS 도메인은 1년에 한 번 갱신해야 합니다. 갱신은 도메인 컨트랙트로 보내는 0.02 TON 트랜잭션이며 네트워크 수수료가 추가됩니다. 만료 색상: 흰색 — 30일 초과, 노란색 — 30일 이하, 빨간색 — 7일 이하.</string>
+    <plurals name="nft_domain_expires_row">
+        <item quantity="other">%1$d일 후 만료</item>
+    </plurals>
+    <string name="nft_domain_on_sale_hint">갱신하려면 판매를 해제하세요</string>
+    <string name="nft_domain_on_sale_badge">판매 중</string>
+    <plurals name="nft_domain_renew_total">
+        <item quantity="other">도메인 %1$d개 합계</item>
+    </plurals>
+    <plurals name="nft_domain_renew_selected">
+        <item quantity="other">도메인 %1$d개를 %2$s까지 갱신</item>
+    </plurals>
+    <string name="nft_domain_renew_select">도메인을 선택하세요</string>
+    <string name="display_options_nft_section">NFT</string>
+    <string name="display_options_show_nft_collections">NFT 컬렉션 표시</string>
+    <string name="display_options_nft_hint">메인 화면의 “컬렉션” 섹션과 TON 화면의 “NFT 컬렉션” 섹션입니다. 기본적으로 켜져 있습니다.</string>
+    <string name="display_options_nft_no_gram_on_hint">지갑에 GRAM 블록체인이 없어 메인 화면에 컬렉션 대신 컬렉션을 켜는 방법 안내가 표시됩니다. NFT가 필요 없다면 끄세요. 안내가 사라집니다.</string>
+    <string name="display_options_nft_no_gram_off_hint">메인 화면에서 “컬렉션” 섹션과 안내가 숨겨져 있습니다. 다시 보려면 켜세요.</string>
+    <string name="nft_gram_info_title">NFT 컬렉션</string>
+    <string name="nft_gram_info_text">이 기능을 사용하려면 지갑에 GRAM 블록체인을 추가하세요. 그러면 메인 화면에 내 NFT가 담긴 “컬렉션” 섹션이 나타납니다.</string>
+    <string name="nft_gram_add_blockchain">블록체인 추가</string>
+    <string name="nft_gram_add_hint">NFT를 보려면 GRAM 블록체인을 추가하세요</string>
+    <plurals name="nft_gram_version_hint">
+        <item quantity="other">GRAM %1$s 지갑에 NFT %2$s개가 있습니다</item>
+    </plurals>
     <string name="desktop_unlock_legacy_format">이전 버전의 앱에서 만든 데이터라 열 수 없습니다</string>
     <string name="desktop_duress_password_set">긴급 상황 모드 설정</string>
     <string name="desktop_duress_password_edit">긴급 상황 비밀번호 수정</string>

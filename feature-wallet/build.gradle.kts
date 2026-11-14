@@ -131,6 +131,7 @@ kotlin {
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.coroutines.rx2)
                 implementation(libs.coil.compose)
+                implementation(libs.compottie)
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.kermit)
                 implementation(libs.androidx.annotation)
@@ -204,6 +205,7 @@ kotlin {
                 implementation(libs.kotlin.test.junit)
                 implementation(project.dependencies.platform(libs.koin.bom))
                 implementation(libs.koin.test.junit4)
+                implementation(libs.ktor.client.mock)
             }
         }
         getByName("desktopTest") {
@@ -227,7 +229,7 @@ kotlin {
 }
 
 // The relocated send tests outgrow the default 512 MB test heap; same settings as the app unit tests.
-tasks.withType<Test>().matching { it.name == "testAndroidHostTest" }.configureEach {
+tasks.withType<Test>().matching { it.name in setOf("testAndroidHostTest", "desktopTest") }.configureEach {
     maxHeapSize = "2g"
     forkEvery = 80
 }

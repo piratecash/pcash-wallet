@@ -17,6 +17,7 @@ import io.horizontalsystems.tonkit.models.Action
 import io.horizontalsystems.tonkit.models.Event
 import io.horizontalsystems.tonkit.models.Jetton
 import io.horizontalsystems.tonkit.models.LiquidityDeposit
+import io.horizontalsystems.tonkit.models.NftTransfer
 import java.math.BigDecimal
 import java.math.BigInteger
 
@@ -223,8 +224,38 @@ class TonTransactionConverter(
             }
         }
 
-        return TonTransactionRecord.Action.Type.Unsupported(action.type.name)
+        return action.nftTransfer?.let(::nftTransferType)
+            ?: TonTransactionRecord.Action.Type.Unsupported(action.type.name)
     }
+
+    private fun nftTransferType(nftTransfer: NftTransfer): TonTransactionRecord.Action.Type? {
+        val sender = nftTransfer.sender ?: return null
+        val recipient = nftTransfer.recipient ?: return null
+        return when (address) {
+            sender.address -> TonTransactionRecord.Action.Type.Send(
+                value = nftValue(nftTransfer, BigDecimal.ONE.negate()),
+                to = format(recipient),
+                sentToSelf = recipient.address == address,
+                comment = nftTransfer.comment,
+            )
+
+            recipient.address -> TonTransactionRecord.Action.Type.Receive(
+                value = nftValue(nftTransfer, BigDecimal.ONE),
+                from = format(sender),
+                to = format(recipient),
+                comment = nftTransfer.comment,
+            )
+
+            else -> null
+        }
+    }
+
+    private fun nftValue(nftTransfer: NftTransfer, value: BigDecimal) = TransactionValue.NftValue(
+        mintAddress = nftTransfer.nft.toUserFriendly(bounceable = true),
+        value = value,
+        tokenName = null,
+        tokenSymbol = "NFT",
+    )
 
     private companion object {
         val DEPOSIT_COMMENTS = setOf("Call: StonfiProvideLiquidity", "Call: DedustDepositLiquidity")

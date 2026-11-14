@@ -91,18 +91,22 @@ class TonTransactionRecord(
     }
 
     override val mainValue: TransactionValue?
-        get() = actions.singleOrNull()?.let { action ->
-            when (val type = action.type) {
-                is Action.Type.Receive -> type.value
-                is Action.Type.Send -> type.value
-                is Action.Type.Burn -> type.value
-                is Action.Type.Mint -> type.value
-                is Action.Type.ContractCall -> type.value
-                is Action.Type.LiquidityDeposit -> type.deposits.singleOrNull()?.value
-                is Action.Type.ContractDeploy,
-                is Action.Type.Swap,
-                is Action.Type.Unsupported -> null
-            }
+        get() = actions.singleOrNull()?.type?.transferredValue
+
+    val isNftOnly: Boolean
+        get() = actions.isNotEmpty() && actions.all { it.type.transferredValue is TransactionValue.NftValue }
+
+    private val Action.Type.transferredValue: TransactionValue?
+        get() = when (this) {
+            is Action.Type.Receive -> value
+            is Action.Type.Send -> value
+            is Action.Type.Burn -> value
+            is Action.Type.Mint -> value
+            is Action.Type.ContractCall -> value
+            is Action.Type.LiquidityDeposit -> deposits.singleOrNull()?.value
+            is Action.Type.ContractDeploy,
+            is Action.Type.Swap,
+            is Action.Type.Unsupported -> null
         }
 
     data class Action(

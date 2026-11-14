@@ -222,14 +222,7 @@ class SyncPendingMultiSwapUseCase(
             } ?: break
             if (batch.isEmpty()) break
 
-            for (record in batch) {
-                if (record.timestamp >= startTimeSec
-                    && !record.failed
-                    && record.status(lastBlockHeight) is TransactionStatus.Completed
-                ) {
-                    candidates.add(record)
-                }
-            }
+            batch.filterTo(candidates) { it.isPayoutCandidate(startTimeSec, lastBlockHeight) }
             if (batch.size < PAGE_SIZE) break
             from = batch.last()
         }
@@ -237,6 +230,12 @@ class SyncPendingMultiSwapUseCase(
         if (candidates.isEmpty()) return null
         return matchIncoming(candidates, expectedAmount, legStartTime)
     }
+
+    private fun TransactionRecord.isPayoutCandidate(startTimeSec: Long, lastBlockHeight: Int?): Boolean =
+        timestamp >= startTimeSec &&
+            !failed &&
+            (this as? TonTransactionRecord)?.isNftOnly != true &&
+            status(lastBlockHeight) is TransactionStatus.Completed
 
     private fun matchIncoming(
         candidates: List<TransactionRecord>,
