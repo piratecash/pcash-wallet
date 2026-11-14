@@ -1,0 +1,609 @@
+package cash.p.terminal.modules.tonconnect
+
+import cash.p.terminal.core.TestDispatcherProvider
+import cash.p.terminal.core.managers.TonConnectManager
+import cash.p.terminal.core.managers.toTonWalletFullAccess
+import cash.p.terminal.wallet.IHardwarePublicKeyStorage
+import cash.p.terminal.wallet.Account
+import cash.p.terminal.wallet.AccountOrigin
+import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.ActiveAccountState
+import cash.p.terminal.wallet.IAccountManager
+import cash.p.terminal.wallet.IWalletManager
+import cash.p.terminal.wallet.IEnabledWalletStorage
+import cash.p.terminal.wallet.entities.EnabledWallet
+import cash.p.terminal.wallet.entities.TokenQuery
+import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.TonWalletVersion
+import io.horizontalsystems.core.entities.BlockchainType
+import com.tonapps.wallet.data.tonconnect.entities.DAppManifestEntity
+import com.tonapps.wallet.data.tonconnect.entities.DAppPayloadEntity
+import com.tonapps.wallet.data.tonconnect.entities.DAppRequestEntity
+import io.horizontalsystems.tonkit.tonconnect.TonConnectKit
+import io.mockk.clearMocks
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.mockkStatic
+import io.mockk.unmockkAll
+import io.mockk.verify
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertIs
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class TonConnectNewViewModelTest {
+
+    private val dispatcher = StandardTestDispatcher()
+    private val testScope = TestScope(dispatcher)
+    private val testDispatcherProvider = TestDispatcherProvider(dispatcher, testScope)
+    private lateinit var request: DAppRequestEntity
+
+    private val tonConnectManager = mockk<TonConnectManager>(relaxed = true)
+    private val hardwarePublicKeyStorage = mockk<IHardwarePublicKeyStorage>(relaxed = true)
+    private val accountManager = mockk<IAccountManager>(relaxed = true)
+    private val walletManager = mockk<IWalletManager>(relaxed = true)
+    private val enabledWalletStorage = mockk<IEnabledWalletStorage>(relaxed = true)
+
+    @Before
+    fun setUp() {
+        clearMocks(
+            tonConnectManager,
+            hardwarePublicKeyStorage,
+            accountManager,
+            walletManager,
+            enabledWalletStorage,
+        )
+
+        every { enabledWalletStorage.enabledWallets(any<String>()) } returns emptyList()
+        request = requestStub("https://ton.dapp/manifest.json")
+        mockkObject(TonConnectKit.Companion)
+        every { TonConnectKit.readData(URI) } returns request
+
+        Dispatchers.setMain(dispatcher)
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+        unmockkAll()
+    }
+
+    @Test
+    fun init_malformedUri_exposesInvalidRequestErrorWithoutLoadingManifest() = runTest(dispatcher) {
+        val tonAccount = tonAccount("ton-malformed")
+        setAccounts(listOf(tonAccount), tonAccount)
+        every { TonConnectKit.readData(MALFORMED_URI) } throws IllegalArgumentException("id is required")
+
+        val viewModel = createViewModel(MALFORMED_URI)
+        advanceUntilIdle()
+
+        assertIs<InvalidRequestError>(viewModel.uiState.error)
+        assertFalse(viewModel.uiState.connectEnabled)
+        coVerify(exactly = 0) { tonConnectManager.getManifest(any(), any()) }
+    }
+
+    @Test
+    fun connect_kitUnavailable_surfacesToastAndResetsConnecting() = runTest(dispatcher) {
+        val tonAccount = tonAccount("ton-no-kit")
+        setAccounts(listOf(tonAccount), tonAccount)
+        mockkStatic("cash.p.terminal.core.managers.TonKitManagerKt")
+        every {
+            any<Account>().toTonWalletFullAccess(any(), any(), any())
+        } returns mockk(relaxed = true)
+        coEvery { tonConnectManager.getManifest(any(), request.payload.manifestUrl) } returns manifest()
+
+        val viewModel = createViewModel(URI)
+        advanceUntilIdle()
+        coEvery { tonConnectManager.connect(any(), any(), any(), any(), any()) } throws IllegalStateException("kit unavailable")
+
+        viewModel.connect()
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.finish)
+        assertFalse(viewModel.uiState.connecting)
+        assertEquals("kit unavailable", viewModel.uiState.toast)
+    }
+
+    @Test
+    fun `init loads manifest and selects active ton account`() = runTest(dispatcher) {
+        val tonAccount = tonAccount("ton-1")
+        val hardwareAccount = hardwareTonAccount("hw-1")
+        val watchAccount = watchAccount("watch-1")
+        setAccounts(listOf(tonAccount, hardwareAccount, watchAccount), tonAccount)
+
+        val manifest = manifest()
+        coEvery { tonConnectManager.getManifest(any(), request.payload.manifestUrl) } returns manifest
+
+        val viewModel = createViewModel(URI)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState
+        assertEquals(manifest, state.manifest)
+        assertEquals(listOf(tonAccount, hardwareAccount), state.accounts)
+        assertEquals(tonAccount, state.account)
+        assertNull(state.error)
+        assertTrue(state.connectEnabled)
+    }
+
+    @Test
+    fun `init filters unsupported accounts`() = runTest(dispatcher) {
+        val tonAccount = tonAccount("ton-filter")
+        val hardwareAccount = hardwareTonAccount("hw-filter")
+        val unsupported = watchAccount("watch-filter")
+        setAccounts(listOf(tonAccount, unsupported, hardwareAccount), tonAccount)
+        coEvery { tonConnectManager.getManifest(any(), request.payload.manifestUrl) } returns manifest()
+
+        val viewModel = createViewModel(URI)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState
+        assertEquals(listOf(tonAccount, hardwareAccount), state.accounts)
+        assertFalse(state.accounts.contains(unsupported))
+    }
+
+    @Test
+    fun `init falls back to first ton account when active unsupported`() = runTest(dispatcher) {
+        val fallback = tonAccount("ton-fallback")
+        val secondary = hardwareTonAccount("hw-fallback")
+        val activeUnsupported = watchAccount("watch-active")
+        setAccounts(listOf(activeUnsupported, fallback, secondary), activeUnsupported)
+        coEvery { tonConnectManager.getManifest(any(), request.payload.manifestUrl) } returns manifest()
+
+        val viewModel = createViewModel(URI)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState
+        assertEquals(listOf(fallback, secondary), state.accounts)
+        assertEquals(fallback, state.account)
+    }
+
+    @Test
+    fun `init without ton accounts exposes error`() = runTest(dispatcher) {
+        val watchAccount = watchAccount("watch-only")
+        setAccounts(listOf(watchAccount), watchAccount)
+        coEvery { tonConnectManager.getManifest(any(), request.payload.manifestUrl) } returns manifest()
+
+        val viewModel = createViewModel(URI)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState
+        assertIs<NoTonAccountError>(state.error)
+        assertTrue(state.accounts.isEmpty())
+        assertFalse(state.connectEnabled)
+    }
+
+    @Test
+    fun init_accountsNotLoadedYet_selectsAccountOnceLoaded() = runTest(dispatcher) {
+        val activeAccountStateFlow = MutableStateFlow<ActiveAccountState>(ActiveAccountState.NotLoaded)
+        every { accountManager.accounts } returns emptyList()
+        every { accountManager.activeAccount } returns null
+        every { accountManager.activeAccountStateFlow } returns activeAccountStateFlow
+        coEvery { tonConnectManager.getManifest(any(), request.payload.manifestUrl) } returns manifest()
+
+        val viewModel = createViewModel(URI)
+        advanceUntilIdle()
+
+        var state = viewModel.uiState
+        assertNull(state.error)
+        assertNull(state.account)
+        assertFalse(state.connectEnabled)
+
+        val tonAccount = tonAccount("ton-late")
+        every { accountManager.accounts } returns listOf(tonAccount)
+        every { accountManager.activeAccount } returns tonAccount
+        activeAccountStateFlow.value = ActiveAccountState.ActiveAccount(tonAccount)
+        advanceUntilIdle()
+
+        state = viewModel.uiState
+        assertEquals(tonAccount, state.account)
+        assertEquals(listOf(tonAccount), state.accounts)
+        assertNull(state.error)
+        assertTrue(state.connectEnabled)
+    }
+
+    @Test
+    fun `connect forwards request to kit and finishes`() = runTest(dispatcher) {
+        val tonAccount = tonAccount("ton-connect")
+        setAccounts(listOf(tonAccount), tonAccount)
+
+        val manifest = manifest()
+        mockkStatic("cash.p.terminal.core.managers.TonKitManagerKt")
+        every {
+            any<Account>().toTonWalletFullAccess(any(), any(), any())
+        } returns mockk(relaxed = true)
+        coEvery { tonConnectManager.getManifest(any(), request.payload.manifestUrl) } returns manifest
+        coEvery { tonConnectManager.connect(any(), any(), any(), any(), any()) } returns mockk(relaxed = true)
+
+        val viewModel = createViewModel(URI)
+        advanceUntilIdle()
+
+        viewModel.connect()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState
+        assertTrue(state.finish)
+        assertNull(state.toast)
+        coVerify(exactly = 1) {
+            tonConnectManager.connect(tonAccount.id, request, manifest, tonAccount.id, any())
+        }
+    }
+
+    @Test
+    fun connect_alreadyConnecting_ignoredSecondCall() = runTest(dispatcher) {
+        val tonAccount = tonAccount("ton-double")
+        setAccounts(listOf(tonAccount), tonAccount)
+
+        val manifest = manifest()
+        mockkStatic("cash.p.terminal.core.managers.TonKitManagerKt")
+        every {
+            any<Account>().toTonWalletFullAccess(any(), any(), any())
+        } returns mockk(relaxed = true)
+        coEvery { tonConnectManager.getManifest(any(), request.payload.manifestUrl) } returns manifest
+        coEvery { tonConnectManager.connect(any(), any(), any(), any(), any()) } coAnswers {
+            delay(1000)
+            mockk(relaxed = true)
+        }
+
+        val viewModel = createViewModel(URI)
+        advanceUntilIdle()
+
+        viewModel.connect()
+        viewModel.connect()
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) {
+            tonConnectManager.connect(any(), any(), any(), any(), any())
+        }
+    }
+
+    @Test
+    fun connect_failure_resetsConnecting() = runTest(dispatcher) {
+        val tonAccount = tonAccount("ton-reset")
+        setAccounts(listOf(tonAccount), tonAccount)
+
+        val manifest = manifest()
+        mockkStatic("cash.p.terminal.core.managers.TonKitManagerKt")
+        every {
+            any<Account>().toTonWalletFullAccess(any(), any(), any())
+        } returns mockk(relaxed = true)
+        coEvery { tonConnectManager.getManifest(any(), request.payload.manifestUrl) } returns manifest
+        coEvery {
+            tonConnectManager.connect(any(), any(), any(), any(), any())
+        } throws IllegalStateException("fail")
+
+        val viewModel = createViewModel(URI)
+        advanceUntilIdle()
+
+        viewModel.connect()
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.connecting)
+        assertTrue(viewModel.uiState.connectEnabled)
+    }
+
+    @Test
+    fun `connect surfaces toast on failure`() = runTest(dispatcher) {
+        val tonAccount = tonAccount("ton-fail")
+        setAccounts(listOf(tonAccount), tonAccount)
+
+        val manifest = manifest()
+        mockkStatic("cash.p.terminal.core.managers.TonKitManagerKt")
+        every {
+            any<Account>().toTonWalletFullAccess(any(), any(), any())
+        } returns mockk(relaxed = true)
+        coEvery { tonConnectManager.getManifest(any(), request.payload.manifestUrl) } returns manifest
+        coEvery {
+            tonConnectManager.connect(any(), any(), any(), any(), any())
+        } throws IllegalStateException("boom")
+
+        val viewModel = createViewModel(URI)
+        advanceUntilIdle()
+
+        viewModel.connect()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState
+        assertFalse(state.finish)
+        assertEquals("boom", state.toast)
+
+        viewModel.onToastShow()
+        advanceUntilIdle()
+
+        assertNull(viewModel.uiState.toast)
+    }
+
+    @Test
+    fun init_accountWithoutW5Wallet_hidesWalletVersionChoice() = runTest(dispatcher) {
+        val tonAccount = tonAccount("ton-v4-only")
+        setAccounts(listOf(tonAccount), tonAccount)
+        every { enabledWalletStorage.enabledWallets(tonAccount.id) } returns
+            listOf(enabledWallet(TokenType.Jetton(MASTER)))
+
+        val viewModel = createViewModel(URI)
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.walletVersions.isEmpty())
+        assertEquals(TonWalletVersion.V4R2, viewModel.uiState.walletVersion)
+    }
+
+    @Test
+    fun init_accountWithW5JettonWallet_offersBothVersionsWithV4r2Selected() = runTest(dispatcher) {
+        val tonAccount = tonAccount("ton-w5")
+        setAccounts(listOf(tonAccount), tonAccount)
+        every { enabledWalletStorage.enabledWallets(tonAccount.id) } returns
+            listOf(enabledWallet(TokenType.TonW5Jetton(MASTER)))
+
+        val viewModel = createViewModel(URI)
+        advanceUntilIdle()
+
+        assertEquals(listOf(TonWalletVersion.V4R2, TonWalletVersion.W5), viewModel.uiState.walletVersions)
+        assertEquals(TonWalletVersion.V4R2, viewModel.uiState.walletVersion)
+    }
+
+    @Test
+    fun onSelectAccount_previousAccountChoseW5_resetsToV4r2() = runTest(dispatcher) {
+        val w5Account = tonAccount("ton-w5-first")
+        val v4Account = tonAccount("ton-v4-second")
+        setAccounts(listOf(w5Account, v4Account), w5Account)
+        every { enabledWalletStorage.enabledWallets(w5Account.id) } returns
+            listOf(enabledWallet(TokenType.TonW5Native))
+        val viewModel = createViewModel(URI)
+        advanceUntilIdle()
+        viewModel.onSelectWalletVersion(TonWalletVersion.W5)
+
+        viewModel.onSelectAccount(v4Account)
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.walletVersions.isEmpty())
+        assertEquals(TonWalletVersion.V4R2, viewModel.uiState.walletVersion)
+    }
+
+    @Test
+    fun onSelectAccount_nonActiveAccount_doesNotRebuildWalletManagerMap() = runTest(dispatcher) {
+        val active = tonAccount("ton-active")
+        val other = tonAccount("ton-other")
+        setAccounts(listOf(active, other), active)
+        val viewModel = createViewModel(URI)
+        advanceUntilIdle()
+
+        viewModel.onSelectAccount(other)
+        advanceUntilIdle()
+
+        coVerify(exactly = 0) { walletManager.getWallets(any()) }
+    }
+
+    @Test
+    fun connect_w5Selected_connectsW5WalletUnderW5WalletId() = runTest(dispatcher) {
+        val tonAccount = tonAccount("ton-connect-w5")
+        setAccounts(listOf(tonAccount), tonAccount)
+        every { enabledWalletStorage.enabledWallets(tonAccount.id) } returns
+            listOf(enabledWallet(TokenType.TonW5Native))
+        val manifest = manifest()
+        mockkStatic("cash.p.terminal.core.managers.TonKitManagerKt")
+        every {
+            any<Account>().toTonWalletFullAccess(any(), any(), any())
+        } returns mockk(relaxed = true)
+        coEvery { tonConnectManager.getManifest(any(), request.payload.manifestUrl) } returns manifest
+        coEvery { tonConnectManager.connect(any(), any(), any(), any(), any()) } returns mockk(relaxed = true)
+        val viewModel = createViewModel(URI)
+        advanceUntilIdle()
+
+        viewModel.onSelectWalletVersion(TonWalletVersion.W5)
+        viewModel.connect()
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) { tonConnectManager.connect(tonAccount.id, request, manifest, "${tonAccount.id}-w5", any()) }
+        verify { tonAccount.toTonWalletFullAccess(TonWalletVersion.W5, any(), any()) }
+    }
+
+    private fun enabledWallet(type: TokenType) = EnabledWallet(
+        tokenQueryId = TokenQuery(BlockchainType.Ton, type).id,
+        accountId = "account",
+        coinImage = null,
+    )
+
+    private fun setAccounts(accounts: List<Account>, active: Account?) {
+        every { accountManager.accounts } returns accounts
+        every { accountManager.activeAccount } returns active
+        every { accountManager.activeAccountStateFlow } returns
+            MutableStateFlow<ActiveAccountState>(ActiveAccountState.ActiveAccount(active))
+    }
+
+    private fun tonAccount(id: String) = Account(
+        id = id,
+        name = "Ton $id",
+        type = AccountType.Mnemonic(mnemonicWords, ""),
+        origin = AccountOrigin.Created,
+        level = 1,
+        isBackedUp = true
+    )
+
+    private fun hardwareTonAccount(id: String) = Account(
+        id = id,
+        name = "Hardware $id",
+        type = AccountType.HardwareCard("card$id", 1, "hw$id", 1),
+        origin = AccountOrigin.Restored,
+        level = 1,
+        isBackedUp = true
+    )
+
+    private fun watchAccount(id: String) = Account(
+        id = id,
+        name = "Watch $id",
+        type = AccountType.TonAddress("UQC${id}Hash"),
+        origin = AccountOrigin.Restored,
+        level = 1,
+        isBackedUp = true
+    )
+
+    private fun manifest(url: String = "https://ton.dapp") = DAppManifestEntity(
+        url = url,
+        name = "Test dApp",
+        iconUrl = "$url/icon.png",
+        termsOfUseUrl = null,
+        privacyPolicyUrl = null
+    )
+
+    private fun requestStub(manifestUrl: String): DAppRequestEntity {
+        val payload = DAppPayloadEntity(manifestUrl = manifestUrl, items = emptyList())
+        return mockk(relaxed = true) {
+            every { this@mockk.payload } returns payload
+            every { id } returns "request-id"
+        }
+    }
+
+    @Test
+    fun `manifest retries on failure and succeeds on second attempt`() = runTest(dispatcher) {
+        val tonAccount = tonAccount("ton-retry")
+        setAccounts(listOf(tonAccount), tonAccount)
+
+        val manifest = manifest()
+        coEvery {
+            tonConnectManager.getManifest(any(), request.payload.manifestUrl)
+        } throws RuntimeException("timeout") andThen manifest
+
+        val viewModel = createViewModel(URI)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState
+        assertEquals(manifest, state.manifest)
+        assertNull(state.error)
+        assertTrue(state.connectEnabled)
+        coVerify(exactly = 2) { tonConnectManager.getManifest(any(), any()) }
+    }
+
+    @Test
+    fun `manifest retries exhaust and shows error`() = runTest(dispatcher) {
+        val tonAccount = tonAccount("ton-exhaust")
+        setAccounts(listOf(tonAccount), tonAccount)
+
+        coEvery {
+            tonConnectManager.getManifest(any(), request.payload.manifestUrl)
+        } throws RuntimeException("timeout")
+
+        val viewModel = createViewModel(URI)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState
+        assertNull(state.manifest)
+        assertIs<NoManifestError>(state.error)
+        coVerify(exactly = 3) { tonConnectManager.getManifest(any(), any()) }
+    }
+
+    @Test
+    fun `noTonAccountError is preserved after manifest loads`() = runTest(dispatcher) {
+        val watchAccount = watchAccount("watch-preserve")
+        setAccounts(listOf(watchAccount), watchAccount)
+        coEvery { tonConnectManager.getManifest(any(), request.payload.manifestUrl) } returns manifest()
+
+        val viewModel = createViewModel(URI)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState
+        assertIs<NoTonAccountError>(state.error)
+        assertFalse(state.connectEnabled)
+    }
+
+    @Test
+    fun `reject does not set finish`() = runTest(dispatcher) {
+        val tonAccount = tonAccount("ton-reject")
+        setAccounts(listOf(tonAccount), tonAccount)
+        coEvery { tonConnectManager.getManifest(any(), request.payload.manifestUrl) } returns manifest()
+
+        val viewModel = createViewModel(URI)
+        advanceUntilIdle()
+
+        viewModel.reject()
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.finish)
+    }
+
+    @Test
+    fun reject_whileConnecting_cancelsWithoutFinishOrToast() = runTest(dispatcher) {
+        val tonAccount = tonAccount("ton-abandon")
+        setAccounts(listOf(tonAccount), tonAccount)
+        mockkStatic("cash.p.terminal.core.managers.TonKitManagerKt")
+        every {
+            any<Account>().toTonWalletFullAccess(any(), any(), any())
+        } returns mockk(relaxed = true)
+        coEvery { tonConnectManager.getManifest(any(), request.payload.manifestUrl) } returns manifest()
+        var connectCancelled = false
+        coEvery { tonConnectManager.connect(any(), any(), any(), any(), any()) } coAnswers {
+            try {
+                awaitCancellation()
+            } finally {
+                connectCancelled = true
+            }
+        }
+        val viewModel = createViewModel(URI)
+        advanceUntilIdle()
+        viewModel.connect()
+        advanceUntilIdle()
+
+        viewModel.reject()
+        advanceUntilIdle()
+
+        assertTrue(connectCancelled)
+        assertFalse(viewModel.uiState.finish)
+        assertNull(viewModel.uiState.toast)
+    }
+
+    @Test
+    fun `connectEnabled is false while manifest is loading`() = runTest(dispatcher) {
+        val tonAccount = tonAccount("ton-loading")
+        setAccounts(listOf(tonAccount), tonAccount)
+
+        coEvery {
+            tonConnectManager.getManifest(any(), request.payload.manifestUrl)
+        } coAnswers {
+            delay(5000)
+            manifest()
+        }
+
+        val viewModel = createViewModel(URI)
+
+        val state = viewModel.uiState
+        assertNull(state.manifest)
+        assertFalse(state.connectEnabled && state.manifest != null)
+    }
+
+    private val mnemonicWords = listOf(
+        "abandon", "ability", "able", "about", "above", "absent",
+        "absorb", "abstract", "absurd", "abuse", "access", "accident"
+    )
+
+    private fun createViewModel(uri: String) = TonConnectNewViewModel(
+        uri = uri,
+        tonConnectManager = tonConnectManager,
+        hardwarePublicKeyStorage = hardwarePublicKeyStorage,
+        accountManager = accountManager,
+        enabledWalletStorage = enabledWalletStorage,
+        dispatchers = testDispatcherProvider,
+    )
+
+    private companion object {
+        const val URI = "tc://?v=2&id=request-id&r=%7B%7D"
+        const val MALFORMED_URI = "tc://?v=2"
+        const val MASTER = "EQmaster"
+    }
+}

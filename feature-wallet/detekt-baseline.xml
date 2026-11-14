@@ -72,6 +72,7 @@
     <ID>ComposableParamOrder:HSAddressInput.kt$HSAddressInput</ID>
     <ID>ComposableParamOrder:HSAmountInput.kt$HSAmountInput</ID>
     <ID>ComposableParamOrder:HSFeeInput.kt$HSFeeRaw</ID>
+    <ID>ComposableParamOrder:HeaderCell.kt$HeaderCell</ID>
     <ID>ComposableParamOrder:MarkdownContent.kt$MarkdownContent</ID>
     <ID>ComposableParamOrder:OfflineBroadcastScreen.kt$BlockchainPicker</ID>
     <ID>ComposableParamOrder:QuoteInfoRow.kt$QuoteInfoRow</ID>
@@ -185,6 +186,8 @@
     <ID>CyclomaticComplexMethod:SyncPendingMultiSwapUseCase.kt$SyncPendingMultiSwapUseCase$private suspend fun scanIncoming( sideOut: SwapSide, expectedAmount: BigDecimal?, legStartTime: Long, ): IncomingMatch?</ID>
     <ID>CyclomaticComplexMethod:TokenBalanceScreen.kt$@Composable internal fun TokenBalanceScreenContent( uiState: TokenBalanceModule.TokenBalanceUiState, secondaryValue: DeemedValue&lt;String&gt;, sendResult: SendResult?, navigation: HSNavigation, refreshing: Boolean, onToggleFavorite: () -&gt; Unit, onToggleBalanceVisibility: () -&gt; Unit, onSearchClick: () -&gt; Unit, onSearchClose: () -&gt; Unit, onSearchQueryChange: (String) -&gt; Unit, onSetTransactionType: (FilterTransactionType) -&gt; Unit, onWillShow: (TransactionViewItem) -&gt; Unit, onTransactionClick: (TransactionViewItem) -&gt; Unit, onSensitiveTransactionClick: (TransactionViewItem) -&gt; Unit, onBottomReached: () -&gt; Unit, onSetAmlCheckEnabled: (Boolean) -&gt; Unit, onDismissAmlPromo: () -&gt; Unit, onDismissNetworkFeeWarning: () -&gt; Unit, onSendClick: () -&gt; Unit, onReceiveClick: () -&gt; Unit, onSwapClick: () -&gt; Unit, onShieldClick: () -&gt; Unit, onSyncErrorClick: (BalanceViewItem) -&gt; Unit, onStackingClicked: () -&gt; Unit, onShowAllTransactionsClicked: () -&gt; Unit, onClickSubtitle: () -&gt; Unit, onRefresh: () -&gt; Unit, onSettingsClick: () -&gt; Unit, onGoOnline: () -&gt; Unit, nftSection: (@Composable () -&gt; Unit)? = null, )</ID>
     <ID>CyclomaticComplexMethod:TokenBalanceScreen.kt$@Composable private fun TokenBalanceHeader( balanceViewItem: BalanceViewItem, uiState: TokenBalanceModule.TokenBalanceUiState, secondaryValue: DeemedValue&lt;String&gt;, onStackingClicked: () -&gt; Unit, onClickSubtitle: () -&gt; Unit, onToggleBalanceVisibility: () -&gt; Unit, onSendClick: () -&gt; Unit, onReceiveClick: () -&gt; Unit, onSwapClick: () -&gt; Unit, onShieldClick: () -&gt; Unit, onSyncErrorClick: (BalanceViewItem) -&gt; Unit, onDismissNetworkFeeWarning: () -&gt; Unit, isShowShieldFunds: Boolean )</ID>
+    <ID>CyclomaticComplexMethod:TonConnectNewScreen.kt$@Composable fun TonConnectNewScreen( navigation: HSNavigation, uri: String, onResult: (Boolean) -&gt; Unit, )</ID>
+    <ID>CyclomaticComplexMethod:TonConnectSendRequestViewModel.kt$TonConnectSendRequestViewModel$private suspend fun prepareEnv()</ID>
     <ID>CyclomaticComplexMethod:TonTransactionConverter.kt$TonTransactionConverter$private fun getActionType(action: Action): TonTransactionRecord.Action.Type</ID>
     <ID>CyclomaticComplexMethod:TransactionInfoPage.kt$@Composable fun TransactionInfoSection( section: List&lt;TransactionInfoViewItem&gt;, navigation: HSNavigation, onSensitiveValueClick: () -&gt; Unit, getRawTransaction: () -&gt; String?, hideSensitiveInfo: Boolean, onAmlInfoClick: () -&gt; Unit = {}, onPendingStatusTap: (() -&gt; Unit)? = null, onAmlRiskClick: (List&lt;String&gt;, AmlStatus) -&gt; Unit = { _, _ -&gt; }, )</ID>
     <ID>CyclomaticComplexMethod:TransactionInfoViewItemFactory.kt$TransactionInfoViewItemFactory$fun getViewItemSections(transactionItem: TransactionInfoItem): List&lt;List&lt;TransactionInfoViewItem&gt;&gt;</ID>
@@ -376,6 +379,11 @@
     <ID>LongMethod:TokenBalanceScreen.kt$@Composable private fun ButtonsRow( viewItem: BalanceViewItem, sendEnabled: Boolean, onSendClick: () -&gt; Unit, onReceiveClick: () -&gt; Unit, onShieldClick: () -&gt; Unit, onStackingClicked: () -&gt; Unit, isShowShieldFunds: Boolean, backupRequired: Boolean, onSwapClick: () -&gt; Unit, )</ID>
     <ID>LongMethod:TokenBalanceScreen.kt$@Composable private fun TokenBalanceHeader( balanceViewItem: BalanceViewItem, uiState: TokenBalanceModule.TokenBalanceUiState, secondaryValue: DeemedValue&lt;String&gt;, onStackingClicked: () -&gt; Unit, onClickSubtitle: () -&gt; Unit, onToggleBalanceVisibility: () -&gt; Unit, onSendClick: () -&gt; Unit, onReceiveClick: () -&gt; Unit, onSwapClick: () -&gt; Unit, onShieldClick: () -&gt; Unit, onSyncErrorClick: (BalanceViewItem) -&gt; Unit, onDismissNetworkFeeWarning: () -&gt; Unit, isShowShieldFunds: Boolean )</ID>
     <ID>LongMethod:TokenSelectScreen.kt$@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class) @Composable internal fun TokenSelectScreen( navigation: HSNavigation, title: String, uiState: TokenSelectUiState, searchHintText: String = "", onClickItem: (BalanceViewItem2) -&gt; Unit, onBalanceClick: (BalanceViewItem2) -&gt; Unit, updateFilter: (String) -&gt; Unit, emptyItemsText: String, windowInsets: WindowInsets = NavigationBarDefaults.windowInsets, header: @Composable (() -&gt; Unit)? = null )</ID>
+    <ID>LongMethod:TonConnectMainScreen.kt$@Composable fun TonConnectMainScreen( viewModel: TonConnectListViewModel, navigation: HSNavigation, deepLinkUri: String?, windowInsets: WindowInsets = NavigationBarDefaults.windowInsets, )</ID>
+    <ID>LongMethod:TonConnectNewScreen.kt$@Composable fun TonConnectNewScreen( navigation: HSNavigation, uri: String, onResult: (Boolean) -&gt; Unit, )</ID>
+    <ID>LongMethod:TonConnectSendRequestScreen.kt$@Composable fun TonConnectRequestActionSection( action: TonTransactionRecord.Action, transactionInfoHelper: TransactionInfoHelper, navigation: HSNavigation, )</ID>
+    <ID>LongMethod:TonConnectSendRequestScreen.kt$@Composable fun TonConnectSendRequestScreen( navigation: HSNavigation, viewModel: TonConnectSendRequestViewModel, )</ID>
+    <ID>LongMethod:TonConnectSendRequestViewModel.kt$TonConnectSendRequestViewModel$private suspend fun prepareEnv()</ID>
     <ID>LongMethod:TonHelper.kt$TonHelper$fun getViewItemsForAction( action: TonTransactionRecord.Action, rates: Map&lt;String, CurrencyValue&gt;, blockchainType: BlockchainType, hideAmount: Boolean, showCopyWarning: Boolean = false, ): List&lt;TransactionInfoViewItem&gt;</ID>
     <ID>LongMethod:TonTransactionConverter.kt$TonTransactionConverter$private fun getActionType(action: Action): TonTransactionRecord.Action.Type</ID>
     <ID>LongMethod:TransactionAdapterWrapperTest.kt$TransactionAdapterWrapperTest$@Test fun get_groupedWalletRealOutgoingDifferentToken_pendingRemainsVisible()</ID>
@@ -475,6 +483,7 @@
     <ID>LongParameterList:TransactionViewItemFactory.kt$TransactionViewItemFactory$( uid: String, value: TransactionValue, to: String, blockchainType: BlockchainType, timestamp: Long, sentToSelf: Boolean, currencyValue: CurrencyValue?, progress: Float?, spam: Boolean, icon: TransactionViewItem.Icon? )</ID>
     <ID>LongParameterList:TransactionsFilterPage.kt$( uiState: FilterScreenUiState, onReset: () -&gt; Unit, onBlockchainClick: () -&gt; Unit, onCoinClick: () -&gt; Unit, onContactClick: () -&gt; Unit, onHideSuspiciousTxChange: (Boolean) -&gt; Unit, onAmlCheckChange: (Boolean) -&gt; Unit, onAmlInfoClick: () -&gt; Unit, onApply: () -&gt; Unit, onBack: () -&gt; Unit )</ID>
     <ID>LongParameterList:TransactionsViewModel.kt$TransactionsViewModel$( private val service: TransactionsService, private val transactionViewItem2Factory: TransactionViewItemFactory, private val balanceHiddenManager: BalanceHiddenManager, private val transactionAdapterManager: TransactionAdapterManager, private val walletManager: IWalletManager, private val transactionFilterService: TransactionFilterService, private val transactionHiddenManager: TransactionHiddenManager, private val premiumSettings: PremiumSettings, private val amlStatusManager: AmlStatusManager, private val adapterManager: IAdapterManager, private val swapProviderTransactionsStorage: SwapProviderTransactionsStorage, private val contactsRepository: ContactsRepository, private val dispatcherProvider: DispatcherProvider, )</ID>
+    <ID>LongParameterList:TransferCoinSection.kt$( amountTitle: String, transactionValue: TransactionValue, coinAmountColor: AmountColor, coinAmountSign: AmountSign, addressTitle: String, address: String, comment: String?, navigation: HSNavigation, transactionInfoHelper: TransactionInfoHelper, blockchainType: BlockchainType, )</ID>
     <ID>LongParameterList:UtxoExpertModeScreen.kt$( id: String, selected: Boolean, showTopBorder: Boolean, title: String, subtitle: String, value: String, subValue: String?, onItemClicked: (String) -&gt; Unit, topRoundedCorners: Boolean, bottomRoundedCorners: Boolean )</ID>
     <ID>LoopWithTooManyJumpStatements:SyncPendingMultiSwapUseCase.kt$SyncPendingMultiSwapUseCase$for</ID>
     <ID>Material2:AddressEnterBottomSheet.kt$import androidx.compose.material.Text</ID>
@@ -484,6 +493,7 @@
     <ID>Material2:AmlCheckPromoBanner.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:AmlCheckPromoBanner.kt$import androidx.compose.material.ripple</ID>
     <ID>Material2:AmlCheckRow.kt$import androidx.compose.material.ripple</ID>
+    <ID>Material2:AmountCell.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:BackupManagerPage.kt$import androidx.compose.material.ExperimentalMaterialApi</ID>
     <ID>Material2:BackupManagerPage.kt$import androidx.compose.material.ModalBottomSheetValue</ID>
     <ID>Material2:BackupManagerPage.kt$import androidx.compose.material.rememberModalBottomSheetState</ID>
@@ -538,6 +548,8 @@
     <ID>Material2:SuggestionsBar.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:SwapDirectionIndicator.kt$import androidx.compose.material.ripple</ID>
     <ID>Material2:SwapSettingsComponents.kt$import androidx.compose.material.Text</ID>
+    <ID>Material2:TonConnectMainScreen.kt$import androidx.compose.material.ModalBottomSheetValue</ID>
+    <ID>Material2:TonConnectMainScreen.kt$import androidx.compose.material.rememberModalBottomSheetState</ID>
     <ID>Material2:TransactionDoubleSpendInfoPage.kt$import androidx.compose.material.Divider</ID>
     <ID>Material2:TransactionDoubleSpendInfoPage.kt$import androidx.compose.material.Surface</ID>
     <ID>Material2:TransactionInputSortModeInfoSceen.kt$import androidx.compose.material.Surface</ID>
@@ -559,6 +571,7 @@
     <ID>ModifierComposed:Shake.kt$shake</ID>
     <ID>ModifierMissing:AboutPremiumScreen.kt$AboutPremiumScreen</ID>
     <ID>ModifierMissing:ActivateTokenPage.kt$ActivateTokenScreen</ID>
+    <ID>ModifierMissing:AddressCell.kt$AddressCell</ID>
     <ID>ModifierMissing:AddressCheckBlockchainSelector.kt$AddressCheckBlockchainSelectorScreen</ID>
     <ID>ModifierMissing:AddressCheckTokenSelector.kt$AddressCheckTokenSelectorScreen</ID>
     <ID>ModifierMissing:AddressCheckerPage.kt$AddressCheckerScreen</ID>
@@ -568,6 +581,7 @@
     <ID>ModifierMissing:AddressFormatSelectScreen.kt$AddressFormatSelectScreen</ID>
     <ID>ModifierMissing:AddressScreen.kt$AddressScreen</ID>
     <ID>ModifierMissing:AmlCheckInfoBottomSheet.kt$AmlCheckInfoBottomSheet</ID>
+    <ID>ModifierMissing:AmountCell.kt$AmountCell</ID>
     <ID>ModifierMissing:AssetSettingsScreen.kt$AssetSettingsScreen</ID>
     <ID>ModifierMissing:BackupConfirmKeyPage.kt$RecoveryPhraseVerifyScreen</ID>
     <ID>ModifierMissing:BackupKeyPage.kt$RecoveryPhraseScreen</ID>
@@ -606,6 +620,7 @@
     <ID>ModifierMissing:DataFieldFee.kt$DataFieldFee</ID>
     <ID>ModifierMissing:DisplayOptionsScreen.kt$PriceParametersSection</ID>
     <ID>ModifierMissing:DonateAddressesPage.kt$DonateScreen</ID>
+    <ID>ModifierMissing:DropDownCell.kt$DropDownCell</ID>
     <ID>ModifierMissing:DuplicateWalletScreen.kt$DuplicateWalletScreen</ID>
     <ID>ModifierMissing:Eip20ApprovePage.kt$Eip20ApproveScreen</ID>
     <ID>ModifierMissing:Eip20RevokeConfirmPage.kt$Eip20RevokeScreen</ID>
@@ -617,6 +632,7 @@
     <ID>ModifierMissing:HSHodlerInput.kt$HSHodler</ID>
     <ID>ModifierMissing:HSHodlerInput.kt$HSHodlerInput</ID>
     <ID>ModifierMissing:HSMemoInput.kt$HSMemoInput</ID>
+    <ID>ModifierMissing:HeaderCell.kt$HeaderCell</ID>
     <ID>ModifierMissing:ManageAccountsPage.kt$ManageAccountsScreen</ID>
     <ID>ModifierMissing:MarkdownFooter.kt$MarkdownFooter</ID>
     <ID>ModifierMissing:MoneroConfigurePage.kt$BirthdayHeightAppBar</ID>
@@ -682,6 +698,12 @@
     <ID>ModifierMissing:SwapSettingsComponents.kt$SlippageAmount</ID>
     <ID>ModifierMissing:SwapSettingsComponents.kt$TransactionDeadlineInput</ID>
     <ID>ModifierMissing:SwapSettingsScreen.kt$SwapSettingsScreen</ID>
+    <ID>ModifierMissing:TitleAndValueCell.kt$TitleAndValueCell</ID>
+    <ID>ModifierMissing:TonConnectMainScreen.kt$TonConnectMainScreen</ID>
+    <ID>ModifierMissing:TonConnectNewScreen.kt$TonConnectNewScreen</ID>
+    <ID>ModifierMissing:TonConnectSendRequestScreen.kt$TonConnectSendRequestScreen</ID>
+    <ID>ModifierMissing:TonConnectSessionList.kt$TCSessionCell</ID>
+    <ID>ModifierMissing:TonConnectSessionList.kt$TonConnectSessionList</ID>
     <ID>ModifierMissing:TransactionDoubleSpendInfoPage.kt$ConflictingTransactions</ID>
     <ID>ModifierMissing:TransactionInfoCells.kt$DescriptionCell</ID>
     <ID>ModifierMissing:TransactionInfoCells.kt$PoisonAddressRiskSection</ID>
@@ -787,6 +809,7 @@
     <ID>RethrowCaughtException:UnifiedAddressCheckerViewModel.kt$UnifiedAddressCheckerViewModel$throw e</ID>
     <ID>ReturnCount:DeniableEncryptionManager.kt$DeniableEncryptionManager$fun extractMessageFromBytes(container: ByteArray, password: String): ByteArray?</ID>
     <ID>ReturnCount:SyncPendingMultiSwapUseCase.kt$SyncPendingMultiSwapUseCase$private suspend fun findSwapProviderTransaction( providerTransactionId: String?, transactionId: String?, providerId: String, sideOut: SwapSide, amountOut: BigDecimal?, accountId: String, legStartTime: Long, ): SwapProviderTransaction?</ID>
+    <ID>ReturnCount:TonConnectSendRequestViewModel.kt$TonConnectSendRequestViewModel$private suspend fun prepareEnv()</ID>
     <ID>ReturnCount:TonTransactionConverter.kt$TonTransactionConverter$private fun getActionType(action: Action): TonTransactionRecord.Action.Type</ID>
     <ID>SpreadOperator:AdapterExceptions.kt$(errorTextRes, *formatArgs)</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:ActivateTokenViewModel.kt$ActivateTokenViewModel.Factory$IllegalArgumentException()</ID>

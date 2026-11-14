@@ -25,7 +25,6 @@ import cash.p.terminal.modules.walletconnect.request.WCRequestEvmViewModel
 import cash.p.terminal.modules.settings.main.MainSettingsViewModel
 import cash.p.terminal.modules.settings.privacy.PrivacyViewModel
 import cash.p.terminal.modules.settings.security.passcode.SecuritySettingsViewModel
-import cash.p.terminal.modules.tonconnect.TonConnectListViewModel
 import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedSheet
 import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedViewModel
 import io.horizontalsystems.core.DefaultDispatcherProvider
@@ -58,7 +57,6 @@ val viewModelModule = module {
     viewModelOf(::MarkdownLocalViewModel)
     viewModelOf(::PushNotificationsViewModel)
     viewModelOf(::SendSmsNotificationViewModel)
-    viewModelOf(::TonConnectListViewModel)
     viewModelOf(::PinUnlockViewModel)
     viewModel { (input: AccountTypeNotSupportedSheet.Input) ->
         AccountTypeNotSupportedViewModel(input = input, accountManager = get())

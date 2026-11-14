@@ -9,7 +9,6 @@
     <ID>AppSingletonAccess:AmountInputModeModule.kt$AmountInputModeModule.Factory$App.localStorage</ID>
     <ID>AppSingletonAccess:AmountInputModeModule.kt$AmountInputModeModule.Factory$App.marketKit</ID>
     <ID>AppSingletonAccess:AmountInputViewModel2.kt$AmountInputViewModel2$App.numberFormatter</ID>
-    <ID>AppSingletonAccess:AmountString.kt$App.numberFormatter</ID>
     <ID>AppSingletonAccess:AutoLockModule.kt$AutoLockModule.Factory$App.localStorage</ID>
     <ID>AppSingletonAccess:BackupConfirmKeyModule.kt$BackupConfirmKeyModule.Factory$App.accountManager</ID>
     <ID>AppSingletonAccess:BaseActivity.kt$BaseActivity$App.sqlCipherLoadFailed</ID>
@@ -126,12 +125,6 @@
     <ID>AppSingletonAccess:TokenSelectViewModel.kt$TokenSelectViewModel.FactoryForSend$App.balanceHiddenManager</ID>
     <ID>AppSingletonAccess:TokenSelectViewModel.kt$TokenSelectViewModel.FactoryForSend$App.currencyManager</ID>
     <ID>AppSingletonAccess:TokenSelectViewModel.kt$TokenSelectViewModel.FactoryForSend$App.marketKit</ID>
-    <ID>AppSingletonAccess:TonConnectSendRequestScreen.kt$App.accountManager</ID>
-    <ID>AppSingletonAccess:TonConnectSendRequestScreen.kt$App.tonConnectManager</ID>
-    <ID>AppSingletonAccess:TonConnectSendRequestViewModel.kt$TonConnectSendRequestViewModel$App.coinManager</ID>
-    <ID>AppSingletonAccess:TransactionInfoHelper.kt$TransactionInfoHelper$App.contactsRepository</ID>
-    <ID>AppSingletonAccess:TransactionInfoHelper.kt$TransactionInfoHelper$App.currencyManager</ID>
-    <ID>AppSingletonAccess:TransactionInfoHelper.kt$TransactionInfoHelper$App.marketKit</ID>
     <ID>AppSingletonAccess:UnlinkAccountModule.kt$UnlinkAccountModule.Factory$App.accountManager</ID>
     <ID>AppSingletonAccess:UtxoExpertModeViewModel.kt$UtxoExpertModeModule.Factory$App.currencyManager</ID>
     <ID>AppSingletonAccess:UtxoExpertModeViewModel.kt$UtxoExpertModeModule.Factory$App.marketKit</ID>
@@ -168,12 +161,10 @@
     <ID>ComposableNaming:MainSettingsScreen.kt$previewSettingsScreen</ID>
     <ID>ComposableParamOrder:BlockchainSettingsPage.kt$BlockchainSettingsBlock</ID>
     <ID>ComposableParamOrder:EvmNetworkPage.kt$RpcCell</ID>
-    <ID>ComposableParamOrder:HeaderCell.kt$HeaderCell</ID>
     <ID>ComposableParamOrder:PinNumpad.kt$ImageKey</ID>
     <ID>ComposableParamOrder:PinNumpad.kt$PinNumpad</ID>
     <ID>ComposableParamOrder:PinTopBlock.kt$PinTopBlock</ID>
     <ID>ComposableParamOrder:SemiCircleChart.kt$SemiCircleChart</ID>
-    <ID>ComposableParamOrder:TonConnectSessionList.kt$TCSessionCell</ID>
     <ID>ComposableParamOrder:WCSessionCell.kt$WCSessionCell</ID>
     <ID>ContentSlotReused:CrossSlide.kt$content</ID>
     <ID>CyclomaticComplexMethod:MainActivity.kt$MainActivity$override fun onCreate(savedInstanceState: Bundle?)</ID>
@@ -184,8 +175,6 @@
     <ID>CyclomaticComplexMethod:PinSetViewModel.kt$PinSetViewModel$fun onKeyClick(number: Int)</ID>
     <ID>CyclomaticComplexMethod:PushNotificationsPage.kt$PushNotificationsPage$@Composable override fun GetContent(navigation: HSNavigation)</ID>
     <ID>CyclomaticComplexMethod:SendSmsNotificationScreen.kt$@Composable fun SendSmsNotificationScreen( navigation: HSNavigation, appPages: AppPages, uiState: SendSmsNotificationUiState, onEnabledChange: (Boolean) -&gt; Unit, onAccountSelected: (Account) -&gt; Unit, onAddressChanged: (String) -&gt; Unit, onMemoChanged: (String) -&gt; Unit, onSaveClick: () -&gt; Unit, onTestSmsClick: () -&gt; Unit, onSaveSuccessShown: () -&gt; Unit, onTestResultShown: () -&gt; Unit, onCancelTest: () -&gt; Unit, onClose: () -&gt; Unit )</ID>
-    <ID>CyclomaticComplexMethod:TonConnectNewScreen.kt$@Composable fun TonConnectNewScreen( navigation: HSNavigation, uri: String, onResult: (Boolean) -&gt; Unit, )</ID>
-    <ID>CyclomaticComplexMethod:TonConnectSendRequestViewModel.kt$TonConnectSendRequestViewModel$private suspend fun prepareEnv()</ID>
     <ID>CyclomaticComplexMethod:TweetsPageResponse.kt$TweetsPageResponse$fun tweets(user: TwitterUser): List&lt;Tweet&gt;</ID>
     <ID>EmptyCatchBlock:CoreUtils.kt$ProcessUtils${ }</ID>
     <ID>EmptyCatchBlock:TorControl.kt$TorControl${ }</ID>
@@ -264,11 +253,6 @@
     <ID>LongMethod:SetDuressPinSelectAccountsPage.kt$@Composable fun SetDuressPinSelectAccountsScreen( regularAccounts: List&lt;Account&gt;, watchAccounts: List&lt;Account&gt;, navigation: HSNavigation )</ID>
     <ID>LongMethod:SystemPinBlock.kt$@Composable fun SystemPinBlock( isPinRequired: Boolean, enabled: Boolean, showInfoBlock: Boolean = true, onPinRequiredChange: (Boolean) -&gt; Unit, )</ID>
     <ID>LongMethod:TokenBalanceModule.kt$TokenBalanceModule.Factory$@Suppress("UNCHECKED_CAST") override fun &lt;T : ViewModel&gt; create(modelClass: Class&lt;T&gt;): T</ID>
-    <ID>LongMethod:TonConnectMainScreen.kt$@Composable fun TonConnectMainScreen( viewModel: TonConnectListViewModel, navigation: HSNavigation, deepLinkUri: String?, windowInsets: WindowInsets = NavigationBarDefaults.windowInsets, )</ID>
-    <ID>LongMethod:TonConnectNewScreen.kt$@Composable fun TonConnectNewScreen( navigation: HSNavigation, uri: String, onResult: (Boolean) -&gt; Unit, )</ID>
-    <ID>LongMethod:TonConnectSendRequestScreen.kt$@Composable fun TonConnectRequestActionSection( action: TonTransactionRecord.Action, transactionInfoHelper: TransactionInfoHelper, navigation: HSNavigation, )</ID>
-    <ID>LongMethod:TonConnectSendRequestScreen.kt$@Composable fun TonConnectSendRequestScreen( navigation: HSNavigation, viewModel: TonConnectSendRequestViewModel, )</ID>
-    <ID>LongMethod:TonConnectSendRequestViewModel.kt$TonConnectSendRequestViewModel$private suspend fun prepareEnv()</ID>
     <ID>LongMethod:TransactionAutoHideBlock.kt$@Composable internal fun TransactionAutoHideBlock( transactionAutoHideEnabled: Boolean, displayLevel: TransactionDisplayLevel, transactionAutoHideSeparatePinExists: Boolean, onTransactionAutoHideEnabledChange: (Boolean) -&gt; Unit, onPinClicked: () -&gt; Unit, onDisablePinClicked: () -&gt; Unit, onChangeDisplayClicked: () -&gt; Unit )</ID>
     <ID>LongMethod:TweetsPageResponse.kt$TweetsPageResponse$fun tweets(user: TwitterUser): List&lt;Tweet&gt;</ID>
     <ID>LongMethod:WCRequestPage.kt$WCRequestPage$@Composable fun WcRequestEvm(navigation: HSNavigation)</ID>
@@ -281,15 +265,13 @@
     <ID>LongParameterList:AppearanceScreen.kt$( uiState: AppearanceUIState, onThemeSelect: (ThemeType) -&gt; Unit, onLaunchScreenSelect: (LaunchPage) -&gt; Unit, onBalanceViewTypeSelect: (BalanceViewType) -&gt; Unit, onPriceChangeIntervalSelect: (PriceChangeInterval) -&gt; Unit, onMarketTabsHiddenChange: (Boolean) -&gt; Unit, onBalanceTabButtonsHiddenChange: (Boolean) -&gt; Unit, onAppIconClick: () -&gt; Unit, onClose: () -&gt; Unit )</ID>
     <ID>LongParameterList:BackupProvider.kt$BackupProvider$( localStorage: ILocalStorage, languageManager: LanguageManager, walletStorage: IEnabledWalletStorage, settingsManager: RestoreSettingsManager, accountManager: IAccountManager, accountFactory: IAccountFactory, walletManager: IWalletManager, restoreSettingsManager: RestoreSettingsManager, blockchainSettingsStorage: BlockchainSettingsStorage, evmBlockchainManager: EvmBlockchainManager, marketFavoritesManager: MarketFavoritesManager, balanceViewTypeManager: BalanceViewTypeManager, appIconService: AppIconService, themeService: ThemeService, chartIndicatorManager: ChartIndicatorManager, chartIndicatorSettingsDao: ChartIndicatorSettingsDao, balanceHiddenManager: BalanceHiddenManager, baseTokenManager: BaseTokenManager, launchScreenService: LaunchScreenService, currencyManager: CurrencyManager, btcBlockchainManager: BtcBlockchainManager, evmSyncSourceManager: EvmSyncSourceManager, evmSyncSourceStorage: EvmSyncSourceStorage, solanaRpcSourceManager: SolanaRpcSourceManager, contactsRepository: ContactsRepository )</ID>
     <ID>LongParameterList:CreateTrezorWalletUseCase.kt$CreateTrezorWalletUseCase$( private val trezorClient: ITrezorClient, private val accountManager: IAccountManager, private val accountsStorage: IAccountsStorage, private val hardwarePublicKeyStorage: IHardwarePublicKeyStorage, private val dispatcherProvider: DispatcherProvider, private val accountFactory: IAccountFactory, private val walletActivator: WalletActivator, private val moneroReadiness: MoneroTrezorReadiness, private val moneroProvisioner: MoneroDeviceWalletProvisioner, private val restoreSettingsManager: RestoreSettingsManager, )</ID>
-    <ID>LongParameterList:MainActivityViewModel.kt$MainActivityViewModel$( private val userManager: DefaultUserManager, private val accountManager: IAccountManager, private val systemInfoManager: ISystemInfoManager, private val localStorage: ILocalStorage, private val checkPremiumUseCase: CheckPremiumUseCase, private val calculatorModeService: CalculatorModeService, private val dispatcherProvider: DispatcherProvider, pinComponent: IPinComponent, private val keyStoreManager: IKeyStoreManager, private val tonConnectManager: TonConnectManager, private val loginRecordRepository: ILoginRecordRepository, )</ID>
+    <ID>LongParameterList:MainActivityViewModel.kt$MainActivityViewModel$( private val userManager: DefaultUserManager, private val accountManager: IAccountManager, private val systemInfoManager: ISystemInfoManager, private val localStorage: ILocalStorage, private val checkPremiumUseCase: CheckPremiumUseCase, private val calculatorModeService: CalculatorModeService, private val dispatcherProvider: DispatcherProvider, pinComponent: IPinComponent, private val keyStoreManager: IKeyStoreManager, private val loginRecordRepository: ILoginRecordRepository, )</ID>
     <ID>LongParameterList:MainSettingsScreen.kt$( action: SettingsAction, navigation: HSNavigation, offlineBroadcastScanner: QrScannerLauncher, viewModel: MainSettingsViewModel, context: Context, rawTxScanTitle: String, walletConnectTitle: String, tonConnectTitle: String, importTransactionFile: () -&gt; Unit, )</ID>
     <ID>LongParameterList:MainSettingsViewModel.kt$MainSettingsViewModel$( private val backupManager: IBackupManager, private val systemInfoManager: ISystemInfoManager, private val termsManager: ITermsManager, private val pinComponent: IPinComponent, private val wcSessionManager: WCSessionManager, private val wcManager: WCManager, private val accountManager: IAccountManager, private val languageManager: LanguageManager, private val currencyManager: CurrencyManager, appUpdateChecker: AppUpdateChecker, private val localStorage: ILocalStorage, private val logLoginAttemptUseCase: LogLoginAttemptUseCase, )</ID>
     <ID>LongParameterList:MainViewModel.kt$MainViewModel$( private val pinComponent: IPinComponent, rateAppManager: IRateAppManager, private val backupManager: IBackupManager, private val termsManager: ITermsManager, private val accountManager: IAccountManager, private val releaseNotesManager: ReleaseNotesManager, private val localStorage: ILocalStorage, wcSessionManager: WCSessionManager, private val wcManager: WCManager, private val logLoginAttemptUseCase: LogLoginAttemptUseCase, private val deeplinkParser: DeeplinkParser )</ID>
     <ID>LongParameterList:SecuritySettingsPage.kt$( securitySettingsViewModel: SecuritySettingsViewModel, uiState: SecuritySettingsUiState, torViewModel: SecurityTorSettingsViewModel, navigation: HSNavigation, onTransactionAutoHideEnabledChange: (Boolean) -&gt; Unit, onSetTransactionAutoHidePinClicked: () -&gt; Unit, onDisableTransactionAutoHidePinClicked: () -&gt; Unit, onChangeDisplayClicked: () -&gt; Unit, onTransferPasscodeEnabledChange: (Boolean) -&gt; Unit, showAppRestartAlert: () -&gt; Unit, restartApp: () -&gt; Unit, onEnableSaveAccessCodeForHardwareWallet: (Boolean) -&gt; Unit, onSystemPinRequiredChange: (Boolean) -&gt; Unit, windowInsets: WindowInsets = NavigationBarDefaults.windowInsets, )</ID>
     <ID>LongParameterList:SendSmsNotificationScreen.kt$( navigation: HSNavigation, appPages: AppPages, uiState: SendSmsNotificationUiState, onEnabledChange: (Boolean) -&gt; Unit, onAccountSelected: (Account) -&gt; Unit, onAddressChanged: (String) -&gt; Unit, onMemoChanged: (String) -&gt; Unit, onSaveClick: () -&gt; Unit, onTestSmsClick: () -&gt; Unit, onSaveSuccessShown: () -&gt; Unit, onTestResultShown: () -&gt; Unit, onCancelTest: () -&gt; Unit, onClose: () -&gt; Unit )</ID>
     <ID>LongParameterList:SendZecOnDuressUseCase.kt$SendZecOnDuressUseCase$( private val smsNotificationSettings: ISmsNotificationSettings, private val accountsStorage: IAccountsStorage, private val walletManager: IWalletManager, private val dispatcherProvider: DispatcherProvider, private val adapterFactory: AdapterFactory, private val adapterManager: IAdapterManager, private val coinManager: ICoinManager, private val walletFactory: WalletFactory, private val accountManager: IAccountManager, private val offlineModeUseCase: OfflineModeUseCase, )</ID>
-    <ID>LongParameterList:TransferCoinSection.kt$( amountTitle: String, transactionValue: TransactionValue, coinAmountColor: AmountColor, coinAmountSign: AmountSign, addressTitle: String, address: String, comment: String?, navigation: HSNavigation, transactionInfoHelper: TransactionInfoHelper, blockchainType: BlockchainType, )</ID>
-    <ID>Material2:AmountCell.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:BlockchainSettingsPage.kt$import androidx.compose.material.Surface</ID>
     <ID>Material2:BtcBlockchainSettingsScreen.kt$import androidx.compose.material.Surface</ID>
     <ID>Material2:CardTabs.kt$import androidx.compose.material.ScrollableTabRow</ID>
@@ -307,8 +289,6 @@
     <ID>Material2:MainPage.kt$import androidx.compose.material.BadgedBox</ID>
     <ID>Material2:SetDuressPinIntroPage.kt$import androidx.compose.material.Divider</ID>
     <ID>Material2:SolanaNetworkPage.kt$import androidx.compose.material.Surface</ID>
-    <ID>Material2:TonConnectMainScreen.kt$import androidx.compose.material.ModalBottomSheetValue</ID>
-    <ID>Material2:TonConnectMainScreen.kt$import androidx.compose.material.rememberModalBottomSheetState</ID>
     <ID>Material2:WCSessionCell.kt$import androidx.compose.material.Divider</ID>
     <ID>Material2:WCSessionPage.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:WCSessionScreen.kt$import androidx.compose.material.ModalBottomSheetValue</ID>
@@ -362,15 +342,12 @@
     <ID>ModifierMissing:ActionRow.kt$ActionsRow</ID>
     <ID>ModifierMissing:AddRpcScreen.kt$AddRpcScreen</ID>
     <ID>ModifierMissing:AdditionalDataCell2.kt$AdditionalDataCell2</ID>
-    <ID>ModifierMissing:AddressCell.kt$AddressCell</ID>
-    <ID>ModifierMissing:AmountCell.kt$AmountCell</ID>
     <ID>ModifierMissing:BlockchainSettingsPage.kt$BlockchainSettingsBlock</ID>
     <ID>ModifierMissing:CardTabs.kt$CardTabs</ID>
     <ID>ModifierMissing:CellTweet.kt$CellTweet</ID>
     <ID>ModifierMissing:CoinTweetsScreen.kt$CoinTweetsScreen</ID>
     <ID>ModifierMissing:DoubleText.kt$DoubleText</ID>
     <ID>ModifierMissing:GuidesPage.kt$GuidesScreen</ID>
-    <ID>ModifierMissing:HeaderCell.kt$HeaderCell</ID>
     <ID>ModifierMissing:HsSlider.kt$HsSlider</ID>
     <ID>ModifierMissing:MainSettingsScreen.kt$SettingsScreen</ID>
     <ID>ModifierMissing:ManagePasscodeSection.kt$ManagePasscodeSection</ID>
@@ -387,12 +364,6 @@
     <ID>ModifierMissing:SetDuressPinIntroPage.kt$SetDuressPinIntroScreen</ID>
     <ID>ModifierMissing:SetDuressPinSelectAccountsPage.kt$SetDuressPinSelectAccountsScreen</ID>
     <ID>ModifierMissing:SystemPinBlock.kt$SystemPinBlock</ID>
-    <ID>ModifierMissing:TitleAndValueCell.kt$TitleAndValueCell</ID>
-    <ID>ModifierMissing:TonConnectMainScreen.kt$TonConnectMainScreen</ID>
-    <ID>ModifierMissing:TonConnectNewScreen.kt$TonConnectNewScreen</ID>
-    <ID>ModifierMissing:TonConnectSendRequestScreen.kt$TonConnectSendRequestScreen</ID>
-    <ID>ModifierMissing:TonConnectSessionList.kt$TCSessionCell</ID>
-    <ID>ModifierMissing:TonConnectSessionList.kt$TonConnectSessionList</ID>
     <ID>ModifierMissing:TorBlock.kt$TorBlock</ID>
     <ID>ModifierMissing:WCErrorNoAccountSheet.kt$WalletConnectErrorNoAccount</ID>
     <ID>ModifierMissing:WCRequestPage.kt$ActionButtons</ID>
@@ -402,7 +373,6 @@
     <ID>ModifierMissing:WCSendEthScreen.kt$WCSendEthRequestScreen</ID>
     <ID>ModifierMissing:WCSessionCell.kt$WCSessionCell</ID>
     <ID>ModifierMissing:WCSessionCells.kt$BlockchainCell</ID>
-    <ID>ModifierMissing:WCSessionCells.kt$DropDownCell</ID>
     <ID>ModifierMissing:WCSessionCells.kt$StatusCell</ID>
     <ID>ModifierMissing:WCSessionCells.kt$TitleValueCell</ID>
     <ID>ModifierMissing:WCSessionError.kt$WCSessionError</ID>
@@ -452,7 +422,6 @@
     <ID>PreviewPublic:RootedDeviceScreen.kt$Preview_RootedDeviceScreen</ID>
     <ID>PreviewPublic:SemiCircleChart.kt$SemiCircleChartPreview</ID>
     <ID>PreviewPublic:WCSessionError.kt$PreviewWCSessionsEmpty</ID>
-    <ID>ReturnCount:TonConnectSendRequestViewModel.kt$TonConnectSendRequestViewModel$private suspend fun prepareEnv()</ID>
     <ID>ReturnCount:TorOperator.kt$TorOperator$@Throws(Exception::class) private fun runTorShellCmd(fileTor: File, fileTorrc: File): Boolean</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:NestedScrollableHost.kt$NestedScrollableHost$IllegalArgumentException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:SendEvmModule.kt$SendEvmModule.Factory$IllegalArgumentException()</ID>
@@ -554,8 +523,6 @@
     <ID>ViewModelInjection:SendTonScreen.kt$paymentAddressViewModel</ID>
     <ID>ViewModelInjection:SendTronScreen.kt$paymentAddressViewModel</ID>
     <ID>ViewModelInjection:SendZCashScreen.kt$paymentAddressViewModel</ID>
-    <ID>ViewModelInjection:TonConnectNewScreen.kt$viewModel</ID>
-    <ID>ViewModelInjection:TonConnectSendRequestScreen.kt$viewModel</ID>
     <ID>ViewModelInjection:UtxoExpertModeScreen.kt$viewModel</ID>
     <ID>ViewModelInjection:WCEvmTransactionSettingsPage.kt$viewModel</ID>
     <ID>ViewModelInjection:WCSendEthScreen.kt$viewModel</ID>
