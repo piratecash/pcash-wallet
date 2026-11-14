@@ -33,6 +33,8 @@ dependencies {
     implementation(libs.ethereum.kit)
     implementation(libs.bitcoin.kit.sqlcipher.driver)
     implementation(libs.bitcoin.dashlib.native)
+    implementation(libs.monero.kit)
+    implementation(libs.zcash.sdk.kmp)
     implementation(libs.kermit)
     implementation(libs.coil.compose)
     implementation(libs.coil.svg)
@@ -59,14 +61,20 @@ fun runtimeJar(group: String, module: String) = configurations.runtimeClasspath.
 
 val sqlCipherDriver = libs.bitcoin.kit.sqlcipher.driver.get()
 val sqlCipherDriverJar = runtimeJar(sqlCipherDriver.group, sqlCipherDriver.name)
+val dashlibNative = libs.bitcoin.dashlib.native.get()
+val dashlibNativeJar = runtimeJar(dashlibNative.group, dashlibNative.name)
+val moneroKit = libs.monero.kit.get()
+val moneroKitDesktopJar = runtimeJar(moneroKit.group, "${moneroKit.name}-desktop")
+val zcashSdk = libs.zcash.sdk.kmp.get()
+val zcashSdkDesktopJar = runtimeJar(zcashSdk.group, "${zcashSdk.name}-desktop")
 val beamSdk = libs.beam.sdk.get()
 val beamSdkDesktopJar = runtimeJar(beamSdk.group, "${beamSdk.name}-desktop")
 val openpnpCapture = libs.openpnp.capture.java.get()
 val openpnpCaptureJar = runtimeJar(openpnpCapture.group, openpnpCapture.name)
 val jnaJar = runtimeJar("net.java.dev.jna", "jna")
 
-// Compose picks the app-resources subdirectory by this name; the BEAM jar names its natives by Rust target triple.
-val beamNativeResourceDirs = mapOf(
+// Compose picks the app-resources subdirectory by this name; the BEAM and Zcash jars name their natives by Rust target triple.
+val rustTripleResourceDirs = mapOf(
     "aarch64-apple-darwin" to "macos-arm64",
     "x86_64-pc-windows-msvc" to "windows-x64",
     "x86_64-unknown-linux-gnu" to "linux-x64",
@@ -81,17 +89,23 @@ val jnaNativeResourceDirs = mapOf(
 
 // The packager re-signs dylibs inside jars, which breaks the driver's own checksum: ship them as app resources.
 val stageNativeResources = tasks.register<Sync>("stageNativeResources") {
-    from({ sqlCipherDriverJar.map(::zipTree) }) {
+    // The SQLCipher and Dash BLS jars already name their native dirs like Compose does.
+    from({ (sqlCipherDriverJar + dashlibNativeJar).map(::zipTree) }) {
         include("natives/**")
         exclude("**/*.sha256")
         eachFile { path = path.removePrefix("natives/") }
         includeEmptyDirs = false
     }
-    from({ beamSdkDesktopJar.map(::zipTree) }) {
+    from({ moneroKitDesktopJar.map(::zipTree) }) {
+        include("native/**")
+        eachFile { path = path.removePrefix("native/") }
+        includeEmptyDirs = false
+    }
+    from({ (beamSdkDesktopJar + zcashSdkDesktopJar).map(::zipTree) }) {
         include("native/**")
         eachFile {
             val triple = relativePath.segments[1]
-            path = "${beamNativeResourceDirs.getValue(triple)}/$name"
+            path = "${rustTripleResourceDirs.getValue(triple)}/$name"
         }
         includeEmptyDirs = false
     }
@@ -109,30 +123,40 @@ val stageNativeResources = tasks.register<Sync>("stageNativeResources") {
     into(layout.buildDirectory.dir("native-resources"))
 }
 
-// Every target's natives are staged on every build host, so each target dir is checked with its own file names.
-val targetNativeFiles = mapOf(
-    "macos-arm64" to listOf(
-        "libsqlcipher_jni.dylib", "libbeam_sdk_kmp.dylib", "libopenpnp-capture.dylib", "libjnidispatch.jnilib",
-    ),
-    "linux-x64" to listOf("libsqlcipher_jni.so", "libbeam_sdk_kmp.so", "libopenpnp-capture.so", "libjnidispatch.so"),
-    "windows-x64" to listOf("sqlcipher_jni.dll", "beam_sdk_kmp.dll", "openpnp-capture.dll", "jnidispatch.dll"),
+val packagedNativeLibraries = listOf(
+    "sqlcipher_jni", "beam_sdk_kmp", "openpnp-capture", "jnidispatch", "monerujo", "zcash_sdk_kmp", "dashjbls",
+)
+val packagedNativeTargets = listOf("macos-arm64", "linux-x64", "windows-x64")
+
+// JNA names its macOS native .jnilib, the name jna.boot.library.path looks for first.
+fun packagedNativeFileName(library: String, platformFileName: String) =
+    if (library == "jnidispatch") platformFileName.replace(".dylib", ".jnilib") else platformFileName
+
+fun targetNativeFileName(target: String, library: String) = packagedNativeFileName(
+    library,
+    when (target.substringBefore('-')) {
+        "macos" -> "lib$library.dylib"
+        "windows" -> "$library.dll"
+        else -> "lib$library.so"
+    },
 )
 
 val verifyNativeResources = tasks.register("verifyNativeResources") {
     val prepareAppResources = tasks.named<Sync>("prepareAppResources")
     dependsOn(prepareAppResources, stageNativeResources)
     doLast {
-        targetNativeFiles.forEach { (target, fileNames) ->
-            fileNames.forEach { fileName ->
-                val native = File(stageNativeResources.get().destinationDir, "$target/$fileName")
+        // Every target's natives are staged on every build host, so each target dir is checked with its own file names.
+        packagedNativeTargets.forEach { target ->
+            packagedNativeLibraries.forEach { library ->
+                val native = File(stageNativeResources.get().destinationDir, "$target/${targetNativeFileName(target, library)}")
                 check(native.isFile) { "Native library is missing from the staged resources: $native" }
             }
         }
-        val nativeFiles = listOf("sqlcipher_jni", "beam_sdk_kmp", "openpnp-capture").map(System::mapLibraryName) +
-            // JNA names its macOS native .jnilib, the name jna.boot.library.path looks for first.
-            System.mapLibraryName("jnidispatch").replace(".dylib", ".jnilib")
-        nativeFiles.forEach { fileName ->
-            val native = File(prepareAppResources.get().destinationDir, fileName)
+        packagedNativeLibraries.forEach { library ->
+            val native = File(
+                prepareAppResources.get().destinationDir,
+                packagedNativeFileName(library, System.mapLibraryName(library)),
+            )
             check(native.isFile) { "Native library is missing from the app resources: $native" }
         }
     }
