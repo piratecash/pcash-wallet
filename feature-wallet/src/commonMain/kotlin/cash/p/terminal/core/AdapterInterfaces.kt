@@ -25,6 +25,7 @@ import cash.p.terminal.wallet.entities.TokenQuery
 import io.horizontalsystems.bitcoincore.storage.UtxoFilters
 import io.horizontalsystems.solanakit.models.FullTransaction
 import io.horizontalsystems.tonkit.FriendlyAddress
+import io.horizontalsystems.tronkit.models.AccountResources
 import io.horizontalsystems.tronkit.models.Contract
 import io.horizontalsystems.tronkit.network.CreatedTransaction
 import io.horizontalsystems.tronkit.network.NowBlock
@@ -93,6 +94,8 @@ interface ITransactionsAdapter {
     ): List<TransactionRecord> = emptyList()
 
     fun getRawTransaction(transactionHash: String): String? = null
+
+    suspend fun fetchMissingDetails(record: TransactionRecord) = Unit
 
     fun getTransactionRecordsFlow(
         token: Token?,
@@ -432,6 +435,10 @@ interface ILastKnownBalanceAdapter {
 
 interface ISendTronAdapter : IBalanceAdapter {
     val trxBalanceData: BalanceData
+    val accountResourcesFlow: StateFlow<AccountResources?>
+
+    suspend fun refreshAccountResources()
+    fun accountActivationFees(): List<Fee>
 
     suspend fun estimateFee(amount: BigDecimal, to: TronAddress): List<Fee>
     suspend fun estimateFee(transaction: CreatedTransaction): List<Fee>

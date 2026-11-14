@@ -44,14 +44,6 @@ class Trc20Adapter(
         // started via TronKitManager
     }
 
-    override fun pauseNetwork() = Unit
-
-    override fun resumeNetwork() = Unit
-
-    override fun stop() {
-        // stopped via TronKitManager
-    }
-
     override suspend fun refresh() {
         // refreshed via TronKitManager
     }

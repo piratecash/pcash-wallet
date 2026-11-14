@@ -12,6 +12,7 @@ import io.horizontalsystems.tronkit.models.TransactionTag
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -28,6 +29,7 @@ class TronTransactionsAdapterTest {
             every { this@mockk.tronKit } returns this@TronTransactionsAdapterTest.tronKit
         },
         transactionConverter = mockk(relaxed = true),
+        dispatcherProvider = mockk { every { io } returns Dispatchers.Unconfined },
     )
     private val token = Token(
         coin = Coin(uid = "trc10-$assetId", name = "TRC10", code = "TRC10"),

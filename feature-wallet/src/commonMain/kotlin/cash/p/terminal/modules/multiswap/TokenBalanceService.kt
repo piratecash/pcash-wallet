@@ -1,5 +1,6 @@
 package cash.p.terminal.modules.multiswap
 
+import cash.p.terminal.core.ISendTronAdapter
 import cash.p.terminal.core.ISendZcashAdapter
 import cash.p.terminal.core.ServiceState
 import cash.p.terminal.core.getFeeTokenBalance
@@ -12,8 +13,11 @@ import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.nativeTokenQuery
 import io.horizontalsystems.core.entities.BlockchainType
+import io.horizontalsystems.tronkit.models.AccountResources
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
 
@@ -32,6 +36,7 @@ class TokenBalanceService(
     private var feeToken: Token? = null
     private var feeCoinBalance: BigDecimal? = null
     private var insufficientFeeBalance: Boolean = false
+    private var tronResources: AccountResources? = null
     private var coroutineScope: CoroutineScope? = null
     private var balanceUpdateJob: Job? = null
     private var feeUpdateJob: Job? = null
@@ -44,6 +49,7 @@ class TokenBalanceService(
         feeToken = feeToken,
         feeCoinBalance = feeCoinBalance,
         insufficientFeeBalance = insufficientFeeBalance,
+        tronResources = tronResources,
     )
 
     fun setToken(token: Token?) {
@@ -82,15 +88,32 @@ class TokenBalanceService(
             }
         }
 
-        val zcashAdapter = currentAdapter as? ISendZcashAdapter
-        if (token?.blockchainType == BlockchainType.Zcash && zcashAdapter != null) {
-            feeUpdateJob = scope.launch {
-                zcashAdapter.fee.collect {
-                    refreshBalanceState()
-                }
+        val feeUpdates = token?.let { feeUpdates(it, currentAdapter) } ?: return
+        feeUpdateJob = scope.launch {
+            feeUpdates.collect {
+                refreshBalanceState()
             }
         }
     }
+
+    // Fees that are estimated after the balance arrives change what "100%" may spend.
+    private fun feeUpdates(token: Token, tokenAdapter: IBalanceAdapter): Flow<Any?>? {
+        val fee = feeAdapter(token, tokenAdapter)?.fee ?: return null
+        return when (token.blockchainType) {
+            BlockchainType.Zcash -> fee
+            BlockchainType.Tron -> (tokenAdapter as? ISendTronAdapter)
+                ?.let { merge(fee, it.accountResourcesFlow) }
+                ?: fee
+            else -> null
+        }
+    }
+
+    // TRON tokens estimate their own transfer cost in TRX; elsewhere a token's fee is the native coin's.
+    private fun feeAdapter(token: Token, tokenAdapter: IBalanceAdapter?): IBalanceAdapter? =
+        if (token.type.isNative || token.blockchainType == BlockchainType.Tron) tokenAdapter else nativeAdapter()
+
+    private fun nativeAdapter(): IBalanceAdapter? =
+        feeToken?.let { adapterManager.getAdapterForToken(it) as? IBalanceAdapter }
 
     private fun refreshBalanceState() {
         refreshAvailableBalance()
@@ -142,22 +165,19 @@ class TokenBalanceService(
         balance = getAvailableBalance(currentToken, currentAdapter, adjusted)
 
         displayBalance = adjusted
+        tronResources = (currentAdapter as? ISendTronAdapter)?.accountResourcesFlow?.value
 
         if (currentToken != null) {
             feeToken = marketKit.token(currentToken.nativeTokenQuery)
                 ?: currentToken
+            fee = feeAdapter(currentToken, currentAdapter)?.fee?.value
 
-            if (currentToken.type.isNative) {
-                fee = currentAdapter?.fee?.value
-                feeCoinBalance = null
+            feeCoinBalance = if (currentToken.type.isNative) {
+                null
             } else {
-                val feeTokenAdapter = feeToken?.let {
-                    adapterManager.getAdapterForToken(it) as? IBalanceAdapter
-                }
-                fee = feeTokenAdapter?.fee?.value
-                feeCoinBalance = feeToken?.let {
+                feeToken?.let {
                     adapterManager.getFeeTokenBalance(it, currentToken)
-                } ?: feeTokenAdapter?.balanceData?.available
+                } ?: nativeAdapter()?.balanceData?.available
             }
         } else {
             feeToken = null
@@ -192,6 +212,7 @@ class TokenBalanceService(
         val feeToken: Token?,
         val feeCoinBalance: BigDecimal?,
         val insufficientFeeBalance: Boolean,
+        val tronResources: AccountResources? = null,
     )
 }
 

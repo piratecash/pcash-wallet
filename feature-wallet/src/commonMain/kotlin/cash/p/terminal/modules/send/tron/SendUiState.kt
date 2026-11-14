@@ -3,6 +3,7 @@ package cash.p.terminal.modules.send.tron
 import cash.p.terminal.core.HSCaution
 import cash.p.terminal.entities.Address
 import cash.p.terminal.ui_compose.entities.ViewState
+import io.horizontalsystems.tronkit.models.AccountResources
 import java.math.BigDecimal
 
 data class SendUiState(
@@ -19,4 +20,6 @@ data class SendUiState(
     val feeLoading: Boolean = false,
     val isPoisonAddress: Boolean = false,
     val riskAccepted: Boolean = false,
+    val resources: AccountResources? = null,
+    val feeBreakdown: TronFeeBreakdown? = null,
 )

@@ -95,7 +95,7 @@ class SendTransactionServiceTonSwap(
         private set
 
     override fun createState() = SendTransactionServiceState(
-        availableBalance = adjustedAvailableBalance,
+        availableBalance = spendableWithRequiredTon() ?: adjustedAvailableBalance,
         networkFee = feeAmountData,
         cautions = cautions,
         feeCaution = feeCaution,
@@ -103,6 +103,17 @@ class SendTransactionServiceTonSwap(
         loading = loading,
         fields = fields
     )
+
+    // TON balance minus the gas and fees attached beyond the offer, so the swap input can shrink to fit.
+    private fun spendableWithRequiredTon(): BigDecimal? {
+        if (!token.type.isNative) return null
+        val requiredTon = requiredTon ?: return null
+        val offerUnits = tonSwapData?.offerUnits ?: return null
+        val balance = adapterManager.getFeeTokenBalance(feeToken, token) ?: return null
+        val offerAmount = offerUnits.toBigDecimal().movePointLeft(token.decimals)
+        val spendable = (balance - (requiredTon - offerAmount)).max(BigDecimal.ZERO)
+        return adapterManager.getMaxSendableBalance(wallet, spendable)
+    }
 
     private fun handleUpdatedAmountState(amountState: SendTonAmountService.State) {
         this.amountState = amountState
@@ -145,6 +156,7 @@ class SendTransactionServiceTonSwap(
     private var feeCaution: CautionViewItem? = null
 
     private var hasEnoughFeeAmount: Boolean = true
+    private var requiredTon: BigDecimal? = null
     private val sendable: Boolean
         get() = hasEnoughFeeAmount && amountState.canBeSend && addressState.canBeSend
     private var loading = true
@@ -185,6 +197,7 @@ class SendTransactionServiceTonSwap(
     }
 
     override suspend fun setSendTransactionData(data: SendTransactionData) {
+        requiredTon = null
         tonSwapData = checkNotNull(data as? SendTransactionData.TonSwap) {
             "SendTransactionData should be SendTransactionData.TonSwap"
         }
@@ -224,6 +237,7 @@ class SendTransactionServiceTonSwap(
             val destination = checkNotNull(data.destinationAddress) { "Destination address is missing" }
             // Same amount and payload as sendTransaction: the wallet debits the attached value plus fees.
             val estimate = adapter.estimateFeeWithPayload(getAmount(), destination, data.payload)
+            requiredTon = estimate.requiredTon
             requiredBalanceCaution(
                 available = adapterManager.getFeeTokenBalance(feeToken, token),
                 required = estimate.requiredTon,

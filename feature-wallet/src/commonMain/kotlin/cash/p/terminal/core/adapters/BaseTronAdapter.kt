@@ -14,10 +14,13 @@ import cash.p.terminal.entities.transactionrecords.tron.TronTransactionRecord
 import cash.p.terminal.core.managers.RawTransactionHex
 import cash.p.terminal.core.managers.TronKitWrapper
 import cash.p.terminal.core.toRawHexString
+import cash.p.terminal.core.tryOrNull
+import cash.p.terminal.modules.send.tron.toTronFeeBreakdown
 import cash.p.terminal.wallet.IAdapter
 import cash.p.terminal.wallet.IBalanceAdapter
 import cash.p.terminal.wallet.IReceiveAdapter
 import cash.p.terminal.wallet.ReceiveAccountStatus
+import io.horizontalsystems.tronkit.models.AccountResources
 import io.horizontalsystems.tronkit.models.AccountStatus
 import io.horizontalsystems.tronkit.models.Address
 import io.horizontalsystems.tronkit.models.Contract
@@ -28,7 +31,14 @@ import io.horizontalsystems.tronkit.network.Network
 import io.horizontalsystems.tronkit.network.NowBlock
 import io.horizontalsystems.tronkit.transaction.Fee
 import io.horizontalsystems.tronkit.transaction.Signer
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -45,11 +55,48 @@ abstract class BaseTronAdapter(
     val tronKit = tronKitWrapper.tronKit
     protected val signer: Signer? = tronKitWrapper.signer
 
+    private val coroutineScope = CoroutineScope(Dispatchers.Default)
+    private var networkJob: Job? = null
+    // Starts at the worst case (activating the recipient), so the first estimate is always an observable change.
+    private val _fee = MutableStateFlow(
+        tronKit.accountActivationFees().toTronFeeBreakdown(TronAdapter.decimal).totalFee
+    )
+
+    // In TRX: the cost of sending the whole balance to an activated address.
+    override val fee: StateFlow<BigDecimal> = _fee.asStateFlow()
+
     override val debugInfo: String
         get() = ""
 
     override val statusInfo: Map<String, Any>
         get() = tronKit.statusInfo()
+
+    // IAdapter
+
+    override fun resumeNetwork() {
+        networkJob = coroutineScope.launch {
+            balanceUpdatedFlow.collect {
+                estimateFeeForMax()
+            }
+        }
+    }
+
+    override fun pauseNetwork() {
+        networkJob?.cancel()
+    }
+
+    override fun stop() {
+        coroutineScope.cancel()
+    }
+
+    // A failed estimate keeps the previous value.
+    private suspend fun estimateFeeForMax() {
+        tryOrNull {
+            val amount = maxOf(balanceData.available, BigDecimal.ONE.movePointLeft(decimal))
+            val breakdown = estimateFee(amount, tronKit.address).toTronFeeBreakdown(TronAdapter.decimal)
+            _fee.value = breakdown.totalFee.stripTrailingZeros()
+        }
+    }
 
     // IReceiveAdapter
 
@@ -63,6 +110,15 @@ abstract class BaseTronAdapter(
         get() = tronKit.network == Network.Mainnet
 
     // ISendTronAdapter
+
+    override val accountResourcesFlow: StateFlow<AccountResources?>
+        get() = tronKit.accountResourcesFlow
+
+    override suspend fun refreshAccountResources() = withContext(Dispatchers.IO) {
+        tronKit.refreshAccountResources()
+    }
+
+    override fun accountActivationFees(): List<Fee> = tronKit.accountActivationFees()
 
     override suspend fun estimateFee(contract: Contract): List<Fee> = withContext(Dispatchers.IO) {
         tronKit.estimateFee(contract)

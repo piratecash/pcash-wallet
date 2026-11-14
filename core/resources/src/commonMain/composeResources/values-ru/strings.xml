@@ -494,8 +494,16 @@
     <string name="FeeInfo_TronFee_Description">Ориентировочные затраты на отправку данной транзакции по сети (без учёта energy, Bandwidth и комиссии за активацию) предполагаются</string>
     <string name="FeeInfo_TronActivationFee_Title">Комиссия за активацию</string>
     <string name="FeeInfo_TronActivationFee_Description">Этот адрес неактивен. Перевод TRX или токенов TRC-10 на адрес неактивного аккаунта активирует аккаунт.</string>
-    <string name="FeeInfo_TronResourcesConsumed_Title">Расходуемые ресурсы</string>
     <string name="FeeInfo_TronResourcesConsumed_Description">Bandwidth - это единица, которая измеряет размер байт транзакции, хранящихся в базе данных блокчейна. Чем больше транзакция, тем больше bandwidth будет потребляться.\n\nEnergy — это единица, измеряющая количество вычислений, требуемых виртуальной машиной TRON для выполнения конкретных операций в сети TRON.\n\nПоскольку транзакции смарт-контракта требуют выполнения вычислительных ресурсов, каждая сделка по контракту требует оплаты energy комиссии.</string>
+    <string name="tron_resources_title">Ресурсы TRON</string>
+    <string name="tron_resource_free_bandwidth">Бесплатный Bandwidth</string>
+    <string name="tron_resource_staked_bandwidth">Bandwidth от стейкинга</string>
+    <string name="tron_resource_available_of">%1$s из %2$s</string>
+    <string name="tron_fee_covered_free">из бесплатного</string>
+    <string name="tron_fee_covered_staked">из стейкинга</string>
+    <string name="tron_fee_energy_own">%1$s своей</string>
+    <string name="tron_fee_energy_contract">%1$s от контракта</string>
+    <string name="tron_activation_caution">Адрес получателя ещё не активирован в сети TRON. Сеть возьмёт %1$s за его активацию.</string>
 
     <!--Network Fee Warning-->
     <string name="network_fee_warning_title">Комиссия сети %1$s</string>

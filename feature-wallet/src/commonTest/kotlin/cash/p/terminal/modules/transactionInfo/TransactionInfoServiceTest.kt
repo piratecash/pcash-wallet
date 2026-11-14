@@ -231,6 +231,31 @@ class TransactionInfoServiceTest : KoinTest {
     }
 
     @Test
+    fun start_anyRecord_requestsMissingDetailsOnce() = runTest(dispatcher) {
+        val service = createService()
+        backgroundScope.launch { service.start() }
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) { adapter.fetchMissingDetails(transactionRecord) }
+    }
+
+    @Test
+    fun adapterUpdate_reEmitted_requestsMissingDetailsForUpdatedRecord() = runTest(dispatcher) {
+        val updates = MutableSharedFlow<List<TransactionRecord>>()
+        every { adapter.getTransactionRecordsFlow(any(), any(), any()) } returns updates
+        val initial = beamHistoryRecord()
+        val updated = beamHistoryRecord(status = BeamTransactionStatus.Registering)
+        val service = createService(initialTransactionRecord = initial)
+        backgroundScope.launch { service.start() }
+        advanceUntilIdle()
+
+        updates.emit(listOf(updated))
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) { adapter.fetchMissingDetails(match { it === updated }) }
+    }
+
+    @Test
     fun start_nonSwapTransaction_externalStatusIsNull() = runTest(dispatcher) {
         val service = createService(userSwapTransactionId = null)
         backgroundScope.launch { service.start() }

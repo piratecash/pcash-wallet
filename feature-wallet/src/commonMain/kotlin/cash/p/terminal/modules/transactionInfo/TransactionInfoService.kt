@@ -39,7 +39,10 @@ import cash.p.terminal.wallet.transaction.TransactionSource
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.entities.CurrencyValue
 import io.horizontalsystems.core.DispatcherProvider
+import co.touchlab.kermit.Logger
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -74,6 +77,10 @@ class TransactionInfoService(
     private val poisonAddressManager: PoisonAddressManager by inject(PoisonAddressManager::class.java)
 
     private val mutex = Mutex()
+
+    private val logger = Logger.withTag("TransactionInfoService")
+    private var detailsScope: CoroutineScope? = null
+    private var detailsJob: Job? = null
 
     // Captured once from the initial DB lookup so observers keep tracking the
     // same swap row while status fields are refreshed.
@@ -321,6 +328,8 @@ class TransactionInfoService(
     }
 
     suspend fun start() = withContext(dispatcherProvider.io) {
+        detailsScope = this
+        requestMissingDetails(transactionRecord)
         handlePoisonStatusUpdate(computePoisonStatus(transactionRecord))
 
         // Resolve once and capture the stable PK so the observer and periodic
@@ -499,6 +508,21 @@ class TransactionInfoService(
                 recordRevision = transactionInfoItem.recordRevision + 1,
                 poisonStatus = poisonStatus,
             )
+        }
+        requestMissingDetails(transactionRecord)
+    }
+
+    private fun requestMissingDetails(record: TransactionRecord) {
+        val adapter = adapter ?: return
+        if (detailsJob?.isActive == true) return
+        detailsJob = detailsScope?.launch {
+            try {
+                adapter.fetchMissingDetails(record)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                logger.w(e) { "Failed to fetch missing transaction details" }
+            }
         }
     }
 
