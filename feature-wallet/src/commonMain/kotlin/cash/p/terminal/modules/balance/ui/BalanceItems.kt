@@ -47,12 +47,28 @@ import cash.p.terminal.modules.balance.TotalUIState
 import cash.p.terminal.modules.displayoptions.DisplayOptionsPage
 import cash.p.terminal.modules.manageaccount.dialogs.showBackupRequiredDialog
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
+import cash.p.terminal.modules.nft.NftCollectionPage
+import cash.p.terminal.modules.nft.NftCollectionSource
+import cash.p.terminal.modules.nft.NftCollectionsViewModel
+import cash.p.terminal.modules.nft.NftGramHintsViewModel
+import cash.p.terminal.modules.nft.gram.nftGramHints
+import cash.p.terminal.modules.nft.gram.rememberNftGramInfoOpener
+import cash.p.terminal.modules.nft.NftPreviewPage
+import cash.p.terminal.modules.nft.NftSectionTitle
+import cash.p.terminal.modules.nft.renew.NftDomainRenewPage
+import cash.p.terminal.modules.nft.renew.NftDomainRenewalBanner
+import cash.p.terminal.modules.nft.renew.NftDomainRenewalViewModel
+import cash.p.terminal.modules.nft.renew.renewUntilText
+import cash.p.terminal.modules.nft.manage.NftManagePage
+import cash.p.terminal.modules.managewallets.ManageWalletsPage
+import cash.p.terminal.modules.nft.ui.NftCollectionsSection
 import cash.p.terminal.modules.receive.ui.ReceiveChooseCoinPage
 import cash.p.terminal.modules.restoreaccount.RestoreAccountPage
 import cash.p.terminal.modules.restoreaccount.restoreshamir.RestoreShamirPage
 import cash.p.terminal.modules.syncerror.closeSyncErrorDialogUnlessFailing
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.navigation.PageResumeEffect
 import cash.p.terminal.resources.AccountRecovery_MigrationRecommended
 import cash.p.terminal.resources.AccountRecovery_MigrationRequired
 import cash.p.terminal.resources.Balance_NoCoinsAlert
@@ -69,6 +85,7 @@ import cash.p.terminal.resources.ic_empty_wallet
 import cash.p.terminal.resources.ic_swap_24
 import cash.p.terminal.resources.multi_swap_unfinished
 import cash.p.terminal.resources.multi_swap_unfinished_plural
+import cash.p.terminal.resources.nft_collections
 import cash.p.terminal.resources.stacking
 import cash.p.terminal.resources.staking_details
 import cash.p.terminal.ui_compose.Select
@@ -89,6 +106,8 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -114,6 +133,19 @@ fun BalanceItems(
             platformActions.onBalancePageInactive()
         }
     }
+
+    val nftViewModel: NftCollectionsViewModel = koinViewModel { parametersOf(NftCollectionSource.AllWallets) }
+    val renewalViewModel: NftDomainRenewalViewModel = koinViewModel()
+    val gramViewModel: NftGramHintsViewModel = koinViewModel()
+    val openNftGramInfo = navigation.rememberNftGramInfoOpener()
+    PageResumeEffect(
+        onResume = {
+            nftViewModel.onResume()
+            renewalViewModel.onResume()
+            gramViewModel.onResume()
+        },
+        onPause = {},
+    )
 
     val failingWallets = balanceViewItems.filter { it.failedIconVisible }.map { it.wallet }
     LaunchedEffect(failingWallets) {
@@ -141,7 +173,10 @@ fun BalanceItems(
 
     HSSwipeRefresh(
         refreshing = uiState.isRefreshing,
-        onRefresh = viewModel::onRefresh
+        onRefresh = {
+            viewModel.onRefresh()
+            nftViewModel.refresh()
+        }
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -346,8 +381,55 @@ fun BalanceItems(
                         }
                     )
                 }
+                val renewalState = renewalViewModel.uiState
+                if (renewalState.domains.isNotEmpty()) {
+                    item(key = "domain_renewal") {
+                        NftDomainRenewalBanner(
+                            count = renewalState.domains.size,
+                            renewUntil = remember { renewUntilText() },
+                            hidden = renewalState.hidden,
+                            onClick = { navigation.slideFromRight(NftDomainRenewPage()) },
+                            modifier = Modifier.padding(top = 16.dp),
+                        )
+                    }
+                }
+                item(key = "nft_collections") {
+                    val openAll = { navigation.slideFromRight(NftCollectionPage(NftCollectionSource.AllWallets)) }
+                    NftCollectionsSection(
+                        title = {
+                            NftSectionTitle(
+                                title = stringResource(Res.string.nft_collections),
+                                hidden = nftViewModel.uiState.hidden,
+                                onClick = openAll,
+                                gapAbove = 20.dp,
+                                trailingCount = nftViewModel.uiState.totalCount,
+                            )
+                        },
+                        items = nftViewModel.uiState.items,
+                        hidden = nftViewModel.uiState.hidden,
+                        onItemClick = { navigation.slideFromRight(NftPreviewPage(it, NftCollectionSource.AllWallets)) },
+                        onShowAll = openAll,
+                        allCollectionsHidden = nftViewModel.uiState.allCollectionsHidden,
+                        onManage = { navigation.slideFromRight(NftManagePage(NftCollectionSource.AllWallets)) },
+                        modifier = Modifier.padding(bottom = 16.dp),
+                    )
+                }
             }
+            val nftState = nftViewModel.uiState
+            nftGramHints(
+                state = gramViewModel.uiState,
+                gridShown = balanceViewItems.isNotEmpty() &&
+                    (nftState.items.isNotEmpty() || nftState.allCollectionsHidden),
+                onInfo = openNftGramInfo,
+                onAdd = gramViewModel::add,
+                onAddDefault = gramViewModel::addDefault,
+                onDismiss = gramViewModel::dismiss,
+            )
         }
+    }
+    if (gramViewModel.uiState.openCoinManager) {
+        navigation.slideFromRight(ManageWalletsPage())
+        gramViewModel.onCoinManagerOpened()
     }
     uiState.openSend?.let { openSend ->
         navigation.openOrNotifyUnsupported(pages.sendTokenSelect(openSend), hud)

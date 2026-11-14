@@ -30,6 +30,12 @@ private fun AppSnackbarPreviewContent(darkTheme: Boolean) {
                     icon = painterResource(R.drawable.ic_attention_24),
                 )
             }
+            AppSnackbar(
+                text = "Hidden",
+                variant = AppSnackbarVariant.Message,
+                icon = null,
+                action = HudAction("Undo") {},
+            )
         }
     }
 }

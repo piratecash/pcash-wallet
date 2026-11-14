@@ -46,6 +46,7 @@ benchmark = "1.5.0-alpha07"
 uiautomator = "2.3.0"
 recyclerview = "1.4.0"
 coil = "3.4.0"
+compottie = "2.3.3"
 annotation = "1.9.1"
 lifecycle-viewmodel-compose = "2.10.0"
 resolutionJava = "v7.1.0"
@@ -73,7 +74,7 @@ secp256k1 = "0.24.0"
 
 tonKotlin = "0.5.0" # updated for ktor 3.x compatibility
 orgJson = "20250517"
-piratecash-ton = "v2.0.0-pcash.15"
+piratecash-ton = "v2.0.0-pcash.21"
 beam-sdk = "v0.3.2"
 openpnp-capture-java = "v0.0.30-2-pcash.2"
 piratecash-bitcoin = "v0.1.0-pcash.47"
@@ -182,6 +183,7 @@ coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref 
 coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coil" }
 coil-svg = { group = "io.coil-kt.coil3", name = "coil-svg", version.ref = "coil" }
 coil-gif = { group = "io.coil-kt.coil3", name = "coil-gif", version.ref = "coil" }
+compottie = { group = "io.github.alexzhirkevich", name = "compottie", version.ref = "compottie" }
 androidx-annotation = { group = "androidx.annotation", name = "annotation", version.ref = "annotation" }
 leakcanary-android = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "leakcanaryAndroid" }
 lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle-viewmodel-compose" }

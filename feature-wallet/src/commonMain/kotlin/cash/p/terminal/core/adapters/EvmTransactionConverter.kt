@@ -4,8 +4,10 @@ import cash.p.terminal.core.ICoinManager
 import cash.p.terminal.core.managers.EvmLabelManager
 import cash.p.terminal.core.managers.SpamTransferDetector
 import cash.p.terminal.core.tokenIconPlaceholder
+import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.data.repository.EvmTransactionRepository
 import cash.p.terminal.entities.TransactionValue
+import cash.p.terminal.entities.transactionrecords.LiquidityOperation
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.evm.EvmTransactionRecord
 import cash.p.terminal.entities.transactionrecords.evm.TransferEvent
@@ -17,6 +19,7 @@ import io.horizontalsystems.erc20kit.decorations.ApproveEip20Decoration
 import io.horizontalsystems.erc20kit.decorations.OutgoingEip20Decoration
 import io.horizontalsystems.erc20kit.events.TokenInfo
 import io.horizontalsystems.erc20kit.events.TransferEventInstance
+import io.horizontalsystems.ethereumkit.contracts.ContractMethod
 import io.horizontalsystems.ethereumkit.decorations.ContractCreationDecoration
 import io.horizontalsystems.ethereumkit.decorations.IncomingDecoration
 import io.horizontalsystems.ethereumkit.decorations.OutgoingDecoration
@@ -31,9 +34,19 @@ import io.horizontalsystems.oneinchkit.decorations.OneInchDecoration
 import io.horizontalsystems.oneinchkit.decorations.OneInchSwapDecoration
 import io.horizontalsystems.oneinchkit.decorations.OneInchUnknownDecoration
 import io.horizontalsystems.oneinchkit.decorations.OneInchUnoswapDecoration
+import io.horizontalsystems.uniswapkit.TokenFactory
 import io.horizontalsystems.uniswapkit.decorations.SwapDecoration
+import io.horizontalsystems.uniswapkit.v3.UniswapV3TransactionDecorator
+import io.horizontalsystems.uniswapkit.v3.contract.UniswapV3ContractMethodFactories
+import io.horizontalsystems.uniswapkit.v3.router.ExactInputMethod
+import io.horizontalsystems.uniswapkit.v3.router.ExactInputSingleMethod
+import io.horizontalsystems.uniswapkit.v3.router.ExactOutputMethod
+import io.horizontalsystems.uniswapkit.v3.router.ExactOutputSingleMethod
+import io.horizontalsystems.uniswapkit.v3.router.MulticallMethod
 import java.math.BigDecimal
 import java.math.BigInteger
+
+private val V2_ROUTE_SELECTORS = setOf(0x472b43f3L, 0x42712a67L)
 
 class EvmTransactionConverter(
     private val coinManager: ICoinManager,
@@ -42,6 +55,8 @@ class EvmTransactionConverter(
     private val baseToken: Token,
     private val evmLabelManager: EvmLabelManager
 ) {
+
+    private val wethAddress by lazy { tryOrNull { TokenFactory.getWethAddress(evmTransactionRepository.chain) } }
 
     fun transactionRecord(fullTransaction: FullTransaction): EvmTransactionRecord {
         val transaction = fullTransaction.transaction
@@ -132,18 +147,7 @@ class EvmTransactionConverter(
                 )
             }
 
-            is SwapDecoration -> {
-                EvmTransactionRecord(
-                    transaction = transaction, token = baseToken, source = source,
-                    exchangeAddress = decoration.contractAddress.eip55,
-                    amountIn = convertToAmount(decoration.tokenIn, decoration.amountIn, true),
-                    amountOut = convertToAmount(decoration.tokenOut, decoration.amountOut, false),
-                    recipient = decoration.recipient.recipientUnlessSelf(),
-                    transactionRecordType = TransactionRecordType.EVM_SWAP,
-                    protected = isProtected,
-                    syncSource = syncSource
-                )
-            }
+            is SwapDecoration -> swapRecord(transaction, decoration, isProtected, syncSource)
 
             is OneInchSwapDecoration -> {
                 EvmTransactionRecord(
@@ -264,20 +268,31 @@ class EvmTransactionConverter(
                     val isSpam: Boolean
                     val contractAddressEip55: String?
                     val method: String?
+                    val liquidityOperation: LiquidityOperation?
                     if (isExternal) {
                         isSpam = SpamTransferDetector.isSpam(incomingEvents + outgoingEvents)
                         contractAddressEip55 = null
                         method = null
+                        liquidityOperation = null
                     } else {
                         outgoingEvents = getTransactionValueEvents(transaction) + outgoingEvents
                         contractAddressEip55 = contractAddress?.eip55
                         method = transaction.input?.let { evmLabelManager.methodLabel(it) }
+                        liquidityOperation = transaction.input
+                            ?.let { EvmLiquidityClassifier.operation(it, method) }
+                            ?.let { LiquidityOperation(it, failed = transaction.isFailed) }
                         // Unknown-method contract calls that only emit zero/dust Transfer
                         // events are the address-poisoning pattern — mark as spam so
                         // Hide Suspicious filters them out. Recognised methods stay visible.
-                        isSpam = method == null && SpamTransferDetector.isSpam(incomingEvents + outgoingEvents)
+                        isSpam = method == null && liquidityOperation == null &&
+                                SpamTransferDetector.isSpam(incomingEvents + outgoingEvents)
                     }
-                    EvmTransactionRecord(
+                    val callSwapRecord = if (isExternal || liquidityOperation != null) {
+                        null
+                    } else {
+                        swapRecordFromCall(transaction, decoration, incomingEvents, outgoingEvents, isProtected, syncSource)
+                    }
+                    callSwapRecord ?: EvmTransactionRecord(
                         transaction = transaction,
                         token = baseToken,
                         source = source,
@@ -290,7 +305,8 @@ class EvmTransactionConverter(
                         foreignTransaction = transaction.isForeign(),
                         initiator = transaction.initiatorIfForeign(),
                         protected = isProtected,
-                        syncSource = syncSource
+                        syncSource = syncSource,
+                        liquidityOperation = liquidityOperation
                     )
                 } else {
                     null
@@ -307,6 +323,103 @@ class EvmTransactionConverter(
             return evmRecord(transaction, TransactionRecordType.EVM_ACCOUNT_DELEGATION, isProtected, syncSource)
         }
         return record
+    }
+
+    private fun swapRecord(
+        transaction: Transaction,
+        decoration: SwapDecoration,
+        isProtected: Boolean,
+        syncSource: String?,
+        swapDecodedFromCall: Boolean = false,
+    ) = EvmTransactionRecord(
+        transaction = transaction, token = baseToken, source = source,
+        exchangeAddress = decoration.contractAddress.eip55,
+        amountIn = convertToAmount(decoration.tokenIn, decoration.amountIn, true),
+        amountOut = convertToAmount(decoration.tokenOut, decoration.amountOut, false),
+        recipient = decoration.recipient.recipientUnlessSelf(),
+        transactionRecordType = TransactionRecordType.EVM_SWAP,
+        protected = isProtected,
+        syncSource = syncSource,
+        swapDecodedFromCall = swapDecodedFromCall
+    )
+
+    private fun swapRecordFromCall(
+        transaction: Transaction,
+        decoration: UnknownTransactionDecoration,
+        incomingEvents: List<TransferEvent>,
+        outgoingEvents: List<TransferEvent>,
+        isProtected: Boolean,
+        syncSource: String?,
+    ): EvmTransactionRecord? {
+        val calls = transaction.input?.let(::flattenCalls).orEmpty()
+        val methods = calls.mapNotNull { tryOrNull { UniswapV3ContractMethodFactories.createMethodFromInput(it) } }
+        val exactLegs = methods.count { it.isExactSwap() }
+        val routeLegs = calls.count { it.selector in V2_ROUTE_SELECTORS }
+        if (exactLegs + routeLegs == 0) return null
+
+        // The decorator takes the first leg's input but sums every output, so only a lone exact leg is safe.
+        val swap = if (exactLegs == 1 && routeLegs == 0) decodedSwap(transaction, decoration, methods) else null
+        return if (swap != null) {
+            swapRecord(transaction, swap, isProtected, syncSource, swapDecodedFromCall = true)
+        } else {
+            unknownSwapRecord(transaction, incomingEvents, outgoingEvents, isProtected, syncSource)
+        }
+    }
+
+    private fun ContractMethod.isExactSwap(): Boolean =
+        this is ExactInputSingleMethod || this is ExactInputMethod ||
+                this is ExactOutputSingleMethod || this is ExactOutputMethod
+
+    private fun decodedSwap(
+        transaction: Transaction,
+        decoration: UnknownTransactionDecoration,
+        methods: List<ContractMethod>,
+    ): SwapDecoration? {
+        val weth = wethAddress ?: return null
+        val swap = tryOrNull {
+            UniswapV3TransactionDecorator(weth).decoration(
+                from = transaction.from,
+                to = transaction.to,
+                value = transaction.value,
+                contractMethod = MulticallMethod(methods),
+                internalTransactions = decoration.internalTransactions,
+                eventInstances = decoration.eventInstances,
+            ) as? SwapDecoration
+        }
+        // The kit sums an exact-output spend from the recipient's transfers, so another recipient reads as zero.
+        return swap?.takeUnless { it.amountIn.isExactZero() || it.amountOut.isExactZero() }
+    }
+
+    private fun SwapDecoration.Amount.isExactZero(): Boolean =
+        this is SwapDecoration.Amount.Exact && value.signum() == 0
+
+    private fun unknownSwapRecord(
+        transaction: Transaction,
+        incomingEvents: List<TransferEvent>,
+        outgoingEvents: List<TransferEvent>,
+        isProtected: Boolean,
+        syncSource: String?,
+    ): EvmTransactionRecord? {
+        // combined() throws on raw values of tokens that could not be resolved.
+        val (incoming, outgoing) = tryOrNull { EvmTransactionRecord.combined(incomingEvents, outgoingEvents) }
+            ?: return null
+        val oneValuePerSide = if (transaction.isFailed) {
+            incoming.isEmpty() && outgoing.size <= 1
+        } else {
+            incoming.size == 1 && outgoing.size == 1
+        }
+        if (!oneValuePerSide) return null
+
+        return EvmTransactionRecord(
+            transaction = transaction, token = baseToken, source = source,
+            exchangeAddress = transaction.to?.eip55,
+            valueIn = outgoing.firstOrNull(),
+            valueOut = incoming.firstOrNull(),
+            transactionRecordType = TransactionRecordType.EVM_UNKNOWN_SWAP,
+            protected = isProtected,
+            syncSource = syncSource,
+            swapDecodedFromCall = true
+        )
     }
 
     private fun evmRecord(

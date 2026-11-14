@@ -408,12 +408,27 @@ interface IMoneroReceiveAdapter : IReceiveAdapter, IMoneroHardwareWalletAdapter 
 /** [requiredTon] is all TON the transaction debits: the attached value plus every fee. */
 data class TonFeeEstimate(val fee: BigDecimal, val requiredTon: BigDecimal)
 
+/**
+ * [broadcast] holds the addresses whose transaction was handed to the node; [error] stopped the rest.
+ * The outcome of the transaction that failed is unknown: the node may have accepted it.
+ */
+data class NftBroadcastResult(val broadcast: List<String>, val error: Throwable?)
+
 interface ISendTonAdapter : IBalanceAdapter {
     suspend fun send(amount: BigDecimal, address: FriendlyAddress, memo: String?)
     suspend fun sendWithPayload(amount: BigInteger, address: String, payload: String)
     suspend fun estimateFee(amount: BigDecimal, address: FriendlyAddress, memo: String?): TonFeeEstimate
     suspend fun estimateFeeWithPayload(amount: BigInteger, address: String, payload: String): TonFeeEstimate
     suspend fun fetchOfflineAnchor(): TonOfflineAnchor
+    suspend fun sendNftTransfer(nftAddress: String, address: FriendlyAddress, comment: String?)
+    suspend fun estimateNftTransferFee(nftAddress: String, address: FriendlyAddress, comment: String?): TonFeeEstimate
+    suspend fun estimateDomainRenewalFee(nftAddresses: List<String>): TonFeeEstimate
+
+    /** Sends one renewal message per domain, batched per transaction; stops at the first failure. */
+    suspend fun renewDomains(nftAddresses: List<String>): NftBroadcastResult
+
+    /** Blocking network call: run off the main thread. */
+    fun resolveDomain(domain: String): FriendlyAddress?
 }
 
 interface ISendMemoAdapter : IBalanceAdapter {

@@ -7,6 +7,7 @@ import cash.p.terminal.modules.transactions.statusTitle
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.isCustom
 import cash.p.terminal.core.managers.AddressMetadataManager
+import cash.p.terminal.core.managers.localizedEvmMethodLabel
 import cash.p.terminal.core.orHide
 import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.entities.LastBlockInfo
@@ -617,7 +618,7 @@ object TransactionViewItemFactoryHelper {
         blockchainType: BlockchainType,
     ) = listOf(
         TransactionInfoViewItem.Transaction(
-            method
+            method?.let(::localizedEvmMethodLabel)
                 ?: Translator.getString(Res.string.Transactions_ContractCall),
             addressMetadataManager.mapped(blockchainType, contractAddress),
             TransactionViewItem.Icon.Platform.fromBlockchainType(blockchainType).iconRes

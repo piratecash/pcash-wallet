@@ -66,6 +66,7 @@ fun HSAddressInput(
     onError: ((Throwable?) -> Unit)? = null,
     onValueChange: ((Address?) -> Unit)? = null,
     isPoisonAddress: Boolean = false,
+    hint: String = stringResource(Res.string.Send_Hint_Address),
 ) {
     LaunchedEffect(error) {
         viewModel.onAddressError(error)
@@ -87,7 +88,7 @@ fun HSAddressInput(
     FormsInputAddress(
         modifier = modifier,
         value = value,
-        hint = stringResource(Res.string.Send_Hint_Address),
+        hint = hint,
         state = inputState,
         textPreprocessor = textPreprocessor,
         navigation = navigation,

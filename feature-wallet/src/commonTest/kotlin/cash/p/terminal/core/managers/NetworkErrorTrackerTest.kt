@@ -158,6 +158,52 @@ class NetworkErrorTrackerTest {
     }
 
     @Test
+    fun sanitizeNetworkUrl_percentEncodedNftAddress_masksWholeHash() {
+        val hash = "a1b2c3d4".repeat(8)
+
+        val sanitized = sanitizeNetworkUrl("https://tonapi.io/v2/nfts/0%3A$hash")
+
+        assertEquals("https://tonapi.io/v2/redacted/redacted", sanitized)
+    }
+
+    @Test
+    fun sanitizeNetworkUrl_shortPercentEncodedSegment_keepsSegment() {
+        val url = "https://example.com/assets/a%20b/logo.png"
+
+        assertEquals(url, sanitizeNetworkUrl(url))
+    }
+
+    @Test
+    fun sanitizeNetworkUrl_tonapiUrlWithRawAddress_redactsAddressKeepsPath() {
+        val sanitized = sanitizeNetworkUrl("https://tonapi.io/v2/accounts/0:$TON_HEX/dns/expiring")
+
+        assertEquals("https://tonapi.io/v2/redacted/redacted/dns/expiring", sanitized)
+    }
+
+    @Test
+    fun sanitizeNetworkUrl_masterchainRawAddress_redactsAddress() {
+        val sanitized = sanitizeNetworkUrl("https://toncenter.com/api/accounts/-1:$TON_HEX/state")
+
+        assertEquals("https://toncenter.com/api/accounts/redacted/state", sanitized)
+    }
+
+    @Test
+    fun sanitizeDiagnosticText_throwableTextWithRawAddress_redactsAddress() {
+        val text = sanitizeDiagnosticText(IllegalStateException("No wallet 0:$TON_HEX: not found").toString())
+
+        assertEquals("java.lang.IllegalStateException: No wallet redacted: not found", text)
+    }
+
+    @Test
+    fun sanitizeNetworkUrl_notRawTonAddress_keepsText() {
+        listOf(
+            "account 0:${TON_HEX.drop(1)}",
+            "account 0:${TON_HEX}a",
+            "account 0:${"g".repeat(64)}",
+        ).forEach { text -> assertEquals(text, sanitizeNetworkUrl(text)) }
+    }
+
+    @Test
     fun sanitizeDiagnosticText_keyTokenInsideUrlPath_redactsBoth() {
         val text = sanitizeDiagnosticText("GET https://user:pass@host.example/uview1qqqabc?x=1 failed")
 
@@ -191,5 +237,6 @@ class NetworkErrorTrackerTest {
 
     private companion object {
         const val SENTINEL_KEY = "SENTINEL_ALCHEMY_KEY"
+        const val TON_HEX = "83dfd552e63729b472fcbcc8c45ebcc6691702558b68ec7527e1ba403a0f31a8"
     }
 }

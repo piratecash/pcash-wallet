@@ -1,6 +1,7 @@
 package cash.p.terminal.modules.send.ton
 
 import cash.p.terminal.core.ISendTonAdapter
+import cash.p.terminal.core.TonFeeEstimate
 import io.horizontalsystems.tonkit.FriendlyAddress
 import io.tonapi.infrastructure.ClientException
 import kotlinx.coroutines.CancellationException
@@ -17,10 +18,30 @@ import kotlinx.coroutines.launch
 import java.io.Closeable
 import java.math.BigDecimal
 
-class SendTonFeeService(
+interface TonFeeEstimator {
+    suspend fun estimate(amount: BigDecimal, address: FriendlyAddress, memo: String?): TonFeeEstimate
+}
+
+class AdapterTonFeeEstimator(private val adapter: ISendTonAdapter) : TonFeeEstimator {
+    override suspend fun estimate(amount: BigDecimal, address: FriendlyAddress, memo: String?) =
+        adapter.estimateFee(amount, address, memo)
+}
+
+class NftTransferFeeEstimator(
     private val adapter: ISendTonAdapter,
+    private val nftAddress: String,
+) : TonFeeEstimator {
+    override suspend fun estimate(amount: BigDecimal, address: FriendlyAddress, memo: String?) =
+        adapter.estimateNftTransferFee(nftAddress, address, memo)
+}
+
+class SendTonFeeService(
+    private val estimator: TonFeeEstimator,
     private val externalScope: CoroutineScope? = null
 ) : Closeable {
+    constructor(adapter: ISendTonAdapter, externalScope: CoroutineScope? = null) :
+        this(AdapterTonFeeEstimator(adapter), externalScope)
+
     private var memo: String? = null
     private var address: FriendlyAddress? = null
     private var amount: BigDecimal? = null
@@ -52,7 +73,7 @@ class SendTonFeeService(
                 delay(1000)
                 ensureActive()
                 try {
-                    val estimated = adapter.estimateFee(amount, address, memo)
+                    val estimated = estimator.estimate(amount, address, memo)
                     fee = FeeStatus.Success(estimated.fee, estimated.requiredTon)
                     quote = TonFeeQuote(estimated.fee, amount, address, memo)
                 } catch (e: CancellationException) {

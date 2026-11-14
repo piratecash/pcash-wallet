@@ -43,6 +43,8 @@ class StorageGroupsSchemaTest {
             "LocallyCreatedTransactionRecord",
             "OfflineSignedTransactionEntity",
             "OfflineBlockchain",
+            "NftItemRecord",
+            "NftCollectionPrefRecord",
         )
         val LEVEL_ENTITIES = listOf("ActiveAccount", "StackingCache", "LogEntry")
         val SHARED_ENTITIES = listOf(

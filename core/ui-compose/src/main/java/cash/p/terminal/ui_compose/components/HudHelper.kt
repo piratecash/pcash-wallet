@@ -78,6 +78,7 @@ object HudHelper {
         gravity: SnackbarGravity = SnackbarGravity.BOTTOM,
         @DrawableRes icon: Int? = null,
         iconResource: DrawableResource? = null,
+        action: HudAction? = null,
     ): CustomSnackbar? {
         return showHudNotification(
             contentView = contentView,
@@ -87,6 +88,7 @@ object HudHelper {
             gravity = gravity,
             icon = icon,
             iconResource = iconResource,
+            action = action,
         )
     }
 
@@ -198,6 +200,7 @@ object HudHelper {
         gravity: SnackbarGravity,
         @DrawableRes icon: Int? = null,
         iconResource: DrawableResource? = null,
+        action: HudAction? = null,
     ): CustomSnackbar? {
 
         val snackbar = CustomSnackbar.make(
@@ -208,6 +211,7 @@ object HudHelper {
             gravity = gravity,
             iconRes = icon,
             iconResource = iconResource,
+            action = action,
         )
         snackbar?.show()
 

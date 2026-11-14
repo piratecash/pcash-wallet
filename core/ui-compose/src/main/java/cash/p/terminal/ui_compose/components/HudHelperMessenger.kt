@@ -21,6 +21,10 @@ class HudHelperMessenger(private val view: View) : HudMessenger {
         shown = HudHelper.showMessage(view, text, duration, iconResource = icon)
     }
 
+    override fun showMessage(text: String, action: HudAction) {
+        shown = HudHelper.showMessage(view, text, SnackbarDuration.LONG, action = action)
+    }
+
     override fun showInProgress(text: String, duration: SnackbarDuration) {
         shown = HudHelper.showInProcessMessage(view, text, duration)
     }

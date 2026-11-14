@@ -364,7 +364,8 @@ class TransactionInfoViewItemFactory(
                     TransactionRecordType.EVM_CONTRACT_CALL -> {
                         itemSections.add(
                             TransactionViewItemFactoryHelper.getContractMethodSectionItems(
-                                transaction.method,
+                                transaction.liquidityOperation?.let { Translator.getString(it.title) }
+                                    ?: transaction.method,
                                 transaction.contractAddress!!,
                                 transaction.blockchainType
                             )
@@ -445,6 +446,18 @@ class TransactionInfoViewItemFactory(
             }
 
             is TonTransactionRecord -> {
+                transaction.liquidityOperation?.let { operation ->
+                    itemSections.add(
+                        listOf(
+                            Transaction(
+                                Translator.getString(operation.title),
+                                transaction.liquidityProtocol.orEmpty(),
+                                TransactionViewItem.Icon.Platform.fromBlockchainType(blockchainType).iconRes
+                            )
+                        )
+                    )
+                }
+
                 transaction.actions.forEach { action ->
                     itemSections.add(
                         TonHelper.getViewItemsForAction(

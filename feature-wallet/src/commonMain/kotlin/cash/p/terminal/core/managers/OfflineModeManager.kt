@@ -165,7 +165,7 @@ class OfflineModeManager(
     suspend fun exitTemporaryOnline(key: OfflineKey, token: Long) =
         writeMutex.withLock { temporaryOnline.value = temporaryOnline.value.withoutToken(key, token) }
 
-    private fun isForgotten(accountId: String): Boolean = accountId in forgotten.get()
+    fun isForgotten(accountId: String): Boolean = accountId in forgotten.get()
 
     private fun storedRows(): Map<OfflineKey, OfflineBlockchain> =
         storage.getAll().associateBy { OfflineKey(it.accountId, it.blockchainType) }

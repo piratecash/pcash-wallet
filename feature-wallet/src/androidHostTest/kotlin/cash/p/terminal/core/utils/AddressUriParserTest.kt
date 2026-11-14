@@ -333,6 +333,24 @@ class AddressUriParserTest {
         assertTrue(parser(BlockchainType.Bitcoin).parse("bitcoin:%zz") is AddressUriResult.WrongUri)
     }
 
+    @Test
+    fun amount_exponentTooLargeToPrint_isAbsent() {
+        assertEquals(null, parser(BlockchainType.Ton).uri("ton://transfer/UQaddress?value=1e2147483647").amount)
+        assertEquals(null, bitcoinAmount("1e-2147483647"))
+        assertEquals(null, parser(BlockchainType.Monero).uri("4address?tx_amount=1e65").amount)
+        assertEquals(null, bitcoinAmount("1e-65"))
+    }
+
+    @Test
+    fun amount_sixtyFourDigitBoundary_acceptsUpToSixtyFour() {
+        assertEquals(0, BigDecimal("1e63").compareTo(bitcoinAmount("1e63")))
+        assertEquals(null, bitcoinAmount("1e64"))
+        assertEquals(0, BigDecimal("1e-64").compareTo(bitcoinAmount("1e-64")))
+        assertEquals(BigDecimal("1.5"), bitcoinAmount("1.5"))
+    }
+
+    private fun bitcoinAmount(amount: String) = parser(BlockchainType.Bitcoin).uri("bitcoin:1address?amount=$amount").amount
+
     private fun parser(type: BlockchainType) = AddressUriParser(type, TokenType.Native)
 
     private fun tonParse(screenType: TokenType, uri: String) =

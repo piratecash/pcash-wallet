@@ -16,12 +16,14 @@ private fun DisplayOptionsScreenPreview() {
                 isCoinManagerEnabled = true,
                 isRoundingAmountMainPage = true,
                 pricePeriod = DisplayPricePeriod.ONE_DAY,
-                displayDiffOptionType = DisplayDiffOptionType.BOTH
+                displayDiffOptionType = DisplayDiffOptionType.BOTH,
+                nftSection = NftDisplaySection(show = true, hasGram = true),
             ),
             onPricePeriodChanged = {},
             onPercentChangeToggled = {},
             onPriceChangeToggled = {},
-            onRoundingAmountMainPageToggled = {}
+            onRoundingAmountMainPageToggled = {},
+            onShowNftCollectionsToggle = {},
         )
     }
 }

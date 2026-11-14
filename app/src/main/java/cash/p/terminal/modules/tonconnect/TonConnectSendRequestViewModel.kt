@@ -1,8 +1,7 @@
 package cash.p.terminal.modules.tonconnect
 
 import androidx.lifecycle.viewModelScope
-import cash.p.terminal.R
-import cash.p.terminal.core.App
+import cash.p.terminal.core.ICoinManager
 import cash.p.terminal.core.managers.TonConnectManager
 import cash.p.terminal.core.managers.TonConnectWalletId
 import cash.p.terminal.core.managers.TonKitManager
@@ -11,7 +10,9 @@ import cash.p.terminal.core.managers.toTonWalletFullAccess
 import cash.p.terminal.core.storage.HardwarePublicKeyStorage
 import cash.p.terminal.entities.transactionrecords.ton.TonTransactionRecord
 import cash.p.terminal.modules.offline.OfflineOperationGate
-import cash.p.terminal.strings.helpers.Translator
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.offline_mode_operation_blocked
+import cash.p.terminal.resources.ton_connect_request_expired
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.entities.TonAsset
 import cash.p.terminal.wallet.entities.tokenQuery
@@ -23,6 +24,7 @@ import com.tonapps.extensions.equalsAddress
 import com.tonapps.wallet.data.core.entity.RawMessageEntity
 import com.tonapps.wallet.data.core.entity.SendRequestEntity
 import io.horizontalsystems.core.DispatcherProvider
+import io.horizontalsystems.core.Translator
 import io.horizontalsystems.core.ViewModelUiState
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.tonkit.core.TonWallet
@@ -30,10 +32,13 @@ import io.horizontalsystems.tonkit.models.Event
 import io.horizontalsystems.tonkit.models.SignTransaction
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.java.KoinJavaComponent.inject
 import timber.log.Timber
+import kotlin.time.Duration.Companion.seconds
 
 class TonConnectSendRequestViewModel(
     private val signTransaction: SignTransaction?,
@@ -47,6 +52,7 @@ class TonConnectSendRequestViewModel(
         HardwarePublicKeyStorage::class.java
     )
     private val offlineOperationGate: OfflineOperationGate by inject(OfflineOperationGate::class.java)
+    private val coinManager: ICoinManager by inject(ICoinManager::class.java)
 
     private val sendRequestEntity = signTransaction?.request
     private var error: TonConnectSendRequestError? = null
@@ -58,11 +64,16 @@ class TonConnectSendRequestViewModel(
     private var tonKitWrapper: TonKitWrapper? = null
     private var tonEvent: Event? = null
     private var success: Boolean = false
+    private var clockOffsetSeconds = 0L
+
+    // Main-confined with confirm() and reject(): the deadline decision and the user's answer cannot interleave.
+    private var deadlinePassed = false
+    private var answersInProgress = 0
 
     override fun createState() = TonConnectSendRequestUiState(
         tonTransactionRecord = tonTransactionRecord,
         error = error,
-        confirmEnabled = sendRequestEntity != null && tonWallet != null,
+        confirmEnabled = sendRequestEntity != null && tonWallet != null && error == null && !deadlinePassed,
         rejectEnabled = sendRequestEntity != null,
         success = success
     )
@@ -70,8 +81,43 @@ class TonConnectSendRequestViewModel(
     init {
         viewModelScope.launch(dispatcherProvider.default) {
             prepareEnv()
+            watchExpiry()
             emitState()
         }
+    }
+
+    private fun CoroutineScope.watchExpiry() {
+        val request = sendRequestEntity ?: return
+        if (error != null || request.validUntil == NO_DEADLINE) return
+        launch(dispatcherProvider.main) {
+            // Short ticks: a long Handler delay stops counting during deep sleep.
+            while (!requestExpired(request)) delay(1.seconds)
+            expire(request)
+        }
+    }
+
+    private suspend fun expire(request: SendRequestEntity) = withContext(dispatcherProvider.main) {
+        deadlinePassed = true
+        // After the user answered, only the button is switched off: one request gets one answer.
+        if (answersInProgress > 0 || error is TonConnectSendRequestError.Expired) {
+            emitState()
+            return@withContext
+        }
+        error = TonConnectSendRequestError.Expired()
+        emitState()
+        try {
+            responseBadRequest(request)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            logger.w(e) { "Failed to report expired TON Connect request" }
+        }
+    }
+
+    // Nothing left the wallet, so the request counts as unanswered again.
+    private suspend fun releaseFailedSigning(request: SendRequestEntity) = withContext(dispatcherProvider.main) {
+        answersInProgress--
+        if (deadlinePassed) expire(request)
     }
 
     private suspend fun prepareEnv() {
@@ -104,10 +150,10 @@ class TonConnectSendRequestViewModel(
             return
         }
 
-        if (requestExpired(sendRequestEntity)) {
-            error = TonConnectSendRequestError.InvalidData("Field validUntil has expired")
+        tonConnectManager.networkTimeSeconds()?.let { clockOffsetSeconds = it - System.currentTimeMillis() / 1000 }
 
-            responseBadRequest(sendRequestEntity)
+        if (requestExpired(sendRequestEntity)) {
+            expire(sendRequestEntity)
             return
         }
 
@@ -151,7 +197,7 @@ class TonConnectSendRequestViewModel(
 
         if (offlineOperationGate.isBlocked(account, BlockchainType.Ton)) {
             error = TonConnectSendRequestError.InvalidData(
-                Translator.getString(R.string.offline_mode_operation_blocked, TON_NETWORK_NAME)
+                Translator.getString(Res.string.offline_mode_operation_blocked, TON_NETWORK_NAME)
             )
             responseBadRequest(sendRequestEntity)
             return
@@ -199,7 +245,7 @@ class TonConnectSendRequestViewModel(
             return
         }
 
-        val token = App.coinManager.getToken(TonAsset.Native(version).tokenQuery)
+        val token = coinManager.getToken(TonAsset.Native(version).tokenQuery)
         if (token == null) {
             error = TonConnectSendRequestError.Other("Token Ton not found")
             return
@@ -268,25 +314,31 @@ class TonConnectSendRequestViewModel(
         }
     }
 
-    private fun requestExpired(sendRequestEntity: SendRequestEntity): Boolean {
-        return sendRequestEntity.validUntil < System.currentTimeMillis() / 1000
-    }
+    private fun networkNowSeconds() = System.currentTimeMillis() / 1000 + clockOffsetSeconds
+
+    private fun requestExpired(request: SendRequestEntity) =
+        request.validUntil != NO_DEADLINE && request.validUntil < networkNowSeconds()
 
     fun confirm() {
         val sendRequestEntity = sendRequestEntity ?: return
         val tonWallet = tonWallet ?: return
 
-        if (requestExpired(sendRequestEntity)) {
-            viewModelScope.launch(dispatcherProvider.default) {
-                responseBadRequest(sendRequestEntity)
-            }
-            throw IllegalArgumentException("Field validUntil has expired")
+        if (deadlinePassed || requestExpired(sendRequestEntity)) {
+            if (answersInProgress > 0) return // an earlier attempt may still be sending
+            viewModelScope.launch { expire(sendRequestEntity) }
+            throw TonConnectSendRequestError.Expired()
         }
+        answersInProgress++
 
         viewModelScope.launch(dispatcherProvider.default + CoroutineExceptionHandler { _, ex ->
             Timber.d(ex, "Signing cancelled")
         }) {
-            val boc = transactionSigner.sign(sendRequestEntity, tonWallet)
+            val boc = try {
+                transactionSigner.sign(sendRequestEntity, tonWallet)
+            } catch (e: Exception) {
+                releaseFailedSigning(sendRequestEntity)
+                throw e
+            }
 
             tonKitWrapper?.tonKit?.send(boc)
             tonConnectManager.kit().approve(sendRequestEntity, boc)
@@ -298,6 +350,7 @@ class TonConnectSendRequestViewModel(
 
     fun reject() {
         val sendRequestEntity = sendRequestEntity ?: return
+        answersInProgress++
 
         viewModelScope.launch(dispatcherProvider.default + CoroutineExceptionHandler { _, ex ->
             logger.w(ex) { "Failed to reject TON Connect request" }
@@ -308,6 +361,7 @@ class TonConnectSendRequestViewModel(
 }
 
 private const val TON_NETWORK_NAME = "TON"
+private const val NO_DEADLINE = 0L
 
 sealed class TonConnectSendRequestError : Error() {
     class InvalidData(override val message: String) : TonConnectSendRequestError()
@@ -316,6 +370,9 @@ sealed class TonConnectSendRequestError : Error() {
     class DifferentAccount(override val message: String) : TonConnectSendRequestError()
     class Other(override val message: String) : TonConnectSendRequestError()
     class KitUnavailable : TonConnectSendRequestError()
+    class Expired : TonConnectSendRequestError() {
+        override val message: String = Translator.getString(Res.string.ton_connect_request_expired)
+    }
 }
 
 data class TonConnectSendRequestUiState(
