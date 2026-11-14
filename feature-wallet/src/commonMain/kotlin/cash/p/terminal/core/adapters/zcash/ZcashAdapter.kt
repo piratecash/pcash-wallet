@@ -735,7 +735,7 @@ class ZcashAdapter(
         memo: String,
     ): String {
         zcashLogger.d { "Send started" }
-        return broadcastSigned { zcash, id -> zcash.preparePayment(id, amount, address, memo) }
+        return broadcastSigned(listOf(address)) { zcash, id -> zcash.preparePayment(id, amount, address, memo) }
     }
 
     override suspend fun estimateFee(amount: BigDecimal, address: String, memo: String): ZcashFeeEstimate = try {
@@ -793,7 +793,10 @@ class ZcashAdapter(
      * broadcast is marked as such: only then may the caller drop its pending row. A failure on the
      * broadcast itself, cancellation included, stays unmarked — the bytes may already be out.
      */
-    private suspend fun broadcastSigned(prepare: suspend (ZcashWallet, Int) -> PreparedTransaction): String {
+    private suspend fun broadcastSigned(
+        recipientAddresses: List<String>,
+        prepare: suspend (ZcashWallet, Int) -> PreparedTransaction,
+    ): String {
         val (raw, height) = beforeBroadcast {
             requireWallet { zcash, id ->
                 val prepared = prepare(zcash, id)
@@ -801,7 +804,7 @@ class ZcashAdapter(
                 zcash.extract(signer.sign(zcash, id, prepared)) to height
             }
         }
-        val result = broadcastReserved(raw, height, requireOwnInputs = true)
+        val result = broadcastReserved(raw, height, requireOwnInputs = true, recipientAddresses)
         if (result.accepted) return result.message
         throw result.rejection(IllegalStateException("Broadcast rejected (${result.errorCode}): ${result.message}"))
     }
@@ -829,8 +832,13 @@ class ZcashAdapter(
     }
 
     /** An unavailable session never started the operation, so nothing was reserved or sent. */
-    private suspend fun broadcastReserved(raw: ByteArray, height: Int, requireOwnInputs: Boolean): BroadcastResult {
-        val result = session?.broadcastReserved(raw, height, requireOwnInputs)
+    private suspend fun broadcastReserved(
+        raw: ByteArray,
+        height: Int,
+        requireOwnInputs: Boolean,
+        recipientAddresses: List<String> = emptyList(),
+    ): BroadcastResult {
+        val result = session?.broadcastReserved(raw, height, requireOwnInputs, recipientAddresses)
         return (result as? ZcashSessionResult.Success)?.value
             ?: throw NotBroadcastException(IllegalStateException("Zcash wallet session is unavailable"))
     }
@@ -892,7 +900,7 @@ class ZcashAdapter(
         ShieldingTarget(address = shielded, amount = transparent)
     }
 
-    suspend fun proposeShielding(target: ShieldingTarget): String = broadcastSigned { zcash, id ->
+    suspend fun proposeShielding(target: ShieldingTarget): String = broadcastSigned(emptyList()) { zcash, id ->
         zcash.prepareOrInsufficient(
             id,
             recipients = listOf(Recipient(address = target.address, amount = target.amount)),
