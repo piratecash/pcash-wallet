@@ -2322,6 +2322,15 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="desktop_change_password_corrupted">Le fichier de clé est endommagé : une fois l\u0027application verrouillée, vous ne pourrez plus vous connecter. Enregistrez une sauvegarde de chaque phrase de récupération.</string>
     <string name="desktop_change_password_success">Mot de passe modifié</string>
     <string name="desktop_security_lock_now">Verrouiller maintenant</string>
+    <string name="desktop_menu_file">Fichier</string>
+    <string name="desktop_menu_wallet">Portefeuille</string>
+    <string name="desktop_menu_view">Affichage</string>
+    <string name="desktop_menu_window">Fenêtre</string>
+    <string name="desktop_menu_help">Aide</string>
+    <string name="desktop_menu_quit">Quitter</string>
+    <string name="desktop_menu_minimize">Réduire</string>
+    <string name="desktop_menu_wallet_settings">Paramètres du portefeuille</string>
+    <string name="desktop_menu_whats_new">Nouveautés</string>
     <string name="swap_progress_title">Progression du swap</string>
     <string name="swap_progress_step_of">Étape %1$d sur %2$d</string>
     <string name="swap_progress_step_header">Étape %1$d · %2$s</string>

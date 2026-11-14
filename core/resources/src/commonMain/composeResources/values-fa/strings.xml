@@ -2327,6 +2327,15 @@
     <string name="desktop_change_password_corrupted">فایل کلید آسیب دیده است: پس از قفل شدن برنامه نمی‌توانید وارد شوید. از هر عبارت بازیابی یک نسخه پشتیبان ذخیره کنید.</string>
     <string name="desktop_change_password_success">رمز عبور تغییر یافت</string>
     <string name="desktop_security_lock_now">اکنون قفل کن</string>
+    <string name="desktop_menu_file">فایل</string>
+    <string name="desktop_menu_wallet">کیف پول</string>
+    <string name="desktop_menu_view">نما</string>
+    <string name="desktop_menu_window">پنجره</string>
+    <string name="desktop_menu_help">راهنما</string>
+    <string name="desktop_menu_quit">خروج</string>
+    <string name="desktop_menu_minimize">کوچک کردن</string>
+    <string name="desktop_menu_wallet_settings">تنظیمات کیف پول</string>
+    <string name="desktop_menu_whats_new">تازه‌ها</string>
     <string name="swap_progress_title">پیشرفت سواپ</string>
     <string name="swap_progress_step_of">مرحله %1$d از %2$d</string>
     <string name="swap_progress_step_header">مرحله %1$d · %2$s</string>

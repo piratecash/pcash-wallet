@@ -2495,6 +2495,15 @@
     <string name="desktop_change_password_corrupted">Файл ключа повреждён: после блокировки приложения вы не сможете войти. Сохраните резервную копию каждой фразы восстановления.</string>
     <string name="desktop_change_password_success">Пароль изменён</string>
     <string name="desktop_security_lock_now">Заблокировать сейчас</string>
+    <string name="desktop_menu_file">Файл</string>
+    <string name="desktop_menu_wallet">Кошелек</string>
+    <string name="desktop_menu_view">Вид</string>
+    <string name="desktop_menu_window">Окно</string>
+    <string name="desktop_menu_help">Справка</string>
+    <string name="desktop_menu_quit">Выход</string>
+    <string name="desktop_menu_minimize">Свернуть</string>
+    <string name="desktop_menu_wallet_settings">Настройки кошелька</string>
+    <string name="desktop_menu_whats_new">Что нового</string>
     <string name="swap_progress_title">Ход обмена</string>
     <string name="swap_progress_step_of">Шаг %1$d из %2$d</string>
     <string name="swap_progress_step_header">%1$d шаг · %2$s</string>

@@ -68,6 +68,7 @@ import cash.p.terminal.ui_compose.components.title3_leah
 import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.ui_compose.rememberDebouncedAction
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -79,8 +80,12 @@ fun BalanceForAccount(
     navigation: HSNavigation,
     accountViewItem: AccountViewItem,
     paddingValuesParent: PaddingValues,
+    refreshRequests: Flow<Unit>,
 ) {
     val viewModel = koinViewModel<BalanceViewModel>()
+    LaunchedEffect(viewModel, refreshRequests) {
+        refreshRequests.collect { viewModel.onRefresh() }
+    }
 
     LifecycleEventEffect(event = Lifecycle.Event.ON_RESUME) {
         viewModel.onResume()

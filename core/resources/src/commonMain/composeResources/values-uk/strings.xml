@@ -2470,6 +2470,15 @@
     <string name="desktop_change_password_corrupted">Файл ключа пошкоджено: після блокування застосунку ви не зможете увійти. Збережіть резервну копію кожної фрази відновлення.</string>
     <string name="desktop_change_password_success">Пароль змінено</string>
     <string name="desktop_security_lock_now">Заблокувати зараз</string>
+    <string name="desktop_menu_file">Файл</string>
+    <string name="desktop_menu_wallet">Гаманець</string>
+    <string name="desktop_menu_view">Вигляд</string>
+    <string name="desktop_menu_window">Вікно</string>
+    <string name="desktop_menu_help">Довідка</string>
+    <string name="desktop_menu_quit">Вихід</string>
+    <string name="desktop_menu_minimize">Згорнути</string>
+    <string name="desktop_menu_wallet_settings">Налаштування гаманця</string>
+    <string name="desktop_menu_whats_new">Що нового</string>
     <string name="swap_progress_title">Хід обміну</string>
     <string name="swap_progress_step_of">Крок %1$d з %2$d</string>
     <string name="swap_progress_step_header">%1$d крок · %2$s</string>
