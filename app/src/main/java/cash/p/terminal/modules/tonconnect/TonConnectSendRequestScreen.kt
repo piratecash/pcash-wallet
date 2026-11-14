@@ -33,6 +33,7 @@ import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.ui_compose.components.ButtonPrimaryDefault
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
+import cash.p.terminal.ui_compose.components.CustomSnackbar
 import cash.p.terminal.ui_compose.components.HudHelper
 import cash.p.terminal.ui_compose.components.SectionUniversalLawrence
 import cash.p.terminal.ui_compose.components.SnackbarDuration
@@ -53,10 +54,11 @@ fun TonConnectSendRequestScreen(
     val view = LocalView.current
     val coroutineScope = rememberCoroutineScope()
     var buttonEnabled by remember { mutableStateOf(true) }
+    var sendingHud by remember { mutableStateOf<CustomSnackbar?>(null) }
     val confirm = navigation.rememberAuthorizedAction(input = null) {
         coroutineScope.launch {
             buttonEnabled = false
-            HudHelper.showInProcessMessage(
+            sendingHud = HudHelper.showInProcessMessage(
                 view,
                 view.context.getString(R.string.Send_Sending),
                 SnackbarDuration.INDEFINITE
@@ -75,6 +77,11 @@ fun TonConnectSendRequestScreen(
 
             buttonEnabled = true
         }
+    }
+
+    // The indefinite Sending HUD would cover the Close button.
+    LaunchedEffect(uiState.error) {
+        if (uiState.error != null) sendingHud?.dismiss()
     }
 
     LaunchedEffect(uiState.success) {

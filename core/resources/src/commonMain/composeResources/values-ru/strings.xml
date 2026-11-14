@@ -531,6 +531,7 @@
     <!--TonConnect-->
     <string name="TonConnect_NewConnect">Новое подключение</string>
     <string name="TonConnect_Error_InvalidUrl">Недействительный URL-адрес</string>
+    <string name="ton_connect_request_expired">Время на подтверждение истекло. Повторите операцию на сайте.</string>
     <string name="TonConnect_Unnamed">Безымянный</string>
     <string name="TonConnect_Wallet">Кошелек</string>
     <string name="TonConnect_ChooseWallet">Выберите кошелек</string>

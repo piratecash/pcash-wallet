@@ -17,6 +17,7 @@ import io.horizontalsystems.sqlcipher.room.DatabaseKeyMismatchException
 import io.horizontalsystems.sqlcipher.room.DatabaseMigrationConflictException
 import io.horizontalsystems.sqlcipher.room.DatabaseMigrationResult
 import io.horizontalsystems.sqlcipher.room.InsufficientDatabaseMigrationSpaceException
+import io.horizontalsystems.tonkit.api.TonApi
 import io.horizontalsystems.tonkit.core.TonKit
 import io.horizontalsystems.tonkit.models.SignTransaction
 import io.horizontalsystems.tonkit.tonconnect.TonConnectKit
@@ -66,12 +67,13 @@ class TonConnectManagerTest {
         every { accounts } returns listOf(mockk<Account> { every { id } returns VISIBLE_ID })
     }
     private val kit = mockk<TonConnectKit>(relaxed = true)
+    private val tonApi = mockk<TonApi>()
 
     @Before
     fun setUp() {
         mockkObject(TonKit.Companion, SharedAppConfig)
         every { SharedAppConfig.tonApiKeys } returns listOf("api-key")
-        every { TonKit.getTonApi(any(), any()) } returns mockk()
+        every { TonKit.getTonApi(any(), any()) } returns tonApi
         every { TonKit.getTransactionSigner(any()) } returns mockk()
         mockkObject(TonConnectKit.Companion)
         coEvery { TonConnectKit.migrateDatabase(any(), any()) } returns DatabaseMigrationResult(0, 1)
@@ -376,6 +378,20 @@ class TonConnectManagerTest {
         assertEquals(listOf(DAppRequest(VALID_URI, closeAppOnResult = true)), emitted)
     }
 
+    @Test
+    fun networkTimeSeconds_apiFails_returnsNull() = runTest(dispatcher) {
+        coEvery { tonApi.getRawTime() } throws IllegalStateException("no network")
+
+        assertNull(createManager().networkTimeSeconds())
+    }
+
+    @Test
+    fun networkTimeSeconds_apiSucceeds_returnsApiValue() = runTest(dispatcher) {
+        coEvery { tonApi.getRawTime() } returns NETWORK_TIME
+
+        assertEquals(NETWORK_TIME.toLong(), createManager().networkTimeSeconds())
+    }
+
     private fun TestScope.createManager() = TonConnectManager(
         context = context,
         adapterFactory = mockk(relaxed = true),
@@ -405,5 +421,6 @@ class TonConnectManagerTest {
         const val VALID_URI = "tc://?v=2&id=client&r=%7B%7D"
         const val MALFORMED_URI = "tc://?v=2"
         const val SECRET = "SECRET-PAYLOAD"
+        const val NETWORK_TIME = 1_800_000_000
     }
 }

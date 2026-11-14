@@ -543,6 +543,7 @@
     <!--TonConnect-->
     <string name="TonConnect_NewConnect">新连接</string>
     <string name="TonConnect_Error_InvalidUrl">无效的URL地址</string>
+    <string name="ton_connect_request_expired">确认时间已过期。请在网站上重新操作。</string>
     <string name="TonConnect_Unnamed">未命名</string>
     <string name="TonConnect_Wallet">钱包</string>
     <string name="TonConnect_ChooseWallet">选择钱包</string>

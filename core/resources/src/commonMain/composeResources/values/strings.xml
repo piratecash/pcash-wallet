@@ -671,6 +671,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="TonConnect_Title" translatable="false">Ton Connect</string>
     <string name="TonConnect_NewConnect">New Connection</string>
     <string name="TonConnect_Error_InvalidUrl">Invalid URL Address</string>
+    <string name="ton_connect_request_expired">The time to confirm has expired. Repeat the operation on the website.</string>
     <string name="TonConnect_Unnamed">Unnamed</string>
     <string name="TonConnect_Url" translatable="false">URL</string>
     <string name="TonConnect_Wallet">Wallet</string>

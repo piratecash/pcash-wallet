@@ -32,6 +32,7 @@ import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -561,6 +562,36 @@ class TonConnectNewViewModelTest {
         advanceUntilIdle()
 
         assertFalse(viewModel.uiState.finish)
+    }
+
+    @Test
+    fun reject_whileConnecting_cancelsWithoutFinishOrToast() = runTest(dispatcher) {
+        val tonAccount = tonAccount("ton-abandon")
+        setAccounts(listOf(tonAccount), tonAccount)
+        mockkStatic("cash.p.terminal.core.managers.TonKitManagerKt")
+        every {
+            any<Account>().toTonWalletFullAccess(any(), any(), any())
+        } returns mockk(relaxed = true)
+        coEvery { tonConnectKit.getManifest(request.payload.manifestUrl) } returns manifest()
+        var connectCancelled = false
+        coEvery { tonConnectKit.connect(any(), any(), any(), any()) } coAnswers {
+            try {
+                awaitCancellation()
+            } finally {
+                connectCancelled = true
+            }
+        }
+        val viewModel = TonConnectNewViewModel(URI, tonConnectManager)
+        advanceUntilIdle()
+        viewModel.connect()
+        advanceUntilIdle()
+
+        viewModel.reject()
+        advanceUntilIdle()
+
+        assertTrue(connectCancelled)
+        assertFalse(viewModel.uiState.finish)
+        assertNull(viewModel.uiState.toast)
     }
 
     @Test
