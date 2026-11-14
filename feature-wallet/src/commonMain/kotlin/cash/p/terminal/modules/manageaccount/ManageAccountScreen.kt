@@ -162,6 +162,7 @@ internal fun ManageAccountScreen(
             HeaderText(stringResource(Res.string.ManageAccount_Name))
 
             FormsInput(
+                singleLine = true,
                 modifier = Modifier.padding(horizontal = 16.dp),
                 initial = viewState.title,
                 hint = "",

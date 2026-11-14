@@ -200,6 +200,7 @@ private fun CompleteContent(uiState: RestoreShamirUiState, actions: ShamirWallet
     VSpacer(32.dp)
     HeaderText(stringResource(Res.string.ManageAccount_Name))
     FormsInput(
+        singleLine = true,
         modifier = Modifier.padding(horizontal = 16.dp),
         enabled = !uiState.restoring,
         initial = null,

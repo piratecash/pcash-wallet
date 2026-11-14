@@ -99,6 +99,10 @@ data class Account(
     }
 }
 
+/** One line with no edge whitespace: blank lines are dropped, the remaining lines are joined by a space. */
+fun String.normalizedAccountName(): String =
+    lineSequence().map(String::trim).filter(String::isNotEmpty).joinToString(" ")
+
 fun Account.canBeDuplicated(): Boolean =
     type is SeedAccountType || type is AccountType.MnemonicMonero
 

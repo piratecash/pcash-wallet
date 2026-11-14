@@ -133,6 +133,7 @@ internal fun HardwareWalletScreen(
             Spacer(modifier = Modifier.height(12.dp))
             HeaderText(stringResource(id = R.string.ManageAccount_Name))
             FormsInput(
+                singleLine = true,
                 modifier = Modifier.padding(horizontal = 16.dp),
                 initial = viewModel.accountName,
                 pasteEnabled = false,

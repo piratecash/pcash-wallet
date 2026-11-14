@@ -6,6 +6,7 @@ import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
+import cash.p.terminal.wallet.normalizedAccountName
 import java.util.UUID
 
 class AccountFactory(
@@ -24,7 +25,7 @@ class AccountFactory(
 
         return Account(
             id = id,
-            name = name,
+            name = name.normalizedAccountName(),
             type = type,
             origin = origin,
             level = userManager.getUserLevel(),
@@ -37,7 +38,7 @@ class AccountFactory(
         val id = UUID.randomUUID().toString()
         return Account(
             id = id,
-            name = name,
+            name = name.normalizedAccountName(),
             type = type,
             origin = AccountOrigin.Restored,
             level = userManager.getUserLevel(),
@@ -67,9 +68,10 @@ class AccountFactory(
             accountManager.accounts.mapTo(this) { it.name }
             addAll(additionalExistingNames)
         }
-        if (name !in existingNames) return name
+        val baseName = name.normalizedAccountName()
+        if (baseName !in existingNames) return baseName
         var counter = 1
-        while ("$name ($counter)" in existingNames) counter++
-        return "$name ($counter)"
+        while ("$baseName ($counter)" in existingNames) counter++
+        return "$baseName ($counter)"
     }
 }
