@@ -74,6 +74,8 @@ class SendTransactionServiceTron(
         XRateService(getKoinInstance<MarketKitWrapper>(), getKoinInstance<CurrencyManager>().baseCurrency)
     private val feeService = SendTronFeeService(adapter, feeToken)
     private val balanceHiddenManager: IBalanceHiddenManager = getKoinInstance()
+    private val balanceHidden: Boolean
+        get() = balanceHiddenManager.isWalletBalanceHidden(token.tokenQuery.id)
 
     val logger: AppLogger = AppLogger("send-tron")
 
@@ -124,7 +126,7 @@ class SendTransactionServiceTron(
             (amountState.canBeSend && feeState.canBeSend && addressState.canBeSend)),
         loading = sendTransactionData != null && feeState.estimating,
         fields = listOfNotNull(
-            resources?.toTronResourceRows(numberFormatter)?.takeIf { it.isNotEmpty() }?.let(::DataFieldTronResources)
+            resources?.toTronResourceRows(numberFormatter, balanceHidden)?.takeIf { it.isNotEmpty() }?.let(::DataFieldTronResources)
         ),
         feeDetails = listOfNotNull(
             feeState.breakdown?.toTronFeeRows(numberFormatter, feeToken.coin.code, feeToken.decimals)
@@ -135,7 +137,7 @@ class SendTransactionServiceTron(
     private fun activationCaution(): CautionViewItem? {
         val breakdown = feeState.breakdown?.takeIf { it.activationFee != null } ?: return null
         val fee = numberFormatter.formatCoinFull(breakdown.totalFee, feeToken.coin.code, feeToken.decimals)
-            .orHide(balanceHiddenManager.isWalletBalanceHidden(token.tokenQuery.id))
+            .orHide(balanceHidden)
         return HSCaution(
             s = TranslatableString.ResString(Res.string.Alert_TitleWarning),
             type = HSCaution.Type.Warning,

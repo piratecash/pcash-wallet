@@ -223,7 +223,7 @@ private fun TronOnlineConfirmation(
                 CellUniversalLawrenceSection(topSectionItems)
 
                 VSpacer(height = 16.dp)
-                TronResourcesSection(uiState.resources)
+                TronResourcesSection(uiState.resources, sendViewModel.balanceHidden)
 
                 val feePrimary = if (fee != null) {
                     getKoinInstance<IAppNumberFormatter>().formatCoinFull(fee, feeCoin.code, feeCoinMaxAllowedDecimals)

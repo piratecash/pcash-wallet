@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.core.getKoinInstance
+import cash.p.terminal.core.orHide
 import cash.p.terminal.modules.fee.QuoteInfoRow
 import cash.p.terminal.modules.multiswap.ui.DataField
 import cash.p.terminal.navigation.HSNavigation
@@ -56,11 +57,13 @@ data class DataFieldTronFee(val rows: List<TronFeeRow>) : DataField {
     override fun GetContent(navigation: HSNavigation, borderTop: Boolean) = TronFeeRows(rows, borderTop)
 }
 
-fun AccountResources.toTronResourceRows(formatter: IAppNumberFormatter): List<TronResourceRow> = listOfNotNull(
-    energy.toRow(Res.string.tron_resource_energy, formatter),
-    freeBandwidth.toRow(Res.string.tron_resource_free_bandwidth, formatter),
-    stakedBandwidth.toRow(Res.string.tron_resource_staked_bandwidth, formatter),
-)
+/** Limits follow the staked TRX, so [hidden] masks them together with the balance. */
+fun AccountResources.toTronResourceRows(formatter: IAppNumberFormatter, hidden: Boolean): List<TronResourceRow> =
+    listOfNotNull(
+        energy.toRow(Res.string.tron_resource_energy, formatter, hidden),
+        freeBandwidth.toRow(Res.string.tron_resource_free_bandwidth, formatter, hidden),
+        stakedBandwidth.toRow(Res.string.tron_resource_staked_bandwidth, formatter, hidden),
+    )
 
 fun TronFeeBreakdown.toTronFeeRows(
     formatter: IAppNumberFormatter,
@@ -92,9 +95,13 @@ fun TronFeeBreakdown.toTronFeeRows(
     return listOfNotNull(energyRow, bandwidthRow)
 }
 
-private fun AccountResources.Resource.toRow(title: StringResource, formatter: IAppNumberFormatter) =
+private fun AccountResources.Resource.toRow(title: StringResource, formatter: IAppNumberFormatter, hidden: Boolean) =
     takeIf { it.limit > 0 }?.let {
-        TronResourceRow(title, formatter.formatResource(it.available), formatter.formatResource(it.limit))
+        TronResourceRow(
+            title,
+            formatter.formatResource(it.available).orHide(hidden),
+            formatter.formatResource(it.limit).orHide(hidden),
+        )
     }
 
 private fun Long.toDetail(text: StringResource, formatter: IAppNumberFormatter) =
@@ -103,8 +110,10 @@ private fun Long.toDetail(text: StringResource, formatter: IAppNumberFormatter) 
 internal fun IAppNumberFormatter.formatResource(value: Long) = format(value.toBigDecimal(), 0, 0)
 
 @Composable
-fun TronResourcesSection(resources: AccountResources?) {
-    val rows = remember(resources) { resources?.toTronResourceRows(getKoinInstance()).orEmpty() }
+fun TronResourcesSection(resources: AccountResources?, balanceHidden: Boolean) {
+    val rows = remember(resources, balanceHidden) {
+        resources?.toTronResourceRows(getKoinInstance(), balanceHidden).orEmpty()
+    }
     TronResourcesCard(rows)
 }
 

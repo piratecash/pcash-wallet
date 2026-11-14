@@ -172,7 +172,7 @@ fun SendTronScreen(
             )
 
             Spacer(modifier = Modifier.height(12.dp))
-            TronResourcesSection(uiState.resources)
+            TronResourcesSection(uiState.resources, viewModel.balanceHidden)
             FeeInfoSection(
                 tokenIn = wallet.token,
                 displayBalance = viewModel.displayBalance,

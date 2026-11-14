@@ -729,7 +729,7 @@ private fun swapErrorText(error: Throwable): String = when (error) {
 private fun SwapFeeInfo(uiState: SwapUiState, controller: SwapScreenController) {
     val feeToken = uiState.feeToken
     val networkFee = uiState.networkFee
-    TronResourcesSection(uiState.tronResources)
+    TronResourcesSection(uiState.tronResources, uiState.balanceHidden)
     FeeInfoSection(
         tokenIn = uiState.tokenIn,
         displayBalance = uiState.displayBalance,

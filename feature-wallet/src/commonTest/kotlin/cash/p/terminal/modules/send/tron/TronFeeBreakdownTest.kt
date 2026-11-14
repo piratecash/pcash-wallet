@@ -87,12 +87,29 @@ class TronFeeBreakdownTest {
             freeBandwidth = AccountResources.Resource(limit = 600, used = 345),
             stakedBandwidth = AccountResources.Resource(),
             energy = AccountResources.Resource(limit = 65_000, used = 45_000),
-        ).toTronResourceRows(formatter)
+        ).toTronResourceRows(formatter, hidden = false)
 
         assertEquals(
             listOf(
                 TronResourceRow(Res.string.tron_resource_energy, "20000", "65000"),
                 TronResourceRow(Res.string.tron_resource_free_bandwidth, "255", "600"),
+            ),
+            rows,
+        )
+    }
+
+    @Test
+    fun toTronResourceRows_balanceHidden_masksAvailableAndLimit() {
+        val rows = AccountResources(
+            freeBandwidth = AccountResources.Resource(limit = 600, used = 345),
+            stakedBandwidth = AccountResources.Resource(),
+            energy = AccountResources.Resource(limit = 65_000, used = 45_000),
+        ).toTronResourceRows(formatter, hidden = true)
+
+        assertEquals(
+            listOf(
+                TronResourceRow(Res.string.tron_resource_energy, "*****", "*****"),
+                TronResourceRow(Res.string.tron_resource_free_bandwidth, "*****", "*****"),
             ),
             rows,
         )
@@ -110,7 +127,7 @@ class TronFeeBreakdownTest {
             freeBandwidth = AccountResources.Resource(),
             stakedBandwidth = AccountResources.Resource(),
             energy = AccountResources.Resource(limit = 65_000, used = 45_000),
-        ).toTronResourceRows(formatter)
+        ).toTronResourceRows(formatter, hidden = false)
 
         assertEquals(listOf(TronResourceRow(Res.string.tron_resource_energy, "20,000", "65,000")), rows)
     }
