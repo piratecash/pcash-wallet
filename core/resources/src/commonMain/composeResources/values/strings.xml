@@ -2733,6 +2733,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="desktop_wipe_restart_manually">Data deleted. Start the app again</string>
     <string name="desktop_restart_manually">Start the app again</string>
     <string name="platform_not_supported_yet">Not supported in the desktop version yet</string>
+    <string name="tor_not_supported_windows">Tor is not supported in the Windows version yet</string>
     <string name="desktop_change_password_title">Change password</string>
     <string name="desktop_change_password_current_hint">Current password</string>
     <string name="desktop_change_password_new_hint">New password</string>

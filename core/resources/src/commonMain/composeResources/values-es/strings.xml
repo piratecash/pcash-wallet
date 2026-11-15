@@ -2309,6 +2309,7 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="desktop_wipe_restart_manually">Datos eliminados. Vuelva a iniciar la aplicación</string>
     <string name="desktop_restart_manually">Vuelva a iniciar la aplicación</string>
     <string name="platform_not_supported_yet">Aún no es compatible con la versión de escritorio</string>
+    <string name="tor_not_supported_windows">Tor aún no es compatible con la versión para Windows</string>
     <string name="desktop_change_password_title">Cambiar contraseña</string>
     <string name="desktop_change_password_current_hint">Contraseña actual</string>
     <string name="desktop_change_password_new_hint">Nueva contraseña</string>

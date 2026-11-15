@@ -135,6 +135,10 @@ import cash.p.terminal.core.managers.TonConnectManager
 import cash.p.terminal.core.managers.TonKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.AndroidTonKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.TorManager
+import cash.p.terminal.core.tor.AndroidTorPlatform
+import cash.p.terminal.core.tor.TorGateway
+import cash.p.terminal.core.tor.TorPlatform
+import cash.p.terminal.core.tor.TorSettings
 import cash.p.terminal.core.tor.TorServiceGateway
 import cash.p.terminal.core.tor.TorSyncCoordinator
 import cash.p.terminal.core.tor.TorSyncState
@@ -313,6 +317,7 @@ val managerModule = module {
         bind<BalanceSettingsStorage>()
         bind<TransactionSettingsStorage>()
         bind<NetworkSettingsStorage>()
+        bind<TorSettings>()
         bind<ReleaseNotesStorage>()
         bind<AppVersionStorage>()
     }
@@ -460,7 +465,8 @@ val managerModule = module {
     singleOf(::BalanceViewTypeManager)
     singleOf(::DeviceFlipDetector)
     singleOf(::BalanceHideOnFlipManager) { createdAtStart() } bind BalanceHideOnFlipHandler::class
-    singleOf(::TorServiceGateway)
+    singleOf(::TorServiceGateway) bind TorGateway::class
+    singleOf(::AndroidTorPlatform) bind TorPlatform::class
     singleOf(::TorManager) { createdAtStart() } bind ITorManager::class
     // Lazy wallet stack: eager creation would open the wallet databases on the main thread inside startKoin
     single(createdAtStart = true) {

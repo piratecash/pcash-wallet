@@ -1,7 +1,7 @@
 package cash.p.terminal.modules.tor
 
 import cash.p.terminal.core.ITorManager
-import cash.p.terminal.core.managers.ConnectivityManager
+import cash.p.terminal.manager.IConnectivityManager
 import cash.p.terminal.modules.settings.security.tor.TorStatus
 import io.mockk.every
 import io.mockk.mockk
@@ -20,7 +20,7 @@ class TorConnectionStatusUseCaseTest {
         every { torStatusFlow } returns status
         every { bootstrapProgressFlow } returns progress
     }
-    private val connectivityManager = mockk<ConnectivityManager> {
+    private val connectivityManager = mockk<IConnectivityManager> {
         every { isConnected } returns MutableStateFlow(true)
     }
     private val useCase = TorConnectionStatusUseCase(torManager, connectivityManager)

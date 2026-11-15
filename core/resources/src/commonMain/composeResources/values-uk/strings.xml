@@ -2463,6 +2463,7 @@
     <string name="desktop_wipe_restart_manually">Дані видалено. Запустіть застосунок знову</string>
     <string name="desktop_restart_manually">Запустіть застосунок знову</string>
     <string name="platform_not_supported_yet">Поки що не підтримується в настільній версії</string>
+    <string name="tor_not_supported_windows">Tor поки не підтримується у версії для Windows</string>
     <string name="desktop_change_password_title">Змінити пароль</string>
     <string name="desktop_change_password_current_hint">Поточний пароль</string>
     <string name="desktop_change_password_new_hint">Новий пароль</string>

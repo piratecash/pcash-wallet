@@ -222,6 +222,7 @@ class DesktopSecretActionAuthorizerTest {
         }
         startKoin {
             modules(
+                connectedWithoutTorModule,
                 module {
                     single { vault }
                     single<ICurrentDateProvider> {

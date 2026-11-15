@@ -8,6 +8,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -15,6 +16,8 @@ import cash.p.terminal.core.rememberPremiumAction
 import cash.p.terminal.feature.wallet.rememberSecretAction
 import cash.p.terminal.modules.pin.SetDuressPinIntroPage
 import cash.p.terminal.modules.settings.advancedsecurity.HiddenWalletTermsPage
+import cash.p.terminal.modules.settings.security.tor.SecurityTorSettingsViewModel
+import cash.p.terminal.modules.settings.security.ui.TorBlock
 import cash.p.terminal.modules.settings.security.autolock.AutoLockInterval
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
@@ -31,6 +34,7 @@ import cash.p.terminal.resources.desktop_change_password_title
 import cash.p.terminal.resources.desktop_duress_password_disable
 import cash.p.terminal.resources.desktop_duress_password_edit
 import cash.p.terminal.resources.desktop_duress_password_set
+import cash.p.terminal.resources.desktop_restart_manually
 import cash.p.terminal.resources.desktop_security_lock_now
 import cash.p.terminal.resources.desktop_transfer_password
 import cash.p.terminal.resources.desktop_transfer_password_description
@@ -39,6 +43,7 @@ import cash.p.terminal.resources.ic_delete_20
 import cash.p.terminal.resources.ic_switch_wallet_24
 import cash.p.terminal.shared.desktop.lock.ChangePasswordPage
 import cash.p.terminal.shared.desktop.lock.EditDuressPasswordPage
+import cash.p.terminal.shared.desktop.lock.RestartManuallyDialog
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
 import cash.p.terminal.ui_compose.components.HSpacer
@@ -64,6 +69,16 @@ class DesktopSecurityPage : HSPage() {
     override fun GetContent(navigation: HSNavigation) {
         val viewModel: DesktopSecurityViewModel = koinViewModel()
         val duressViewModel: DesktopDuressSectionViewModel = koinViewModel()
+        val torViewModel: SecurityTorSettingsViewModel = koinViewModel()
+        LaunchedEffect(torViewModel.restartApp) {
+            if (torViewModel.restartApp) {
+                torViewModel.appRestarted()
+                viewModel.restartApp()
+            }
+        }
+        if (viewModel.uiState.restartManually) {
+            RestartManuallyDialog(listOf(Res.string.desktop_restart_manually), viewModel::onRestartManuallyConfirmed)
+        }
         val manageDuress = navigation.rememberSecretAction<Boolean> { duressSet ->
             navigation.slideFromRight(if (duressSet) EditDuressPasswordPage() else SetDuressPinIntroPage())
         }
@@ -92,6 +107,7 @@ class DesktopSecurityPage : HSPage() {
                 onDuressDisableClick = disableDuress,
                 onHiddenWalletClick = openHiddenWalletTerms,
             ),
+            torSection = { TorBlock(torViewModel, navigation) },
             onBack = navigation::navigateUpSafely,
         )
     }
@@ -113,6 +129,7 @@ internal fun DesktopSecurityContent(
     uiState: DesktopSecurityUiState,
     duressState: DuressSectionUiState,
     actions: DesktopSecurityActions,
+    torSection: @Composable () -> Unit,
     onBack: () -> Unit,
 ) {
     Scaffold(
@@ -141,6 +158,8 @@ internal fun DesktopSecurityContent(
                 checked = uiState.transferPasswordEnabled,
                 onCheckedChange = actions.onTransferPasswordChange,
             )
+            VSpacer(20.dp)
+            torSection()
             if (duressState.available) {
                 VSpacer(20.dp)
                 DuressSection(duressState.set, actions.onDuressManageClick, actions.onDuressDisableClick)
@@ -261,6 +280,7 @@ private fun DesktopSecurityContentPreview() {
             ),
             duressState = DuressSectionUiState(available = true, set = true),
             actions = DesktopSecurityActions({}, {}, {}, {}, {}, {}, {}, {}),
+            torSection = {},
             onBack = {},
         )
     }

@@ -13,7 +13,7 @@ internal fun balanceHiddenManager(
     settingsStore: DesktopSettingsStore,
     dispatcherProvider: DispatcherProvider,
 ) = BalanceHiddenManager(
-    localStorage = DesktopWalletSettingsStorage(settingsStore, mockk(relaxed = true)),
+    localStorage = DesktopWalletSettingsStorage(settingsStore, mockk(relaxed = true), mockk(relaxed = true)),
     backgroundManager = mockk<IBackgroundManager> {
         every { stateFlow } returns MutableStateFlow(BackgroundManagerState.Unknown)
         every { inForeground } returns true

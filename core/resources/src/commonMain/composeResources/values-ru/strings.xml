@@ -2488,6 +2488,7 @@
     <string name="desktop_wipe_restart_manually">Данные удалены. Запустите приложение заново</string>
     <string name="desktop_restart_manually">Запустите приложение заново</string>
     <string name="platform_not_supported_yet">Пока не поддерживается в версии для компьютера</string>
+    <string name="tor_not_supported_windows">Tor пока не поддерживается в версии для Windows</string>
     <string name="desktop_change_password_title">Изменить пароль</string>
     <string name="desktop_change_password_current_hint">Текущий пароль</string>
     <string name="desktop_change_password_new_hint">Новый пароль</string>

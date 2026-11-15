@@ -1,6 +1,7 @@
 package cash.p.terminal.manager
 
 import kotlinx.coroutines.flow.Flow
+import org.jetbrains.compose.resources.StringResource
 
 interface ITorConnectionStatusUseCase {
 
@@ -15,7 +16,7 @@ interface ITorConnectionStatusUseCase {
 }
 
 data class TorViewState(
-    val stateText: Int,
+    val stateText: StringResource,
     val showRetryButton: Boolean,
     val torIsActive: Boolean,
     val showNetworkConnectionError: Boolean,

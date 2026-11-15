@@ -19,6 +19,7 @@ import cash.p.terminal.navigation.QrScannerResult
 import cash.p.terminal.navigation.ResultLauncher
 import cash.p.terminal.navigation.rememberResultLauncher
 import cash.p.terminal.navigation.slideFromRight
+import cash.p.terminal.shared.desktop.connectedWithoutTorModule
 import cash.p.terminal.shared.main.DesktopHudMessenger
 import cash.p.terminal.shared.main.DesktopNavHost
 import cash.p.terminal.ui_compose.components.UrlOpener
@@ -58,6 +59,7 @@ class DesktopQrScannerPageTest {
         val dispatchers = TestDispatcherProvider(Dispatchers.Unconfined, MainScope())
         startKoin {
             modules(
+                connectedWithoutTorModule,
                 module {
                     viewModel { QRScannerViewModel(mockk()).also { scannerViewModel = it } }
                     viewModel { DesktopQrScannerViewModel(session, mockk(relaxed = true), dispatchers) }

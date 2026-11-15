@@ -1,9 +1,12 @@
 package cash.p.terminal.shared.desktop.settings
 
 import cash.p.terminal.core.TestDispatcherProvider
+import cash.p.terminal.shared.desktop.DesktopAppExit
+import cash.p.terminal.shared.desktop.DesktopAppRelauncher
 import cash.p.terminal.shared.desktop.DesktopWalletSettingsStorage
 import cash.p.terminal.shared.desktop.balanceHiddenManager
 import io.horizontalsystems.core.DesktopSettingsStore
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -22,11 +25,37 @@ class DesktopSecurityViewModelTest {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
     private val settingsStore = DesktopSettingsStore(File(directory, "settings.preferences_pb"), scope)
     private val dispatcherProvider = TestDispatcherProvider(Dispatchers.Unconfined, scope)
+    private val relauncher = mockk<DesktopAppRelauncher>()
+    private val appExit = DesktopAppExit()
 
     @AfterTest
     fun tearDown() {
         scope.cancel()
         directory.deleteRecursively()
+    }
+
+    @Test
+    fun restartApp_relaunched_requestsExit() {
+        every { relauncher.relaunch(wipeFailed = false) } returns true
+        val viewModel = viewModel()
+
+        viewModel.restartApp()
+
+        assertTrue(appExit.requested.value)
+        assertFalse(viewModel.uiState.restartManually)
+    }
+
+    @Test
+    fun restartApp_relaunchFailed_asksToRestartManuallyThenExits() {
+        every { relauncher.relaunch(wipeFailed = false) } returns false
+        val viewModel = viewModel()
+
+        viewModel.restartApp()
+        assertTrue(viewModel.uiState.restartManually)
+        assertFalse(appExit.requested.value)
+
+        viewModel.onRestartManuallyConfirmed()
+        assertTrue(appExit.requested.value)
     }
 
     @Test
@@ -56,6 +85,8 @@ class DesktopSecurityViewModelTest {
         vault = mockk(),
         settingsStore = settingsStore,
         balanceHiddenManager = balanceHiddenManager(settingsStore, dispatcherProvider),
-        transactionSettings = DesktopWalletSettingsStorage(settingsStore, mockk(relaxed = true)),
+        transactionSettings = DesktopWalletSettingsStorage(settingsStore, mockk(relaxed = true), mockk(relaxed = true)),
+        relauncher = relauncher,
+        appExit = appExit,
     )
 }

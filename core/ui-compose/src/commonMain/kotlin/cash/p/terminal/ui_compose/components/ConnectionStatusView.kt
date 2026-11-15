@@ -48,7 +48,3 @@ internal fun NoConnectionView(modifier: Modifier = Modifier) {
             .wrapContentHeight(Alignment.CenterVertically)
     )
 }
-
-/** Desktop never routes Tor: `torEnabled` is false there. */
-@Composable
-internal expect fun TorStatusView(modifier: Modifier = Modifier)

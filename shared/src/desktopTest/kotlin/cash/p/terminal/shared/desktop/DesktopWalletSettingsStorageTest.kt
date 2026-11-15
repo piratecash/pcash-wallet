@@ -22,7 +22,7 @@ class DesktopWalletSettingsStorageTest {
     private val directory = Files.createTempDirectory("wallet-settings-store").toFile()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val settingsStore = DesktopSettingsStore(File(directory, "settings.preferences_pb"), scope)
-    private val storage = DesktopWalletSettingsStorage(settingsStore, mockk(relaxed = true))
+    private val storage = DesktopWalletSettingsStorage(settingsStore, mockk(relaxed = true), mockk(relaxed = true))
 
     @AfterTest
     fun tearDown() {

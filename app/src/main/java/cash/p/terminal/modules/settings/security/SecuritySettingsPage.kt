@@ -1,19 +1,13 @@
 package cash.p.terminal.modules.settings.security
 
-import android.content.Context
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -32,7 +26,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.R
 import cash.p.terminal.ui.compose.components.NewDot
 import cash.p.terminal.core.rememberAuthorizedAction
@@ -45,7 +38,6 @@ import cash.p.terminal.modules.pin.SetPinPage
 import cash.p.terminal.modules.settings.displaytransactions.DisplayTransactionsPage
 import cash.p.terminal.modules.settings.security.passcode.SecuritySettingsUiState
 import cash.p.terminal.modules.settings.security.passcode.SecuritySettingsViewModel
-import cash.p.terminal.modules.settings.security.tor.SecurityTorSettingsModule
 import cash.p.terminal.modules.settings.security.tor.SecurityTorSettingsViewModel
 import cash.p.terminal.modules.settings.security.ui.HardwareWalletBiometricBlock
 import cash.p.terminal.modules.settings.security.ui.PasscodeBlock
@@ -59,13 +51,10 @@ import cash.p.terminal.navigation.PageResumeEffect
 import cash.p.terminal.navigation.rememberResultLauncher
 import cash.p.terminal.navigation.slideFromBottom
 import cash.p.terminal.ui_compose.components.HsSwitch
-import io.horizontalsystems.core.ui.dialogs.ConfirmationDialogSheet
-import cash.p.terminal.resources.ic_tor_connection_24
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
 import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.InfoText
-import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_grey
 import cash.p.terminal.ui_compose.components.body_leah
@@ -86,11 +75,8 @@ class SecuritySettingsPage : HSPage() {
 
     @Composable
     override fun GetContent(navigation: HSNavigation) {
-        val torViewModel = viewModel<SecurityTorSettingsViewModel>(
-            factory = SecurityTorSettingsModule.Factory()
-        )
+        val torViewModel = koinViewModel<SecurityTorSettingsViewModel>()
         val securitySettingsViewModel = koinViewModel<SecuritySettingsViewModel>()
-        val context = LocalContext.current
         val activity = LocalActivity.current
         val transactionsHideInput = ConfirmPinPage.InputConfirm(
             description = Res.string.Unlock_EnterPasscode_Transactions_Hide,
@@ -170,7 +156,6 @@ class SecuritySettingsPage : HSPage() {
                 }
             },
             onDisableTransactionAutoHidePinClicked = disableTransactionAutoHidePin,
-            showAppRestartAlert = { navigation.showAppRestartAlert(context, torViewModel) },
             restartApp = { activity?.fullRestart() },
             onTransferPasscodeEnabledChange = { enabled ->
                 if (enabled) {
@@ -189,44 +174,6 @@ class SecuritySettingsPage : HSPage() {
     }
 }
 
-private fun HSNavigation.showAppRestartAlert(context: Context, torViewModel: SecurityTorSettingsViewModel) {
-    val warningTitle = if (torViewModel.torCheckEnabled) {
-        context.getString(R.string.Tor_Connection_Enable)
-    } else {
-        context.getString(R.string.Tor_Connection_Disable)
-    }
-
-    val actionButton = if (torViewModel.torCheckEnabled) {
-        context.getString(R.string.Button_Enable)
-    } else {
-        context.getString(R.string.Button_Disable)
-    }
-
-    slideFromBottom(
-        ConfirmationDialogSheet(
-            icon = Res.drawable.ic_tor_connection_24,
-            title = context.getString(R.string.Tor_Alert_Title),
-            warningTitle = warningTitle,
-            warningText = context.getString(R.string.SettingsSecurity_AppRestartWarning),
-            actionButtonTitle = actionButton,
-            transparentButtonTitle = context.getString(R.string.Alert_Cancel),
-            listener = object : ConfirmationDialogSheet.Listener {
-                override fun onActionButtonClick() {
-                    torViewModel.setTorEnabled()
-                }
-
-                override fun onTransparentButtonClick() {
-                    torViewModel.resetSwitch()
-                }
-
-                override fun onCancelButtonClick() {
-                    torViewModel.resetSwitch()
-                }
-            }
-        )
-    )
-}
-
 @Composable
 private fun SecurityCenterScreen(
     securitySettingsViewModel: SecuritySettingsViewModel,
@@ -238,7 +185,6 @@ private fun SecurityCenterScreen(
     onDisableTransactionAutoHidePinClicked: () -> Unit,
     onChangeDisplayClicked: () -> Unit,
     onTransferPasscodeEnabledChange: (Boolean) -> Unit,
-    showAppRestartAlert: () -> Unit,
     restartApp: () -> Unit,
     onEnableSaveAccessCodeForHardwareWallet: (Boolean) -> Unit,
     onSystemPinRequiredChange: (Boolean) -> Unit,
@@ -404,7 +350,7 @@ private fun SecurityCenterScreen(
 
             TorBlock(
                 torViewModel,
-                showAppRestartAlert,
+                navigation,
             )
 
             HardwareWalletBiometricBlock(
@@ -448,35 +394,6 @@ private fun SecurityCenterScreen(
                     }
                 }
             )
-        }
-    }
-}
-
-@Composable
-fun SecurityCenterCell(
-    start: @Composable RowScope.() -> Unit,
-    center: @Composable RowScope.() -> Unit,
-    end: @Composable() (RowScope.() -> Unit)? = null,
-    onClick: (() -> Unit)? = null,
-) {
-    RowUniversal(
-        modifier = Modifier.padding(horizontal = 16.dp),
-        onClick = onClick
-    ) {
-        start.invoke(this)
-        Spacer(Modifier.width(16.dp))
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.weight(1f)
-        ) {
-            center(this)
-        }
-        end?.let {
-            Spacer(
-                Modifier
-                    .defaultMinSize(minWidth = 8.dp)
-            )
-            end.invoke(this)
         }
     }
 }

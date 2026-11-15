@@ -2300,6 +2300,7 @@
     <string name="desktop_wipe_restart_manually">数据已删除。请重新启动应用</string>
     <string name="desktop_restart_manually">请重新启动应用</string>
     <string name="platform_not_supported_yet">桌面版暂不支持</string>
+    <string name="tor_not_supported_windows">Windows 版本暂不支持 Tor</string>
     <string name="desktop_change_password_title">更改密码</string>
     <string name="desktop_change_password_current_hint">当前密码</string>
     <string name="desktop_change_password_new_hint">新密码</string>

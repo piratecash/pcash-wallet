@@ -6,6 +6,7 @@ import cash.p.terminal.modules.main.MainViewModel
 import cash.p.terminal.modules.softwareupdate.SoftwareUpdateViewModel
 import cash.p.terminal.modules.softwareupdate.changelog.VersionChangelogViewModel
 import cash.p.terminal.modules.softwareupdate.history.VersionHistoryViewModel
+import cash.p.terminal.modules.settings.security.tor.SecurityTorSettingsViewModel
 import cash.p.terminal.modules.pin.unlock.PinUnlockViewModel
 import cash.p.terminal.modules.markdown.localreader.MarkdownLocalViewModel
 import cash.p.terminal.modules.premium.settings.PushNotificationsViewModel
@@ -54,6 +55,7 @@ val viewModelModule = module {
     viewModelOf(::HardwareWalletViewModel)
     viewModelOf(::ResetToFactorySettingsViewModel)
     viewModelOf(::SecuritySettingsViewModel)
+    viewModelOf(::SecurityTorSettingsViewModel)
     viewModelOf(::MainSettingsViewModel)
     viewModelOf(::MarkdownLocalViewModel)
     viewModelOf(::PushNotificationsViewModel)

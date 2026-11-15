@@ -5,6 +5,7 @@ import cash.p.terminal.core.BalanceSettingsStorage
 import cash.p.terminal.core.NetworkSettingsStorage
 import cash.p.terminal.core.ReleaseNotesStorage
 import cash.p.terminal.core.TransactionSettingsStorage
+import cash.p.terminal.core.tor.TorSettings
 import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.entities.AppVersion
 import cash.p.terminal.entities.decodeAppVersions
@@ -21,10 +22,11 @@ import cash.p.terminal.wallet.managers.TransactionDisplayLevel
 import io.horizontalsystems.core.DesktopSettingsStore
 import kotlinx.coroutines.flow.StateFlow
 
-/** Same defaults as Android `LocalStorageManager`; the PIN arrives already encrypted. Tor is Android-only. */
+/** Same defaults as Android `LocalStorageManager`; the PIN arrives already encrypted. */
 class DesktopWalletSettingsStorage(
     private val store: DesktopSettingsStore,
     private val accountSettings: DesktopAccountSettings,
+    private val torSettings: TorSettings,
 ) :
     BalanceSettingsStorage,
     TransactionSettingsStorage,
@@ -139,7 +141,8 @@ class DesktopWalletSettingsStorage(
         get() = store.flag(TRANSFER_PASSCODE) ?: false
         set(value) = store.setFlag(TRANSFER_PASSCODE, value)
 
-    override val torEnabled: Boolean = false
+    override val torEnabled: Boolean
+        get() = torSettings.torEnabled
 
     override var zcashIronwoodMigrationTxIds: Set<String>
         get() = accountSettings.strings(ZCASH_IRONWOOD_TX_IDS)

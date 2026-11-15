@@ -2308,6 +2308,7 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="desktop_wipe_restart_manually">Daten gelöscht. Starten Sie die App erneut</string>
     <string name="desktop_restart_manually">Starten Sie die App erneut</string>
     <string name="platform_not_supported_yet">In der Desktop-Version noch nicht unterstützt</string>
+    <string name="tor_not_supported_windows">Tor wird in der Windows-Version noch nicht unterstützt</string>
     <string name="desktop_change_password_title">Passwort ändern</string>
     <string name="desktop_change_password_current_hint">Aktuelles Passwort</string>
     <string name="desktop_change_password_new_hint">Neues Passwort</string>

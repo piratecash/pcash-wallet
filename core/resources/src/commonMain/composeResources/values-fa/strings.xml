@@ -2320,6 +2320,7 @@
     <string name="desktop_wipe_restart_manually">داده‌ها حذف شد. برنامه را دوباره اجرا کنید</string>
     <string name="desktop_restart_manually">برنامه را دوباره اجرا کنید</string>
     <string name="platform_not_supported_yet">هنوز در نسخه دسکتاپ پشتیبانی نمی‌شود</string>
+    <string name="tor_not_supported_windows">Tor هنوز در نسخه ویندوز پشتیبانی نمی‌شود</string>
     <string name="desktop_change_password_title">تغییر رمز عبور</string>
     <string name="desktop_change_password_current_hint">رمز عبور فعلی</string>
     <string name="desktop_change_password_new_hint">رمز عبور جدید</string>
