@@ -64,6 +64,7 @@ class BackendSwapProvider(
     // The provider may put a swap on AML/KYC hold.
     override val riskType = ProviderRiskType.Controlled
     override val mevProtectionAvailable = false
+    override val signsOrderWithAccountKey = true
 
     // SwapConfirmViewModel requests the final quote repeatedly; each miss creates a new order.
     private var placedOrder: PlacedOrder? by accountManager.accountScoped()
@@ -203,7 +204,8 @@ class BackendSwapProvider(
             clientRequestId = UUID.randomUUID().toString(),
             refundAddress = key.refundAddress,
         )
-        val order = backendSwapRepository.create(message.toCreateRequest(signer.sign(account, message)), walletAddress)
+        val signature = signer.sign(account, message, info.displayName)
+        val order = backendSwapRepository.create(message.toCreateRequest(signature), walletAddress)
         val depositAddress = order.payinAddress?.takeIf { it.isNotBlank() }
             ?: error("Backend swap order has no deposit address")
         val memo = order.payinExtraId?.takeIf { it.isNotBlank() }
