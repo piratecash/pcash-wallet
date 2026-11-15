@@ -160,6 +160,10 @@ class TransactionInfoService(
                                 add(actionType.valueOut.coinUid)
                             }
 
+                            is TonTransactionRecord.Action.Type.LiquidityDeposit -> {
+                                actionType.deposits.forEach { add(it.value.coinUid) }
+                            }
+
                             is TonTransactionRecord.Action.Type.ContractDeploy,
                             is TonTransactionRecord.Action.Type.Unsupported -> Unit
                         }

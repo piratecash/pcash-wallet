@@ -14,7 +14,9 @@ import cash.p.terminal.core.managers.PoisonAddressManager
 import cash.p.terminal.entities.Address
 import cash.p.terminal.entities.OfflineSignedTransactionDraft
 import cash.p.terminal.manager.IConnectivityManager
+import cash.p.terminal.modules.amount.AmountValidator
 import cash.p.terminal.modules.amount.SendAmountService
+import cash.p.terminal.modules.send.SendErrorInsufficientBalance
 import cash.p.terminal.modules.contacts.ContactsRepository
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionServiceState
 import cash.p.terminal.modules.multiswap.sendtransaction.services.SendTransactionServiceEvm
@@ -49,6 +51,7 @@ import io.mockk.unmockkAll
 import io.mockk.verify
 import java.math.BigDecimal
 import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertNull
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -361,9 +364,184 @@ class SendEvmViewModelTest : KoinTest {
             }
         }
 
+    @Test
+    fun followEstimatedLimit_maxAmountAndLowerEstimate_movesAmountOnce() = runTest(dispatcher) {
+        val realAmountService = SendAmountService(AmountValidator(), "BNB", INITIAL_LIMIT)
+        val viewModel = createMaxViewModel(realAmountService)
+        viewModel.onEnterAmount(BigDecimal("0.04274937911590784"))
+
+        emitEstimate(LOWER_LIMIT)
+
+        assertEquals(0, LOWER_LIMIT.compareTo(realAmountService.stateFlow.value.availableBalance))
+        assertEquals(0, LOWER_LIMIT.compareTo(realAmountService.stateFlow.value.amount))
+        assertEquals(0, LOWER_LIMIT.compareTo(viewModel.maxAmountUnique?.amount))
+        verify(exactly = 2) { adapter.getTransactionData(any(), any()) }
+
+        viewModel.onEnterAmount(LOWER_LIMIT.stripTrailingZeros())
+        emitEstimate(LOWER_LIMIT)
+
+        verify(exactly = 2) { adapter.getTransactionData(any(), any()) }
+    }
+
+    @Test
+    fun followEstimatedLimit_maxAmountAndHigherEstimate_followsUp() = runTest(dispatcher) {
+        val realAmountService = SendAmountService(AmountValidator(), "BNB", INITIAL_LIMIT)
+        val viewModel = createMaxViewModel(realAmountService)
+        viewModel.onEnterAmount(INITIAL_LIMIT)
+        val higher = BigDecimal("0.042749500000000000")
+
+        emitEstimate(higher)
+
+        assertEquals(0, higher.compareTo(realAmountService.stateFlow.value.amount))
+        assertEquals(0, higher.compareTo(viewModel.maxAmountUnique?.amount))
+    }
+
+    @Test
+    fun followEstimatedLimit_loadingOrError_keepsLimitAndAmount() = runTest(dispatcher) {
+        val realAmountService = SendAmountService(AmountValidator(), "BNB", INITIAL_LIMIT)
+        val viewModel = createMaxViewModel(realAmountService)
+        viewModel.onEnterAmount(INITIAL_LIMIT)
+
+        emitEstimate(LOWER_LIMIT, loading = true)
+        emitEstimate(LOWER_LIMIT, retryAvailable = true)
+
+        assertEquals(0, INITIAL_LIMIT.compareTo(realAmountService.stateFlow.value.availableBalance))
+        assertEquals(0, INITIAL_LIMIT.compareTo(realAmountService.stateFlow.value.amount))
+        assertNull(viewModel.maxAmountUnique)
+        verify(exactly = 1) { adapter.getTransactionData(any(), any()) }
+    }
+
+    @Test
+    fun followEstimatedLimit_manualAmountNoLongerFits_keepsAmountShowsCautionNoRequest() = runTest(dispatcher) {
+        val realAmountService = SendAmountService(AmountValidator(), "BNB", INITIAL_LIMIT)
+        val viewModel = createMaxViewModel(realAmountService)
+        val manual = BigDecimal("0.0427494")
+        viewModel.onEnterAmount(manual)
+
+        emitEstimate(LOWER_LIMIT)
+
+        assertEquals(manual, realAmountService.stateFlow.value.amount)
+        assertTrue(viewModel.uiState.amountCaution is SendErrorInsufficientBalance)
+        assertNull(viewModel.maxAmountUnique)
+        verify(exactly = 1) { adapter.getTransactionData(any(), any()) }
+    }
+
+    @Test
+    fun followEstimatedLimit_zeroLimit_keepsAmountShowsCaution() = runTest(dispatcher) {
+        val realAmountService = SendAmountService(AmountValidator(), "BNB", INITIAL_LIMIT)
+        val viewModel = createMaxViewModel(realAmountService)
+        viewModel.onEnterAmount(INITIAL_LIMIT)
+
+        emitEstimate(BigDecimal.ZERO)
+
+        assertEquals(0, INITIAL_LIMIT.compareTo(realAmountService.stateFlow.value.amount))
+        assertTrue(viewModel.uiState.amountCaution is SendErrorInsufficientBalance)
+        assertNull(viewModel.maxAmountUnique)
+    }
+
+    @Test
+    fun followEstimatedLimit_afterConfirmationSnapshot_waitsForResume() = runTest(dispatcher) {
+        val realAmountService = SendAmountService(AmountValidator(), "BNB", INITIAL_LIMIT)
+        val viewModel = createMaxViewModel(realAmountService)
+        viewModel.onEnterAmount(INITIAL_LIMIT)
+
+        viewModel.getConfirmationData()
+        emitEstimate(LOWER_LIMIT)
+
+        assertEquals(0, INITIAL_LIMIT.compareTo(realAmountService.stateFlow.value.availableBalance))
+        assertEquals(0, INITIAL_LIMIT.compareTo(realAmountService.stateFlow.value.amount))
+        assertNull(viewModel.maxAmountUnique)
+        verify(exactly = 1) { adapter.getTransactionData(any(), any()) }
+
+        viewModel.onAmountScreenResumed()
+
+        assertEquals(0, LOWER_LIMIT.compareTo(realAmountService.stateFlow.value.amount))
+        assertEquals(0, LOWER_LIMIT.compareTo(viewModel.maxAmountUnique?.amount))
+    }
+
+    @Test
+    fun onEnterAmount_correctionEcho_consumesCorrectionWithoutRequest() = runTest(dispatcher) {
+        val realAmountService = SendAmountService(AmountValidator(), "BNB", INITIAL_LIMIT)
+        val viewModel = createMaxViewModel(realAmountService)
+        viewModel.onEnterAmount(INITIAL_LIMIT)
+        emitEstimate(LOWER_LIMIT)
+
+        viewModel.onEnterAmount(checkNotNull(viewModel.maxAmountUnique).amount)
+
+        assertNull(viewModel.maxAmountUnique)
+        verify(exactly = 2) { adapter.getTransactionData(any(), any()) }
+    }
+
+    @Test
+    fun onEnterAmount_correctionNotYetShown_dropsCorrectionKeepsManualAmount() = runTest(dispatcher) {
+        val realAmountService = SendAmountService(AmountValidator(), "BNB", INITIAL_LIMIT)
+        val viewModel = createMaxViewModel(realAmountService)
+        viewModel.onEnterAmount(INITIAL_LIMIT)
+        emitEstimate(LOWER_LIMIT)
+        val manual = BigDecimal("0.01")
+
+        viewModel.onEnterAmount(manual)
+
+        assertNull(viewModel.maxAmountUnique)
+        assertEquals(manual, realAmountService.stateFlow.value.amount)
+    }
+
+    @Test
+    fun handleUpdatedAmountState_clearThenSameAmount_requestsAgain() = runTest(dispatcher) {
+        val realAmountService = SendAmountService(AmountValidator(), "BNB", INITIAL_LIMIT)
+        createMaxViewModel(realAmountService).apply {
+            onEnterAmount(testAmount)
+            onEnterAmount(null)
+            onEnterAmount(testAmount)
+        }
+
+        verify(exactly = 2) { adapter.getTransactionData(eq(testAmount), any()) }
+        verify(exactly = 1) { adapter.getTransactionData(eq(BigDecimal.ZERO), any()) }
+    }
+
+    @Test
+    fun followEstimatedLimit_erc20Token_keepsLimit() = runTest(dispatcher) {
+        val usdtToken = bnbToken.copy(
+            coin = Coin(uid = "tether", name = "Tether", code = "USDT"),
+            type = TokenType.Eip20("0x55d398326f99059ff775485246999027b3197955"),
+        )
+        val usdtWallet = checkNotNull(walletFactory.create(usdtToken, testAccount, null))
+        val realAmountService = SendAmountService(AmountValidator(), "USDT", INITIAL_LIMIT)
+        val viewModel = createMaxViewModel(realAmountService, usdtWallet)
+        viewModel.onEnterAmount(INITIAL_LIMIT)
+
+        emitEstimate(LOWER_LIMIT)
+
+        assertEquals(0, INITIAL_LIMIT.compareTo(realAmountService.stateFlow.value.availableBalance))
+        assertNull(viewModel.maxAmountUnique)
+    }
+
+    private fun createMaxViewModel(
+        realAmountService: SendAmountService,
+        wallet: Wallet = testWallet,
+    ): SendEvmViewModel {
+        // The service starts in Loading, as the real one does before the first estimate.
+        emitEstimate(INITIAL_LIMIT, loading = true)
+        coEvery { sendTransactionService.setSendTransactionData(any()) } returns Unit
+        return createViewModel(wallet = wallet, amountService = realAmountService).also {
+            it.onEnterAddress(testAddress)
+        }
+    }
+
+    private fun emitEstimate(limit: BigDecimal, loading: Boolean = false, retryAvailable: Boolean = false) {
+        transactionSharedFlow.tryEmit(
+            createTransactionServiceState(sendable = true).copy(
+                availableBalance = limit,
+                loading = loading,
+                retryAvailable = retryAvailable,
+            )
+        )
+    }
+
     private fun createViewModel(
         wallet: Wallet = testWallet,
         sendToken: Token = wallet.token,
+        amountService: SendAmountService = this.amountService,
     ) = SendEvmViewModel(
         wallet = wallet,
         sendToken = sendToken,
@@ -418,4 +596,9 @@ class SendEvmViewModelTest : KoinTest {
         gasLimit = 21_000,
         nonce = 1,
     )
+
+    private companion object {
+        val INITIAL_LIMIT = BigDecimal("0.042749379115907840")
+        val LOWER_LIMIT = BigDecimal("0.042740000000000000")
+    }
 }

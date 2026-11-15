@@ -61,6 +61,13 @@ import cash.p.terminal.modules.manageaccount.safetyrules.SafetyRulesModule
 import cash.p.terminal.modules.manageaccount.safetyrules.SafetyRulesViewModel
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
 import cash.p.terminal.modules.manageaccounts.ManageAccountsViewModel
+import cash.p.terminal.modules.nft.NftCollectionSource
+import cash.p.terminal.modules.nft.NftCollectionsViewModel
+import cash.p.terminal.modules.nft.manage.NftManageViewModel
+import cash.p.terminal.modules.nft.NftPreviewViewModel
+import cash.p.terminal.modules.nft.renew.NftDomainRenewViewModel
+import cash.p.terminal.modules.nft.burn.NftBurnViewModel
+import cash.p.terminal.entities.NftItemRecord
 import cash.p.terminal.modules.address.AddressParserChain
 import cash.p.terminal.modules.watchaddress.WatchAddressViewModel
 import cash.p.terminal.modules.watchaddress.selectblockchains.SelectBlockchainsViewModel
@@ -261,6 +268,7 @@ class KoinGraphTest : KoinTest {
             definition<ConfiguredTokenInfoViewModel>(Token::class),
             definition<SafetyRulesViewModel>(SafetyRulesModule.SafetyRulesMode::class, List::class),
             definition<ManageAccountsViewModel>(ManageAccountsModule.Mode::class),
+            *nftInjections(),
             definition<ConnectMiniAppViewModel>(ConnectMiniAppDeeplinkInput::class),
             definition<BlockchainStatusViewModel>(BlockchainStatusProvider::class),
             definition<SwapSelectCoinViewModel>(Token::class, Account::class),
@@ -417,6 +425,14 @@ class KoinGraphTest : KoinTest {
 
     /** These send classes are internal to feature-wallet; a rename fails here with ClassNotFoundException. */
     private fun internalClass(name: String) = Class.forName("cash.p.terminal.modules.$name").kotlin
+
+    private fun nftInjections() = arrayOf(
+        definition<NftCollectionsViewModel>(NftCollectionSource::class),
+        definition<NftManageViewModel>(NftCollectionSource::class),
+        definition<NftPreviewViewModel>(NftCollectionSource::class, NftItemRecord::class),
+        definition<NftDomainRenewViewModel>(List::class, Boolean::class),
+        definition<NftBurnViewModel>(NftItemRecord::class, String::class, Boolean::class),
+    )
 
     private fun walletInjections() = arrayOf(
         definition<WatchAddressViewModel>(AddressParserChain::class),

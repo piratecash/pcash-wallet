@@ -192,6 +192,13 @@ import cash.p.terminal.modules.manageaccount.safetyrules.SafetyRulesModule
 import cash.p.terminal.modules.manageaccount.safetyrules.SafetyRulesViewModel
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
 import cash.p.terminal.modules.manageaccounts.ManageAccountsViewModel
+import cash.p.terminal.modules.nft.NftCollectionSource
+import cash.p.terminal.modules.nft.NftCollectionsViewModel
+import cash.p.terminal.modules.nft.manage.NftManageViewModel
+import cash.p.terminal.modules.nft.NftPreviewViewModel
+import cash.p.terminal.modules.nft.renew.NftDomainRenewViewModel
+import cash.p.terminal.modules.nft.burn.NftBurnViewModel
+import cash.p.terminal.entities.NftItemRecord
 import cash.p.terminal.modules.market.SortingField
 import cash.p.terminal.modules.market.TopMarket
 import cash.p.terminal.modules.market.category.CoinCategoryMarketDataChartService
@@ -396,6 +403,11 @@ class DesktopKoinGraphTest {
                 definition<DuressPasswordViewModel>(List::class),
                 definition<SafetyRulesViewModel>(SafetyRulesModule.SafetyRulesMode::class, List::class),
                 definition<ManageAccountsViewModel>(ManageAccountsModule.Mode::class),
+                definition<NftCollectionsViewModel>(NftCollectionSource::class),
+                definition<NftManageViewModel>(NftCollectionSource::class),
+                definition<NftPreviewViewModel>(NftCollectionSource::class, NftItemRecord::class),
+                definition<NftDomainRenewViewModel>(List::class, Boolean::class),
+                definition<NftBurnViewModel>(NftItemRecord::class, String::class, Boolean::class),
                 definition<WatchAddressViewModel>(AddressParserChain::class),
                 definition<SelectBlockchainsViewModel>(AccountType::class),
                 definition<BackupConfirmKeyViewModel>(IRandomProvider::class),

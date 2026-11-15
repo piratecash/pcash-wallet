@@ -54,8 +54,10 @@ class CustomSnackbar(
             gravity: SnackbarGravity,
             @DrawableRes iconRes: Int?,
             iconResource: DrawableResource? = null,
+            action: HudAction? = null,
         ): CustomSnackbar? {
             val parentViewGroup = contentView.findSuitableParent() ?: return null
+            var customSnackbar: CustomSnackbar? = null
             val composeView = ComposeView(contentView.context).apply {
                 setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
                 setContent {
@@ -65,19 +67,26 @@ class CustomSnackbar(
                             variant = variant,
                             icon = iconRes?.let { painterResource(it) } ?: iconResource?.let { painterResource(it) },
                             modifier = Modifier.padding(8.dp),
+                            action = action?.let {
+                                HudAction(it.label) {
+                                    it.onClick()
+                                    customSnackbar?.dismiss()
+                                }
+                            },
                         )
                     }
                 }
             }
 
-            val customSnackbar = CustomSnackbar(parentViewGroup, composeView, ContentViewCallback(composeView))
-            customSnackbar.duration = duration.value
-            customSnackbar.animationMode = ANIMATION_MODE_FADE
+            val snackbar = CustomSnackbar(parentViewGroup, composeView, ContentViewCallback(composeView))
+            customSnackbar = snackbar
+            snackbar.duration = duration.value
+            snackbar.animationMode = ANIMATION_MODE_FADE
 
             if (gravity == SnackbarGravity.TOP_OF_VIEW)
-                customSnackbar.anchorView = contentView
+                snackbar.anchorView = contentView
 
-            return customSnackbar
+            return snackbar
         }
     }
 }

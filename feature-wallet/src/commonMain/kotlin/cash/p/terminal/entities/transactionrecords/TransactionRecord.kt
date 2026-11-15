@@ -28,6 +28,7 @@ abstract class TransactionRecord(
     open val from: String? = null,
     open val sentToSelf: Boolean = false,
     open val memo: String? = null,
+    open val liquidityOperation: LiquidityOperation? = null,
 ) : Comparable<TransactionRecord> {
 
     open val mainValue: TransactionValue? = null

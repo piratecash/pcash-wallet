@@ -18,8 +18,11 @@ import io.horizontalsystems.core.Translator
 import cash.p.terminal.core.managers.AddressLabelManager
 import cash.p.terminal.core.managers.AddressMetadataManager
 import cash.p.terminal.core.managers.EvmKitWrapper
+import cash.p.terminal.entities.transactionrecords.LiquidityOperation
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
+import cash.p.terminal.entities.transactionrecords.ton.TonTransactionRecord
+import io.horizontalsystems.tonkit.models.Event
 import cash.p.terminal.entities.transactionrecords.evm.EvmTransactionRecord
 import cash.p.terminal.entities.transactionrecords.evm.TransferEvent
 import cash.p.terminal.entities.TransactionValue
@@ -105,6 +108,7 @@ import cash.p.terminal.resources.transaction_info_replaces_transaction
 import cash.p.terminal.resources.transaction_swap_status_confirming
 import cash.p.terminal.resources.transaction_swap_status_unknown
 import cash.p.terminal.resources.transactions_account_delegation_revoke
+import cash.p.terminal.resources.transactions_liquidity_removed
 
 @RunWith(RobolectricTestRunner::class)
 @Config(application = TestCoreApp::class)
@@ -439,6 +443,64 @@ class TransactionInfoViewItemFactoryTest {
             1,
             items.filterIsInstance<TransactionInfoViewItem.Address>()
                 .count { it.title == Translator.getString(Res.string.transaction_info_delegation_contract) }
+        )
+    }
+
+    @Test
+    fun getViewItemSections_evmLiquidityOperation_showsLiquidityTitleAsOperationType() {
+        val items = evmViewItemSections(liquidityContractCall())
+
+        val transactionItem = items.filterIsInstance<TransactionInfoViewItem.Transaction>().single()
+        assertEquals(Translator.getString(Res.string.transactions_liquidity_removed), transactionItem.leftValue)
+    }
+
+    @Test
+    fun getViewItemSections_tonLiquidityOperation_prependsTitleSectionWithProtocol() {
+        val sections = TransactionInfoViewItemFactory(
+            offlineOperationGate = mockk(relaxed = true),
+            wallet = null,
+            blockchainType = BlockchainType.Ton,
+            evmKitWrapper = null,
+            platformOperationSupport = allOperationsSupported,
+            unstoppableProviderTitles = mockk(relaxed = true),
+        ).getViewItemSections(transactionInfoItem(tonLiquidityRecord()))
+
+        val first = sections.first().single() as TransactionInfoViewItem.Transaction
+        assertEquals(Translator.getString(Res.string.transactions_liquidity_removed), first.leftValue)
+        assertEquals("", first.rightValue)
+    }
+
+    private fun tonLiquidityRecord() = TonTransactionRecord(
+        source = mockk<TransactionSource>(relaxed = true) {
+            every { blockchain } returns mockk(relaxed = true) { every { type } returns BlockchainType.Ton }
+        },
+        event = Event("ton-event", 1L, 1_000L, false, false, 0L, emptyList()),
+        token = mockk<Token>(relaxed = true),
+        actions = emptyList(),
+        liquidityOperation = LiquidityOperation(LiquidityOperation.Direction.Remove, failed = false),
+    )
+
+    private fun liquidityContractCall(): EvmTransactionRecord {
+        every { addressLabelManager.label(BlockchainType.BinanceSmartChain, any()) } returns null
+        return EvmTransactionRecord(
+            transaction = mockk<EvmKitTransaction>(relaxed = true) {
+                every { hashString } returns "0xliquidity"
+                every { timestamp } returns 1_000L
+                every { isFailed } returns false
+            },
+            token = mockk<Token>(relaxed = true),
+            source = mockk<TransactionSource>(relaxed = true) {
+                every { blockchain } returns mockk(relaxed = true) {
+                    every { type } returns BlockchainType.BinanceSmartChain
+                }
+            },
+            protected = false,
+            transactionRecordType = TransactionRecordType.EVM_CONTRACT_CALL,
+            contractAddress = BRIDGE_ADDRESS,
+            method = "Multicall",
+            incomingEvents = emptyList(),
+            outgoingEvents = emptyList(),
+            liquidityOperation = LiquidityOperation(LiquidityOperation.Direction.Remove, failed = false),
         )
     }
 

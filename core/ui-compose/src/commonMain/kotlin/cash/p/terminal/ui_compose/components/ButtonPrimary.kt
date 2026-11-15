@@ -91,7 +91,8 @@ fun ButtonPrimaryTransparent(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     textColor: Color= Color.Unspecified,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    trailingIcon: Painter? = null,
 ) {
 
     val interactionSource = remember { MutableInteractionSource() }
@@ -130,10 +131,13 @@ fun ButtonPrimaryTransparent(
                 content = {
                     Text(
                         text = title,
+                        modifier = shrinkBeside(trailingIcon),
                         color = textColor,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
+                    val colors = ComposeAppTheme.colors
+                    trailingIcon?.let { TrailingIcon(it, if (enabled) colors.iconSecondary else colors.iconDisabled) }
                 }
             )
         }
@@ -146,7 +150,8 @@ fun ButtonPrimaryYellow(
     title: String,
     onClick: () -> Unit,
     enabled: Boolean = true,
-    loadingIndicator: Boolean = false
+    loadingIndicator: Boolean = false,
+    trailingIcon: Painter? = null,
 ) {
     ButtonPrimary(
         modifier = modifier,
@@ -155,24 +160,39 @@ fun ButtonPrimaryYellow(
             background = ComposeAppTheme.colors.brandDefault,
             content = ComposeAppTheme.colors.buttonPrimaryBrandContent,
         ),
-        content = {
-            if (loadingIndicator) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(16.dp),
-                    color = ComposeAppTheme.colors.textSecondary,
-                    strokeWidth = 2.dp
-                )
-                HSpacer(width = 8.dp)
-            }
-
-            Text(
-                title,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        },
+        content = { TitleWithLoading(title, loadingIndicator, trailingIcon) },
         enabled = enabled
     )
+}
+
+@Composable
+private fun RowScope.TitleWithLoading(title: String, loadingIndicator: Boolean, trailingIcon: Painter? = null) {
+    if (loadingIndicator) {
+        CircularProgressIndicator(
+            modifier = Modifier.size(16.dp),
+            color = ComposeAppTheme.colors.textSecondary,
+            strokeWidth = 2.dp
+        )
+        HSpacer(width = 8.dp)
+    }
+
+    Text(
+        title,
+        modifier = shrinkBeside(trailingIcon),
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+    )
+    if (!loadingIndicator) trailingIcon?.let { TrailingIcon(it, LocalContentColor.current) }
+}
+
+/** A long title is ellipsized instead of pushing the icon out; plain buttons keep their wrap-content width. */
+private fun RowScope.shrinkBeside(trailingIcon: Painter?): Modifier =
+    if (trailingIcon != null) Modifier.weight(1f, fill = false) else Modifier
+
+@Composable
+private fun TrailingIcon(painter: Painter, tint: Color) {
+    HSpacer(width = 8.dp)
+    Icon(painter = painter, contentDescription = null, modifier = Modifier.size(18.dp), tint = tint)
 }
 
 @Composable
@@ -213,7 +233,8 @@ fun ButtonPrimaryRed(
     modifier: Modifier = Modifier,
     title: String,
     onClick: () -> Unit,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    loadingIndicator: Boolean = false,
 ) {
     ButtonPrimary(
         modifier = modifier,
@@ -222,7 +243,7 @@ fun ButtonPrimaryRed(
             background = ComposeAppTheme.colors.buttonPrimaryDestructiveBackground,
             content = ComposeAppTheme.colors.buttonPrimaryDestructiveContent,
         ),
-        content = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+        content = { TitleWithLoading(title, loadingIndicator) },
         enabled = enabled
     )
 }

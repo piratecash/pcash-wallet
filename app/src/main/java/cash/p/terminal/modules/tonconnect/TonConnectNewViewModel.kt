@@ -21,6 +21,7 @@ import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.tonkit.tonconnect.TonConnectKit
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -44,6 +45,7 @@ class TonConnectNewViewModel(
     private var walletVersions: List<TonWalletVersion> = emptyList()
     private var walletVersion = TonWalletVersion.V4R2
     private var walletVersionsJob: Job? = null
+    private var connectJob: Job? = null
     private var connecting = false
     private var finish = false
     private var error: Throwable? = null
@@ -157,7 +159,7 @@ class TonConnectNewViewModel(
         connecting = true
         emitState()
 
-        viewModelScope.launch(dispatchers.io) {
+        connectJob = viewModelScope.launch(dispatchers.io) {
             try {
                 val requestEntity = checkNotNull(requestEntity) { "Invalid TON Connect request" }
                 val manifest = manifest ?: throw NoManifestError()
@@ -176,6 +178,7 @@ class TonConnectNewViewModel(
                 )
                 finish = true
             } catch (e: Throwable) {
+                ensureActive()
                 toast = e.message?.nullIfBlank() ?: e.javaClass.simpleName
                 connecting = false
             }
@@ -185,7 +188,8 @@ class TonConnectNewViewModel(
     }
 
     fun reject() {
-        // No-op: navigation is handled by onResult callback.
+        connectJob?.cancel()
+        // Navigation is handled by onResult callback.
         // Do NOT set finish=true here — it would trigger a second
         // popBackStack via LaunchedEffect(uiState.finish) on top of
         // the one in onResult, double-popping the back stack.

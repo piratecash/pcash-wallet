@@ -1,6 +1,7 @@
 package cash.p.terminal.ui_compose.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
@@ -33,6 +35,7 @@ fun AppSnackbar(
     variant: AppSnackbarVariant,
     icon: Painter?,
     modifier: Modifier = Modifier,
+    action: HudAction? = null,
 ) {
     val colors = ComposeAppTheme.colors
     val contentColor = variant.contentColor()
@@ -64,6 +67,17 @@ fun AppSnackbar(
         } else if (icon != null) {
             val tint = if (variant == AppSnackbarVariant.Warning) colors.statusWarning else contentColor
             Icon(painter = icon, contentDescription = null, tint = tint)
+        }
+        action?.let {
+            Spacer(Modifier.width(12.dp))
+            Text(
+                text = it.label,
+                style = ComposeAppTheme.typography.subhead1.copy(fontWeight = FontWeight.SemiBold),
+                color = contentColor,
+                modifier = Modifier
+                    .clickable(onClick = it.onClick)
+                    .padding(vertical = 8.dp),
+            )
         }
     }
 }

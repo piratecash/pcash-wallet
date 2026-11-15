@@ -3,6 +3,7 @@ package cash.p.terminal.tangem.signer
 import cash.p.terminal.tangem.domain.usecase.SignOneHashTransactionUseCase
 import cash.p.terminal.wallet.crypto.EvmSignatureRecovery
 import cash.p.terminal.wallet.entities.HardwarePublicKey
+import com.tangem.Message
 import com.tangem.common.CompletionResult
 import com.tangem.crypto.hdWallet.DerivationPath
 import io.horizontalsystems.ethereumkit.core.TransactionBuilder
@@ -60,18 +61,23 @@ class HardwareWalletEvmSigner(
         signMessageBytes(hash)
 
     /** Signs an EIP-712 typed data payload; returns `r‖s‖recId` (recId in 0..1). */
-    suspend fun signTypedDataMessage(rawJson: String): ByteArray =
-        signMessageBytes(EIP712Encoder().encodeTypedDataHash(rawJson))
+    suspend fun signTypedDataMessage(rawJson: String, cardPrompt: String? = null): ByteArray =
+        signMessageBytes(EIP712Encoder().encodeTypedDataHash(rawJson), cardPrompt)
 
-    private suspend fun signMessageBytes(hash: ByteArray): ByteArray {
-        val (r, s, recId) = signHashRaw(hash)
+    private suspend fun signMessageBytes(hash: ByteArray, cardPrompt: String? = null): ByteArray {
+        val (r, s, recId) = signHashRaw(hash, cardPrompt)
         return r + s + byteArrayOf(recId.toByte())
     }
 
     /** Signs a raw hash on the card; the common building block for both transaction and message signing. */
-    private suspend fun signHashRaw(hash: ByteArray): Triple<ByteArray, ByteArray, Int> {
-        val signBytesResponse =
-            signOneHashTransactionUseCase(hash, publicKey.publicKey, DerivationPath(publicKey.derivationPath))
+    private suspend fun signHashRaw(hash: ByteArray, cardPrompt: String? = null): Triple<ByteArray, ByteArray, Int> {
+        // The SDK replaces the body with its own scan hint, so a custom text goes into the header.
+        val signBytesResponse = signOneHashTransactionUseCase(
+            hash = hash,
+            walletPublicKey = publicKey.publicKey,
+            derivationPath = DerivationPath(publicKey.derivationPath),
+            message = cardPrompt?.let { Message(header = it) },
+        )
         when (signBytesResponse) {
             is CompletionResult.Success -> {
                 val byteSignature = signBytesResponse.data.signature

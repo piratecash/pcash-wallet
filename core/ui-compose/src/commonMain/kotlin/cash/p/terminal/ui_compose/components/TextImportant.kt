@@ -25,7 +25,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import androidx.compose.ui.tooling.preview.Preview
 import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_attention_20
 import cash.p.terminal.resources.ic_close_24
 import cash.p.terminal.resources.ic_info_20
 import org.jetbrains.compose.resources.DrawableResource
@@ -93,6 +95,44 @@ fun TextImportantWarning(
         alignTrailingToEndWhenNoTitle = true,
         content = content
     )
+}
+
+/** Borderless warning: the icon sits beside the text, the text keeps the primary color. */
+@Composable
+fun TextImportantWarningInline(
+    text: String,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(ComposeAppTheme.colors.statusWarning20)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Icon(
+            painter = painterResource(Res.drawable.ic_attention_20),
+            contentDescription = null,
+            tint = ComposeAppTheme.colors.statusWarning,
+        )
+        Text(
+            text = text,
+            color = ComposeAppTheme.colors.textPrimary,
+            style = ComposeAppTheme.typography.subhead2,
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun TextImportantWarningInlinePreview() {
+    ComposeAppTheme {
+        TextImportantWarningInline(
+            text = "After the transfer the domain is unlinked from your wallet. Transfers to piratecash.ton " +
+                "will go to the new owner.",
+        )
+    }
 }
 
 @Composable
