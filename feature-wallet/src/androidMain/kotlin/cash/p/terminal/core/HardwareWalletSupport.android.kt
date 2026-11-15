@@ -47,9 +47,10 @@ internal actual object HardwareWalletSupport {
     actual fun supportsTypedData(device: AccountType.TrezorDevice): Boolean =
         TrezorModelSupport.supportsTypedData(TrezorModel.fromInternalModel(device.model), device.firmwareVersion)
 
-    actual suspend fun signTypedDataOnDevice(signer: Signer, rawJson: String): ByteArray? =
+    actual suspend fun signTypedDataOnDevice(signer: Signer, rawJson: String, cardPrompt: String?): ByteArray? =
         if (signer is ExternalEvmMessageSigner) {
-            EvmMessageSigning.signTypedData(signer, rawJson)
+            EvmMessageSigning.signTypedData(signer, rawJson, cardPrompt)
+
         } else {
             null
         }

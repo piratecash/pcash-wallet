@@ -181,7 +181,7 @@ class TrezorEvmSigner(
         throw TrezorSigningException("eth_sign (raw hash) is not supported on Trezor")
 
     /** Signs EIP-712 typed data on-device (Trezor One signs the hashes only); returns `r‖s‖recId`. */
-    override suspend fun signTypedDataMessage(rawJson: String): ByteArray {
+    override suspend fun signTypedDataMessage(rawJson: String, cardPrompt: String?): ByteArray {
         if (!TrezorModelSupport.supportsTypedData(model, firmwareVersion)) {
             throw TrezorSigningException("eth_signTypedData is not supported on this Trezor firmware")
         }

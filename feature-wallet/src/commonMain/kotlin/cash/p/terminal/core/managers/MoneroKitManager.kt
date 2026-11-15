@@ -606,7 +606,8 @@ private class ServiceMoneroSubaddressSource(
             val subaddress = wallet.getSubaddressObject(index)
             MoneroSubaddressInfo(
                 index = subaddress.addressIndex,
-                address = subaddress.address,
+                // The kit returns null while the wallet is closing.
+                address = subaddress.address ?: return null,
                 receivedAmount = subaddress.amount
             )
         }
@@ -2693,7 +2694,8 @@ class MoneroKitWrapper(
 
     fun getAddress(): String {
         return try {
-            requireNotNull(moneroWalletService.wallet).address
+            // The kit returns null while the wallet is closing.
+            moneroWalletService.wallet?.address.orEmpty()
         } catch (e: Exception) {
             logger.warning("getAddress: failed to fetch address", e)
             moneroLogger.d { "getAddress: Failed to get address $e" }

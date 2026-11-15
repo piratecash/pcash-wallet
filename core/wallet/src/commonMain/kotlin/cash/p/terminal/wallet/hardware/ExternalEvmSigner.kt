@@ -15,7 +15,8 @@ import java.math.BigInteger
 interface ExternalEvmMessageSigner {
     suspend fun signPersonalMessage(message: ByteArray): ByteArray
     suspend fun signLegacyHash(hash: ByteArray): ByteArray
-    suspend fun signTypedDataMessage(rawJson: String): ByteArray
+    /** [cardPrompt] is shown only by devices that display one (the Tangem card session). */
+    suspend fun signTypedDataMessage(rawJson: String, cardPrompt: String? = null): ByteArray
 }
 
 interface ExternalEvmTransactionSigner {
