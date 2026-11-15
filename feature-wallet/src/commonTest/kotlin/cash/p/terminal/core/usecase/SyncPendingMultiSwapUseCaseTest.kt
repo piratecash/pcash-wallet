@@ -25,6 +25,7 @@ import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.transaction.TransactionSource
 import io.horizontalsystems.core.entities.BlockchainType
+import io.horizontalsystems.tonkit.models.Event
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
@@ -1691,6 +1692,134 @@ class SyncPendingMultiSwapUseCaseTest {
             pendingMultiSwapStorage.updateLeg1("swap-1", PendingMultiSwap.STATUS_COMPLETED, any(), any())
         }
         coVerify(exactly = 0) { tonKitManager.refresh() }
+    }
+
+    @Test
+    fun leg1OnChain_tonNftQuantityMatchesExpectedAmount_doesNotComplete() = runTest(dispatcher) {
+        val swap = onChainLeg1IntoTon(BigDecimal.ONE)
+        stubLeg1Incoming(swap, listOf(tonReceiveRecord("nft-uid", swap, nftValue)))
+
+        useCase()
+
+        coVerify(exactly = 0) { pendingMultiSwapStorage.updateLeg1(any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun leg1OnChain_tonNftNoExpectedAmount_doesNotComplete() = runTest(dispatcher) {
+        val swap = onChainLeg1IntoTon(amountOut = null)
+        stubLeg1Incoming(swap, listOf(tonReceiveRecord("nft-uid", swap, nftValue)))
+
+        useCase()
+
+        coVerify(exactly = 0) { pendingMultiSwapStorage.updateLeg1(any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun leg1OnChain_tonNftBesideCoinNoExpectedAmount_completesWithCoin() = runTest(dispatcher) {
+        val swap = onChainLeg1IntoTon(amountOut = null)
+        val coin = coinValue("3.93")
+        stubLeg1Incoming(
+            swap,
+            listOf(tonReceiveRecord("nft-uid", swap, nftValue), tonReceiveRecord("coin-uid", swap, coin)),
+        )
+
+        useCase()
+
+        verifyLeg1CompletedWith(BigDecimal("3.93"))
+    }
+
+    @Test
+    fun leg1OnChain_tonNftCloserThanCoinToExpectedAmount_completesWithCoin() = runTest(dispatcher) {
+        val swap = onChainLeg1IntoTon(BigDecimal.ONE)
+        val coin = coinValue("1.05")
+        stubLeg1Incoming(
+            swap,
+            listOf(tonReceiveRecord("nft-uid", swap, nftValue), tonReceiveRecord("coin-uid", swap, coin)),
+        )
+
+        useCase()
+
+        verifyLeg1CompletedWith(BigDecimal("1.05"))
+    }
+
+    @Test
+    fun leg1OnChain_tonTwoNftEventNoExpectedAmount_doesNotComplete() = runTest(dispatcher) {
+        val swap = onChainLeg1IntoTon(amountOut = null)
+        stubLeg1Incoming(swap, listOf(tonReceiveRecord("nft-uid", swap, nftValue, nftValue)))
+
+        useCase()
+
+        coVerify(exactly = 0) { pendingMultiSwapStorage.updateLeg1(any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun leg1OnChain_tonCoinAndNftEventNoExpectedAmount_staysEligible() = runTest(dispatcher) {
+        val swap = onChainLeg1IntoTon(amountOut = null)
+        stubLeg1Incoming(swap, listOf(tonReceiveRecord("mixed-uid", swap, coinValue("3.93"), nftValue)))
+
+        useCase()
+
+        verifyLeg1CompletedWith(null)
+    }
+
+    private val nftValue = TransactionValue.NftValue("nft-address", BigDecimal.ONE, "Item", "NFT")
+
+    private fun coinValue(amount: String) = mockk<TransactionValue>(relaxed = true) {
+        every { decimalValue } returns BigDecimal(amount)
+    }
+
+    private fun onChainLeg1IntoTon(amountOut: BigDecimal?) =
+        swap(leg1IsOffChain = false, leg1TransactionId = null, leg1AmountOut = amountOut)
+
+    private fun tonReceiveRecord(recordUid: String, swap: PendingMultiSwap, vararg values: TransactionValue) =
+        TonTransactionRecord(
+            source = mockk(relaxed = true),
+            event = Event(
+                id = recordUid,
+                lt = 1L,
+                timestamp = (swap.createdAt / 1000) + 5,
+                scam = false,
+                inProgress = false,
+                extra = 0L,
+                actions = emptyList(),
+            ),
+            token = mockk(relaxed = true),
+            actions = values.map { value ->
+                TonTransactionRecord.Action(
+                    type = TonTransactionRecord.Action.Type.Receive(value, "sender", null, null),
+                    status = TransactionStatus.Completed,
+                )
+            },
+        )
+
+    private fun stubLeg1Incoming(swap: PendingMultiSwap, records: List<TransactionRecord>) {
+        val outputSource = mockk<TransactionSource>()
+        val outputWallet = mockk<Wallet>(relaxed = true) {
+            every { coin.uid } returns "the-open-network"
+            every { token.blockchainType } returns BlockchainType.fromUid("the-open-network")
+            every { transactionSource } returns outputSource
+        }
+        val txAdapter = mockk<ITransactionsAdapter>(relaxed = true) {
+            every { lastBlockInfo } returns null
+        }
+        every { walletManager.activeWallets } returns listOf(outputWallet)
+        every { transactionAdapterManager.getAdapter(outputSource) } returns txAdapter
+        coEvery {
+            txAdapter.getTransactions(any(), any(), any(), eq(FilterTransactionType.All), any())
+        } returns records
+        coEvery { pendingMultiSwapStorage.getAllOnceByAccountId("test-account") } returns listOf(swap)
+        coEvery { pendingMultiSwapStorage.getById("swap-1") } returns swap
+    }
+
+    private fun verifyLeg1CompletedWith(amount: BigDecimal?) {
+        coVerify {
+            pendingMultiSwapStorage.updateLeg1(
+                id = "swap-1",
+                status = PendingMultiSwap.STATUS_COMPLETED,
+                amountOut = amount,
+                transactionId = null,
+            )
+        }
     }
 
     private fun stubLeg1OffChainIntoTon(providerStatus: String) {

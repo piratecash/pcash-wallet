@@ -29,8 +29,12 @@ class TronAdapter(kitWrapper: TronKitWrapper) : BaseTronAdapter(kitWrapper, deci
     override val fee: StateFlow<BigDecimal> = _fee.asStateFlow()
     private var networkJob: Job? = null
 
+    // Until the recipient is known (e.g. a swap deposit address) reserve the worst case: activating it.
     override val maxSpendableBalance: BigDecimal
-        get() = maxOf(balanceData.available - fee.value, BigDecimal.ZERO)
+        get() = maxOf(balanceData.available - activationReserve, BigDecimal.ZERO)
+
+    private val activationReserve: BigDecimal
+        get() = tronKit.accountActivationFees().sumOf { it.feeInSuns }.toBigDecimal().movePointLeft(decimal)
 
     // IAdapter
 

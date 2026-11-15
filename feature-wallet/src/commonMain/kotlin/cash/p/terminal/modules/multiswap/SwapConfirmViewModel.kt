@@ -44,17 +44,18 @@ import cash.p.terminal.network.backendswap.data.entity.BackendSwapError
 import cash.p.terminal.network.changenow.data.entity.BackendChangeNowResponseError
 import cash.p.terminal.network.exolix.data.entity.BackendExolixResponseError
 import cash.p.terminal.network.yifi.data.entity.BackendYiFiResponseError
-import cash.p.terminal.resources.Button_Refresh
 import cash.p.terminal.resources.Error
 import cash.p.terminal.resources.EthereumTransaction_Error_InsufficientBalance_Title
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.Swap_ErrorInsufficientBalance
+import cash.p.terminal.resources.swap_card_scan_failed
 import cash.p.terminal.resources.swap_provider_order_failed
 import cash.p.terminal.resources.swap_yifi_memo_unsupported
 import cash.p.terminal.resources.unexpected_error
 import cash.p.terminal.resources.unsupported_address
 import cash.p.terminal.resources.unsupported_refund_address
 import cash.p.terminal.strings.helpers.TranslatableString
+import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
@@ -146,6 +147,8 @@ class SwapConfirmViewModel(
     private var finalQuoteCautions: List<HSCaution> = emptyList()
     private var quoteFields: List<DataField> = listOf()
     private var criticalError: String? = null
+    private var finalQuoteCancelled = false
+    private var fetchingFinalQuote = false
     private var swapProviderTransaction: SwapProviderTransaction? = null
     private var swapRecipientAddress: String? = null
     private var isAdvancedSettingsAvailable: Boolean = sendTransactionService.hasSettings()
@@ -158,6 +161,8 @@ class SwapConfirmViewModel(
     private var moneroPreparationError: StringResource? = null
     private val mevProtectionAvailable =
         swapProvider.mevProtectionAvailable && sendTransactionService.mevProtectionAvailable
+    private val isCardOrderSigning =
+        swapProvider.signsOrderWithAccountKey && wallet.account.type is AccountType.HardwareCard
 
     init {
         fiatServiceIn.setCurrency(currency)
@@ -199,6 +204,8 @@ class SwapConfirmViewModel(
         viewModelScope.launch {
             sendTransactionService.sendTransactionSettingsFlow.collect {
                 sendTransactionSettings = it
+                // The order ignores fee settings, and a refetch would restart its signature on the device.
+                if (swapProvider.signsOrderWithAccountKey && fetchJob != null) return@collect
 
                 fetchFinalQuote()
             }
@@ -236,11 +243,7 @@ class SwapConfirmViewModel(
         viewModelScope.launch {
             sendTransactionService.stateFlow.collectLatest {
                 val availableBalance = it.availableBalance ?: return@collectLatest
-                if (
-                    direction == SwapAmountDirection.In &&
-                    !sendResult.isSwapInProgress &&
-                    availableBalance < amountIn
-                ) {
+                if (shouldShrinkAmountInTo(availableBalance)) {
                     amountIn = availableBalance
                     fiatServiceIn.setAmount(amountIn)
                     refresh()
@@ -250,6 +253,13 @@ class SwapConfirmViewModel(
 
         sendTransactionService.start(viewModelScope)
     }
+
+    // A non-positive spendable cannot be quoted: keep the amount and let the balance caution show.
+    private fun shouldShrinkAmountInTo(availableBalance: BigDecimal) =
+        direction == SwapAmountDirection.In &&
+            !sendResult.isSwapInProgress &&
+            availableBalance.signum() > 0 &&
+            availableBalance < amountIn
 
     private fun handleUpdatedPriceImpactState(priceImpactState: PriceImpactService.State) {
         this.priceImpactState = priceImpactState
@@ -263,7 +273,9 @@ class SwapConfirmViewModel(
         return SwapConfirmUiState(
             expiresIn = timerState.remaining.takeIf { needUseTimer() },
             expired = timerState.timeout,
-            loading = loading,
+            // The send service may still hold the previous quote's transaction while a new one is fetched,
+            // and may still report loading after the final quote failed.
+            loading = fetchingFinalQuote || loading && criticalError == null && !finalQuoteCancelled,
             tokenIn = tokenIn,
             tokenOut = tokenOut,
             amountIn = amountIn,
@@ -284,6 +296,7 @@ class SwapConfirmViewModel(
             quoteFields = quoteFields,
             transactionFields = sendTransactionState.fields,
             criticalError = criticalError,
+            finalQuoteCancelled = finalQuoteCancelled,
             isAdvancedSettingsAvailable = isAdvancedSettingsAvailable,
             mevProtectionAvailable = mevProtectionAvailable,
             mevProtectionEnabled = localStorage.swapMevProtectionEnabled && mevProtectionAvailable,
@@ -293,6 +306,8 @@ class SwapConfirmViewModel(
             moneroPreparationRetryAvailable =
                 sendTransactionState.moneroSpendReadiness?.requiresTrezorPreparation() == true &&
                     moneroPreparationActivity != MoneroPreparationActivity.InProgress,
+            // The recipient is set only once the order for the current quote is placed.
+            tapCardAgainHintVisible = isCardOrderSigning && swapRecipientAddress != null,
         )
     }
 
@@ -393,6 +408,8 @@ class SwapConfirmViewModel(
     private fun fetchFinalQuote() {
         fetchJob?.cancel()
         swapRecipientAddress = null
+        fetchingFinalQuote = true
+        emitState()
         fetchJob = viewModelScope.launch(dispatcherProvider.io) {
             try {
                 val finalQuote = fetchFinalQuoteByExecutionMode()
@@ -404,6 +421,7 @@ class SwapConfirmViewModel(
                 quoteFields = finalQuote.fields
                 finalQuoteCautions = finalQuote.cautions
                 criticalError = null
+                finalQuoteCancelled = false
                 swapProviderTransaction = finalQuote.swapProviderTransaction
                 swapRecipientAddress = finalQuote.sendTransactionData.recipientAddress
                     ?.takeIf { swapProvider.isOffChain && it.isNotBlank() }
@@ -417,6 +435,7 @@ class SwapConfirmViewModel(
                 priceImpactService.setPriceImpact(finalQuote.priceImpact?.negate(), swapProvider.title)
                 startDepositDeadlineTimer(finalQuote.validUntilMillis)
 
+                fetchingFinalQuote = false
                 emitState()
             } catch (e: BackendChangeNowResponseError) {
                 setCriticalError(e.changeNowCriticalError)
@@ -432,7 +451,7 @@ class SwapConfirmViewModel(
             } catch (_: CancellationException) {
                 logger.w { "fetchFinalQuote was cancelled" }
             } catch (t: Throwable) {
-                setCriticalError(finalQuoteCriticalError(t))
+                if (t.isHardwareWalletCancelled()) setFinalQuoteCancelled() else setCriticalError(finalQuoteCriticalError(t))
             }
         }
     }
@@ -452,7 +471,8 @@ class SwapConfirmViewModel(
 
     private fun finalQuoteCriticalError(error: Throwable): String =
         when (val hardwareError = error.toHardwareWalletError()) {
-            HardwareWalletError.Cancelled -> Translator.getString(Res.string.Button_Refresh)
+            // A user cancel is handled before; this is any other error reported by the card SDK.
+            HardwareWalletError.Cancelled -> Translator.getString(Res.string.swap_card_scan_failed)
             is HardwareWalletError.Failed -> Translator.getString(hardwareError.messageRes)
             null -> {
                 logger.e(error) { "fetchFinalQuote error" }
@@ -519,7 +539,18 @@ class SwapConfirmViewModel(
 
     private fun setCriticalError(error: String) {
         loading = false
+        fetchingFinalQuote = false
         criticalError = error
+        finalQuoteCancelled = false
+        swapRecipientAddress = null
+        emitState()
+    }
+
+    private fun setFinalQuoteCancelled() {
+        loading = false
+        fetchingFinalQuote = false
+        criticalError = null
+        finalQuoteCancelled = true
         swapRecipientAddress = null
         emitState()
     }
@@ -828,6 +859,8 @@ data class SwapConfirmUiState(
     val moneroPreparationInProgress: Boolean = false,
     val moneroPreparationError: StringResource? = null,
     val moneroPreparationRetryAvailable: Boolean = false,
+    val tapCardAgainHintVisible: Boolean = false,
+    val finalQuoteCancelled: Boolean = false,
 )
 
 internal val SendResult?.isSwapInProgress: Boolean

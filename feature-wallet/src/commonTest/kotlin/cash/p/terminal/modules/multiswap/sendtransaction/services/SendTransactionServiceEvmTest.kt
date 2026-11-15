@@ -1,6 +1,7 @@
 package cash.p.terminal.modules.multiswap.sendtransaction.services
 
 import cash.p.terminal.core.ICoinManager
+import cash.p.terminal.core.adapters.BaseEvmAdapter
 import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.EvmKitManager
 import cash.p.terminal.core.managers.EvmKitWrapper
@@ -30,6 +31,7 @@ import io.horizontalsystems.core.IAppNumberFormatter
 import io.horizontalsystems.core.Translator
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
+import io.horizontalsystems.ethereumkit.api.models.AccountState
 import io.horizontalsystems.ethereumkit.core.EthereumKit
 import io.horizontalsystems.ethereumkit.core.signer.Signer
 import io.horizontalsystems.ethereumkit.decorations.TransactionDecoration
@@ -117,6 +119,10 @@ class SendTransactionServiceEvmTest : KoinTest {
         type = TokenType.Native,
         decimals = 18,
     )
+    private val usdtToken = bnbToken.copy(
+        coin = Coin(uid = "tether", name = "Tether", code = "USDT"),
+        type = TokenType.Eip20("0x55d398326f99059ff775485246999027b3197955"),
+    )
     private lateinit var testWallet: Wallet
 
     private val toAddress = EvmAddress("0xafcc12e4040615e7afe9fb4330eb3d9120acac05")
@@ -165,6 +171,7 @@ class SendTransactionServiceEvmTest : KoinTest {
         coEvery { walletUseCase.createWalletIfNotExists(bnbToken) } returns testWallet
 
         every { evmKit.receiveAddress } returns ownAddress
+        every { evmKit.accountState } returns AccountState(BALANCE_WEI, 0)
         every { evmKit.rawTransaction(transactionData, any(), any(), any()) } returns
             Single.just(rawTransaction)
         coEvery { signer.signature(rawTransaction) } returns signature
@@ -370,6 +377,90 @@ class SendTransactionServiceEvmTest : KoinTest {
         assertSame(replacementData, service.offlineSignRequest().transactionData)
     }
 
+    @Test
+    fun createState_nativeEstimate_availableBalanceIsBalanceMinusFee() = runTest(dispatcher) {
+        val service = createEstimatedService(transactionDataWithValue(AMOUNT_WEI), amount = AMOUNT)
+
+        assertEquals(coins(BALANCE_WEI - FEE_WEI), service.stateFlow.value.availableBalance)
+    }
+
+    @Test
+    fun createState_nativeValueBeyondAmount_subtractsExtraValue() = runTest(dispatcher) {
+        val bridgeFee = BigInteger.valueOf(5_000_000_000_000L)
+        val data = transactionDataWithValue(AMOUNT_WEI + bridgeFee)
+
+        val service = createEstimatedService(data, amount = AMOUNT)
+
+        assertEquals(coins(BALANCE_WEI - FEE_WEI - bridgeFee), service.stateFlow.value.availableBalance)
+    }
+
+    @Test
+    fun createState_fullBalanceMaxSend_limitExcludesFee() = runTest(dispatcher) {
+        val requested = transactionDataWithValue(BALANCE_WEI)
+        val adjusted = transactionDataWithValue(BALANCE_WEI - FEE_WEI)
+
+        val service = createEstimatedService(requested, amount = coins(BALANCE_WEI), estimatedData = adjusted)
+
+        assertEquals(coins(BALANCE_WEI - FEE_WEI), service.stateFlow.value.availableBalance)
+    }
+
+    @Test
+    fun createState_feeAboveBalance_isZero() = runTest(dispatcher) {
+        every { evmKit.accountState } returns AccountState(FEE_WEI - BigInteger.ONE, 0)
+
+        val service = createEstimatedService(transactionDataWithValue(AMOUNT_WEI), amount = AMOUNT)
+
+        assertEquals(coins(BigInteger.ZERO), service.stateFlow.value.availableBalance)
+    }
+
+    @Test
+    fun createState_erc20Token_keepsAdapterMaxSpendable() = runTest(dispatcher) {
+        val usdtWallet = checkNotNull(walletFactory.create(usdtToken, testAccount, null))
+        coEvery { walletUseCase.createWalletIfNotExists(usdtToken) } returns usdtWallet
+
+        val service = createEstimatedService(transactionData, amount = AMOUNT, token = usdtToken)
+
+        assertEquals(ADAPTER_MAX_SPENDABLE, service.stateFlow.value.availableBalance)
+    }
+
+    @Test
+    fun createState_newDataLoading_keepsAdapterMaxSpendable() = runTest(dispatcher) {
+        val service = createEstimatedService(transactionDataWithValue(AMOUNT_WEI), amount = AMOUNT)
+
+        service.setSendTransactionData(SendTransactionData.Evm(replacementData, null, amount = AMOUNT))
+
+        assertEquals(ADAPTER_MAX_SPENDABLE, service.stateFlow.value.availableBalance)
+    }
+
+    @Test
+    fun createState_noSendAmount_keepsAdapterMaxSpendable() = runTest(dispatcher) {
+        val service = createEstimatedService(transactionDataWithValue(AMOUNT_WEI), amount = null)
+
+        assertEquals(ADAPTER_MAX_SPENDABLE, service.stateFlow.value.availableBalance)
+    }
+
+    private suspend fun createEstimatedService(
+        data: TransactionData,
+        amount: BigDecimal?,
+        estimatedData: TransactionData = data,
+        token: Token = bnbToken,
+    ): SendTransactionServiceEvm {
+        every { evmKit.chain } returns Chain.BinanceSmartChain
+        every { adapterManager.getAdjustedBalanceData(any()) } returns null
+        coEvery { adapterManager.awaitAdapterForWallet<BaseEvmAdapter>(any(), any()) } returns
+            mockk(relaxed = true) { every { maxSpendableBalance } returns ADAPTER_MAX_SPENDABLE }
+        val service = SendTransactionServiceEvm(token)
+        service.setSendTransactionData(SendTransactionData.Evm(data, null, amount = amount))
+        service.handleTransactionState(
+            DataState.Success(settingsTransaction(estimatedFor = data, transactionData = estimatedData))
+        )
+        return service
+    }
+
+    private fun transactionDataWithValue(value: BigInteger) = TransactionData(toAddress, value, ByteArray(0))
+
+    private fun coins(wei: BigInteger) = BigDecimal(wei, bnbToken.decimals)
+
     private fun mockTranslators() {
         mockkObject(Translator)
         every { Translator.getString(any(), *anyVararg()) } returns "text"
@@ -390,8 +481,11 @@ class SendTransactionServiceEvmTest : KoinTest {
             .invoke(this, state)
     }
 
-    private fun settingsTransaction(estimatedFor: TransactionData) = SendEvmSettingsService.Transaction(
-        transactionData = estimatedFor,
+    private fun settingsTransaction(
+        estimatedFor: TransactionData,
+        transactionData: TransactionData = estimatedFor,
+    ) = SendEvmSettingsService.Transaction(
+        transactionData = transactionData,
         gasData = GasData(gasLimit = 21_000, gasPrice = GasPrice.Legacy(1_000_000_000)),
         nonce = 7,
         default = true,
@@ -432,5 +526,11 @@ class SendTransactionServiceEvmTest : KoinTest {
 
     private companion object {
         const val PENDING_TX_ID = "pending-tx-id"
+        val BALANCE_WEI: BigInteger = BigInteger.TEN.pow(18)
+        val AMOUNT_WEI: BigInteger = BigInteger.TEN.pow(17)
+        val AMOUNT: BigDecimal = BigDecimal("0.1")
+        // 21 000 gas at 1 gwei, as in settingsTransaction.
+        val FEE_WEI: BigInteger = BigInteger.valueOf(21_000L * 1_000_000_000L)
+        val ADAPTER_MAX_SPENDABLE = BigDecimal("0.99")
     }
 }

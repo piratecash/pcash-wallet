@@ -1,6 +1,7 @@
 package cash.p.terminal.shared.main
 
 import cash.p.terminal.ui_compose.components.AppSnackbarVariant
+import cash.p.terminal.ui_compose.components.HudAction
 import cash.p.terminal.ui_compose.components.HudMessenger
 import cash.p.terminal.ui_compose.components.SnackbarDuration
 import kotlinx.coroutines.channels.BufferOverflow
@@ -8,7 +9,12 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import org.jetbrains.compose.resources.DrawableResource
 
-data class HudMessage(val text: String, val variant: AppSnackbarVariant, val icon: DrawableResource? = null)
+data class HudMessage(
+    val text: String,
+    val variant: AppSnackbarVariant,
+    val icon: DrawableResource? = null,
+    val action: HudAction? = null,
+)
 
 /** Collects messages for the snackbar overlay of [DesktopNavHost]. */
 class DesktopHudMessenger : HudMessenger {
@@ -26,6 +32,9 @@ class DesktopHudMessenger : HudMessenger {
     override fun showMessage(text: String, icon: DrawableResource, duration: SnackbarDuration) =
         show(text, AppSnackbarVariant.Message, icon)
 
+    override fun showMessage(text: String, action: HudAction) =
+        show(text, AppSnackbarVariant.Message, action = action)
+
     override fun showInProgress(text: String, duration: SnackbarDuration) = show(text, AppSnackbarVariant.InProgress)
 
     override fun showError(text: String) = show(text, AppSnackbarVariant.Error)
@@ -40,7 +49,12 @@ class DesktopHudMessenger : HudMessenger {
         _messages.tryEmit(null)
     }
 
-    private fun show(text: String, variant: AppSnackbarVariant, icon: DrawableResource? = null) {
-        _messages.tryEmit(HudMessage(text, variant, icon))
+    private fun show(
+        text: String,
+        variant: AppSnackbarVariant,
+        icon: DrawableResource? = null,
+        action: HudAction? = null,
+    ) {
+        _messages.tryEmit(HudMessage(text, variant, icon, action))
     }
 }

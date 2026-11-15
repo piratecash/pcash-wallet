@@ -101,8 +101,10 @@ fun TonConnectNewScreen(
                     MenuItem(
                         title = TranslatableString.ResString(Res.string.Button_Close),
                         icon = Res.drawable.ic_close_24,
-                        enabled = !uiState.connecting,
-                        onClick = { navigation.navigateUpSafely() }
+                        onClick = {
+                            viewModel.reject()
+                            navigation.navigateUpSafely()
+                        }
                     )
                 )
             )
@@ -241,7 +243,6 @@ fun TonConnectNewScreen(
                     ButtonPrimaryDefault(
                         modifier = Modifier.fillMaxWidth(),
                         title = stringResource(Res.string.Button_Cancel),
-                        enabled = !uiState.connecting,
                         onClick = {
                             viewModel.reject()
                             onResult.invoke(false)

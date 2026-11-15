@@ -39,6 +39,7 @@ class DesktopPlainSettingsKeysTest {
         storage.nonRecommendedAccountAlertDismissedAccounts = setOf(MAIN_ACCOUNT)
         storage.zcashIronwoodMigrationTxIds = setOf("$MAIN_ACCOUNT:hash-1")
         storage.bitcoinReplacementLinks = setOf("$DURESS_ACCOUNT|bitcoin|hash-1|uid-1|hash-2|uid-2")
+        storage.dismissedNftVersionHints = setOf("$DURESS_ACCOUNT:W5")
         DesktopLevelSettings(fixture.vault).setFlag(0, "aml_check_received_enabled", true)
         storage.transactionHideEnabled = true
 
@@ -46,7 +47,8 @@ class DesktopPlainSettingsKeysTest {
         assertTrue("transactionHideEnabled" in content, "the control setting must land in the file")
         listOf(
             "zcashAccountIds", "nonRecommendedAccountAlertDismissedAccounts", "zcashIronwoodMigrationTxIds",
-            "bitcoinReplacementLinks", "aml_check_received_enabled", MAIN_ACCOUNT, DURESS_ACCOUNT,
+            "bitcoinReplacementLinks", "nftVersionHintsDismissed", "aml_check_received_enabled", MAIN_ACCOUNT,
+            DURESS_ACCOUNT,
         ).forEach { assertFalse(it in content, "$it must not be in the open settings file") }
     }
 }

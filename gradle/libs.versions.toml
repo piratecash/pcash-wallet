@@ -44,6 +44,7 @@ benchmark = "1.5.0-alpha07"
 uiautomator = "2.3.0"
 recyclerview = "1.4.0"
 coil = "3.4.0"
+compottie = "2.3.3"
 annotation = "1.9.1"
 lifecycle-viewmodel-compose = "2.10.0"
 resolutionJava = "v7.1.0"
@@ -71,7 +72,7 @@ secp256k1 = "0.24.0"
 
 tonKotlin = "0.5.0" # updated for ktor 3.x compatibility
 orgJson = "20250517"
-piratecash-ton = "v2.0.0-pcash.15"
+piratecash-ton = "v2.0.0-pcash.21"
 beam-sdk = "v0.3.2"
 openpnp-capture-java = "v0.0.30-2-pcash.2"
 piratecash-bitcoin = "v0.1.0-pcash.47"
@@ -82,10 +83,10 @@ thorchain-kit = "1.4.0"
 trezor-kit = "1.4.1"
 piratecash-ethereum = "v1.0.0-pcash.11"
 piratecash-solana = "v2.0.0-pcash.8"
-monero-kit-android = "v0.18.3.4-pcash.25"
+monero-kit-android = "v0.18.3.4-pcash.27"
 netcipher = "2.1.0"
 solanakt = "v1.0.0-pcash.5"
-piratecash-tron = "v2.0.0-pcash.4"
+piratecash-tron = "v2.0.0-pcash.5"
 tangem-sdk = "3.9.2-pcash.5"
 gson = "2.13.2"
 retrofit = "3.0.0"
@@ -98,7 +99,7 @@ android-core-ktx = "1.18.0"
 twitterText = "3.1.0"
 workRuntimeKtx = "2.11.2"
 workRxjava2 = "2.11.2"
-zcashSdkKmp = "v1.5.4"
+zcashSdkKmp = "v1.5.5"
 junitJupiter = "6.0.3"
 google-play-core = "2.1.0"
 bitcoinj = "0.17"
@@ -179,6 +180,7 @@ coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref 
 coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coil" }
 coil-svg = { group = "io.coil-kt.coil3", name = "coil-svg", version.ref = "coil" }
 coil-gif = { group = "io.coil-kt.coil3", name = "coil-gif", version.ref = "coil" }
+compottie = { group = "io.github.alexzhirkevich", name = "compottie", version.ref = "compottie" }
 androidx-annotation = { group = "androidx.annotation", name = "annotation", version.ref = "annotation" }
 leakcanary-android = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "leakcanaryAndroid" }
 lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle-viewmodel-compose" }

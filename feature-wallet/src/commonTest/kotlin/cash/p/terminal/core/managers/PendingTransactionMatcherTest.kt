@@ -215,6 +215,38 @@ class PendingTransactionMatcherTest {
     }
 
     @Test
+    fun matchScoreForRealRecord_tonSendCarryingNft_doesNotMatchPendingOfSameQuantity() {
+        val token = tonToken()
+        val pending = pendingTonSwap(token, TON_ROUTER_RAW, BigDecimal.ONE)
+
+        val score = matcher.matchScoreForRealRecord(pending, tonSendRecord(token, TON_ROUTER_RAW, nftValue()))
+
+        assertFalse(score.isMatch)
+    }
+
+    @Test
+    fun matchScoreForRealRecord_tonSendOfCoin_matchesPending() {
+        val token = tonToken()
+        val pending = pendingTonSwap(token, TON_ROUTER_RAW, BigDecimal.ONE)
+        val coinSend = TransactionValue.CoinValue(token, BigDecimal("-1"))
+
+        val score = matcher.matchScoreForRealRecord(pending, tonSendRecord(token, TON_ROUTER_RAW, coinSend))
+
+        assertTrue(score.isMatch)
+    }
+
+    @Test
+    fun matchScoreForRealRecord_nftSendBeforeCoinSendInOneEvent_matchesCoinAmount() {
+        val token = tonToken()
+        val pending = pendingTonSwap(token, TON_ROUTER_RAW, BigDecimal("0.5"))
+        val coinSend = TransactionValue.CoinValue(token, BigDecimal("-0.5"))
+
+        val score = matcher.matchScoreForRealRecord(pending, tonSendRecord(token, TON_ROUTER_RAW, nftValue(), coinSend))
+
+        assertTrue(score.isMatch)
+    }
+
+    @Test
     fun matchScoreForRealRecord_tonSwapSameRouterDifferentAddressFormat_matchesWithAddressConfidence() {
         val token = tonToken()
         val pending = pendingTonSwap(
@@ -381,6 +413,33 @@ class PendingTransactionMatcherTest {
         showRawTransaction = false,
         replaceable = false,
         canonicalTransactionHash = canonicalTransactionHash,
+    )
+
+    private fun tonSendRecord(token: Token, to: String, vararg values: TransactionValue) = TonTransactionRecord(
+        source = transactionSource(token),
+        event = Event(
+            id = "ton-send-tx",
+            lt = 1L,
+            timestamp = TIMESTAMP,
+            scam = false,
+            inProgress = false,
+            extra = 0L,
+            actions = emptyList()
+        ),
+        token = token,
+        actions = values.map { value ->
+            TonTransactionRecord.Action(
+                type = TonTransactionRecord.Action.Type.Send(value, to, sentToSelf = false, comment = null),
+                status = TransactionStatus.Completed
+            )
+        }
+    )
+
+    private fun nftValue() = TransactionValue.NftValue(
+        mintAddress = "nft-address",
+        value = BigDecimal("-1"),
+        tokenName = null,
+        tokenSymbol = "NFT",
     )
 
     private fun tonSwapRecord(

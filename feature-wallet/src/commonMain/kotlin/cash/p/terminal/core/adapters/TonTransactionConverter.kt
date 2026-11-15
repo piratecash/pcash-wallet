@@ -2,6 +2,8 @@ package cash.p.terminal.core.adapters
 
 import cash.p.terminal.core.ICoinManager
 import cash.p.terminal.entities.TransactionValue
+import cash.p.terminal.entities.transactionrecords.LiquidityOperation
+import cash.p.terminal.entities.transactionrecords.LiquidityOperation.Direction
 import cash.p.terminal.entities.transactionrecords.ton.TonTransactionRecord
 import cash.p.terminal.modules.transactions.TransactionStatus
 import cash.p.terminal.wallet.Token
@@ -14,6 +16,8 @@ import io.horizontalsystems.tonkit.models.AccountAddress
 import io.horizontalsystems.tonkit.models.Action
 import io.horizontalsystems.tonkit.models.Event
 import io.horizontalsystems.tonkit.models.Jetton
+import io.horizontalsystems.tonkit.models.LiquidityDeposit
+import io.horizontalsystems.tonkit.models.NftTransfer
 import java.math.BigDecimal
 import java.math.BigInteger
 
@@ -42,8 +46,34 @@ class TonTransactionConverter(
             source = source,
             event = event,
             token = baseToken,
-            actions = actions
+            actions = actions,
+            liquidityOperation = liquidityOperation(event)
         )
+    }
+
+    private fun liquidityOperation(event: Event): LiquidityOperation? {
+        val deposit = event.actions.firstOrNull { it.isLiquidityDeposit() }
+        if (deposit != null) {
+            return LiquidityOperation(Direction.Add, failed = deposit.status == Action.Status.FAILED)
+        }
+        return LiquidityOperation(Direction.Remove, failed = false).takeIf { event.isLiquidityWithdrawal() }
+    }
+
+    private fun Action.isLiquidityDeposit(): Boolean =
+        liquidityDeposit?.from?.address == address ||
+                jettonTransfer?.let { it.sender?.address == address && it.comment in DEPOSIT_COMMENTS } == true ||
+                smartContractExec?.operation == DEDUST_DEPOSIT_OPERATION
+
+    private fun Event.isLiquidityWithdrawal(): Boolean {
+        val ownBurns = actions.count { action ->
+            action.status == Action.Status.OK &&
+                    action.jettonBurn?.let { it.sender.address == address && it.amount.signum() > 0 } == true
+        }
+        val receivedJettons = actions.any { action ->
+            action.status == Action.Status.OK &&
+                    action.jettonTransfer?.let { it.recipient?.address == address && it.amount.signum() > 0 } == true
+        }
+        return ownBurns == 1 && receivedJettons
     }
 
     private fun convertAmount(amount: BigInteger, decimal: Int, negative: Boolean): BigDecimal {
@@ -82,6 +112,12 @@ class TonTransactionConverter(
             )
         }
     }
+
+    private fun liquidityDepositEntry(token: LiquidityDeposit.Token) =
+        TonTransactionRecord.Action.Type.LiquidityDeposit.Deposit(
+            value = token.jetton?.let { jettonValue(it, token.amount, true) } ?: tonValue(token.amount, true),
+            vault = token.vault.toUserFriendly(bounceable = true)
+        )
 
     private fun format(address: AccountAddress): String {
         return address.address.toUserFriendly(bounceable = !address.isWallet)
@@ -179,6 +215,50 @@ class TonTransactionConverter(
             )
         }
 
-        return TonTransactionRecord.Action.Type.Unsupported(action.type.name)
+        action.liquidityDeposit?.let { deposit ->
+            if (deposit.from.address == address) {
+                return TonTransactionRecord.Action.Type.LiquidityDeposit(
+                    deposits = deposit.tokens.map { liquidityDepositEntry(it) },
+                    protocol = deposit.protocol
+                )
+            }
+        }
+
+        return action.nftTransfer?.let(::nftTransferType)
+            ?: TonTransactionRecord.Action.Type.Unsupported(action.type.name)
+    }
+
+    private fun nftTransferType(nftTransfer: NftTransfer): TonTransactionRecord.Action.Type? {
+        val sender = nftTransfer.sender ?: return null
+        val recipient = nftTransfer.recipient ?: return null
+        return when (address) {
+            sender.address -> TonTransactionRecord.Action.Type.Send(
+                value = nftValue(nftTransfer, BigDecimal.ONE.negate()),
+                to = format(recipient),
+                sentToSelf = recipient.address == address,
+                comment = nftTransfer.comment,
+            )
+
+            recipient.address -> TonTransactionRecord.Action.Type.Receive(
+                value = nftValue(nftTransfer, BigDecimal.ONE),
+                from = format(sender),
+                to = format(recipient),
+                comment = nftTransfer.comment,
+            )
+
+            else -> null
+        }
+    }
+
+    private fun nftValue(nftTransfer: NftTransfer, value: BigDecimal) = TransactionValue.NftValue(
+        mintAddress = nftTransfer.nft.toUserFriendly(bounceable = true),
+        value = value,
+        tokenName = null,
+        tokenSymbol = "NFT",
+    )
+
+    private companion object {
+        val DEPOSIT_COMMENTS = setOf("Call: StonfiProvideLiquidity", "Call: DedustDepositLiquidity")
+        const val DEDUST_DEPOSIT_OPERATION = "DedustDepositLiquidity"
     }
 }
