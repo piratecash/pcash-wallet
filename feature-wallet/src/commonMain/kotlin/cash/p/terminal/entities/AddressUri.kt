@@ -6,6 +6,9 @@ import cash.p.terminal.core.supported
 import io.horizontalsystems.core.entities.BlockchainType
 import java.math.BigDecimal
 
+private const val MAX_AMOUNT_INTEGER_DIGITS = 64
+private const val MAX_AMOUNT_FRACTION_DIGITS = 64
+
 class AddressUri(
     val scheme: String,
 ) {
@@ -27,10 +30,14 @@ class AddressUri(
     }
 
     val amount: BigDecimal?
-        get() = value<BigDecimal>(Field.Amount) ?: value(Field.Value) ?: moneroAmount
+        get() = (value<BigDecimal>(Field.Amount) ?: value(Field.Value) ?: moneroAmount)?.takeIf { it.isDisplayable() }
 
     private val moneroAmount: BigDecimal?
         get() = if (scheme.equals("monero", ignoreCase = true)) value(Field.TxAmount) else null
+
+    // "1e2147483647" parses fine but its plain form does not fit in memory; Long avoids Int overflow.
+    private fun BigDecimal.isDisplayable(): Boolean =
+        precision().toLong() - scale() <= MAX_AMOUNT_INTEGER_DIGITS && scale() <= MAX_AMOUNT_FRACTION_DIGITS
 
 
     enum class Field(val value: String) {

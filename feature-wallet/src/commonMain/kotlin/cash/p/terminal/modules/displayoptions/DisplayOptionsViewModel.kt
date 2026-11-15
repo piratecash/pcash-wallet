@@ -3,16 +3,22 @@ package cash.p.terminal.modules.displayoptions
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cash.p.terminal.core.BalanceSettingsStorage
+import cash.p.terminal.core.nft.NftGramHintsRepository
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
+import cash.p.terminal.wallet.IWalletManager
+import cash.p.terminal.wallet.Wallet
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 internal class DisplayOptionsViewModel(
     private val accountManager: IAccountManager,
-    private val localStorage: BalanceSettingsStorage
+    private val localStorage: BalanceSettingsStorage,
+    private val walletManager: IWalletManager,
+    private val gramHints: NftGramHintsRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DisplayOptionsUiState(
@@ -23,6 +29,10 @@ internal class DisplayOptionsViewModel(
 
     init {
         loadSettings()
+        viewModelScope.launch {
+            combine(walletManager.activeWalletsFlow, localStorage.showNftCollectionsFlow, ::nftSection)
+                .collect { section -> updateUiState { it.copy(nftSection = section) } }
+        }
     }
 
     private fun loadSettings() {
@@ -30,12 +40,14 @@ internal class DisplayOptionsViewModel(
             val pricePeriod = localStorage.displayDiffPricePeriod
             val displayDiffOptionType = localStorage.displayDiffOptionType
 
-            _uiState.value = DisplayOptionsUiState(
-                isCoinManagerEnabled = accountManager.activeAccount?.type !is AccountType.MnemonicMonero,
-                isRoundingAmountMainPage = localStorage.isRoundingAmountMainPage,
-                pricePeriod = pricePeriod,
-                displayDiffOptionType = displayDiffOptionType,
-            )
+            updateUiState {
+                it.copy(
+                    isCoinManagerEnabled = accountManager.activeAccount?.type !is AccountType.MnemonicMonero,
+                    isRoundingAmountMainPage = localStorage.isRoundingAmountMainPage,
+                    pricePeriod = pricePeriod,
+                    displayDiffOptionType = displayDiffOptionType,
+                )
+            }
         }
     }
 
@@ -67,6 +79,18 @@ internal class DisplayOptionsViewModel(
         updateUiState { it.copy(isRoundingAmountMainPage = enabled) }
     }
 
+    fun onShowNftCollectionsToggled(enabled: Boolean) {
+        localStorage.showNftCollections = enabled
+    }
+
+    /** Null for an account that cannot hold GRAM at all. */
+    private fun nftSection(wallets: List<Wallet>, show: Boolean): NftDisplaySection? {
+        val account = accountManager.activeAccount ?: return null
+        if (gramHints.eligibleVersions(account).isEmpty()) return null
+        val added = gramHints.addedVersions(wallets.filter { it.account.id == account.id })
+        return NftDisplaySection(show = show, hasGram = added.isNotEmpty())
+    }
+
     private fun updateDisplayOption(
         showPriceChangeEnabled: Boolean,
         showPercentagePriceChangeEnabled: Boolean
@@ -88,4 +112,7 @@ internal data class DisplayOptionsUiState(
     val isRoundingAmountMainPage: Boolean,
     val pricePeriod: DisplayPricePeriod = DisplayPricePeriod.ONE_DAY,
     val displayDiffOptionType: DisplayDiffOptionType = DisplayDiffOptionType.BOTH,
+    val nftSection: NftDisplaySection? = null,
 )
+
+internal data class NftDisplaySection(val show: Boolean, val hasGram: Boolean)

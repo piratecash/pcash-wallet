@@ -16,6 +16,8 @@ import cash.p.terminal.entities.EvmMethodLabel
 import cash.p.terminal.entities.EvmSyncSourceRecord
 import cash.p.terminal.entities.LocallyCreatedTransactionRecord
 import cash.p.terminal.entities.MoneroFileRecord
+import cash.p.terminal.entities.NftCollectionPrefRecord
+import cash.p.terminal.entities.NftItemRecord
 import cash.p.terminal.entities.OfflineBlockchain
 import cash.p.terminal.entities.OfflineSignedTransactionEntity
 import cash.p.terminal.entities.PendingMultiSwap
@@ -64,6 +66,8 @@ import io.horizontalsystems.core.storage.LogEntry
         LocallyCreatedTransactionRecord::class,
         OfflineSignedTransactionEntity::class,
         OfflineBlockchain::class,
+        NftItemRecord::class,
+        NftCollectionPrefRecord::class,
         AccountStoreMeta::class,
         AccountSetting::class,
     ],

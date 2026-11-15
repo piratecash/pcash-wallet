@@ -288,10 +288,11 @@ class PendingTransactionMatcher {
                 ?.let { action ->
                     (action.type as? TonTransactionRecord.Action.Type.Swap)?.valueIn
                 }
-                ?: real.actions.firstOrNull { it.type is TonTransactionRecord.Action.Type.Send }
-                    ?.let { action ->
-                        (action.type as? TonTransactionRecord.Action.Type.Send)?.value
-                    }
+                // An NFT quantity of 1 would otherwise equal a pending send of 1 TON.
+                ?: real.actions.firstNotNullOfOrNull { action ->
+                    (action.type as? TonTransactionRecord.Action.Type.Send)?.value
+                        ?.takeUnless { it is TransactionValue.NftValue }
+                }
         }
 
         if (real is EvmTransactionRecord) {

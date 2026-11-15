@@ -59,6 +59,19 @@ class DesktopVaultSettingsTest {
     }
 
     @Test
+    fun dismissedNftVersionHints_lowerLevelOpened_showsOnlyItsAccounts() = runBlocking<Unit> {
+        fixture.mainWithDuress()
+        val mainHint = "$MAIN_ACCOUNT:W5"
+        val duressHint = "$DURESS_ACCOUNT:V4R2"
+        storage.dismissedNftVersionHints = setOf(mainHint, duressHint)
+        assertEquals(setOf(mainHint, duressHint), storage.dismissedNftVersionHints)
+
+        fixture.reloginOk(DURESS_PASSWORD)
+
+        assertEquals(setOf(duressHint), storage.dismissedNftVersionHints)
+    }
+
+    @Test
     fun nonRecommendedAlertDismissed_survivesARestartInTheAccountStore() = runBlocking<Unit> {
         fixture.mainWithDuress()
         storage.nonRecommendedAccountAlertDismissedAccounts = setOf(DURESS_ACCOUNT)

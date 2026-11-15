@@ -4,10 +4,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.staticCompositionLocalOf
 import org.jetbrains.compose.resources.DrawableResource
 
+data class HudAction(val label: String, val onClick: () -> Unit)
+
 interface HudMessenger {
     fun showSuccess(text: String, duration: SnackbarDuration = SnackbarDuration.SHORT)
     fun showSuccess(text: String, icon: DrawableResource)
     fun showMessage(text: String, icon: DrawableResource, duration: SnackbarDuration)
+    /** Stays on screen for [SnackbarDuration.LONG] so the user has time to tap [action]. */
+    fun showMessage(text: String, action: HudAction)
     fun showInProgress(text: String, duration: SnackbarDuration)
     fun showError(text: String)
     fun showWarning(text: String, duration: SnackbarDuration = SnackbarDuration.SHORT)

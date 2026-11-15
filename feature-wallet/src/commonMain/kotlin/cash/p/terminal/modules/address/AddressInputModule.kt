@@ -1,5 +1,6 @@
 package cash.p.terminal.modules.address
 
+import cash.p.terminal.core.ISendTonAdapter
 import cash.p.terminal.core.providers.AddressResolutionConfig
 import cash.p.terminal.core.utils.AddressUriParser
 import cash.p.terminal.entities.Address
@@ -7,7 +8,25 @@ import cash.p.terminal.modules.send.beam.BeamRecipient
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.ethereumkit.ens.EnsResolver
 import cash.p.terminal.wallet.entities.TokenQuery
+import cash.p.terminal.wallet.entities.TokenType
+import org.koin.core.qualifier.named
 import org.koin.core.scope.Scope
+
+internal val NftTransferAddressQualifier = named("nft_transfer_address")
+
+internal fun Scope.nftTransferAddressViewModel(adapter: ISendTonAdapter): AddressViewModel {
+    val addressParserChain = AddressParserChain(
+        handlers = listOf(AddressHandlerTon()),
+        domainHandlers = listOf(AddressHandlerTonDns(adapter)),
+    )
+    return AddressViewModel(
+        blockchainType = BlockchainType.Ton,
+        contactsRepository = get(),
+        addressUriParser = AddressUriParser(BlockchainType.Ton, TokenType.Native),
+        addressParserChain = addressParserChain,
+        initial = null,
+    )
+}
 
 internal fun Scope.tokenAddressViewModel(
     tokenQuery: TokenQuery,
