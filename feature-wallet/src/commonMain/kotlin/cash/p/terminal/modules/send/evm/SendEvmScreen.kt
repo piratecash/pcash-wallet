@@ -31,6 +31,7 @@ import cash.p.terminal.modules.send.offline.OfflineSignActionCell
 import cash.p.terminal.modules.send.offline.OfflineSignPage
 import cash.p.terminal.modules.sendtokenselect.PrefilledData
 import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.PageResumeEffect
 import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.ui.compose.components.PoisonAddressRiskSection
 import cash.p.terminal.ui.compose.components.PoisonWarningCell
@@ -112,6 +113,17 @@ private fun SendEvmScreen(
             focusRequester.requestFocus()
         }
 
+        val maxAmountUnique = viewModel.maxAmountUnique
+        LaunchedEffect(maxAmountUnique) {
+            maxAmountUnique?.let {
+                // Otherwise the older percentage pick replays once the correction is consumed.
+                percentageAmountUnique = null
+                coinAmount = it.amount
+            }
+        }
+
+        PageResumeEffect(onResume = viewModel::onAmountScreenResumed, onPause = {})
+
         SendScreen(
             title = title,
             proceedEnabled = proceedEnabled,
@@ -176,7 +188,8 @@ private fun SendEvmScreen(
                 inputType = amountInputType,
                 rate = viewModel.coinRate,
                 amountUnique = amountUnique,
-                percentageAmountUnique = percentageAmountUnique,
+                // Read straight from the ViewModel: a local copy could outlive a newer manual input.
+                percentageAmountUnique = maxAmountUnique ?: percentageAmountUnique,
             )
 
             VSpacer(height = 12.dp)
