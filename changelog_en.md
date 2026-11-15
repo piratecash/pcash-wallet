@@ -1,3 +1,37 @@
+## 🚀 Version 1.3.263 Update
+_Release date: November 15, 2026_
+
+### ✨ New Features
+
+- **Added TON NFT collection support**
+  Collections are shown on the main balance and TON screens. Users can view and transfer NFTs, renew TON DNS domains, manage visibility and spam, burn NFTs, and open related links. NFT images and details are also protected when the balance is hidden.
+
+### ⚙️ Improvements
+
+- **Improved liquidity and swap operation recognition**
+  Liquidity additions and withdrawals in EVM and TON networks, as well as swaps inside Multicall transactions, now have clear labels and can be found through transaction history search.
+
+- **Localized common smart contract method names**
+  Operation names are shown in the app language in transaction history, details, and confirmation screens. Search works with both localized and English names.
+
+- **Updated the Zcash SDK to version 1.5.5**
+  Sapling parameter downloads are now better protected: oversized files are stopped and removed before they can consume excessive device storage.
+
+- **Improved Changelly swaps with Tangem cards**
+  The app explains when the card must be tapped again for the second signature and continues the swap without restarting the process.
+
+- **Improved expired TON Connect request handling**
+  The app now shows a clear localized message so the operation can be retried with a new request.
+
+### 🐛 Fixes
+
+- **Fixed amount calculation when selecting “100%”**
+  When sending or swapping native coins in EVM networks, TRON, and TON, the app now reserves the actual network fee so the operation no longer stops with an insufficient balance error on the confirmation screen.
+
+- **Fixed a crash when switching from a wallet with Monero to another wallet**
+
+- **Fixed swapping earned tokens to GRAM on Android 11 and earlier versions**
+
 ## 🚀 Version 1.2.262 Update
 _Release date: November 11, 2026_
 
