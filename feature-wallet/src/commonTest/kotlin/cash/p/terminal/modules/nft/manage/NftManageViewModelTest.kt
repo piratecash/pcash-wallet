@@ -153,6 +153,25 @@ class NftManageViewModelTest {
     }
 
     @Test
+    fun uiState_userTrustOnNoneCollection_rowItemIsWhitelisted() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        prefs.value = mapOf(pref("c", userTrust = NftUserTrust.Trust))
+
+        show(nft("a", "c", trust = NftTrust.None))
+
+        assertEquals(NftTrust.Whitelist, viewModel.uiState.visibleRows.single().item.trust)
+    }
+
+    @Test
+    fun uiState_noneCollectionWithoutPref_rowItemKeepsProviderTrust() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+
+        show(nft("a", "c", trust = NftTrust.None))
+
+        assertEquals(NftTrust.None, viewModel.uiState.visibleRows.single().item.trust)
+    }
+
+    @Test
     fun uiState_userTrustOnBlacklist_movesCollectionToVisible() = runTest(dispatcher) {
         val viewModel = createViewModel()
         prefs.value = mapOf(pref("prov", userTrust = NftUserTrust.Trust))
