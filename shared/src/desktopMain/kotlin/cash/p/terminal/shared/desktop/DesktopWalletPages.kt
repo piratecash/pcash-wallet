@@ -83,16 +83,12 @@ class DesktopSecretActionAuthorizer(
     private val settings: TransactionSettingsStorage,
 ) : SecretActionAuthorizer {
     @Composable
-    override fun <A> rememberAuthorization(navigation: HSNavigation, action: (A) -> Unit): (A) -> Unit {
-        val launcher = navigation.rememberResultLauncher<ConfirmPasswordPage.Result, A> { result, arg ->
-            if (result.success) action(arg)
-        }
-        return { arg -> launcher.slideFromBottom(ConfirmPasswordPage(), arg) }
-    }
+    override fun <A> rememberAuthorization(navigation: HSNavigation, action: (A) -> Unit): (A) -> Unit =
+        rememberCheck(navigation, ConfirmPasswordPage.Check.APP_PASSWORD, action)
 
     @Composable
     override fun rememberHiddenTransactionsAuthorization(navigation: HSNavigation, action: () -> Unit): () -> Unit {
-        val authorized = rememberAuthorization<Unit>(navigation) { action() }
+        val authorized = rememberCheck<Unit>(navigation, ConfirmPasswordPage.Check.TRANSACTIONS_HIDE) { action() }
         return { authorized(Unit) }
     }
 
@@ -100,6 +96,18 @@ class DesktopSecretActionAuthorizer(
     override fun <A> rememberTransferAuthorization(navigation: HSNavigation, action: (A) -> Unit): (A) -> Unit {
         val authorized = rememberAuthorization(navigation, action)
         return { arg -> if (settings.transferPasscodeEnabled) authorized(arg) else action(arg) }
+    }
+
+    @Composable
+    private fun <A> rememberCheck(
+        navigation: HSNavigation,
+        check: ConfirmPasswordPage.Check,
+        action: (A) -> Unit,
+    ): (A) -> Unit {
+        val launcher = navigation.rememberResultLauncher<ConfirmPasswordPage.Result, A> { result, arg ->
+            if (result.success) action(arg)
+        }
+        return { arg -> launcher.slideFromBottom(ConfirmPasswordPage(check), arg) }
     }
 }
 

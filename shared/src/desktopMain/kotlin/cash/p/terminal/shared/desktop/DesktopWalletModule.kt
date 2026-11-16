@@ -46,11 +46,9 @@ import cash.p.terminal.core.managers.TonKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.TronKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.TrezorAttachments
 import cash.p.terminal.core.providers.AddressResolutionConfig
-import cash.p.terminal.core.providers.ZcashFallbackAddressProvider
 import cash.p.terminal.core.NonFatalReporter
 import cash.p.terminal.core.adapters.zcash.session.ZcashDbKeyProvider
 import cash.p.terminal.shared.desktop.vault.DesktopZcashDbKeyProvider
-import cash.p.terminal.wallet.FallbackAddressProvider
 import cash.p.terminal.core.storage.AccountsStorage
 import cash.p.terminal.core.storage.StorageRouter
 import cash.p.terminal.core.storage.sessionLevel
@@ -238,8 +236,6 @@ internal val desktopWalletModule = module {
     singleOf(::DesktopBeamKitDatabaseKeyProvider) bind BeamKitDatabaseKeyProvider::class
     single<NonFatalReporter> { DesktopNonFatalReporter }
     single<TorSyncState> { DesktopTorSyncState }
-    // The TON fallback address provider stays in the Android app; desktop has none for TON.
-    single<FallbackAddressProvider> { get<ZcashFallbackAddressProvider>() }
 }
 
 /** Desktop has no Trezor accounts, so nothing is ever plugged in for them. */

@@ -114,6 +114,7 @@ import cash.p.terminal.modules.watchaddress.selectblockchains.SelectBlockchainsV
 import cash.p.terminal.modules.zcashconfigure.ZcashConfigureViewModel
 import cash.p.terminal.modules.zcashnetwork.ZcashNetworkViewModel
 import cash.p.terminal.modules.zcashnetwork.addserver.AddZcashServerViewModel
+import cash.p.terminal.wallet.FallbackAddressProvider
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.PassphraseValidator
@@ -142,6 +143,8 @@ import cash.p.terminal.wallet.AccountDeletionPreflight
 import cash.p.terminal.core.managers.SpamManager
 import cash.p.terminal.core.managers.TransactionAdapterManager
 import cash.p.terminal.core.managers.WalletServicesStarter
+import cash.p.terminal.core.providers.CompositeFallbackAddressProvider
+import cash.p.terminal.core.providers.TonFallbackAddressProvider
 import cash.p.terminal.core.providers.ZcashFallbackAddressProvider
 import cash.p.terminal.core.storage.SpamAddressStorage
 import cash.p.terminal.core.usecase.OfflineModeUseCase
@@ -177,6 +180,7 @@ import cash.p.terminal.core.managers.OfflineSignedTransactionRepository
 import cash.p.terminal.core.managers.OfflineTransactionPayloadEncoder
 import cash.p.terminal.modules.send.beam.BeamOfflineOperations
 import cash.p.terminal.modules.send.offline.OfflineSignedTransactionsViewModel
+import cash.p.terminal.modules.settings.displaytransactions.DisplayTransactionsViewModel
 import cash.p.terminal.core.managers.PendingBalanceCalculator
 import cash.p.terminal.core.managers.PendingTransactionMatcher
 import cash.p.terminal.core.managers.PendingTransactionRegistrar
@@ -397,6 +401,12 @@ val featureWalletModule = module {
     singleOf(::ChainAccountManagersStarter)
     singleOf(::WalletServicesStarter)
     singleOf(::ZcashFallbackAddressProvider)
+    singleOf(::TonFallbackAddressProvider)
+    single<FallbackAddressProvider> {
+        CompositeFallbackAddressProvider(
+            providers = listOf(get<TonFallbackAddressProvider>(), get<ZcashFallbackAddressProvider>())
+        )
+    }
     singleOf(::AccountStorageCleaner)
     singleOf(::AccountCleaner) bind IAccountCleaner::class
     singleOf(::DeletedAccountsCleanup)
@@ -660,6 +670,7 @@ val featureWalletModule = module {
     factoryOf(::TransactionsService)
     factoryOf(::TransactionFilterService)
     viewModelOf(::TransactionsViewModel)
+    viewModelOf(::DisplayTransactionsViewModel)
     viewModelOf(::OfflineSignedTransactionsViewModel)
     viewModel { (transactionItem: TransactionItem) -> transactionInfoViewModel(transactionItem) }
     singleOf(::SwapLegExplorer)

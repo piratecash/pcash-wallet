@@ -1,5 +1,6 @@
 package cash.p.terminal.shared.main
 
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.NavigationRailItemDefaults
@@ -7,6 +8,7 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaul
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import cash.p.terminal.resources.Balance_Title
 import cash.p.terminal.resources.Market_Title
 import cash.p.terminal.resources.Res
@@ -16,6 +18,7 @@ import cash.p.terminal.resources.ic_market_24
 import cash.p.terminal.resources.ic_settings
 import cash.p.terminal.resources.ic_transactions
 import cash.p.terminal.resources.ic_wallet_24
+import cash.p.terminal.ui_compose.components.AlertDot
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
@@ -45,6 +48,8 @@ private val MainDestination.resources: MainDestinationResources
         )
     }
 
+internal const val MAIN_DESTINATION_ALERT_TAG = "main_destination_alert"
+
 private data class MainDestinationResources(
     val title: StringResource,
     val icon: DrawableResource,
@@ -73,6 +78,7 @@ fun MainNavigation(
     selectedDestination: MainDestination,
     onDestinationSelect: (MainDestination) -> Unit,
     modifier: Modifier = Modifier,
+    alertDestinations: Set<MainDestination> = emptySet(),
     content: @Composable (MainDestination) -> Unit = {},
 ) {
     val colors = ComposeAppTheme.colors
@@ -98,7 +104,14 @@ fun MainNavigation(
                     selected = destination == selectedDestination,
                     onClick = { onDestinationSelect(destination) },
                     icon = {
-                        MainDestinationIcon(destination, MainDestinationTitle(destination))
+                        val title = MainDestinationTitle(destination)
+                        if (destination in alertDestinations) {
+                            BadgedBox(badge = { AlertDot(Modifier.testTag(MAIN_DESTINATION_ALERT_TAG)) }) {
+                                MainDestinationIcon(destination, title)
+                            }
+                        } else {
+                            MainDestinationIcon(destination, title)
+                        }
                     },
                     colors = itemColors,
                 )

@@ -234,6 +234,38 @@ class DesktopVaultTest {
         assertEquals(UnlockOutcome.Success, vault.unlock(password()))
     }
 
+    @Test
+    fun verifyPassword_matchingOutsideSecret_succeedsDropsFailedAttemptsAndWipesIt() = runTest {
+        vault.create(password())
+        vault.verifyPassword(password(NEW_PASSWORD))
+        val secret = password(SECRET)
+
+        assertEquals(UnlockOutcome.Success, vault.verifyPassword(secret) { it.concatToString() == SECRET })
+
+        assertNull(fixture.lockoutStorage.failedAttempts)
+        assertTrue(secret.all { it == '\u0000' })
+    }
+
+    @Test
+    fun verifyPassword_outsideSecretNotMatching_countsFailedAttempt() = runTest {
+        vault.create(password())
+
+        assertEquals(UnlockOutcome.WrongPassword(4), vault.verifyPassword(password(SECRET)) { false })
+        assertEquals(UnlockOutcome.WrongPassword(3), vault.verifyPassword(password(NEW_PASSWORD)))
+    }
+
+    @Test
+    fun verifyPassword_outsideSecretWhileLockedOut_returnsLockedOutWithoutMatching() = runTest {
+        vault.create(password())
+        repeat(5) { vault.verifyPassword(password(SECRET)) { false } }
+        var matched = false
+
+        val outcome = vault.verifyPassword(password(SECRET)) { matched = true; true }
+
+        assertIs<UnlockOutcome.LockedOut>(outcome)
+        assertFalse(matched)
+    }
+
     private fun unlockedSession(): DesktopStorageSession =
         assertIs<DesktopVaultState.Unlocked>(vault.state.value).session
 
@@ -246,5 +278,9 @@ class DesktopVaultTest {
         override fun create(key: ByteArray): SqlCipherDriver = mockk(relaxed = true) {
             every { open(any()) } throws failure
         }
+    }
+
+    private companion object {
+        const val SECRET = "Separate-secret3"
     }
 }

@@ -2780,6 +2780,12 @@
     <string name="desktop_duress_password_edit_description">Введите новый пароль для режима Duress</string>
     <string name="desktop_hidden_wallet_password_title">Пароль скрытого кошелька</string>
     <string name="desktop_hidden_wallet_password_description">Создайте пароль для скрытого кошелька</string>
+    <string name="desktop_transactions_hide_set_password">Установить отдельный пароль</string>
+    <string name="desktop_transactions_hide_edit_password">Изменить пароль</string>
+    <string name="desktop_transactions_hide_delete_password">Удалить отдельный пароль</string>
+    <string name="desktop_transactions_hide_description">Режим безопасности: скрывает транзакции и позволяет установить отдельный пароль для их разблокировки.</string>
+    <string name="desktop_transactions_hide_password_description">Задайте пароль для режима «Автоскрытие транзакций»</string>
+    <string name="desktop_transactions_hide_password_enter">Введите пароль для «Автоскрытия транзакций»</string>
     <string name="desktop_hidden_wallet_password_terms_warning">Глобальный кошелёк не увидит этот кошелёк, а если вы забудете его пароль, доступ к кошельку можно восстановить по seed-фразе.</string>
     <string-array name="desktop_hidden_wallet_password_terms">
         <item>Пользователь понимает, что кошелёк не будет виден среди других кошельков.</item>

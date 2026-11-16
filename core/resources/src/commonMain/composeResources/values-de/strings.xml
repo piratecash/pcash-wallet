@@ -2574,6 +2574,12 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="desktop_duress_password_edit_description">Neues Passwort für den Duress-Modus eingeben</string>
     <string name="desktop_hidden_wallet_password_title">Passwort der versteckten Wallet</string>
     <string name="desktop_hidden_wallet_password_description">Passwort für die versteckte Wallet erstellen</string>
+    <string name="desktop_transactions_hide_set_password">Separates Passwort festlegen</string>
+    <string name="desktop_transactions_hide_edit_password">Passwort ändern</string>
+    <string name="desktop_transactions_hide_delete_password">Separates Passwort löschen</string>
+    <string name="desktop_transactions_hide_description">Sicherheitsmodus: blendet Transaktionen aus und ermöglicht ein separates Passwort, um sie wieder anzuzeigen.</string>
+    <string name="desktop_transactions_hide_password_description">Passwort für den Modus „Transaction Auto Hide“ festlegen</string>
+    <string name="desktop_transactions_hide_password_enter">Passwort für „Transaction Auto Hide“ eingeben</string>
     <string name="desktop_hidden_wallet_password_terms_warning">Die globale Wallet wird diese Wallet nicht sehen, und wenn Sie das Passwort vergessen, können Sie den Zugriff auf die Wallet mit der Seed-Phrase wiederherstellen.</string>
     <string-array name="desktop_hidden_wallet_password_terms">
         <item>Der Benutzer versteht, dass die Wallet nicht unter den anderen Wallets sichtbar ist.</item>

@@ -317,7 +317,9 @@ import cash.p.terminal.modules.zcashconfigure.ZcashConfigureViewModel
 import cash.p.terminal.modules.settings.advancedsecurity.terms.HiddenWalletTermsViewModel
 import cash.p.terminal.shared.desktop.lock.ChangePasswordViewModel
 import cash.p.terminal.shared.desktop.lock.DuressPasswordViewModel
+import cash.p.terminal.shared.desktop.lock.ConfirmPasswordPage
 import cash.p.terminal.shared.desktop.lock.ConfirmPasswordViewModel
+import cash.p.terminal.shared.desktop.lock.TransactionsHidePasswordViewModel
 import cash.p.terminal.shared.desktop.lock.CreatePasswordViewModel
 import cash.p.terminal.shared.desktop.lock.ForgotPasswordViewModel
 import cash.p.terminal.shared.desktop.lock.UnlockViewModel
@@ -327,6 +329,7 @@ import cash.p.terminal.shared.desktop.settings.DesktopLanguageSettingsViewModel
 import cash.p.terminal.shared.desktop.qrscanner.DesktopQrScannerViewModel
 import cash.p.terminal.modules.qrscanner.QRScannerViewModel
 import cash.p.terminal.shared.desktop.settings.DesktopSecurityViewModel
+import cash.p.terminal.modules.settings.displaytransactions.DisplayTransactionsViewModel
 import com.google.gson.Gson
 import kotlin.io.path.createTempDirectory
 import kotlin.reflect.KClass
@@ -401,6 +404,7 @@ class DesktopKoinGraphTest {
                 definition<PassphraseTermsViewModel>(Array<String>::class),
                 definition<HiddenWalletTermsViewModel>(Array<String>::class),
                 definition<DuressPasswordViewModel>(List::class),
+                definition<ConfirmPasswordViewModel>(ConfirmPasswordPage.Check::class),
                 definition<SafetyRulesViewModel>(SafetyRulesModule.SafetyRulesMode::class, List::class),
                 definition<ManageAccountsViewModel>(ManageAccountsModule.Mode::class),
                 definition<NftCollectionsViewModel>(NftCollectionSource::class),
@@ -667,7 +671,9 @@ class DesktopKoinGraphTest {
             UnlockViewModel::class to null,
             ForgotPasswordViewModel::class to null,
             ChangePasswordViewModel::class to null,
-            ConfirmPasswordViewModel::class to null,
+            ConfirmPasswordViewModel::class to { parametersOf(ConfirmPasswordPage.Check.TRANSACTIONS_HIDE) },
+            TransactionsHidePasswordViewModel::class to null,
+            DisplayTransactionsViewModel::class to null,
             DesktopSecurityViewModel::class to null,
             DesktopAutoLockIntervalsViewModel::class to null,
             DesktopLanguageSettingsViewModel::class to null,
