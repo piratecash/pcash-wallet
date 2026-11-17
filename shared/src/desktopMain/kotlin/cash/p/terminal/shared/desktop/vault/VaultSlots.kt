@@ -1,6 +1,7 @@
 package cash.p.terminal.shared.desktop.vault
 
 import cash.p.terminal.core.tryOrNull
+import cash.p.terminal.feature.logging.journal.JournalStore
 import cash.p.terminal.vault.PasswordVault
 import java.io.File
 import java.io.RandomAccessFile
@@ -34,23 +35,37 @@ internal class VaultSlots(
 
     /** Overwrites what the slot held and leaves bytes no key opens, of a size a real database could have. */
     fun erase(slot: Int) {
-        slotFiles(slot).forEach { file ->
-            transientFiles(file).forEach(File::delete)
-            overwriteWithNoise(file)
+        databaseFiles(slot).forEach { overwrite(it, noisePages()) }
+        overwrite(files.journalFile(slot), journalNoisePages())
+    }
+
+    /** A vault from before the journal gets one for every slot, used or not, so no slot stands out. */
+    fun ensureJournals() {
+        for (slot in 0 until PasswordVault.SLOT_COUNT) {
+            val journal = files.journalFile(slot)
+            if (journal.exists()) continue
+            lockFile(journal).createNewFile()
+            writeNoise(journal, journalNoisePages())
         }
     }
 
+    /** Whatever lay in the slot's journal is gone; the safe and its premium stay. */
+    fun clearJournal(slot: Int) = clearDatabase(files.journalFile(slot))
+
     /** Log-uniform: real safes run from nearly empty to a full log, and a size past the range would mark one real. */
     fun noisePages(): Int = pagesBetween(MIN_PAGES, MAX_PAGES)
+
+    /** From an empty journal up to one with the most photos it may keep. */
+    fun journalNoisePages(): Int = pagesBetween(JOURNAL_MIN_PAGES, JOURNAL_MAX_PAGES)
 
     fun pagesBetween(min: Int, max: Int): Int {
         val pages = min * exp(random.nextDouble() * ln(max.toDouble() / min))
         return pages.toInt().coerceIn(min, max)
     }
 
-    fun clearForNewSafe(slot: Int) {
-        slotFiles(slot).forEach { file -> (transientFiles(file) + file).forEach(File::delete) }
-    }
+    fun clearForNewSafe(slot: Int) = slotFiles(slot).forEach(::clearDatabase)
+
+    private fun clearDatabase(file: File) = (transientFiles(file) + file).forEach(File::delete)
 
     /** Real files and decoys must not differ in mode or any date, nor show which level was used last. */
     fun alignFileAttributes() {
@@ -67,13 +82,18 @@ internal class VaultSlots(
         Files.getFileAttributeView(path, BasicFileAttributeView::class.java).setTimes(time, time, time)
     }
 
-    private fun slotFiles(slot: Int) = listOf(files.safeFile(slot), files.premiumFile(slot))
+    private fun databaseFiles(slot: Int) = listOf(files.safeFile(slot), files.premiumFile(slot))
+
+    private fun slotFiles(slot: Int) = databaseFiles(slot) + files.journalFile(slot)
 
     private fun lockFile(database: File) = File("${database.path}$LOCK_SUFFIX")
 
     private fun transientFiles(database: File) = TRANSIENT_SUFFIXES.map { File("${database.path}$it") }
 
-    private fun overwriteWithNoise(file: File) = writeNoise(file, noisePages())
+    private fun overwrite(file: File, pages: Int) {
+        transientFiles(file).forEach(File::delete)
+        writeNoise(file, pages)
+    }
 
     fun writeNoise(file: File, pages: Int) {
         val size = pages.toLong() * PAGE_SIZE
@@ -88,13 +108,17 @@ internal class VaultSlots(
         }
     }
 
-    private companion object {
-        const val LOCK_SUFFIX = ".lck"
-        val TRANSIENT_SUFFIXES = listOf("-wal", "-shm", "-journal")
+    companion object {
+        /** An empty journal after VACUUM, measured on SQLCipher: a real journal is never smaller. */
+        const val JOURNAL_MIN_PAGES = 6
+        /** A real journal is trimmed to this size; noise past it would mark a free slot. */
+        val JOURNAL_MAX_PAGES = (JournalStore.MAX_BYTES / PAGE_SIZE).toInt()
+        private const val LOCK_SUFFIX = ".lck"
+        private val TRANSIENT_SUFFIXES = listOf("-wal", "-shm", "-journal")
         const val PAGE_SIZE = 4096
-        const val MIN_PAGES = 8
-        const val MAX_PAGES = 4096
-        val OWNER_FILE: Set<PosixFilePermission> = PosixFilePermissions.fromString("rw-------")
-        val OWNER_DIRECTORY: Set<PosixFilePermission> = PosixFilePermissions.fromString("rwx------")
+        private const val MIN_PAGES = 8
+        private const val MAX_PAGES = 4096
+        private val OWNER_FILE: Set<PosixFilePermission> = PosixFilePermissions.fromString("rw-------")
+        private val OWNER_DIRECTORY: Set<PosixFilePermission> = PosixFilePermissions.fromString("rwx------")
     }
 }

@@ -2074,7 +2074,7 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="auth_info_successful">Bem-sucedido</string>
     <string name="auth_info_unsuccessful">Sem sucesso</string>
     <string name="auth_info_duress_mode">(Modo coação)</string>
-    <string name="auth_info_entrance_to">Entrada no %s</string>
+    <string name="auth_info_entrance_to">Entrada no %1$s</string>
     <string name="auth_info_seconds_ago">(%d seg atrás)</string>
     <string name="auth_info_minutes_ago">(%d min atrás)</string>
     <string name="auth_info_hours_ago">(%d horas atrás)</string>
@@ -2604,4 +2604,17 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="desktop_password_save_failed">Não foi possível salvar a senha. Tente novamente</string>
     <string name="tron_controlled_by_others_title">Outras pessoas podem controlar esta conta</string>
     <string name="tron_controlled_by_others_warning">As permissões desta conta foram alteradas: outras chaves podem controlá-la. Os fundos que você enviar para ela podem ser sacados sem a sua participação. Deposite nela apenas se você souber de quem são essas chaves.</string>
+    <string name="login_logging_selfie_unsuccessful_shared">Esta chave é compartilhada por todas as carteiras deste computador</string>
+    <string name="desktop_journal_password_title">Senha do registro</string>
+    <string name="desktop_journal_password_set_description">Defina uma senha que proteja o registro de logins. Ela precisa ser diferente das senhas que desbloqueiam suas carteiras</string>
+    <string name="desktop_journal_password_access_description">Digite a senha do registro para abrir o registro de logins</string>
+    <string name="desktop_journal_password_disable_description">Digite a senha do registro para desativá-la</string>
+    <string name="desktop_delete_contacts_password_title">Senha para excluir contatos</string>
+    <string name="desktop_delete_contacts_password_set_description">Ao digitar esta senha na tela de desbloqueio, sua lista de endereços é excluída imediatamente deste computador. Ela precisa ser diferente das suas outras senhas</string>
+    <string name="desktop_delete_contacts_password_disable_description">Digite a senha para excluir contatos para desativá-la</string>
+    <string name="desktop_delete_contacts_terms_warning">Ao definir esta senha, você confirma que entende sua finalidade: proteger a sua privacidade. Digitá-la na tela de desbloqueio exclui imediatamente e de forma irreversível a lista de endereços cripto armazenada neste computador. A lista de endereços é armazenada apenas localmente e não pode ser recuperada sem um backup.</string>
+    <string-array name="desktop_delete_contacts_terms">
+        <item>Entendo que esta senha serve para excluir imediatamente a lista de endereços cripto.</item>
+        <item>Entendo que, depois de digitar esta senha, a lista de endereços será excluída e não poderá ser recuperada sem um backup.</item>
+    </string-array>
 </resources>

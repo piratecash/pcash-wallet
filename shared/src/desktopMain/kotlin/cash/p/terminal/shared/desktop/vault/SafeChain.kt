@@ -34,6 +34,9 @@ internal class SafeChain(private val opener: SafeOpener, private val collapse: C
     /** False when a level below could not be opened: its accounts are invisible, not gone. */
     val isComplete: Boolean get() = safes.last().meta.nextLevel == null
 
+    /** False when a level's journal did not open: its imports and wipes wait for a full reopen. */
+    val journalsOpen: Boolean get() = safes.all { it.journal != null }
+
     fun open(root: OpenSafe) {
         safes = listOf(root)
         var current = root
@@ -100,7 +103,7 @@ internal class SafeChain(private val opener: SafeOpener, private val collapse: C
     private fun openNext(safe: OpenSafe): OpenSafe? {
         val link = safe.meta.nextLevel ?: return null
         return try {
-            opener.open(link)
+            opener.open(link, withJournal = true)
         } catch (e: Exception) {
             logger.w(e) { "A lower level did not open" }
             null
