@@ -4,15 +4,22 @@ import cash.p.terminal.feature.logging.journal.JournalRecordKind
 import cash.p.terminal.shared.desktop.vault.DURESS_PASSWORD
 import cash.p.terminal.shared.desktop.vault.MAIN_PASSWORD
 import cash.p.terminal.shared.desktop.vault.UnlockOutcome
+import cash.p.terminal.vault.JournalInboxCrypto
+import io.horizontalsystems.core.entities.AutoDeletePeriod
 import kotlinx.coroutines.CompletableDeferred
+import java.io.RandomAccessFile
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 private const val WRONG_PASSWORD = "Wrong-password0"
 private const val NOTIFY_KEY_SIZE = 32
+
+/** Above any counter a mailbox reaches: the watermark an earlier, recreated mailbox can leave behind. */
+private const val OLD_MAILBOX_WATERMARK = Long.MAX_VALUE / 2
 private const val FAIL_FAILED_INSERTS =
     "CREATE TRIGGER fail_failed BEFORE INSERT ON JournalRecord WHEN NEW.kind = 'FAILED' " +
         "BEGIN SELECT RAISE(ABORT, 'test'); END"
@@ -233,6 +240,81 @@ class JournalFailuresTest {
 
         assertEquals(1, fixture.records(0).count { it.kind == JournalRecordKind.DURESS_ENTRY })
     }
+
+    @Test
+    fun importFailedAttempts_inboxRecreatedBelowAnOldWatermark_importsTheNewAttempt() = journalScenario { fixture ->
+        fixture.levels.create()
+        fixture.parts.settings.setLogUnsuccessfulLoginsEnabled(0, true)
+        fixture.relogin(WRONG_PASSWORD)
+        fixture.reloginOk(MAIN_PASSWORD)
+        recreateInbox(fixture)
+        fixture.safe(0).dao.putLong(JournalSetting.INBOX_WATERMARK, OLD_MAILBOX_WATERMARK)
+
+        fixture.relogin(WRONG_PASSWORD)
+        fixture.reloginOk(MAIN_PASSWORD)
+
+        assertEquals(2, fixture.records(0).count { it.kind == JournalRecordKind.FAILED })
+    }
+
+    @Test
+    fun importChildEntries_inboxRecreatedBelowAnOldWatermark_stillWipesOnDuress() = journalScenario { fixture ->
+        fixture.levels.mainWithDuress()
+        fixture.parts.settings.setDeleteAllAuthDataOnDuressEnabled(0, true)
+        fixture.parts.settings.setAutoDeleteLogsPeriod(0, AutoDeletePeriod.NEVER.value)
+        checkNotNull(fixture.safe(0).journal).insert(0, JournalRecordKind.SUCCESS, "", null)
+        recreateInbox(fixture)
+        fixture.safe(0).dao.putLong(JournalSetting.NOTIFY_WATERMARK, OLD_MAILBOX_WATERMARK)
+
+        fixture.reloginOk(DURESS_PASSWORD)
+        fixture.reloginOk(MAIN_PASSWORD)
+
+        assertTrue(fixture.records(0).isEmpty())
+        assertFalse(fixture.safe(0).dao.flag(JournalSetting.PENDING_WIPE))
+    }
+
+    @Test
+    fun importFailedAttempts_appendCutBeforeTheCounterMoved_doesNotImportDeletedRecordsAgain() =
+        journalScenario { fixture ->
+            fixture.levels.create()
+            fixture.parts.settings.setLogUnsuccessfulLoginsEnabled(0, true)
+            fixture.relogin(WRONG_PASSWORD)
+            fixture.relogin(WRONG_PASSWORD)
+            fixture.reloginOk(MAIN_PASSWORD)
+            assertEquals(2, fixture.records(0).count { it.kind == JournalRecordKind.FAILED })
+            fixture.parts.records.deleteAll(0)
+            val lastSeq = fixture.vault.mailbox.nextSeq(MailboxRing.FAILED) - 1
+            assertEquals(lastSeq, fixture.safe(0).dao.long(JournalSetting.INBOX_WATERMARK))
+            fixture.vault.close()
+            writeFailedCounter(fixture, lastSeq)
+
+            fixture.reloginOk(MAIN_PASSWORD)
+
+            assertTrue(fixture.records(0).isEmpty())
+        }
+
+    @Test
+    fun ensure_inboxRecreated_doesNotRestartTheSequence() = journalScenario { fixture ->
+        fixture.levels.create()
+        val before = fixture.vault.mailbox.nextSeq(MailboxRing.FAILED)
+
+        recreateInbox(fixture)
+
+        assertNotEquals(before, fixture.vault.mailbox.nextSeq(MailboxRing.FAILED))
+    }
+
+    /** Lost while the vault was closed; the next unlock creates a fresh one. */
+    private suspend fun recreateInbox(fixture: JournalFixture) {
+        fixture.vault.close()
+        check(fixture.levels.files.inboxFile.delete())
+        fixture.reloginOk(MAIN_PASSWORD)
+    }
+
+    /** The FAILED ring's nextSeq, after `[version][keys][head: Int]` of the header. */
+    private fun writeFailedCounter(fixture: JournalFixture, nextSeq: Long) =
+        RandomAccessFile(fixture.levels.files.inboxFile, "rw").use { file ->
+            file.seek(1L + JournalInboxCrypto.SLOT_COUNT * JournalInboxCrypto.KEY_SIZE + Int.SIZE_BYTES)
+            file.writeLong(nextSeq)
+        }
 
     /** The root's journal file and key; the vault is closed afterwards. */
     private suspend fun journalOf(fixture: JournalFixture) = fixture.safe(0).let { root ->

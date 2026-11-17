@@ -96,8 +96,16 @@ internal class JournalImports(
         safe.dao.putLong(watermark, it.seq)
     }
 
-    private suspend fun newEntries(ring: MailboxRing, watermark: Long?, open: (ByteArray) -> ByteArray?) =
-        mailbox.read(ring, open).filter { it.seq > (watermark ?: 0) }
+    private suspend fun newEntries(
+        ring: MailboxRing,
+        watermark: Long?,
+        open: (ByteArray) -> ByteArray?,
+    ): List<MailboxEntry> {
+        val nextSeq = mailbox.nextSeq(ring)
+        // Past the counter means an earlier mailbox; equal is an append cut off before the counter moved.
+        val after = watermark?.takeIf { it <= nextSeq } ?: 0
+        return mailbox.read(ring, open).filter { it.seq > after }
+    }
 
     /**
      * Android's "delete all auth data": the visible records of [parent] and of every open level below it, and every

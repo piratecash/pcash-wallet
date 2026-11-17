@@ -95,6 +95,7 @@ class JournalPasswordsTest {
         fixture.levels.create()
         assertEquals(JournalSecretOutcome.SUCCESS, fixture.parts.secrets.setDeleteContactsPassword(password(ERASE_PASSWORD)))
         val contacts = writeContacts(fixture)
+        val before = fixture.vault.mailbox.nextSeq(MailboxRing.FAILED)
         fixture.vault.lock()
 
         val outcome = fixture.vault.unlock(password(ERASE_PASSWORD))
@@ -103,7 +104,7 @@ class JournalPasswordsTest {
         assertIs<UnlockOutcome.WrongPassword>(outcome)
         assertFalse(contacts.exists())
         verify { fixture.contacts.clear(true) }
-        assertEquals(JournalMailbox.FIRST_SEQ + 1, fixture.vault.mailbox.nextSeq(MailboxRing.FAILED))
+        assertEquals(before + 1, fixture.vault.mailbox.nextSeq(MailboxRing.FAILED))
     }
 
     @Test

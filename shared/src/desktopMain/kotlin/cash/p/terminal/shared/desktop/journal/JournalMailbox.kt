@@ -7,6 +7,7 @@ import kotlinx.coroutines.sync.withLock
 import java.io.File
 import java.io.IOException
 import java.io.RandomAccessFile
+import java.security.SecureRandom
 
 internal enum class MailboxRing(val entrySize: Int) {
     /** Sealed to every slot: each level imports the failed attempts by its own settings. */
@@ -101,7 +102,7 @@ internal class JournalMailbox(private val file: File) {
             repeat(JournalInboxCrypto.SLOT_COUNT) { access.write(JournalInboxCrypto.decoyPublicKey()) }
             MailboxRing.entries.forEach {
                 access.writeInt(0)
-                access.writeLong(FIRST_SEQ)
+                access.writeLong(firstSeq())
             }
             MailboxRing.entries.forEach { ring -> repeat(RING_SIZE) { access.write(decoyEntry(ring)) } }
             access.fd.sync()
@@ -140,11 +141,16 @@ internal class JournalMailbox(private val file: File) {
 
     private fun decoyKey() = JournalInboxCrypto.decoyPublicKey()
 
+    /** Random, so a recreated mailbox never reuses the numbers its safes have already imported. */
+    private fun firstSeq(): Long = random.nextLong(FIRST_SEQ_MIN, FIRST_SEQ_MAX)
+
     private class RingState(val head: Int, val nextSeq: Long)
 
     companion object {
         const val RING_SIZE = 50
-        const val FIRST_SEQ = 1L
+        private const val FIRST_SEQ_MIN = 1L shl 40
+        private const val FIRST_SEQ_MAX = 1L shl 62
+        private val random = SecureRandom()
         private const val VERSION: Byte = 1
         private const val KEYS_OFFSET = 1L
         private const val STATE_SIZE = Int.SIZE_BYTES + Long.SIZE_BYTES

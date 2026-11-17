@@ -19,11 +19,12 @@ class JournalEntryTest {
     @Test
     fun onEntered_logSuccessfulOff_writesNoRecordButAnnouncesTheEntry() = journalScenario { fixture ->
         fixture.levels.create()
+        val before = fixture.vault.mailbox.nextSeq(MailboxRing.NOTIFY)
 
         fixture.reloginOk(MAIN_PASSWORD)
 
         assertTrue(fixture.records(0).isEmpty())
-        assertEquals(JournalMailbox.FIRST_SEQ + 1, fixture.vault.mailbox.nextSeq(MailboxRing.NOTIFY))
+        assertEquals(before + 1, fixture.vault.mailbox.nextSeq(MailboxRing.NOTIFY))
         assertEquals(0, fixture.camera.captures)
     }
 
@@ -157,13 +158,14 @@ class JournalEntryTest {
     fun verifyPassword_wrongPassword_isNotRecorded() = journalScenario { fixture ->
         fixture.levels.create()
         fixture.parts.settings.setLogUnsuccessfulLoginsEnabled(0, true)
+        val before = fixture.vault.mailbox.nextSeq(MailboxRing.FAILED)
 
         assertIs<UnlockOutcome.WrongPassword>(fixture.vault.verifyPassword(password(WRONG_PASSWORD)))
         fixture.settle()
         fixture.reloginOk(MAIN_PASSWORD)
 
         assertTrue(fixture.records(0).isEmpty())
-        assertEquals(JournalMailbox.FIRST_SEQ, fixture.vault.mailbox.nextSeq(MailboxRing.FAILED))
+        assertEquals(before, fixture.vault.mailbox.nextSeq(MailboxRing.FAILED))
     }
 
     @Test
@@ -198,11 +200,12 @@ class JournalEntryTest {
         fixture.levels.create()
         val mailbox = fixture.vault.mailbox
         val generation = mailbox.wipeGeneration
+        val before = mailbox.nextSeq(MailboxRing.FAILED)
 
         mailbox.overwriteEntries()
 
         assertTrue(!mailbox.appendFailed(1, null, generation))
         assertTrue(!mailbox.appendNotification(JournalInboxCrypto.decoyPublicKey(), 1, null, generation))
-        assertEquals(JournalMailbox.FIRST_SEQ, mailbox.nextSeq(MailboxRing.FAILED))
+        assertEquals(before, mailbox.nextSeq(MailboxRing.FAILED))
     }
 }
