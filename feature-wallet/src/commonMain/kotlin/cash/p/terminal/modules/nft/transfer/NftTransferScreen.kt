@@ -29,6 +29,7 @@ import cash.p.terminal.modules.nft.nftCard
 import cash.p.terminal.modules.nft.renew.DomainExpiryRow
 import cash.p.terminal.modules.nft.ui.NftArtwork
 import cash.p.terminal.modules.nft.ui.displayName
+import cash.p.terminal.modules.nft.ui.isUntrusted
 import cash.p.terminal.modules.nft.ui.previewNftItem
 import cash.p.terminal.resources.Button_Continue
 import cash.p.terminal.resources.FeeSettings_NetworkFee
@@ -159,6 +160,7 @@ internal fun NftAssetRow(item: NftItemRecord, modifier: Modifier = Modifier) {
         NftArtwork(
             url = item.imageUrl,
             hidden = false,
+            untrusted = item.isUntrusted,
             modifier = Modifier
                 .size(44.dp)
                 .clip(RoundedCornerShape(10.dp)),

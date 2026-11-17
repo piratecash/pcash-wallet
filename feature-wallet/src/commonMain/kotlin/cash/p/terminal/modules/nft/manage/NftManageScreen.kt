@@ -32,6 +32,7 @@ import cash.p.terminal.core.nft.NftCollectionState
 import cash.p.terminal.entities.NftTrust
 import cash.p.terminal.modules.nft.managedTitle
 import cash.p.terminal.modules.nft.ui.NftArtwork
+import cash.p.terminal.modules.nft.ui.isUntrusted
 import cash.p.terminal.modules.nft.ui.previewNftItem
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.nft_count
@@ -217,7 +218,7 @@ private fun RowIcon(row: NftManageRow, balanceHidden: Boolean) {
         contentAlignment = Alignment.Center,
     ) {
         if (glyph == null) {
-            NftArtwork(url = row.item.imageUrl, hidden = balanceHidden)
+            NftArtwork(url = row.item.imageUrl, hidden = balanceHidden, untrusted = row.item.isUntrusted)
         } else {
             Text(
                 text = glyph.first,

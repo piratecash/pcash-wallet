@@ -261,6 +261,95 @@ class NftPreviewViewModelTest {
     }
 
     @Test
+    fun init_noneTrustBalanceVisible_concealsArtworkAndAllowsReveal() {
+        hiddenState.value = false
+
+        val state = viewModelWith(NftTrust.None).uiState
+
+        assertTrue(state.artworkConcealed)
+        assertFlags(state, hidden = false, canReveal = true)
+    }
+
+    @Test
+    fun init_untrustedArtworkBalanceVisible_namesNotRevealed() {
+        hiddenState.value = false
+
+        assertFalse(viewModelWith(NftTrust.None).uiState.namesRevealed)
+    }
+
+    @Test
+    fun onToggleReveal_balanceHidden_revealsNames() {
+        val viewModel = createViewModel()
+
+        viewModel.onToggleReveal()
+
+        assertTrue(viewModel.uiState.namesRevealed)
+    }
+
+    @Test
+    fun init_graylistTrust_concealsArtwork() {
+        assertTrue(viewModelWith(NftTrust.Graylist).uiState.artworkConcealed)
+    }
+
+    @Test
+    fun init_whitelistTrustBalanceVisible_nothingToConceal() {
+        hiddenState.value = false
+
+        val state = viewModelWith(NftTrust.Whitelist).uiState
+
+        assertFalse(state.artworkConcealed)
+        assertFlags(state, hidden = false, canReveal = false)
+    }
+
+    @Test
+    fun onToggleReveal_untrustedArtwork_showsArtwork() {
+        val viewModel = viewModelWith(NftTrust.None)
+
+        viewModel.onToggleReveal()
+
+        assertFalse(viewModel.uiState.artworkConcealed)
+    }
+
+    @Test
+    fun onToggleReveal_twiceOnUntrusted_concealsAgain() {
+        val viewModel = viewModelWith(NftTrust.None)
+
+        viewModel.onToggleReveal()
+        viewModel.onToggleReveal()
+
+        assertTrue(viewModel.uiState.artworkConcealed)
+    }
+
+    @Test
+    fun onPause_afterReveal_concealsAgain() {
+        val viewModel = viewModelWith(NftTrust.None)
+        viewModel.onToggleReveal()
+
+        viewModel.onPause()
+
+        assertTrue(viewModel.uiState.artworkConcealed)
+        assertFlags(viewModel.uiState, hidden = true, canReveal = true)
+    }
+
+    @Test
+    fun prefs_userMarkedNotSpam_showsArtwork() {
+        val viewModel = viewModelWith(NftTrust.None)
+
+        setPref(NftUserTrust.Trust)
+
+        assertFalse(viewModel.uiState.artworkConcealed)
+    }
+
+    @Test
+    fun prefs_userMarkedSpam_concealsArtwork() {
+        val viewModel = viewModelWith(NftTrust.Whitelist)
+
+        setPref(NftUserTrust.Spam)
+
+        assertTrue(viewModel.uiState.artworkConcealed)
+    }
+
+    @Test
     fun onResume_domainExpiryKnown_showsExpiry() {
         val known = expiry(1_000)
         coEvery { availabilityProvider.domainExpiry(item) } returns known
