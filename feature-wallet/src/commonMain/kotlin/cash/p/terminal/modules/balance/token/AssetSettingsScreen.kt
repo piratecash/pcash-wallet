@@ -38,6 +38,7 @@ import cash.p.terminal.resources.display_options_price_period
 import cash.p.terminal.resources.ic_flask_20
 import cash.p.terminal.resources.ic_info_20
 import cash.p.terminal.resources.offline_mode_title
+import cash.p.terminal.resources.sign_message_title
 import cash.p.terminal.resources.transaction_filter
 import cash.p.terminal.ui_compose.Select
 import cash.p.terminal.ui_compose.components.AlertGroup
@@ -74,6 +75,7 @@ fun AssetSettingsScreen(
     creationBlockVisible: Boolean,
     currentHeightText: String?,
     onCreationBlockClick: () -> Unit,
+    onSignMessageClick: (() -> Unit)? = null,
 ) {
     var showAmlInfoSheet by remember { mutableStateOf(false) }
     var showPeriodSelector by remember { mutableStateOf(false) }
@@ -102,6 +104,7 @@ fun AssetSettingsScreen(
             Modifier
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
+                .padding(bottom = 16.dp)
         ) {
             VSpacer(12.dp)
             AmlCheckRow(
@@ -187,6 +190,18 @@ fun AssetSettingsScreen(
                     )
                 }
             )
+            onSignMessageClick?.let { onClick ->
+                VSpacer(24.dp)
+                CellUniversalLawrenceSection(
+                    listOf {
+                        HsSettingCell(
+                            title = stringResource(Res.string.sign_message_title),
+                            arrowPainter = painterResource(Res.drawable.ic_arrow_right),
+                            onClick = onClick
+                        )
+                    }
+                )
+            }
             if (creationBlockVisible) {
                 VSpacer(24.dp)
                 CellUniversalLawrenceSection(

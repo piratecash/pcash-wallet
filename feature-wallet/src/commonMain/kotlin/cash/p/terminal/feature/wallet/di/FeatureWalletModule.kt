@@ -285,6 +285,7 @@ import cash.p.terminal.modules.balance.BalanceViewItemFactory
 import cash.p.terminal.modules.balance.balanceViewModel
 import cash.p.terminal.modules.balance.token.addresspoisoning.AddressPoisoningViewModel
 import cash.p.terminal.modules.balance.token.creationblock.CreationBlockViewModel
+import cash.p.terminal.modules.signmessage.SignMessageViewModel
 import cash.p.terminal.modules.balance.token.tokenBalanceViewModel
 import cash.p.terminal.modules.coin.overview.TokenWalletActions
 import cash.p.terminal.modules.displayoptions.DisplayOptionsViewModel
@@ -717,6 +718,7 @@ val featureWalletModule = module {
         AddressPoisoningViewModel(coinUid, isPirate, blockchainType, get(), get(), get(), get())
     }
     viewModel { (wallet: Wallet) -> CreationBlockViewModel(wallet, get(), get(), get(), get(), get()) }
+    viewModel { (wallet: Wallet) -> SignMessageViewModel(wallet, get()) }
     viewModel { (coinUid: String) -> BchAddressTypeSelectViewModel(coinUid, get()) }
     viewModel { (coinUid: String) -> DerivationSelectViewModel(coinUid, get()) }
     viewModel { (termTitles: Array<String>) -> PassphraseTermsViewModel(termTitles, get()) }

@@ -2789,4 +2789,24 @@
     <string name="desktop_password_save_failed">Не удалось сохранить пароль. Попробуйте ещё раз</string>
     <string name="tron_controlled_by_others_title">Аккаунтом могут управлять другие</string>
     <string name="tron_controlled_by_others_warning">Права на этот аккаунт изменены: им могут управлять другие ключи. Средства, которые вы на него переведёте, могут вывести без вашего участия. Пополняйте его, только если знаете, чьи это ключи.</string>
+    <string name="sign_message_title">Подписать сообщение</string>
+    <string name="sign_message_intro">Подпись доказывает, что адрес принадлежит вам. Её просят биржи при добавлении адреса вывода. Доступа к средствам подпись не даёт.</string>
+    <string name="sign_message_message">Сообщение</string>
+    <string name="sign_message_hint">Вставьте или отсканируйте текст с сайта биржи</string>
+    <string name="sign_message_format">Формат подписи</string>
+    <string name="sign_message_format_standard">Стандартный</string>
+    <string name="sign_message_format_standard_description">Принимают большинство бирж</string>
+    <string name="sign_message_format_bip322_description">Новый стандарт, работает и для Taproot</string>
+    <string name="sign_message_format_info">Стандартный — классическая подпись сообщения Bitcoin, её принимают почти все биржи и кошельки. BIP-322 — более новый формат, он поддерживает и адреса Taproot. Выберите тот, который просит биржа.</string>
+    <string name="sign_message_taproot_only">Для адресов Taproot доступен только BIP-322.</string>
+    <string name="sign_message_trezor_taproot">Trezor не подписывает сообщения для адресов Taproot. Используйте адрес Bitcoin другого типа, например Native SegWit.</string>
+    <string name="sign_message_select_address_hint">Выберите адрес, который вы указали на бирже.</string>
+    <string name="sign_message_current_receive_address">Текущий адрес получения</string>
+    <string name="sign_message_used">Использованные</string>
+    <string name="sign_message_signature">Подпись</string>
+    <string name="sign_message_result_intro">Скопируйте подпись и вставьте её на сайте биржи.</string>
+    <string name="sign_message_details">Детали</string>
+    <string name="sign_message_details_format">Формат</string>
+    <string name="sign_message_not_ready">Кошелёк ещё загружается. Попробуйте через несколько секунд.</string>
+    <string name="sign_message_failed">Не удалось подписать сообщение</string>
 </resources>

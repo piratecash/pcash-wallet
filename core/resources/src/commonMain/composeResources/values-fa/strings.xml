@@ -2595,4 +2595,24 @@
     <string name="desktop_password_save_failed">ذخیره رمز عبور ممکن نشد. لطفاً دوباره تلاش کنید</string>
     <string name="tron_controlled_by_others_title">ممکن است دیگران این حساب را کنترل کنند</string>
     <string name="tron_controlled_by_others_warning">مجوزهای این حساب تغییر کرده است: ممکن است کلیدهای دیگری آن را کنترل کنند. وجوهی که به آن ارسال می‌کنید ممکن است بدون دخالت شما برداشت شوند. فقط در صورتی آن را شارژ کنید که بدانید این کلیدها متعلق به چه کسی است.</string>
+    <string name="sign_message_title">امضای پیام</string>
+    <string name="sign_message_intro">امضا ثابت می‌کند که آدرس متعلق به شماست. صرافی‌ها هنگام افزودن آدرس برداشت آن را درخواست می‌کنند. امضا هیچ دسترسی به دارایی‌های شما نمی‌دهد.</string>
+    <string name="sign_message_message">پیام</string>
+    <string name="sign_message_hint">متن را از وب‌سایت صرافی جای‌گذاری یا اسکن کنید</string>
+    <string name="sign_message_format">قالب امضا</string>
+    <string name="sign_message_format_standard">استاندارد</string>
+    <string name="sign_message_format_standard_description">مورد پذیرش بیشتر صرافی‌ها</string>
+    <string name="sign_message_format_bip322_description">استاندارد جدید، برای Taproot هم کار می‌کند</string>
+    <string name="sign_message_format_info">استاندارد، امضای کلاسیک پیام بیت‌کوین است که تقریباً همه صرافی‌ها و کیف‌پول‌ها آن را می‌پذیرند. BIP-322 قالب جدیدتری است که از آدرس‌های Taproot هم پشتیبانی می‌کند. قالبی را انتخاب کنید که صرافی درخواست می‌کند.</string>
+    <string name="sign_message_taproot_only">برای آدرس‌های Taproot فقط BIP-322 در دسترس است.</string>
+    <string name="sign_message_trezor_taproot">Trezor نمی‌تواند برای آدرس‌های Taproot پیام امضا کند. از آدرس بیت‌کوین نوع دیگری، مثلاً Native SegWit، استفاده کنید.</string>
+    <string name="sign_message_select_address_hint">آدرسی را که در صرافی وارد کرده‌اید انتخاب کنید.</string>
+    <string name="sign_message_current_receive_address">آدرس دریافت فعلی</string>
+    <string name="sign_message_used">استفاده‌شده</string>
+    <string name="sign_message_signature">امضا</string>
+    <string name="sign_message_result_intro">امضا را کپی کنید و در وب‌سایت صرافی جای‌گذاری کنید.</string>
+    <string name="sign_message_details">جزئیات</string>
+    <string name="sign_message_details_format">قالب</string>
+    <string name="sign_message_not_ready">کیف پول هنوز در حال بارگذاری است. چند لحظه دیگر دوباره تلاش کنید.</string>
+    <string name="sign_message_failed">امضای پیام ممکن نشد</string>
 </resources>
