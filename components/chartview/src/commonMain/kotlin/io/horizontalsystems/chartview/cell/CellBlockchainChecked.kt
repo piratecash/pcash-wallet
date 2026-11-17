@@ -10,6 +10,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.ui_compose.components.CellUniversal
 import cash.p.terminal.ui_compose.components.body_leah
+import cash.p.terminal.ui.compose.components.coinIconPlate
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.ic_checkmark_20
@@ -36,7 +37,7 @@ fun CellBlockchainChecked(
                 error = painterResource(Res.drawable.ic_platform_placeholder_32)
             ),
             contentDescription = null,
-            modifier = Modifier.size(32.dp)
+            modifier = Modifier.size(32.dp).coinIconPlate()
         )
         body_leah(
             modifier = Modifier

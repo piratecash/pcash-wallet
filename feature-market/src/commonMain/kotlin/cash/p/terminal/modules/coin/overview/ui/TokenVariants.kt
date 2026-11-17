@@ -31,6 +31,7 @@ import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
+import cash.p.terminal.ui.compose.components.coinIconPlate
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.chartview.rememberAsyncImagePainterWithFallback
 
@@ -57,7 +58,7 @@ fun TokenVariants(
                     .padding(horizontal = 16.dp),
             ) {
                 Image(
-                    modifier = Modifier.size(32.dp),
+                    modifier = Modifier.size(32.dp).coinIconPlate(),
                     painter = rememberAsyncImagePainterWithFallback(
                         model = tokenVariant.imgUrl,
                         error = painterResource(Res.drawable.ic_platform_placeholder_32)

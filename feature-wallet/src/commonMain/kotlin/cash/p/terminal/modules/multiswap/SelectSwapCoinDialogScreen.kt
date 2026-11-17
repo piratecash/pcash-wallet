@@ -29,6 +29,7 @@ import cash.p.terminal.ui_compose.components.HsImage
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.SectionUniversalItem
 import cash.p.terminal.ui_compose.components.VSpacer
+import cash.p.terminal.ui.compose.components.coinIconPlate
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.alternativeImageUrl
 import cash.p.terminal.wallet.badge
@@ -98,7 +99,7 @@ internal fun CoinBalanceRow(
                 url = coinItem.token.coin.imageUrl,
                 alternativeUrl = coinItem.token.coin.alternativeImageUrl,
                 placeholder = coinItem.token.iconPlaceholder,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(32.dp).coinIconPlate()
             )
             Spacer(modifier = Modifier.size(16.dp))
             MultitextM1(
