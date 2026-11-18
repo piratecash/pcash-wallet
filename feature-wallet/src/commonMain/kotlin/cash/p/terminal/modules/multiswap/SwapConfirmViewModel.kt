@@ -72,7 +72,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.StringResource
@@ -80,6 +79,7 @@ import org.koin.java.KoinJavaComponent.inject
 import java.math.BigDecimal
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.cancellation.CancellationException
 import cash.p.terminal.resources.unsupported_token
 import kotlin.reflect.KClass
@@ -155,6 +155,12 @@ class SwapConfirmViewModel(
     private var fetchJob: Job? = null
     // The timer tracks quote freshness, so it starts once per new quote, not on fee/balance re-emissions.
     private val quoteAwaitingTimer = AtomicBoolean(false)
+    private var amountInShrinkCount = 0
+    // Shrink count the installed transaction was requested with; written by fetch jobs on IO.
+    private val installedTransactionShrinkCount = AtomicInteger(0)
+    // The send service still holds a transaction estimated for the amount before the latest shrink.
+    private val amountInShrinkPending: Boolean
+        get() = installedTransactionShrinkCount.get() < amountInShrinkCount
     private var moneroPreparationJob: Job? = null
     private var moneroPreparationAutoStarted = false
     private var moneroPreparationActivity = MoneroPreparationActivity.Idle
@@ -216,6 +222,7 @@ class SwapConfirmViewModel(
                 sendTransactionState = transactionState
 
                 loading = transactionState.loading
+                shrinkAmountInIfNeeded(transactionState.availableBalance)
 
                 emitState()
                 prepareMoneroSpendIfNeeded(transactionState.moneroSpendReadiness, automatic = true)
@@ -240,18 +247,16 @@ class SwapConfirmViewModel(
             }
         }
 
-        viewModelScope.launch {
-            sendTransactionService.stateFlow.collectLatest {
-                val availableBalance = it.availableBalance ?: return@collectLatest
-                if (shouldShrinkAmountInTo(availableBalance)) {
-                    amountIn = availableBalance
-                    fiatServiceIn.setAmount(amountIn)
-                    refresh()
-                }
-            }
-        }
-
         sendTransactionService.start(viewModelScope)
+    }
+
+    private fun shrinkAmountInIfNeeded(availableBalance: BigDecimal?) {
+        if (availableBalance == null || !shouldShrinkAmountInTo(availableBalance)) return
+        // First: setAmount publishes synchronously and its collector may emit UI state.
+        amountInShrinkCount++
+        amountIn = availableBalance
+        fiatServiceIn.setAmount(amountIn)
+        refresh()
     }
 
     // A non-positive spendable cannot be quoted: keep the amount and let the balance caution show.
@@ -288,8 +293,8 @@ class SwapConfirmViewModel(
             currency = currency,
             networkFee = sendTransactionState.networkFee,
             cautions = cautions,
-            feeCaution = sendTransactionState.feeCaution,
-            validQuote = isSendable(cautions),
+            feeCaution = sendTransactionState.feeCaution.takeUnless { amountInShrinkPending },
+            validQuote = !amountInShrinkPending && isSendable(cautions),
             reapprovalRequired = finalQuoteCautions.any { it is InsufficientAllowanceCaution },
             priceImpact = priceImpactState.priceImpact,
             priceImpactLevel = priceImpactState.priceImpactLevel,
@@ -312,11 +317,12 @@ class SwapConfirmViewModel(
     }
 
     private fun buildCautions(): List<CautionViewItem> {
+        val transactionCautions = if (amountInShrinkPending) emptyList() else sendTransactionState.cautions
         val quoteCautions = finalQuoteCautions.map(HSCaution::toCautionViewItem)
         val priceImpactCaution = listOfNotNull(
             priceImpactState.priceImpactCaution?.toCautionViewItem()
         )
-        val balanceCaution = if (hasInsufficientInputBalance()) {
+        val balanceCaution = if (!amountInShrinkPending && hasInsufficientInputBalance()) {
             listOf(
                 HSCaution(
                     TranslatableString.ResString(Res.string.Swap_ErrorInsufficientBalance),
@@ -335,7 +341,7 @@ class SwapConfirmViewModel(
                 ).toCautionViewItem()
             )
         } ?: emptyList()
-        return sendTransactionState.cautions + quoteCautions + priceImpactCaution + balanceCaution +
+        return transactionCautions + quoteCautions + priceImpactCaution + balanceCaution +
             criticalErrorCaution
     }
 
@@ -410,6 +416,7 @@ class SwapConfirmViewModel(
         swapRecipientAddress = null
         fetchingFinalQuote = true
         emitState()
+        val shrinkCount = amountInShrinkCount
         fetchJob = viewModelScope.launch(dispatcherProvider.io) {
             try {
                 val finalQuote = fetchFinalQuoteByExecutionMode()
@@ -431,6 +438,7 @@ class SwapConfirmViewModel(
                 fiatServiceOutMin.setAmount(amountOutMin)
                 quoteAwaitingTimer.set(true)
                 sendTransactionService.setSendTransactionData(finalQuote.sendTransactionData)
+                installedTransactionShrinkCount.accumulateAndGet(shrinkCount, ::maxOf)
 
                 priceImpactService.setPriceImpact(finalQuote.priceImpact?.negate(), swapProvider.title)
                 startDepositDeadlineTimer(finalQuote.validUntilMillis)
