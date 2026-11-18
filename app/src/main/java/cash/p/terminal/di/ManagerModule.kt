@@ -42,7 +42,6 @@ import cash.p.terminal.core.CrashlyticsNonFatalReporter
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.IClipboardManager
 import cash.p.terminal.core.IMarketStorage
-import cash.p.terminal.core.IRateAppManager
 import cash.p.terminal.core.NonFatalReporter
 import cash.p.terminal.core.ITorManager
 import cash.p.terminal.core.WalletOnboardingStorage
@@ -122,7 +121,6 @@ import cash.p.terminal.core.managers.MoneroTrezorOperationGateway
 import cash.p.terminal.core.managers.TrezorAttachments
 import cash.p.terminal.core.managers.UsbTrezorAttachments
 import cash.p.terminal.core.managers.MoneroHardwareGateway
-import cash.p.terminal.core.managers.RateAppManager
 import cash.p.terminal.core.managers.SilentCameraManager
 import cash.p.terminal.core.managers.SolanaKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.AndroidSolanaKitDatabaseKeyProvider
@@ -405,7 +403,6 @@ val managerModule = module {
     singleOf(::ActivityAppRestarter) bind AppRestarter::class
     singleOf(::AndroidBackupFileLauncher) bind BackupFileLauncher::class
     singleOf(::AndroidDeleteContactsPinSettings) bind DeleteContactsPinSettings::class
-    singleOf(::RateAppManager) bind IRateAppManager::class
     singleOf(::WCSessionStorage)
     single {
         WCManager(accountManager = get()).also {
