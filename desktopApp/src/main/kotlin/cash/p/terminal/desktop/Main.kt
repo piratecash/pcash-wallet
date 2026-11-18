@@ -25,6 +25,7 @@ import cash.p.terminal.shared.desktop.DesktopForegroundEffect
 import cash.p.terminal.shared.desktop.DesktopLaunchArguments
 import cash.p.terminal.shared.desktop.DesktopWalletSession
 import cash.p.terminal.shared.desktop.DesktopWipeCoordinator
+import cash.p.terminal.shared.desktop.WindowCaptureProtectionEffect
 import cash.p.terminal.shared.desktop.desktopFeatureModule
 import cash.p.terminal.shared.desktop.rememberDesktopDarkTheme
 import cash.p.terminal.shared.desktop.lock.DesktopInactivityLock
@@ -126,6 +127,7 @@ fun main(args: Array<String>) {
                 quit()
             }
             DesktopForegroundEffect(windowState.isMinimized)
+            WindowCaptureProtectionEffect(window, koin.get())
             ComposeAppTheme(darkTheme = rememberDesktopDarkTheme()) {
                 DesktopRoot(launchArguments.wipeFailed)
             }
