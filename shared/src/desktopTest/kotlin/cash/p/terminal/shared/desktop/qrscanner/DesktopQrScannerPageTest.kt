@@ -36,6 +36,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import cash.p.terminal.shared.main.ScreenCaptureProtection
 
 @OptIn(ExperimentalTestApi::class)
 class DesktopQrScannerPageTest {
@@ -119,7 +120,7 @@ class DesktopQrScannerPageTest {
     private fun ComposeUiTest.openScanner() {
         setContent {
             CompositionLocalProvider(LocalLifecycleOwner provides host) {
-                ComposeAppTheme { DesktopNavHost(navigation, DesktopHudMessenger(), NoUrlOpener) }
+                ComposeAppTheme { DesktopNavHost(navigation, DesktopHudMessenger(), NoUrlOpener, ScreenCaptureProtection()) }
             }
         }
         waitForIdle()

@@ -96,6 +96,8 @@ kotlin {
             dependencies {
                 // Dispatchers.Main on desktop (ModalOverlayTracker grace) comes from Swing.
                 implementation(libs.kotlinx.coroutines.swing)
+                implementation(libs.jna)
+                implementation(libs.kermit)
             }
         }
 
