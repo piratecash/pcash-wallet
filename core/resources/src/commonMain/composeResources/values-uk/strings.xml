@@ -561,6 +561,13 @@
     <string name="WalletConnect_Error_RequestNotFoundError">Запит не знайдено</string>
     <string name="WalletConnect_NoConnection">У вас немає підключених dapps</string>
     <string name="WalletConnect_PendingRequests">Очікуючі запити</string>
+    <string name="wallet_connect_verify_scam_title">Відомий скам</string>
+    <string name="wallet_connect_verify_scam">Цей сайт у списку відомих шахрайських доменів. Підключення до нього, найімовірніше, призведе до втрати коштів.</string>
+    <string name="wallet_connect_verify_mismatch_title">Підміна сайту</string>
+    <string name="wallet_connect_verify_mismatch">Запит надійшов з %1$s, а не з сайту, за який він себе видає. Це поширений прийом фішингу.</string>
+    <string name="wallet_connect_verify_mismatch_no_origin">Запит надійшов не з того сайту, за який він себе видає. Це поширений прийом фішингу.</string>
+    <string name="wallet_connect_verify_unknown_title">Сайт не підтверджено</string>
+    <string name="wallet_connect_verify_unknown">WalletConnect не зміг підтвердити цей сайт. Уважно перевірте адресу перед підключенням.</string>
     <string name="WalletConnect_ActiveWallet">Активний гаманець</string>
     <string name="WalletConnect_Unnamed">Без назви</string>
     <string name="delete_all">Видалити все</string>

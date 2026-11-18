@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import cash.p.terminal.R
 import cash.p.terminal.core.App
+import cash.p.terminal.modules.walletconnect.WCVerifyAlert
 import com.reown.walletkit.client.Wallet
 import kotlinx.parcelize.Parcelize
 
@@ -56,7 +57,8 @@ data class WCSessionUiState(
     val hint: String?,
     val showError: String?,
     val status: Status?,
-    val pendingRequests: List<WCRequestViewItem>
+    val pendingRequests: List<WCRequestViewItem>,
+    val verifyAlert: WCVerifyAlert? = null,
 )
 
 enum class Status(val value: Int) {

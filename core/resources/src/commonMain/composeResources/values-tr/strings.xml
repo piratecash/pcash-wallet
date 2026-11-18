@@ -581,6 +581,13 @@
     <string name="WalletConnect_Error_RequestNotFoundError">Hata: istek bulunamadı</string>
     <string name="WalletConnect_NoConnection">Bağlı dApp\u0027iniz yok</string>
     <string name="WalletConnect_PendingRequests">Bekleyen istekler</string>
+    <string name="wallet_connect_verify_scam_title">Bilinen dolandırıcılık</string>
+    <string name="wallet_connect_verify_scam">Bu site bilinen kötü amaçlı alan adları listesinde. Bağlanmak büyük olasılıkla para kaybetmenize yol açar.</string>
+    <string name="wallet_connect_verify_mismatch_title">Site taklidi</string>
+    <string name="wallet_connect_verify_mismatch">Bu istek %1$s adresinden geliyor ve olduğunu iddia ettiği siteyle eşleşmiyor. Bu yaygın bir kimlik avı yöntemidir.</string>
+    <string name="wallet_connect_verify_mismatch_no_origin">Bu istek, olduğunu iddia ettiği siteden farklı bir siteden geliyor. Bu yaygın bir kimlik avı yöntemidir.</string>
+    <string name="wallet_connect_verify_unknown_title">Site doğrulanmadı</string>
+    <string name="wallet_connect_verify_unknown">WalletConnect bu siteyi doğrulayamadı. Bağlanmadan önce adresi dikkatlice kontrol edin.</string>
     <string name="WalletConnect_ActiveWallet">Aktif cüzdan</string>
     <string name="WalletConnect_Unnamed">İsimsiz</string>
     <string name="delete_all">Tümünü sil</string>

@@ -6,6 +6,7 @@ import cash.p.terminal.core.managers.ConnectivityManager
 import cash.p.terminal.modules.walletconnect.WCDelegate
 import cash.p.terminal.modules.walletconnect.WCManager
 import cash.p.terminal.modules.walletconnect.WCSessionManager
+import cash.p.terminal.modules.walletconnect.WCVerifyAlert
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.wallet.Account
 import com.reown.walletkit.client.Wallet
@@ -73,12 +74,12 @@ class WCSessionViewModelTest {
         unmockkAll()
     }
 
-    private fun createViewModel(): WCSessionViewModel {
+    private fun createViewModel(topic: String? = null): WCSessionViewModel {
         val viewModel = WCSessionViewModel(
             sessionManager = sessionManager,
             connectivityManager = connectivityManager,
             account = account,
-            topic = null,
+            topic = topic,
             wcManager = wcManager,
         )
         viewModel.closeLiveEvent.observeForever(Observer { closeCount++ })
@@ -179,8 +180,48 @@ class WCSessionViewModelTest {
         assertNull(viewModel.uiState.showError)
     }
 
+    @Test
+    fun loadSessionProposal_invalidOrigin_showsImpersonation() {
+        every { WCDelegate.sessionProposalEvent } returns (proposal to verifyContext(Wallet.Model.Validation.INVALID))
+
+        val viewModel = createViewModel()
+
+        assertEquals(WCVerifyAlert.Impersonation(ORIGIN), viewModel.uiState.verifyAlert)
+    }
+
+    @Test
+    fun loadSessionProposal_unknownOrigin_showsUnverified() {
+        every { WCDelegate.sessionProposalEvent } returns (proposal to verifyContext(Wallet.Model.Validation.UNKNOWN))
+
+        val viewModel = createViewModel()
+
+        assertEquals(WCVerifyAlert.Unverified, viewModel.uiState.verifyAlert)
+    }
+
+    @Test
+    fun loadSessionProposal_existingSession_noAlert() {
+        every { WCDelegate.sessionProposalEvent } returns (proposal to verifyContext(Wallet.Model.Validation.INVALID))
+        val session = mockk<Wallet.Model.Session>(relaxed = true) { every { topic } returns SESSION_TOPIC }
+        every { sessionManager.sessions } returns listOf(session)
+        every { WalletKit.getPendingListOfSessionRequests(SESSION_TOPIC) } returns emptyList()
+
+        val viewModel = createViewModel(topic = SESSION_TOPIC)
+
+        assertNull(viewModel.uiState.verifyAlert)
+    }
+
+    private fun verifyContext(validation: Wallet.Model.Validation) = Wallet.Model.VerifyContext(
+        id = 1L,
+        origin = ORIGIN,
+        validation = validation,
+        verifyUrl = "",
+        isScam = false,
+    )
+
     private companion object {
         const val KEY = "proposal-key"
+        const val SESSION_TOPIC = "session-topic"
+        const val ORIGIN = "https://evil.example"
         const val TRANSLATED = "translated"
     }
 }

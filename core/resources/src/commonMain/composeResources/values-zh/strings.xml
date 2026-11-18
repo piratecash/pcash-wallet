@@ -577,6 +577,13 @@
     <string name="WalletConnect_Error_RequestNotFoundError">未找到请求</string>
     <string name="WalletConnect_NoConnection">你没有任何已连接的 dApp</string>
     <string name="WalletConnect_PendingRequests">待处理请求</string>
+    <string name="wallet_connect_verify_scam_title">已知诈骗</string>
+    <string name="wallet_connect_verify_scam">该网站在已知恶意域名列表中。连接它很可能导致资金损失。</string>
+    <string name="wallet_connect_verify_mismatch_title">网站冒充</string>
+    <string name="wallet_connect_verify_mismatch">此请求来自 %1$s，与其声称的网站不一致。这是常见的网络钓鱼手段。</string>
+    <string name="wallet_connect_verify_mismatch_no_origin">此请求来自其声称的网站以外的其他网站。这是常见的网络钓鱼手段。</string>
+    <string name="wallet_connect_verify_unknown_title">网站未验证</string>
+    <string name="wallet_connect_verify_unknown">WalletConnect 无法确认该网站。连接前请仔细核对地址。</string>
     <string name="WalletConnect_ActiveWallet">当前钱包</string>
     <string name="WalletConnect_Unnamed">未命名</string>
     <string name="delete_all">全部删除</string>
