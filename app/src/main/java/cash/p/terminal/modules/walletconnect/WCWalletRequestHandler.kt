@@ -9,12 +9,29 @@ import cash.p.terminal.core.managers.EvmBlockchainManager
 import io.horizontalsystems.ethereumkit.core.hexStringToIntOrNull
 
 class WCWalletRequestHandler(
-    private val evmBlockchainManager: EvmBlockchainManager
+    private val evmBlockchainManager: EvmBlockchainManager,
+    private val wcManager: WCManager,
 ) {
     private val gson by lazy { Gson() }
 
+    fun rejectIfUnsupported(sessionRequest: Wallet.Model.SessionRequest): Boolean {
+        if (!wcManager.isUnsupportedMethod(sessionRequest)) return false
+
+        respond(
+            sessionRequest,
+            Wallet.Model.JsonRpcResponse.JsonRpcError(
+                id = sessionRequest.request.id,
+                code = 4200,
+                message = "Method not supported"
+            )
+        )
+        return true
+    }
+
     fun handle(sessionRequest: Wallet.Model.SessionRequest): Boolean {
         try {
+            if (rejectIfUnsupported(sessionRequest)) return true
+
             val request = sessionRequest.request
             val params = JsonParser.parseString(sessionRequest.request.params).asJsonArray
             val chain = gson.fromJson(params.first(), WalletConnectChain::class.java)
@@ -24,37 +41,16 @@ class WCWalletRequestHandler(
                 "wallet_switchEthereumChain" -> {
                     val blockchain =
                         chain.chainId.hexStringToIntOrNull()?.let { evmBlockchainManager.getBlockchain(it) }
-                    if (blockchain != null) {
-                        val response = Wallet.Params.SessionRequestResponse(
-                            sessionTopic = sessionRequest.topic,
-                            jsonRpcResponse = Wallet.Model.JsonRpcResponse.JsonRpcResult(
-                                id = request.id,
-                                result = "null"
-                            )
-                        )
-                        WalletKit.respondSessionRequest(
-                            params = response,
-                            onSuccess = {},
-                            onError = { error ->
-                                Log.e("WCWalletHandler", "${request.method} response error: $error")
-                            })
-
+                    val response = if (blockchain != null) {
+                        Wallet.Model.JsonRpcResponse.JsonRpcResult(id = request.id, result = "null")
                     } else {
-                        val result = Wallet.Params.SessionRequestResponse(
-                            sessionTopic = sessionRequest.topic,
-                            jsonRpcResponse = Wallet.Model.JsonRpcResponse.JsonRpcError(
-                                id = request.id,
-                                code = 4902,
-                                message = "Unrecognized chain ID"
-                            )
+                        Wallet.Model.JsonRpcResponse.JsonRpcError(
+                            id = request.id,
+                            code = 4902,
+                            message = "Unrecognized chain ID"
                         )
-                        WalletKit.respondSessionRequest(
-                            result,
-                            onSuccess = {},
-                            onError = { error ->
-                                Log.e("WCWalletHandler", "${request.method} response error: $error")
-                            })
                     }
+                    respond(sessionRequest, response)
 
                     true
                 }
@@ -64,6 +60,21 @@ class WCWalletRequestHandler(
         } catch (error: Throwable) {
             return false
         }
+    }
+
+    private fun respond(
+        sessionRequest: Wallet.Model.SessionRequest,
+        jsonRpcResponse: Wallet.Model.JsonRpcResponse,
+    ) {
+        WalletKit.respondSessionRequest(
+            params = Wallet.Params.SessionRequestResponse(
+                sessionTopic = sessionRequest.topic,
+                jsonRpcResponse = jsonRpcResponse
+            ),
+            onSuccess = { WCDelegate.notifyPendingRequestsChanged() },
+            onError = { error ->
+                Log.e("WCWalletHandler", "${sessionRequest.request.method} response error: $error")
+            })
     }
 
     data class WalletConnectChain(

@@ -29,6 +29,11 @@ class WCManager(
         handlersMap[wcHandler.chainNamespace] = wcHandler
     }
 
+    fun isUnsupportedMethod(sessionRequest: Wallet.Model.SessionRequest): Boolean {
+        val handler = handlersMap[sessionRequest.chainId?.substringBefore(":")] ?: return false
+        return sessionRequest.request.method !in handler.supportedMethods
+    }
+
     fun getMethodData(sessionRequest: Wallet.Model.SessionRequest): MethodData? {
         val chainId = sessionRequest.chainId ?: return null
         val chainParts = chainId.split(":")
