@@ -3,7 +3,10 @@ package cash.p.terminal.modules.nft.burn
 import cash.p.terminal.core.ISendTonAdapter
 import cash.p.terminal.core.NftBroadcastResult
 import cash.p.terminal.core.TonFeeEstimate
+import cash.p.terminal.core.getKoinInstance
+import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
 import cash.p.terminal.modules.nft.operation.TonNftOperation
+import cash.p.terminal.wallet.Wallet
 import io.horizontalsystems.tonkit.FriendlyAddress
 import kotlinx.coroutines.CancellationException
 
@@ -17,15 +20,21 @@ object NftBurnOperation : TonNftOperation {
     override suspend fun estimate(adapter: ISendTonAdapter, nftAddresses: List<String>): TonFeeEstimate =
         adapter.estimateNftTransferFee(nftAddresses.single(), burnAddress, null)
 
-    override suspend fun execute(adapter: ISendTonAdapter, nftAddresses: List<String>): NftBroadcastResult {
+    override suspend fun execute(
+        wallet: Wallet,
+        adapter: ISendTonAdapter,
+        nftAddresses: List<String>,
+    ): NftBroadcastResult {
         val nftAddress = nftAddresses.single()
-        return try {
+        try {
             adapter.sendNftTransfer(nftAddress, burnAddress, null)
-            NftBroadcastResult(listOf(nftAddress), error = null)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            NftBroadcastResult(emptyList(), error = e)
+            return NftBroadcastResult(emptyList(), error = e)
         }
+        getKoinInstance<LocallyCreatedTransactionRepository>()
+            .markNftTransferCreated(wallet.account.id, nftAddress, TON_BURN_ADDRESS)
+        return NftBroadcastResult(listOf(nftAddress), error = null)
     }
 }
