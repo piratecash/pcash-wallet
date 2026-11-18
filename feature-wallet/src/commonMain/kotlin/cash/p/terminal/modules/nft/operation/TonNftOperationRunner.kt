@@ -135,7 +135,9 @@ class TonNftOperationRunner(
     private suspend fun execute(owners: List<OwnerTarget>): NftOperationOutcome {
         var sent = 0
         for (owner in owners) {
-            val result = withContext(dispatcherProvider.io) { operation.execute(owner.adapter, owner.nftAddresses) }
+            val result = withContext(dispatcherProvider.io) {
+                operation.execute(owner.wallet, owner.adapter, owner.nftAddresses)
+            }
             sent += result.broadcast.size
             result.error?.let { return stoppedOutcome(it, sent) }
         }

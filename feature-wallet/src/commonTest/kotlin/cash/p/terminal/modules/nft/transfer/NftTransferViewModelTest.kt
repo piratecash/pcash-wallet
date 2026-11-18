@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModelStore
 import cash.p.terminal.core.ISendTonAdapter
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
+import cash.p.terminal.core.managers.tonRawAddressOrNull
 import cash.p.terminal.core.managers.PoisonAddressManager
 import cash.p.terminal.core.managers.RecentAddressManager
 import cash.p.terminal.core.storage.PoisonAddressDao
@@ -86,6 +87,7 @@ class NftTransferViewModelTest {
     }
     private val poisonAddressManager = mockk<PoisonAddressManager>(relaxed = true)
     private val recentAddressManager = mockk<RecentAddressManager>(relaxed = true)
+    private val locallyCreated = mockk<LocallyCreatedTransactionRepository>(relaxed = true)
     private val offlineGate = mockk<OfflineOperationGate>(relaxed = true) {
         every { isBlocked(any()) } returns false
     }
@@ -116,7 +118,7 @@ class NftTransferViewModelTest {
                 single { mockk<MarketKitWrapper>(relaxed = true) }
                 single<IBalanceHiddenManager> { balanceHiddenManager }
                 single { poisonAddressManager }
-                single { mockk<LocallyCreatedTransactionRepository>(relaxed = true) }
+                single { locallyCreated }
                 single { mockConnectivityManager() }
                 single { offlineGate }
                 single<UptimeProvider> { mockk(relaxed = true) }
@@ -287,6 +289,33 @@ class NftTransferViewModelTest {
         coVerify { adapter.sendNftTransfer(item.address, match { it === tonAddress }, "hello") }
         verify { poisonAddressManager.saveKnownAddress(recipient.hex, any(), any()) }
         verify { recentAddressManager.setRecentAddress(recipient, BlockchainType.Ton) }
+    }
+
+    @Test
+    fun onClickSend_success_marksTransferCreatedByWallet() = runTest(dispatcher) {
+        val viewModel = readyViewModel()
+
+        viewModel.onClickSendWithWarningCheck()
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) {
+            locallyCreated.markNftTransferCreated(
+                wallet.account.id,
+                item.address,
+                match { tonRawAddressOrNull(it) == knownRaw },
+            )
+        }
+    }
+
+    @Test
+    fun onClickSend_failure_notMarkedCreated() = runTest(dispatcher) {
+        coEvery { adapter.sendNftTransfer(any(), any(), any()) } throws IllegalStateException("boom")
+        val viewModel = readyViewModel()
+
+        viewModel.onClickSendWithWarningCheck()
+        advanceUntilIdle()
+
+        coVerify(exactly = 0) { locallyCreated.markNftTransferCreated(any(), any(), any()) }
     }
 
     @Test
