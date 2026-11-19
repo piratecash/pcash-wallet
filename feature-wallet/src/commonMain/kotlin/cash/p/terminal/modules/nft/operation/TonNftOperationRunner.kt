@@ -49,7 +49,10 @@ sealed interface NftOperationOutcome {
     data class Ended(val sent: Int, val total: Int, val caution: HSCaution) : NftOperationOutcome
 }
 
-/** [token] is the owners' TON token, null until they resolve. */
+/**
+ * [token] is the owners' TON token, null until they resolve.
+ * [nftNotTransferred]: the emulation shows an NFT that the operation would not move.
+ */
 data class NftOperationState(
     val token: Token?,
     val fee: String,
@@ -57,6 +60,7 @@ data class NftOperationState(
     val balanceHidden: Boolean,
     val canRun: Boolean,
     val outcome: NftOperationOutcome,
+    val nftNotTransferred: Boolean,
 )
 
 // Not a data class: Wallet.toString() would print key material.
@@ -193,6 +197,7 @@ class TonNftOperationRunner(
             balanceHidden = balanceHidden,
             canRun = canRun(),
             outcome = outcome,
+            nftNotTransferred = estimates?.any { it.nftNotTransferred } == true,
         )
     }
 

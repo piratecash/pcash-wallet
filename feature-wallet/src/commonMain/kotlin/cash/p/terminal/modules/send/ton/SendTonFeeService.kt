@@ -75,7 +75,7 @@ class SendTonFeeService(
                 try {
                     val estimated = estimator.estimate(amount, address, memo)
                     fee = FeeStatus.Success(estimated.fee, estimated.requiredTon)
-                    quote = TonFeeQuote(estimated.fee, amount, address, memo)
+                    quote = TonFeeQuote(estimated.fee, amount, address, memo, estimated.nftNotTransferred)
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Throwable) {
@@ -146,6 +146,7 @@ data class TonFeeQuote(
     val amount: BigDecimal,
     val address: FriendlyAddress,
     val memo: String?,
+    val nftNotTransferred: Boolean = false,
 ) {
     fun matches(amount: BigDecimal, address: FriendlyAddress, memo: String?): Boolean =
         this.amount.compareTo(amount) == 0 &&
