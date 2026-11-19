@@ -2892,6 +2892,10 @@ Proceed only if you\u0027re sure.</string>
     <string name="nft_copy_address">Copy NFT address</string>
     <string name="nft_burn_action">Burn NFT</string>
     <string name="nft_unverified_nft">Unverified NFT</string>
+    <string name="nft_artwork_hidden_title">Image hidden</string>
+    <string name="nft_artwork_hidden_reason">NFT not verified by TonAPI</string>
+    <string name="nft_artwork_hidden_spam">NFT marked as spam</string>
+    <string name="nft_artwork_hidden_tap">Tap to show</string>
     <string name="nft_report_spam">Report spam</string>
     <string name="nft_report_title">Report as spam?</string>
     <string name="nft_report_body">Collection “%1$s” will be hidden and moved to the Spam section in collection management. You can restore it there with the Not spam button.</string>

@@ -898,6 +898,11 @@ class LocalStorageManager(
             preferences.edit { putStringSet(NFT_VERSION_HINTS_DISMISSED, value) }
         }
 
+    override var trustedNftCollections by preferences.delegate(
+        key = "trusted_nft_collections",
+        default = emptySet<String>()
+    )
+
     override var passphraseTermsAgreed by preferences.delegate(
         key = "passphrase_terms_agreed",
         default = false

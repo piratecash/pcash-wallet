@@ -47,6 +47,7 @@ class NftTransferAvailabilityProviderTest {
         listOf(nftProvider),
         offlineModeManager,
         TestDispatcherProvider(dispatcher, TestScope(dispatcher)),
+        mockk(relaxed = true),
     )
     private val availabilityProvider = NftTransferAvailabilityProvider(
         NftOwnerWalletResolver(walletManager, repository),
