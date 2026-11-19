@@ -45,6 +45,7 @@ fun DesktopNavHost(
     navigation: HSNavigation,
     hudMessenger: DesktopHudMessenger,
     urlOpener: UrlOpener,
+    captureProtection: ScreenCaptureProtection,
     modifier: Modifier = Modifier,
 ) {
     val colors = BottomSheetColors(
@@ -75,7 +76,10 @@ fun DesktopNavHost(
                 ),
                 sceneStrategies = listOf(sheetStrategy),
                 entryProvider = { page ->
-                    NavEntry(page, page.contentKey(), page.metadata()) { PageWithConnectionPanel(page, navigation) }
+                    NavEntry(page, page.contentKey(), page.metadata()) {
+                        if (!page.screenshotEnabled) ScreenCaptureProtectedEffect(captureProtection)
+                        PageWithConnectionPanel(page, navigation)
+                    }
                 },
             )
             HudSnackbar(hudMessenger, Modifier.align(Alignment.BottomCenter))

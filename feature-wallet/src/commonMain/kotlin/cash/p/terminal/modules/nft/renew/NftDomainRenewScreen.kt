@@ -126,7 +126,7 @@ private fun DomainRow(domain: NftDomainExpiry, hidden: Boolean, checked: Boolean
                 .clip(RoundedCornerShape(10.dp))
                 .background(ComposeAppTheme.colors.surfacePlaceholder),
         ) {
-            NftArtwork(url = domain.imageUrl, hidden = hidden)
+            NftArtwork(url = domain.imageUrl, hidden = hidden, untrusted = false)
         }
         Column(
             modifier = Modifier.weight(1f).padding(horizontal = 12.dp),

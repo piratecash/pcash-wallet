@@ -857,6 +857,9 @@ Proceed only if you\u0027re sure.</string>
     <string name="SwapConfirm_QuoteExpired">Quote expired</string>
     <string name="SwapConfirm_QuoteIsInvalid">Quote is invalid</string>
     <string name="SwapConfirm_FetchingFinalQuote">Fetching final quote</string>
+    <string name="swap_order_card_sign_prompt">Tap your card to sign the order for %1$s. No funds are debited at this step. Then tap your card again to send the funds.</string>
+    <string name="swap_order_created_tap_card_again">Order created. Press “Swap” and tap your card again to send the funds.</string>
+    <string name="swap_card_scan_failed">Card scan failed. Please try again.</string>
     <string name="SwapWarning_SlippageNotApplicable_Title">Slippage is not applicable</string>
     <string name="SwapWarning_SlippageNotApplicable_Description">Minimum slippage applicable  for this quote is %s%%</string>
     <string name="SwapWarning_SlippageNotAvailable_Title">No Slippage Control</string>

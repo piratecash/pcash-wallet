@@ -651,6 +651,9 @@
     <string name="SwapConfirm_QuoteExpired">报价已过期</string>
     <string name="SwapConfirm_QuoteIsInvalid">报价无效</string>
     <string name="SwapConfirm_FetchingFinalQuote">正在获取最终报价</string>
+    <string name="swap_order_card_sign_prompt">请贴近卡片以签署 %1$s 订单。此步骤不会扣除资金。随后请再次贴近卡片以发送资金。</string>
+    <string name="swap_order_created_tap_card_again">订单已创建。请点击“互兑交易”并再次贴近卡片以发送资金。</string>
+    <string name="swap_card_scan_failed">扫描卡片时出错，请重试。</string>
     <string name="SwapWarning_SlippageNotAvailable_Title">无滑点控制</string>
     <string name="SwapWarning_SlippageNotAvailable_Description">跨链操作依赖于第三方流动性和延迟，这可能会影响最终金额。</string>
     <string name="unsupported_refund_address">不支持的退款地址</string>

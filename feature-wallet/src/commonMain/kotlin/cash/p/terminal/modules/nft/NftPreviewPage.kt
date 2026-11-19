@@ -46,7 +46,6 @@ class NftPreviewPage(
         val urlOpener = LocalUrlOpener.current
         val copyWithHud = rememberCopyWithHud()
         val uiState = viewModel.uiState
-        val namesRevealed = uiState.canReveal && !uiState.hidden
         val managedTitle = item.managedTitle(uiState.hidden)
         val network = remember(item) {
             NftNetworkInfo(
@@ -55,12 +54,12 @@ class NftPreviewPage(
             )
         }
         val renewDomain = navigation.rememberDomainRenewal(
-            namesRevealed = namesRevealed,
+            namesRevealed = uiState.namesRevealed,
             onFinish = viewModel::onResume,
         )
         val openLink = navigation.rememberNftLinkOpener(viewModel)
         val burn = navigation.rememberNftBurn(
-            namesRevealed = namesRevealed,
+            namesRevealed = uiState.namesRevealed,
             onFinish = { navigation.navigateUpFrom(this) },
         )
 
@@ -102,7 +101,7 @@ class NftPreviewPage(
             if (it.action in viewModel.uiState.menuActions) currentAction(it.action)
         }
 
-        PageResumeEffect(onResume = viewModel::onResume, onPause = {})
+        PageResumeEffect(onResume = viewModel::onResume, onPause = viewModel::onPause)
 
         NftPreviewScreen(
             item = item,
@@ -114,7 +113,8 @@ class NftPreviewPage(
                     viewModel.onToggleReveal()
                 },
                 onSend = {
-                    val page = NftTransferPage(item, it.wallet, it.domain, viewModel.uiState.domainExpiry)
+                    val shownItem = item.copy(trust = viewModel.uiState.trust)
+                    val page = NftTransferPage(shownItem, it.wallet, it.domain, viewModel.uiState.domainExpiry)
                     navigation.slideFromRight(page)
                 },
                 onRenew = { renewDomain(listOf(it)) },

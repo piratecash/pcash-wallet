@@ -46,7 +46,7 @@ import org.koin.core.parameter.parametersOf
  */
 class NftDomainRenewSheet(
     private val domains: List<NftDomainExpiry>,
-    private val namesRevealed: Boolean,
+    internal val namesRevealed: Boolean,
 ) : HSBottomSheet() {
 
     /** [outcome] is [NftOperationOutcome.Done] or [NftOperationOutcome.Ended]. */
@@ -88,7 +88,11 @@ fun HSNavigation.rememberDomainRenewal(
         scope.launch { hud.showRenewResult(result) }
         onFinish()
     }
-    return rememberTransferAction { domains -> launcher.slideFromBottom(NftDomainRenewSheet(domains, revealed)) }
+    val renew = rememberTransferAction<Pair<List<NftDomainExpiry>, Boolean>> { (domains, shown) ->
+        launcher.slideFromBottom(NftDomainRenewSheet(domains, shown))
+    }
+    // Read at the click: the PIN page pauses the caller, which masks the names again.
+    return { domains -> renew(domains to revealed) }
 }
 
 private suspend fun HudMessenger.showRenewResult(result: NftDomainRenewSheet.Result) {

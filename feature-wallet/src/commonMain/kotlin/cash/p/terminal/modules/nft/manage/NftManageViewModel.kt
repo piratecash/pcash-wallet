@@ -11,6 +11,7 @@ import cash.p.terminal.core.nft.NftCollectionState
 import cash.p.terminal.core.nft.NftCollectionsRepository
 import cash.p.terminal.core.nft.collectionPrefKey
 import cash.p.terminal.core.nft.nftCollectionState
+import cash.p.terminal.core.nft.withUserTrust
 import cash.p.terminal.entities.NftItemRecord
 import cash.p.terminal.entities.NftTrust
 import cash.p.terminal.modules.nft.NftCollectionSource
@@ -93,7 +94,8 @@ class NftManageViewModel(
 
     private fun showItems(data: NftItemsWithPrefs) {
         val rows = data.state.items.groupBy { it.collectionPrefKey }.map { (key, nfts) ->
-            NftManageRow(nfts.first(), nfts.size, nftCollectionState(nfts.groupTrust(), data.prefs[key]))
+            val pref = data.prefs[key]
+            NftManageRow(nfts.first().withUserTrust(pref), nfts.size, nftCollectionState(nfts.groupTrust(), pref))
         }
         uiState = uiState.copy(rows = rows, isLoading = !data.state.isLoaded)
     }

@@ -187,6 +187,11 @@ class NftTransferViewModel(
             return@withContext
         }
         sendResult = SendResult.Sent()
+        locallyCreatedTransactionRepository.markNftTransferCreated(
+            accountId = wallet.account.id,
+            nftAddress = item.address,
+            recipient = quote.address.addrStd.toString(userFriendly = false),
+        )
         rememberRecipient(recipient)
     }
 
