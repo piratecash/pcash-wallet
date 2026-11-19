@@ -121,6 +121,17 @@ class TransactionNotificationCoordinatorTest {
     }
 
     @Test
+    fun onEnterBackground_appAlreadyInForeground_doesNotStartService() {
+        setupAllConditionsMet()
+        every { backgroundManager.inForeground } returns true
+
+        createCoordinator()
+        simulateEnterBackground()
+
+        verify(exactly = 0) { application.startForegroundService(any()) }
+    }
+
+    @Test
     fun onEnterBackground_noPremium_doesNotStartService() {
         every { checkPremiumUseCase.getPremiumType() } returns PremiumType.NONE
         every { localStorage.pushNotificationsEnabled } returns true
