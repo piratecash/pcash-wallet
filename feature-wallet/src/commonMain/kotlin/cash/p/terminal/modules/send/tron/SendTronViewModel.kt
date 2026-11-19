@@ -49,6 +49,10 @@ import io.horizontalsystems.tronkit.transaction.Fee
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.math.BigDecimal
@@ -70,7 +74,7 @@ class SendTronViewModel(
     private val contactsRepo: ContactsRepository,
     private val showAddressInput: Boolean,
     private val address: Address?,
-    adapterManager: IAdapterManager,
+    private val adapterManager: IAdapterManager,
     private val dispatcherProvider: DispatcherProvider,
     private val recentAddressManager: RecentAddressManager,
     private val offlineTransactionPayloadEncoder: OfflineTransactionPayloadEncoder,
@@ -150,6 +154,13 @@ class SendTronViewModel(
         viewModelScope.launch {
             addressService.stateFlow.collect {
                 handleUpdatedAddressState(it)
+            }
+        }
+        if (sendToken.type == TokenType.Native) {
+            viewModelScope.launch {
+                addressService.stateFlow.map { it.tronAddress }.distinctUntilChanged().collectLatest {
+                    updateSpendableBalance(it)
+                }
             }
         }
         viewModelScope.launch {
@@ -367,19 +378,21 @@ class SendTronViewModel(
     // goes stale past the ~54h ref-block window. Retries transient failures while still connected, which
     // also recovers from a StateFlow connectivity blip conflated away during a failed fetch.
     private suspend fun ensureOfflineAnchor() {
-        while (isConnectedFlow.value) {
-            val block = try {
-                adapter.getNowBlock()
+        val block = retryWhenOnline { adapter.getNowBlock() }
+        offlineAnchor = OfflineAnchor(block, elapsedRealtimeMs)
+    }
+
+    // Waits out offline periods and retries transient failures until the caller's job is cancelled.
+    private suspend fun <T> retryWhenOnline(request: suspend () -> T): T {
+        while (true) {
+            isConnectedFlow.first { it }
+            try {
+                return request()
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
-                null
+                delay(NETWORK_RETRY_DELAY_MS)
             }
-            if (block != null) {
-                offlineAnchor = OfflineAnchor(block, elapsedRealtimeMs)
-                return
-            }
-            delay(ANCHOR_RETRY_DELAY_MS)
         }
     }
 
@@ -480,6 +493,17 @@ class SendTronViewModel(
         estimateFeeIfReady()
     }
 
+    // Starts from the worst-case reserve, so a failed estimate never leaves another recipient's limit.
+    private suspend fun updateSpendableBalance(recipient: TronAddress?) {
+        amountService.updateAvailableBalance(adapterManager.tronSendableBalance(wallet, adapter.maxSpendableBalance))
+        recipient ?: return
+
+        val balance = adapter.balanceData.available
+        val fees = retryWhenOnline { adapter.estimateFee(balance, recipient) }
+        val spendable = (balance - fees.totalFee(feeToken.decimals)).max(BigDecimal.ZERO)
+        amountService.updateAvailableBalance(adapterManager.tronSendableBalance(wallet, spendable))
+    }
+
     private fun estimateFeeIfReady() {
         val amount = amountState.amount
         val address = addressState.address
@@ -514,7 +538,7 @@ class SendTronViewModel(
 }
 
 private const val OFFLINE_TX_EXPIRATION_MS = 6L * 60 * 60 * 1000
-private const val ANCHOR_RETRY_DELAY_MS = 3_000L
+private const val NETWORK_RETRY_DELAY_MS = 3_000L
 // Well under the ~54h TAPOS ref-block window (minus the 6h expiration and broadcast latency).
 private const val OFFLINE_ANCHOR_MAX_AGE_MS = 24L * 60 * 60 * 1000
 

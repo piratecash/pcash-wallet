@@ -53,6 +53,7 @@ import cash.p.terminal.ui_compose.components.body_disabled
 import cash.p.terminal.ui_compose.theme.ColoredTextStyle
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import org.jetbrains.compose.resources.stringResource
+import cash.p.terminal.ui.compose.secureKeyboardEntry
 
 /** Recovery words input: highlights [invalidWordRanges], offers Scan/Paste while empty and Clear otherwise. */
 @Composable
@@ -100,6 +101,7 @@ private fun PhraseTextField(
     BasicTextField(
         modifier = Modifier
             .fillMaxWidth()
+            .secureKeyboardEntry()
             .onFocusChanged { onFocusChange(it.isFocused) }
             .defaultMinSize(minHeight = 68.dp)
             .padding(start = 16.dp, end = 16.dp, top = 12.dp),

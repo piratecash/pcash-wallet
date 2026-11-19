@@ -230,10 +230,11 @@ private fun NftImage(item: NftItemRecord, uiState: NftPreviewUiState, onClick: (
         NftArtwork(
             url = item.largeImageUrl ?: item.imageUrl,
             hidden = uiState.hidden,
+            untrusted = uiState.artworkConcealed,
             alternativeUrl = item.imageUrl,
         )
-        // An animation cannot be blurred, so a hidden balance shows only the artwork.
-        if (!uiState.hidden) uiState.lottieJson?.let { NftLottie(it) }
+        // An animation cannot be blurred, so a hidden balance or untrusted NFT shows only the concealed artwork.
+        if (!uiState.hidden && !uiState.artworkConcealed) uiState.lottieJson?.let { NftLottie(it) }
         if (uiState.onSale) NftSaleBadge(Modifier.align(Alignment.TopEnd).padding(8.dp))
     }
 }
@@ -448,7 +449,8 @@ private fun PreviewContent(
             item = previewItem,
             uiState = NftPreviewUiState(
                 hidden = hidden,
-                canReveal = hidden,
+                artworkConcealed = trust != NftTrust.Whitelist,
+                canReveal = hidden || trust != NftTrust.Whitelist,
                 transferAvailability = availability,
                 domainExpiry = domainExpiry,
                 trust = trust,
