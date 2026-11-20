@@ -54,6 +54,8 @@ class TransactionNotificationCoordinator(
     }
 
     private fun shouldStartMonitoring(): Boolean {
+        // onBeforeEnterBackground runs on a pool thread and can land after the app came back.
+        if (backgroundManager.inForeground) return false
         if (!checkPremiumUseCase.getPremiumType().isPremium()) return false
         if (!localStorage.pushNotificationsEnabled) return false
         if (effectiveMonitoredChains.chains().isEmpty()) return false
