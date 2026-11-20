@@ -2602,4 +2602,39 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="desktop_password_save_failed">Impossible d\u0027enregistrer le mot de passe. Veuillez réessayer</string>
     <string name="tron_controlled_by_others_title">D\'autres personnes peuvent contrôler ce compte</string>
     <string name="tron_controlled_by_others_warning">Les autorisations de ce compte ont été modifiées : d\'autres clés peuvent le contrôler. Les fonds que vous y envoyez peuvent être retirés sans votre intervention. N\'y déposez des fonds que si vous savez à qui appartiennent ces clés.</string>
+
+    <!-- WalletConnect Stellar -->
+    <string name="wallet_connect_stellar_op_payment">Paiement</string>
+    <string name="wallet_connect_stellar_op_account_merge">Fusion de compte (envoie tout le solde)</string>
+    <string name="wallet_connect_stellar_op_path_payment">Paiement avec conversion</string>
+    <string name="wallet_connect_stellar_op_sell_offer">Offre de vente</string>
+    <string name="wallet_connect_stellar_op_buy_offer">Offre d\'achat</string>
+    <string name="wallet_connect_stellar_op_set_options">Modifier les paramètres du compte</string>
+    <string name="wallet_connect_stellar_amount">Montant</string>
+    <string name="wallet_connect_stellar_max_sent">Maximum envoyé</string>
+    <string name="wallet_connect_stellar_min_received">Minimum reçu</string>
+    <string name="wallet_connect_stellar_received">Reçu</string>
+    <string name="wallet_connect_stellar_asset">Actif</string>
+    <string name="wallet_connect_stellar_asset_issuer">Émetteur de l\'actif</string>
+    <string name="wallet_connect_stellar_trust_limit">Limite de confiance</string>
+    <string name="wallet_connect_stellar_selling">Vente</string>
+    <string name="wallet_connect_stellar_buying">Achat</string>
+    <string name="wallet_connect_stellar_source_account">Compte source</string>
+    <string name="wallet_connect_stellar_signer">Signataire</string>
+    <string name="wallet_connect_stellar_signer_weight">Poids du signataire</string>
+    <string name="wallet_connect_stellar_master_key_weight">Poids de la clé principale</string>
+    <string name="wallet_connect_stellar_low_threshold">Seuil bas</string>
+    <string name="wallet_connect_stellar_medium_threshold">Seuil moyen</string>
+    <string name="wallet_connect_stellar_high_threshold">Seuil élevé</string>
+    <string name="wallet_connect_stellar_set_flags">Activer des indicateurs</string>
+    <string name="wallet_connect_stellar_clear_flags">Effacer des indicateurs</string>
+    <string name="wallet_connect_stellar_home_domain">Domaine principal</string>
+    <string name="wallet_connect_stellar_inflation_destination">Destination d\'inflation</string>
+    <string name="wallet_connect_stellar_set_options_title">Changement de contrôle du compte</string>
+    <string name="wallet_connect_stellar_set_options">Cette demande modifie les signataires, les seuils ou les indicateurs de votre compte. En l\'approuvant, vous risquez de confier le contrôle de votre compte à quelqu\'un d\'autre. Ne continuez que si vous faites entièrement confiance à cette application.</string>
+    <string name="wallet_connect_stellar_account_merge_title">Fermeture du compte</string>
+    <string name="wallet_connect_stellar_account_merge">Cette demande ferme votre compte Stellar et envoie la totalité de son solde à une autre adresse. Ne continuez que si vous faites entièrement confiance à cette application.</string>
+    <string name="wallet_connect_stellar_unreadable_operation_title">Opération illisible</string>
+    <string name="wallet_connect_stellar_unreadable_operation">Cette demande contient une opération (%1$s) dont ce portefeuille ne peut pas afficher l\'effet. Ne continuez que si vous faites entièrement confiance à cette application.</string>
+    <string name="wallet_connect_stellar_foreign_source">Cette transaction concerne un autre compte que votre portefeuille actif.</string>
 </resources>

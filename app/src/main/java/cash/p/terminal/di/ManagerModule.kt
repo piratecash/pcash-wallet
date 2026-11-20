@@ -410,7 +410,7 @@ val managerModule = module {
     single {
         WCManager(accountManager = get()).also {
             it.addWcHandler(WCHandlerEvm(get(), get()))
-            it.addWcHandler(WCHandlerStellar(get()))
+            it.addWcHandler(WCHandlerStellar(get(), get()))
         }
     }
     singleOf(::WCSessionManager)

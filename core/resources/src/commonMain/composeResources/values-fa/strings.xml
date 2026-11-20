@@ -2595,4 +2595,39 @@
     <string name="desktop_password_save_failed">ذخیره رمز عبور ممکن نشد. لطفاً دوباره تلاش کنید</string>
     <string name="tron_controlled_by_others_title">ممکن است دیگران این حساب را کنترل کنند</string>
     <string name="tron_controlled_by_others_warning">مجوزهای این حساب تغییر کرده است: ممکن است کلیدهای دیگری آن را کنترل کنند. وجوهی که به آن ارسال می‌کنید ممکن است بدون دخالت شما برداشت شوند. فقط در صورتی آن را شارژ کنید که بدانید این کلیدها متعلق به چه کسی است.</string>
+
+    <!-- WalletConnect Stellar -->
+    <string name="wallet_connect_stellar_op_payment">پرداخت</string>
+    <string name="wallet_connect_stellar_op_account_merge">ادغام حساب (کل موجودی را ارسال می‌کند)</string>
+    <string name="wallet_connect_stellar_op_path_payment">پرداخت با تبدیل</string>
+    <string name="wallet_connect_stellar_op_sell_offer">پیشنهاد فروش</string>
+    <string name="wallet_connect_stellar_op_buy_offer">پیشنهاد خرید</string>
+    <string name="wallet_connect_stellar_op_set_options">تغییر تنظیمات حساب</string>
+    <string name="wallet_connect_stellar_amount">مقدار</string>
+    <string name="wallet_connect_stellar_max_sent">حداکثر ارسال</string>
+    <string name="wallet_connect_stellar_min_received">حداقل دریافت</string>
+    <string name="wallet_connect_stellar_received">دریافتی</string>
+    <string name="wallet_connect_stellar_asset">دارایی</string>
+    <string name="wallet_connect_stellar_asset_issuer">صادرکننده دارایی</string>
+    <string name="wallet_connect_stellar_trust_limit">سقف اعتماد</string>
+    <string name="wallet_connect_stellar_selling">فروش</string>
+    <string name="wallet_connect_stellar_buying">خرید</string>
+    <string name="wallet_connect_stellar_source_account">حساب مبدأ</string>
+    <string name="wallet_connect_stellar_signer">امضاکننده</string>
+    <string name="wallet_connect_stellar_signer_weight">وزن امضاکننده</string>
+    <string name="wallet_connect_stellar_master_key_weight">وزن کلید اصلی</string>
+    <string name="wallet_connect_stellar_low_threshold">آستانه پایین</string>
+    <string name="wallet_connect_stellar_medium_threshold">آستانه متوسط</string>
+    <string name="wallet_connect_stellar_high_threshold">آستانه بالا</string>
+    <string name="wallet_connect_stellar_set_flags">تنظیم پرچم‌ها</string>
+    <string name="wallet_connect_stellar_clear_flags">پاک کردن پرچم‌ها</string>
+    <string name="wallet_connect_stellar_home_domain">دامنه اصلی</string>
+    <string name="wallet_connect_stellar_inflation_destination">مقصد تورم</string>
+    <string name="wallet_connect_stellar_set_options_title">تغییر کنترل حساب</string>
+    <string name="wallet_connect_stellar_set_options">این درخواست امضاکنندگان، آستانه‌ها یا پرچم‌های حساب شما را تغییر می‌دهد. با تأیید آن ممکن است کنترل حساب به شخص دیگری برسد. فقط در صورتی ادامه دهید که کاملاً به این برنامه اعتماد دارید.</string>
+    <string name="wallet_connect_stellar_account_merge_title">بستن حساب</string>
+    <string name="wallet_connect_stellar_account_merge">این درخواست حساب Stellar شما را می‌بندد و کل موجودی آن را به آدرس دیگری می‌فرستد. فقط در صورتی ادامه دهید که کاملاً به این برنامه اعتماد دارید.</string>
+    <string name="wallet_connect_stellar_unreadable_operation_title">عملیات ناخوانا</string>
+    <string name="wallet_connect_stellar_unreadable_operation">این درخواست شامل عملیاتی (%1$s) است که کیف پول نمی‌تواند اثر آن را نشان دهد. فقط در صورتی ادامه دهید که کاملاً به این برنامه اعتماد دارید.</string>
+    <string name="wallet_connect_stellar_foreign_source">این تراکنش مربوط به حسابی غیر از کیف پول فعال شماست.</string>
 </resources>
