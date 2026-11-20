@@ -7,6 +7,7 @@ import cash.p.terminal.core.providers.SharedAppConfig
 import cash.p.terminal.core.storage.StorageRouter
 import cash.p.terminal.core.storage.liveAccountIds
 import cash.p.terminal.core.storage.liveAccountIds
+import cash.p.terminal.wallet.ActiveAccountState
 import cash.p.terminal.wallet.IAccountManager
 import co.touchlab.kermit.Logger
 import com.tonapps.wallet.data.tonconnect.entities.DAppEntity
@@ -26,7 +27,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.sync.Mutex
@@ -54,11 +58,23 @@ class TonConnectManager(
 
     val sendRequestFlow: Flow<SignTransaction> =
         kitState.flatMapLatest { it?.sendRequestFlow ?: emptyFlow() }
+            .filter { request ->
+                // A request may arrive before the first unlock loads a level; decide against the unlocked one.
+                accountManager.activeAccountStateFlow.first { it is ActiveAccountState.ActiveAccount }
+                isVisible(request.dApp)
+            }
     private val _dappRequestFlow = MutableSharedFlow<DAppRequest>()
     val dappRequestFlow
         get() = _dappRequestFlow.asSharedFlow()
 
-    fun getDApps(): Flow<List<DAppEntity>> = kitState.flatMapLatest { it?.getDApps() ?: emptyFlow() }
+    fun getDApps(): Flow<List<DAppEntity>> =
+        kitState.flatMapLatest { it?.getDApps() ?: emptyFlow() }
+            .map { dApps -> dApps.filter(::isVisible) }
+
+    /** The kit holds the sessions of every level; only wallets loaded for the current one may surface. */
+    private fun isVisible(dApp: DAppEntity): Boolean =
+        accountManager.visibleAccounts?.accountIds
+            ?.contains(TonConnectWalletId.parse(dApp.walletId).accountId) == true
 
     fun start() {
         dispatcherProvider.applicationScope.launch {
