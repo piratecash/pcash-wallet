@@ -37,6 +37,17 @@ class AccountsStorageTest {
     }
 
     @Test
+    fun allAccounts_nameSavedWithBlankLines_isListedWithSingleLineName() {
+        val records = mutableListOf<AccountRecord>()
+        every { dao.insert(capture(records)) } just Runs
+        every { dao.getAll(0) } returns records
+
+        storage.save(watchAccount("Wallet 11\n\n\n", AccountType.EvmAddress("0x")))
+
+        assertEquals(listOf("Wallet 11"), storage.allAccounts(0).map { it.name })
+    }
+
+    @Test
     fun save_zcashSaplingSpendingKey_roundTripsBackToTheSameType() {
         assertRoundTrip(AccountType.ZCashSaplingKey(SPENDING_KEY))
     }

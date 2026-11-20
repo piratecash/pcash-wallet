@@ -7,6 +7,7 @@ import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountCleaner
 import cash.p.terminal.wallet.AccountDeletionPreflight
 import cash.p.terminal.wallet.IAccountManager
+import cash.p.terminal.wallet.IAccountsStorage
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.Token
@@ -33,6 +34,7 @@ class AccountCleaner(
     private val thorchainKitManagers: ThorchainKitManagers,
     private val evmBlockchainManager: EvmBlockchainManager,
     private val deletionPreflight: AccountDeletionPreflight,
+    private val accountsStorage: IAccountsStorage,
 ) : IAccountCleaner {
 
     /** Storage rows go last: their failure must reach the caller without skipping the wipes above. */
@@ -69,7 +71,7 @@ class AccountCleaner(
         if (isWalletActive(accountId, token)) return
         if (token.blockchainType != BlockchainType.Monero) return clearWalletData(accountId, token.blockchainType)
 
-        val account = accountManager.account(accountId) ?: return
+        val account = liveOrStoredAccount(accountId) ?: return
         // Only its device can recreate a device wallet: RescanMoneroUseCase applies its height instead.
         if (account.type !is AccountType.HardwareDevice) clearMoneroWalletData(account)
     }
@@ -100,10 +102,14 @@ class AccountCleaner(
     ) {
         when (blockchainType) {
             is BlockchainType.Zcash -> clearZCashWalletDataUseCase.invoke(accountId)
-            is BlockchainType.Monero -> accountManager.account(accountId)?.let { clearMoneroWalletData(it) }
+            is BlockchainType.Monero -> liveOrStoredAccount(accountId)?.let { clearMoneroWalletData(it) }
             else -> Unit
         }
     }
+
+    // A tombstoned account is no longer in the live cache.
+    private fun liveOrStoredAccount(accountId: String): Account? =
+        accountManager.account(accountId) ?: accountsStorage.loadAccount(accountId)
 
     private suspend fun clearMoneroWalletData(account: Account) {
         removeMoneroWalletFilesUseCase(account)

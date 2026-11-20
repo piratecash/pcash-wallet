@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -25,7 +24,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -63,6 +61,7 @@ import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.captionSB_grey
 import cash.p.terminal.ui_compose.components.subhead2_grey
+import cash.p.terminal.ui.compose.components.coinIconPlate
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.chartview.rememberAsyncImagePainterWithFallback
 
@@ -223,7 +222,7 @@ private fun CoinRankCell(
                 modifier = Modifier
                     .padding(end = 16.dp)
                     .size(32.dp)
-                    .clip(RoundedCornerShape(8.dp)),
+                    .coinIconPlate(),
             )
             Column(
                 modifier = Modifier.weight(1f)

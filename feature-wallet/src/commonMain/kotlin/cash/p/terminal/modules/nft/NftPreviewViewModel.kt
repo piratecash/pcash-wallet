@@ -23,7 +23,9 @@ import kotlinx.coroutines.launch
 
 data class NftPreviewUiState(
     val hidden: Boolean = false,
+    val artworkConcealed: Boolean = false,
     val canReveal: Boolean = false,
+    val namesRevealed: Boolean = false,
     val transferAvailability: NftTransferAvailability = NftTransferAvailability.Loading,
     val domainExpiry: NftDomainExpiry? = null,
     val trust: NftTrust = NftTrust.Whitelist,
@@ -111,6 +113,12 @@ class NftPreviewViewModel(
         uiState = buildState()
     }
 
+    /** The page outlives a pushed transfer page, so leaving it must conceal again. */
+    fun onPause() {
+        revealed = false
+        uiState = buildState()
+    }
+
     /** The NFT may have been listed or transferred while the page was away. */
     fun onResume() {
         transferCheckJob?.cancel()
@@ -150,10 +158,13 @@ class NftPreviewViewModel(
 
     private fun buildState(): NftPreviewUiState {
         val trust = effectiveTrust()
-        val canBurn = transferAvailability is NftTransferAvailability.Available && trust != NftTrust.Whitelist
+        val untrusted = trust != NftTrust.Whitelist
+        val canBurn = transferAvailability is NftTransferAvailability.Available && untrusted
         return NftPreviewUiState(
             hidden = hiddenFlow.value && !revealed,
-            canReveal = hiddenFlow.value,
+            artworkConcealed = untrusted && !revealed,
+            canReveal = hiddenFlow.value || untrusted,
+            namesRevealed = hiddenFlow.value && revealed,
             transferAvailability = transferAvailability,
             domainExpiry = domainExpiry,
             trust = trust,

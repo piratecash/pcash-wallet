@@ -32,6 +32,7 @@ import cash.p.terminal.resources.ManageAccount_Name
 import cash.p.terminal.resources.Restore_Advanced_Title
 import cash.p.terminal.resources.Restore_PrivateKey
 import cash.p.terminal.resources.Restore_PrivateKeyHint
+import cash.p.terminal.ui.compose.secureKeyboardEntry
 
 @Composable
 fun RestorePrivateKey(
@@ -74,6 +75,7 @@ fun RestorePrivateKey(
 
             HeaderText(stringResource(Res.string.ManageAccount_Name))
             FormsInput(
+                singleLine = true,
                 modifier = Modifier.padding(horizontal = 16.dp),
                 initial = viewModel.accountName,
                 pasteEnabled = false,
@@ -87,7 +89,7 @@ fun RestorePrivateKey(
             Spacer(Modifier.height(32.dp))
 
             FormsInputMultiline(
-                modifier = Modifier.padding(horizontal = 16.dp),
+                modifier = Modifier.padding(horizontal = 16.dp).secureKeyboardEntry(),
                 hint = stringResource(Res.string.Restore_PrivateKeyHint),
                 state = viewModel.inputState,
                 qrScannerNavigation = navigation,

@@ -33,6 +33,7 @@ import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.CellMultilineClear
 import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.body_leah
+import cash.p.terminal.ui.compose.components.coinIconPlate
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.chartview.rememberAsyncImagePainterWithFallback
 import io.horizontalsystems.core.entities.Blockchain
@@ -110,7 +111,8 @@ private fun BlockchainCell(
                     ),
                     modifier = Modifier
                         .padding(end = 16.dp)
-                        .size(32.dp),
+                        .size(32.dp)
+                        .coinIconPlate(),
                     contentDescription = null
                 )
                 body_leah(

@@ -27,7 +27,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
@@ -89,6 +88,7 @@ import cash.p.terminal.ui_compose.components.body_grey
 import cash.p.terminal.ui_compose.components.rememberHudMessenger
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
+import cash.p.terminal.ui.compose.components.coinIconPlate
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Token
 import kotlinx.coroutines.launch
@@ -382,7 +382,7 @@ private fun GroupHeader(
                 modifier = Modifier
                     .padding(end = 16.dp, top = 12.dp, bottom = 12.dp)
                     .size(32.dp)
-                    .clip(CircleShape)
+                    .coinIconPlate()
             )
         }
 
@@ -462,7 +462,7 @@ private fun TokenRow(
             modifier = Modifier
                 .padding(end = 16.dp, top = 12.dp, bottom = 12.dp)
                 .size(iconSize)
-                .clip(CircleShape)
+                .coinIconPlate()
         )
         Column(
             modifier = Modifier

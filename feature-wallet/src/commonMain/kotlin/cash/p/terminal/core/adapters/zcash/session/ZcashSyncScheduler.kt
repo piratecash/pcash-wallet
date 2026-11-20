@@ -31,6 +31,7 @@ class ZcashSyncScheduler(
     private val uptimeProvider: UptimeProvider,
     private val selector: ZcashServerSelector,
     private val prober: ZcashServerProber,
+    private val blockDownloadPolicy: ZcashBlockDownloadPolicy,
     dispatcherProvider: DispatcherProvider,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + dispatcherProvider.io)
@@ -77,7 +78,7 @@ class ZcashSyncScheduler(
         // The walk may have taken long enough for offline mode to arrive in the meantime.
         if (session.isNetworkPaused()) return POLL_INTERVAL_MS
         val breaksBefore = prober.streamBreaks()
-        val result = session.sync()
+        val result = session.sync(blockDownloadPolicy.blockDownload)
         if (result !is ZcashSessionResult.Success) {
             remove(session)
             return 0

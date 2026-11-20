@@ -39,6 +39,7 @@ import cash.p.terminal.ui.compose.components.Badge
 import cash.p.terminal.ui_compose.components.CellMultilineClear
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.B2
+import cash.p.terminal.ui.compose.components.coinIconPlate
 import cash.p.terminal.ui_compose.components.D1
 import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
@@ -100,7 +101,8 @@ fun FilterCoinScreen(navigation: HSNavigation, viewModel: TransactionsViewModel)
                                         ),
                                         modifier = Modifier
                                             .padding(end = 16.dp)
-                                            .size(24.dp),
+                                            .size(24.dp)
+                                            .coinIconPlate(),
                                         contentDescription = null
                                     )
                                     Column {

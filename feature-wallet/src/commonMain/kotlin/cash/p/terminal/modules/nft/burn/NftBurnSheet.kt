@@ -46,7 +46,7 @@ import org.koin.core.parameter.parametersOf
 class NftBurnSheet(
     private val item: NftItemRecord,
     private val domain: String?,
-    private val namesRevealed: Boolean,
+    internal val namesRevealed: Boolean,
 ) : HSBottomSheet() {
 
     /** [outcome] is [NftOperationOutcome.Done] or [NftOperationOutcome.Ended]. */
@@ -97,10 +97,11 @@ fun HSNavigation.rememberNftBurn(
         }
         onFinish(result)
     }
-    val burn = rememberTransferAction<Pair<NftItemRecord, String?>> { (item, domain) ->
-        launcher.slideFromBottom(NftBurnSheet(item, domain, revealed), item.owner)
+    val burn = rememberTransferAction<Triple<NftItemRecord, String?, Boolean>> { (item, domain, shown) ->
+        launcher.slideFromBottom(NftBurnSheet(item, domain, shown), item.owner)
     }
-    return { item, domain -> burn(item to domain) }
+    // Read at the click: the PIN page pauses the caller, which masks the names again.
+    return { item, domain -> burn(Triple(item, domain, revealed)) }
 }
 
 @Composable

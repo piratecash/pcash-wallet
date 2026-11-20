@@ -50,6 +50,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import cash.p.terminal.shared.main.ScreenCaptureProtection
 
 /**
  * While locked nothing of the app is left in the window: not a node, not a layer, not a composition.
@@ -182,6 +183,7 @@ class DesktopLockIsolationDesktopTest {
             navigation = navigation,
             hudMessenger = remember { DesktopHudMessenger() },
             urlOpener = remember { NoUrlOpener },
+            captureProtection = remember { ScreenCaptureProtection() },
         )
     }
 

@@ -45,6 +45,7 @@ import cash.p.terminal.ui_compose.entities.FormsInputStateWarning
 import cash.p.terminal.ui_compose.theme.ColoredTextStyle
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import org.jetbrains.compose.resources.painterResource
+import cash.p.terminal.ui.compose.secureKeyboardEntry
 
 @Composable
 fun FormsInputPassword(
@@ -97,7 +98,7 @@ fun FormsInputPassword(
             verticalAlignment = Alignment.CenterVertically
         ) {
             BasicTextField(
-                modifier = Modifier
+                modifier = Modifier.secureKeyboardEntry()
                     .padding(horizontal = 16.dp, vertical = 12.dp)
                     .weight(1f),
                 value = textState.value,

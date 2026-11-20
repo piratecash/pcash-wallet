@@ -68,6 +68,7 @@ import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.body_lucian
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.components.rememberHudMessenger
+import cash.p.terminal.ui.compose.components.coinIconPlate
 import cash.p.terminal.ui_compose.entities.DataState
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.chartview.rememberAsyncImagePainterWithFallback
@@ -313,7 +314,8 @@ private fun ContactAddress(
         Image(
             modifier = Modifier
                 .padding(end = 16.dp)
-                .size(32.dp),
+                .size(32.dp)
+                .coinIconPlate(),
             painter = rememberAsyncImagePainterWithFallback(
                 model = addressViewItem.blockchain.type.imageUrl,
                 error = painterResource(Res.drawable.ic_platform_placeholder_32)

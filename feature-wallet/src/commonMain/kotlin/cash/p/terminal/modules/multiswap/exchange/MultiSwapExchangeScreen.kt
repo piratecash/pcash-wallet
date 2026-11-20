@@ -82,6 +82,7 @@ import cash.p.terminal.ui_compose.components.caption_grey
 import cash.p.terminal.ui_compose.components.subhead1_grey
 import cash.p.terminal.ui_compose.components.subhead1_leah
 import cash.p.terminal.ui_compose.components.subhead2_leah
+import cash.p.terminal.ui.compose.components.coinIconPlate
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.core.entities.Currency
 import io.horizontalsystems.core.entities.CurrencyValue
@@ -528,7 +529,8 @@ internal fun Leg1Header(
                 modifier = Modifier
                     .align(Alignment.TopStart)
                     .padding(top = 4.dp, start = 6.dp)
-                    .size(24.dp),
+                    .size(24.dp)
+                    .coinIconPlate(),
                 url = coinIconUrlIn,
             )
             Box(
@@ -543,7 +545,8 @@ internal fun Leg1Header(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(bottom = 4.dp, end = 6.dp)
-                    .size(24.dp),
+                    .size(24.dp)
+                    .coinIconPlate(),
                 url = coinIconUrlOut,
             )
         }
