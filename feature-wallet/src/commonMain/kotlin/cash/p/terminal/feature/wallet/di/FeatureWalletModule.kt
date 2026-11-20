@@ -541,7 +541,7 @@ val featureWalletModule = module {
     viewModelOf(::TonConnectListViewModel)
     viewModel { params -> TonConnectNewViewModel(params.get(), get(), get(), get(), get(), get()) }
     viewModel { params ->
-        TonConnectSendRequestViewModel(params.get(), get(), get(), get(), get(), get(), get(), get())
+        TonConnectSendRequestViewModel(params.get(), get(), get(), get(), get(), get(), get(), get(), get())
     }
     factoryOf(::TransactionInfoHelper)
     viewModel { params -> NftPreviewViewModel(params.get(), params.get(), get(), get(), get(), get(), get()) }

@@ -548,6 +548,8 @@
     <string name="TonConnect_NewConnect">اتصال جدید</string>
     <string name="TonConnect_Error_InvalidUrl">آدرس URL نامعتبر</string>
     <string name="ton_connect_request_expired">مهلت تأیید به پایان رسیده است. عملیات را در وب‌سایت تکرار کنید.</string>
+    <string name="ton_connect_unknown_action_warning">برنامه نتوانست این عملیات را تشخیص دهد. پیش از تأیید، مبالغ و نشانی‌های زیر را بررسی کنید.</string>
+    <string name="ton_connect_action_unknown">نامشخص</string>
     <string name="TonConnect_Unnamed">بدون نام</string>
     <string name="TonConnect_Wallet">کیف پول</string>
     <string name="TonConnect_ChooseWallet">انتخاب کیف پول</string>
@@ -2536,6 +2538,7 @@
     <string name="nft_burn_body">%1$s به آدرس سوزاندن ارسال می‌شود و برای همیشه از کیف پول حذف می‌شود. این کار قابل بازگشت نیست.</string>
     <string name="nft_burn_domain_body">دامنه به آدرس سوزاندن ارسال می‌شود و آن را از دست می‌دهید. انتقال‌ها به %1$s دیگر به کیف پول شما نمی‌رسند. این کار قابل بازگشت نیست.</string>
     <string name="nft_burn_address">آدرس سوزاندن</string>
+    <string name="nft_address">نشانی NFT</string>
     <string name="nft_burn_confirm">سوزاندن</string>
     <string name="nft_burn_sent">NFT برای سوزاندن ارسال شد</string>
     <string name="nft_domain_burn_sent">دامنه برای سوزاندن ارسال شد</string>

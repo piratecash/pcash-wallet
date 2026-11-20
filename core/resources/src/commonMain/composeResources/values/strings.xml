@@ -672,6 +672,8 @@ Proceed only if you\u0027re sure.</string>
     <string name="TonConnect_NewConnect">New Connection</string>
     <string name="TonConnect_Error_InvalidUrl">Invalid URL Address</string>
     <string name="ton_connect_request_expired">The time to confirm has expired. Repeat the operation on the website.</string>
+    <string name="ton_connect_unknown_action_warning">The app could not recognize this action. Check the amounts and addresses below before confirming.</string>
+    <string name="ton_connect_action_unknown">Unknown</string>
     <string name="TonConnect_Unnamed">Unnamed</string>
     <string name="TonConnect_Url" translatable="false">URL</string>
     <string name="TonConnect_Wallet">Wallet</string>
@@ -2949,6 +2951,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="nft_burn_body">%1$s will be sent to the burn address and will disappear from your wallet forever. This cannot be undone.</string>
     <string name="nft_burn_domain_body">The domain will be sent to the burn address and you will lose it. Transfers to %1$s will no longer reach your wallet. This cannot be undone.</string>
     <string name="nft_burn_address">Burn address</string>
+    <string name="nft_address">NFT address</string>
     <string name="nft_burn_confirm">Burn</string>
     <string name="nft_burn_sent">NFT sent for burning</string>
     <string name="nft_domain_burn_sent">Domain sent for burning</string>

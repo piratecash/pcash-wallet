@@ -532,6 +532,8 @@
     <string name="TonConnect_NewConnect">Новое подключение</string>
     <string name="TonConnect_Error_InvalidUrl">Недействительный URL-адрес</string>
     <string name="ton_connect_request_expired">Время на подтверждение истекло. Повторите операцию на сайте.</string>
+    <string name="ton_connect_unknown_action_warning">Приложение не смогло распознать это действие. Перед подтверждением проверьте суммы и адреса ниже.</string>
+    <string name="ton_connect_action_unknown">Неизвестно</string>
     <string name="TonConnect_Unnamed">Безымянный</string>
     <string name="TonConnect_Wallet">Кошелек</string>
     <string name="TonConnect_ChooseWallet">Выберите кошелек</string>
@@ -2720,6 +2722,7 @@
     <string name="nft_burn_body">%1$s будет отправлен на адрес сжигания и навсегда исчезнет из кошелька. Отменить это нельзя.</string>
     <string name="nft_burn_domain_body">Домен будет отправлен на адрес сжигания, и вы его потеряете. Переводы на %1$s перестанут приходить на ваш кошелёк. Отменить это нельзя.</string>
     <string name="nft_burn_address">Адрес сжигания</string>
+    <string name="nft_address">Адрес NFT</string>
     <string name="nft_burn_confirm">Сжечь</string>
     <string name="nft_burn_sent">NFT отправлен на сжигание</string>
     <string name="nft_domain_burn_sent">Домен отправлен на сжигание</string>

@@ -6,6 +6,7 @@ import cash.p.terminal.core.managers.TonConnectManager
 import cash.p.terminal.core.managers.TonKitManager
 import cash.p.terminal.core.managers.TonKitWrapper
 import cash.p.terminal.core.managers.toTonWalletFullAccess
+import cash.p.terminal.core.storage.NftItemStorage
 import cash.p.terminal.modules.offline.OfflineOperationGate
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
@@ -23,8 +24,8 @@ import io.horizontalsystems.sqlcipher.room.InsufficientDatabaseMigrationSpaceExc
 import io.horizontalsystems.tonkit.core.TonKit
 import io.horizontalsystems.tonkit.core.TonWallet
 import io.horizontalsystems.tonkit.core.TransactionSigner
-import io.horizontalsystems.tonkit.models.Event
 import io.horizontalsystems.tonkit.models.SignTransaction
+import io.horizontalsystems.tonkit.models.TransactionDetails
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -210,7 +211,7 @@ class TonConnectSendRequestViewModelTest {
     fun uiState_openScopesChangeWhileDetailsLoad_keepsConfirmDisabled() = testScope.runTest {
         stubPreparableRequest()
         requestValidUntil = NO_DEADLINE
-        val details = CompletableDeferred<Event>()
+        val details = CompletableDeferred<TransactionDetails>()
         coEvery { transactionSigner.getDetails(any(), any<TonWallet.FullAccess>()) } coAnswers { details.await() }
         val viewModel = createViewModel()
         runCurrent()
@@ -300,6 +301,19 @@ class TonConnectSendRequestViewModelTest {
 
         assertIs<TonConnectSendRequestError.Expired>(viewModel.uiState.error)
         coVerify(exactly = 1) { tonConnectManager.badRequest(any()) }
+    }
+
+    @Test
+    fun prepareEnv_nftLookupFails_staysConfirmable() = testScope.runTest {
+        stubPreparableRequest()
+        requestValidUntil = NO_DEADLINE
+        coEvery { nftItemStorage.items(any(), any()) } throws IllegalStateException("db closed")
+
+        val viewModel = createViewModel()
+        runCurrent()
+
+        assertNull(viewModel.uiState.error)
+        assertTrue(viewModel.uiState.confirmEnabled)
     }
 
     @Test
@@ -489,7 +503,7 @@ class TonConnectSendRequestViewModelTest {
     @Test
     fun reject_duringPreparation_deadlineDoesNotReportBadRequest() = testScope.runTest {
         stubPreparableRequest()
-        val details = CompletableDeferred<Event>()
+        val details = CompletableDeferred<TransactionDetails>()
         coEvery { transactionSigner.getDetails(any(), any<TonWallet.FullAccess>()) } coAnswers { details.await() }
         val viewModel = createViewModel()
         runCurrent()
@@ -504,6 +518,8 @@ class TonConnectSendRequestViewModelTest {
         coVerify(exactly = 1) { tonConnectManager.reject(any()) }
         coVerify(exactly = 0) { tonConnectManager.badRequest(any()) }
     }
+
+    private val nftItemStorage = mockk<NftItemStorage>(relaxed = true)
 
     /** Lets prepareEnv finish without an error, so Confirm is offered and the timer runs. */
     private fun stubPreparableRequest() {
@@ -534,6 +550,7 @@ class TonConnectSendRequestViewModelTest {
         hardwarePublicKeyStorage = mockk<IHardwarePublicKeyStorage>(relaxed = true),
         offlineOperationGate = offlineOperationGate,
         coinManager = coinManager,
+        nftItemStorage = nftItemStorage,
     )
 
     private fun sendRequest(walletId: String, recipient: String) = mockk<SendRequestEntity> {

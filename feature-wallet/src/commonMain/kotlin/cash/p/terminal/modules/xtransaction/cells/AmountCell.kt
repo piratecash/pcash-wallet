@@ -1,6 +1,7 @@
 package cash.p.terminal.modules.xtransaction.cells
 
 import androidx.compose.foundation.Image
+import cash.p.terminal.resources.nft_address
 import cash.p.terminal.resources.CoinPlatforms_Native
 import cash.p.terminal.resources.Res
 import androidx.compose.foundation.layout.Column
@@ -35,11 +36,11 @@ import cash.p.terminal.ui_compose.components.CellUniversal
 fun AmountCell(
     title: String,
     coinIcon: Painter,
-    coinProtocolType: String,
+    coinProtocolType: String?,
     coinAmount: String,
     coinAmountColor: Color,
     fiatAmount: String?,
-    onClick: () -> Unit,
+    onClick: (() -> Unit)?,
     borderTop: Boolean = true
 ) {
     CellUniversal(
@@ -57,8 +58,10 @@ fun AmountCell(
         HSpacer(16.dp)
         Column {
             subhead2_leah(text = title)
-            VSpacer(height = 1.dp)
-            caption_grey(text = coinProtocolType)
+            coinProtocolType?.let {
+                VSpacer(height = 1.dp)
+                caption_grey(text = it)
+            }
         }
         HFillSpacer(minWidth = 8.dp)
         Column(horizontalAlignment = Alignment.End) {
@@ -86,6 +89,7 @@ fun AmountCellTV(
     navigation: HSNavigation,
     borderTop: Boolean = true
 ) {
+    val nft = transactionValue as? TransactionValue.NftValue
     AmountCell(
         title = title,
         coinIcon = coinIconPainter(
@@ -93,8 +97,11 @@ fun AmountCellTV(
             alternativeUrl = transactionValue.alternativeCoinIconUrl,
             placeholder = transactionValue.coinIconPlaceholder
         ),
-        coinProtocolType = transactionValue.badge
-            ?: stringResource(Res.string.CoinPlatforms_Native),
+        coinProtocolType = if (nft != null) {
+            nft.tokenName
+        } else {
+            transactionValue.badge ?: stringResource(Res.string.CoinPlatforms_Native)
+        },
         coinAmount = coinAmountString(
             value = transactionValue.decimalValue?.abs(),
             coinCode = transactionValue.coinCode,
@@ -102,19 +109,33 @@ fun AmountCellTV(
             sign = coinAmountSign.sign()
         ),
         coinAmountColor = coinAmountColor.color(),
-        fiatAmount = fiatAmountString(
-            value = transactionInfoHelper.getXRate(transactionValue.coinUid)
-                ?.let {
-                    transactionValue.decimalValue?.abs()
-                        ?.multiply(it)
-                },
-            fiatSymbol = transactionInfoHelper.getCurrencySymbol()
-        ),
-        onClick = {
-            navigation.slideFromRight(CoinPage(CoinFragmentInput(transactionValue.coinUid)))
+        fiatAmount = if (nft != null) {
+            null
+        } else {
+            fiatAmountString(
+                value = transactionInfoHelper.getXRate(transactionValue.coinUid)
+                    ?.let {
+                        transactionValue.decimalValue?.abs()
+                            ?.multiply(it)
+                    },
+                fiatSymbol = transactionInfoHelper.getCurrencySymbol()
+            )
+        },
+        onClick = if (nft != null) {
+            null
+        } else {
+            { navigation.slideFromRight(CoinPage(CoinFragmentInput(transactionValue.coinUid))) }
         },
         borderTop = borderTop,
     )
+    nft?.let {
+        AddressCell(
+            title = stringResource(Res.string.nft_address),
+            value = it.mintAddress,
+            showAddContactButton = false,
+            blockchainType = null,
+        )
+    }
 }
 
 enum class AmountSign {

@@ -548,6 +548,8 @@
     <string name="TonConnect_NewConnect">Nova conexão</string>
     <string name="TonConnect_Error_InvalidUrl">Endereço URL inválido</string>
     <string name="ton_connect_request_expired">O tempo para confirmar expirou. Repita a operação no site.</string>
+    <string name="ton_connect_unknown_action_warning">A aplicação não conseguiu reconhecer esta ação. Verifique os montantes e os endereços abaixo antes de confirmar.</string>
+    <string name="ton_connect_action_unknown">Desconhecida</string>
     <string name="TonConnect_Unnamed">Sem nome</string>
     <string name="TonConnect_Wallet">Carteira</string>
     <string name="TonConnect_ChooseWallet">Escolher carteira</string>
@@ -2541,6 +2543,7 @@
     <string name="nft_burn_body">%1$s será enviado para o endereço de queima e desaparecerá da carteira para sempre. Esta ação não pode ser desfeita.</string>
     <string name="nft_burn_domain_body">O domínio será enviado para o endereço de queima e irá perdê-lo. As transferências para %1$s deixarão de chegar à sua carteira. Esta ação não pode ser desfeita.</string>
     <string name="nft_burn_address">Endereço de queima</string>
+    <string name="nft_address">Endereço do NFT</string>
     <string name="nft_burn_confirm">Queimar</string>
     <string name="nft_burn_sent">NFT enviado para queima</string>
     <string name="nft_domain_burn_sent">Domínio enviado para queima</string>

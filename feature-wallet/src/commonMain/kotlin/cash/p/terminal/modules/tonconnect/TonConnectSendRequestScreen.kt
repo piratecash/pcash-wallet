@@ -8,6 +8,9 @@ import cash.p.terminal.resources.Hud_Text_Done
 import cash.p.terminal.resources.Button_Reject
 import cash.p.terminal.resources.Button_Confirm
 import cash.p.terminal.resources.Button_Close
+import cash.p.terminal.resources.Send_Confirmation_YouSend
+import cash.p.terminal.resources.ton_connect_unknown_action_warning
+import cash.p.terminal.resources.ton_connect_action_unknown
 import cash.p.terminal.resources.Res
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,7 +28,11 @@ import org.koin.compose.koinInject
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.feature.wallet.rememberSecretAction
 import cash.p.terminal.entities.transactionrecords.ton.TonTransactionRecord
+import cash.p.terminal.entities.TransactionValue
 import cash.p.terminal.modules.confirm.ConfirmTransactionScreen
+import cash.p.terminal.modules.xtransaction.cells.AmountCellTV
+import cash.p.terminal.modules.xtransaction.cells.AmountColor
+import cash.p.terminal.modules.xtransaction.cells.AmountSign
 import cash.p.terminal.modules.xtransaction.cells.HeaderCell
 import cash.p.terminal.modules.xtransaction.helpers.TransactionInfoHelper
 import cash.p.terminal.modules.xtransaction.sections.BurnSection
@@ -44,9 +51,11 @@ import cash.p.terminal.ui_compose.components.LocalHudMessenger
 import cash.p.terminal.ui_compose.components.SectionUniversalLawrence
 import cash.p.terminal.ui_compose.components.SnackbarDuration
 import cash.p.terminal.ui_compose.components.TextImportantError
+import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.VSpacer
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.logger.AppLogger
+import io.horizontalsystems.tonkit.models.Action
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -142,26 +151,95 @@ fun TonConnectSendRequestScreen(
             if (record != null) {
                 val transactionInfoHelper = koinInject<TransactionInfoHelper>()
 
-                Column {
-                    record.actions.forEachIndexed { index, action ->
-                        if (index != 0) {
-                            VSpacer(12.dp)
-                        }
-                        TonConnectRequestActionSection(
-                            action = action,
-                            transactionInfoHelper = transactionInfoHelper,
-                            navigation = navigation
-                        )
-                    }
-                    VSpacer(12.dp)
-
-                    FeeSection(
-                        transactionInfoHelper = transactionInfoHelper,
-                        fee = record.fee,
-                        navigation = navigation
-                    )
-                }
+                TonConnectRequestRecord(
+                    record = record,
+                    uiState = uiState,
+                    transactionInfoHelper = transactionInfoHelper,
+                    navigation = navigation
+                )
             }
+        }
+    }
+}
+
+@Composable
+private fun TonConnectRequestRecord(
+    record: TonTransactionRecord,
+    uiState: TonConnectSendRequestUiState,
+    transactionInfoHelper: TransactionInfoHelper,
+    navigation: HSNavigation,
+) {
+    Column {
+        if (record.hasUnsupportedAction) {
+            TextImportantWarning(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                text = stringResource(Res.string.ton_connect_unknown_action_warning)
+            )
+            VSpacer(12.dp)
+        }
+        record.actions.forEachIndexed { index, action ->
+            if (index != 0) {
+                VSpacer(12.dp)
+            }
+            TonConnectRequestActionSection(
+                action = action,
+                transactionInfoHelper = transactionInfoHelper,
+                navigation = navigation
+            )
+        }
+        if (record.hasUnsupportedAction) {
+            RequestMessageSections(uiState.requestMessages, transactionInfoHelper, navigation)
+            RiskSection(uiState.riskValues, transactionInfoHelper, navigation)
+        }
+        VSpacer(12.dp)
+
+        FeeSection(
+            transactionInfoHelper = transactionInfoHelper,
+            fee = record.fee,
+            navigation = navigation
+        )
+    }
+}
+
+@Composable
+private fun RequestMessageSections(
+    messages: List<TonConnectRequestMessage>,
+    transactionInfoHelper: TransactionInfoHelper,
+    navigation: HSNavigation,
+) {
+    messages.forEach { message ->
+        VSpacer(12.dp)
+        SendCoinSection(
+            transactionValue = message.value,
+            address = message.address,
+            comment = null,
+            sentToSelf = false,
+            navigation = navigation,
+            transactionInfoHelper = transactionInfoHelper,
+            blockchainType = BlockchainType.Ton
+        )
+    }
+}
+
+@Composable
+private fun RiskSection(
+    values: List<TransactionValue>,
+    transactionInfoHelper: TransactionInfoHelper,
+    navigation: HSNavigation,
+) {
+    if (values.isEmpty()) return
+    VSpacer(12.dp)
+    SectionUniversalLawrence {
+        values.forEachIndexed { index, value ->
+            AmountCellTV(
+                title = stringResource(Res.string.Send_Confirmation_YouSend),
+                transactionValue = value,
+                coinAmountColor = AmountColor.Negative,
+                coinAmountSign = AmountSign.Minus,
+                transactionInfoHelper = transactionInfoHelper,
+                navigation = navigation,
+                borderTop = index != 0,
+            )
         }
     }
 }
@@ -256,7 +334,11 @@ fun TonConnectRequestActionSection(
             SectionUniversalLawrence {
                 HeaderCell(
                     title = stringResource(Res.string.Send_Confirmation_Action),
-                    value = actionType.type,
+                    value = if (actionType.type == Action.Type.Unknown.name) {
+                        stringResource(Res.string.ton_connect_action_unknown)
+                    } else {
+                        actionType.type
+                    },
                     painter = null
                 )
             }

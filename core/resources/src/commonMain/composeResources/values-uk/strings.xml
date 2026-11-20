@@ -528,6 +528,8 @@
     <string name="TonConnect_NewConnect">Нове підключення</string>
     <string name="TonConnect_Error_InvalidUrl">Недійсна URL-адреса</string>
     <string name="ton_connect_request_expired">Час на підтвердження минув. Повторіть операцію на сайті.</string>
+    <string name="ton_connect_unknown_action_warning">Застосунок не зміг розпізнати цю дію. Перед підтвердженням перевірте суми та адреси нижче.</string>
+    <string name="ton_connect_action_unknown">Невідомо</string>
     <string name="TonConnect_Unnamed">Без назви</string>
     <string name="TonConnect_Wallet">Гаманець</string>
     <string name="TonConnect_ChooseWallet">Виберіть гаманець</string>
@@ -2695,6 +2697,7 @@
     <string name="nft_burn_body">%1$s буде надіслано на адресу спалювання, і він назавжди зникне з гаманця. Скасувати це неможливо.</string>
     <string name="nft_burn_domain_body">Домен буде надіслано на адресу спалювання, і ви його втратите. Перекази на %1$s більше не надходитимуть на ваш гаманець. Скасувати це неможливо.</string>
     <string name="nft_burn_address">Адреса спалювання</string>
+    <string name="nft_address">Адреса NFT</string>
     <string name="nft_burn_confirm">Спалити</string>
     <string name="nft_burn_sent">NFT надіслано на спалювання</string>
     <string name="nft_domain_burn_sent">Домен надіслано на спалювання</string>

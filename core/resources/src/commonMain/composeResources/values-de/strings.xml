@@ -542,6 +542,8 @@
     <string name="TonConnect_NewConnect">Neue Verbindung</string>
     <string name="TonConnect_Error_InvalidUrl">Ungültige URL-Adresse</string>
     <string name="ton_connect_request_expired">Die Zeit für die Bestätigung ist abgelaufen. Wiederholen Sie den Vorgang auf der Website.</string>
+    <string name="ton_connect_unknown_action_warning">Die App konnte diese Aktion nicht erkennen. Prüfen Sie vor der Bestätigung die Beträge und Adressen unten.</string>
+    <string name="ton_connect_action_unknown">Unbekannt</string>
     <string name="TonConnect_Unnamed">Unbenannt</string>
     <string name="TonConnect_Wallet">Wallet</string>
     <string name="TonConnect_ChooseWallet">Wallet auswählen</string>
@@ -2524,6 +2526,7 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="nft_burn_body">%1$s wird an die Burn-Adresse gesendet und verschwindet für immer aus der Wallet. Dies kann nicht rückgängig gemacht werden.</string>
     <string name="nft_burn_domain_body">Die Domain wird an die Burn-Adresse gesendet und geht verloren. Überweisungen an %1$s kommen nicht mehr in der Wallet an. Dies kann nicht rückgängig gemacht werden.</string>
     <string name="nft_burn_address">Burn-Adresse</string>
+    <string name="nft_address">NFT-Adresse</string>
     <string name="nft_burn_confirm">Verbrennen</string>
     <string name="nft_burn_sent">NFT zum Verbrennen gesendet</string>
     <string name="nft_domain_burn_sent">Domain zum Verbrennen gesendet</string>
