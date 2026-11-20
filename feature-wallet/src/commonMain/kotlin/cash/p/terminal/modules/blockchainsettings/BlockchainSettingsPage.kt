@@ -36,6 +36,7 @@ import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
+import cash.p.terminal.ui.compose.components.coinIconPlate
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.chartview.rememberAsyncImagePainterWithFallback
 import org.jetbrains.compose.resources.painterResource
@@ -158,7 +159,8 @@ private fun BlockchainSettingCell(
         Image(
             modifier = Modifier
                 .padding(horizontal = 16.dp)
-                .size(32.dp),
+                .size(32.dp)
+                .coinIconPlate(),
             painter = rememberAsyncImagePainterWithFallback(
                 model = item.imageUrl,
                 error = painterResource(Res.drawable.ic_platform_placeholder_32)

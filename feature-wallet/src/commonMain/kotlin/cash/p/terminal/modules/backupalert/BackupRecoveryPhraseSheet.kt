@@ -21,6 +21,7 @@ import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Account
+import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.resources.BackupRecoveryPhrase_Description
 import cash.p.terminal.resources.BackupRecoveryPhrase_Later
@@ -30,16 +31,31 @@ import cash.p.terminal.resources.ic_attention_24
 
 class BackupRecoveryPhraseSheet(val input: Account) : HSBottomSheet() {
 
+    /** The opener authorizes it: a sheet-owned launcher is dropped when the PIN page replaces the sheet. */
+    data class ShamirBackupRequested(val accountId: String)
+
     @Composable
     override fun GetContent(navigation: HSNavigation) {
-        BackupRecoveryPhraseScreen(navigation, input)
+        BackupRecoveryPhraseScreen(
+            navigation = navigation,
+            account = input,
+            onShamirBackupClick = if (input.type is AccountType.Slip39) {
+                {
+                    navigation.setResult(this@BackupRecoveryPhraseSheet, ShamirBackupRequested(input.id))
+                    navigation.navigateUpSafely()
+                }
+            } else {
+                null
+            }
+        )
     }
 }
 
 @Composable
 fun BackupRecoveryPhraseScreen(
     navigation: HSNavigation,
-    account: Account
+    account: Account,
+    onShamirBackupClick: (() -> Unit)?
 ) {
     ComposeAppTheme {
         BottomSheetHeader(
@@ -66,6 +82,7 @@ fun BackupRecoveryPhraseScreen(
                 onLocalBackupClick = {
                     navigation.slideFromBottom(getKoinInstance<WalletPages>().backupLocal(account))
                 },
+                onShamirBackupClick = onShamirBackupClick,
                 modifier = Modifier.padding(horizontal = 24.dp)
             )
             VSpacer(12.dp)

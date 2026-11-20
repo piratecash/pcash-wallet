@@ -67,6 +67,7 @@ private const val RECEIVED = 120_000L
 private const val MINED_HEIGHT = 2_500_000
 private const val BROADCAST_HEIGHT = 3_428_200
 private val RAW = byteArrayOf(1, 2, 3)
+private val SENT_TO = listOf("u1EnteredRecipient")
 private val ACCEPTED = BroadcastResult(errorCode = 0, message = TXID)
 private val RELEASED = BroadcastResult(errorCode = -25, message = "refused", inputsReleased = true)
 private val KEPT = BroadcastResult(errorCode = -26, message = "refused", inputsReleased = false)
@@ -488,6 +489,41 @@ class ZcashSessionTest {
             wallet.balance(DB_ACCOUNT_ID, any())
             wallet.broadcast(DB_ACCOUNT_ID, RAW, BROADCAST_HEIGHT, false)
         }
+    }
+
+    @Test
+    fun broadcastReserved_recipientAddresses_remembersThemBetweenReservationAndBroadcast() = runTest {
+        coEvery { wallet.broadcast(any(), any(), any(), any()) } returns ACCEPTED
+        val session = session()
+
+        session.broadcastReserved(RAW, BROADCAST_HEIGHT, requireOwnInputs = true, SENT_TO)
+
+        coVerifyOrder {
+            wallet.reserveForBroadcast(DB_ACCOUNT_ID, RAW, true)
+            wallet.rememberSentAddresses(DB_ACCOUNT_ID, RAW, SENT_TO)
+            wallet.broadcast(DB_ACCOUNT_ID, RAW, BROADCAST_HEIGHT, true)
+        }
+    }
+
+    @Test
+    fun broadcastReserved_rememberingFails_stillBroadcasts() = runTest {
+        coEvery { wallet.rememberSentAddresses(any(), any(), any()) } throws ZcashException("db")
+        coEvery { wallet.broadcast(any(), any(), any(), any()) } returns ACCEPTED
+        val session = session()
+
+        val result = session.broadcastReserved(RAW, BROADCAST_HEIGHT, requireOwnInputs = true, SENT_TO)
+
+        assertEquals(ZcashSessionResult.Success(ACCEPTED), result)
+    }
+
+    @Test
+    fun broadcastReserved_noRecipientAddresses_remembersNothing() = runTest {
+        coEvery { wallet.broadcast(any(), any(), any(), any()) } returns ACCEPTED
+        val session = session()
+
+        session.broadcastReserved(RAW, BROADCAST_HEIGHT, requireOwnInputs = false)
+
+        coVerify(exactly = 0) { wallet.rememberSentAddresses(any(), any(), any()) }
     }
 
     @Test
