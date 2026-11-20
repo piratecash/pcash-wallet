@@ -248,6 +248,9 @@
     <!--Market Search-->
     <string name="EmptyResults">검색 결과가 없습니다</string>
     <string name="transactions_empty_search_results">거래를 찾을 수 없습니다</string>
+    <string name="transactions_search_not_found_in_last">최근 거래 %1$s건에서 찾을 수 없습니다</string>
+    <string name="transactions_search_no_more_in_last">최근 거래 %1$s건에서 더 이상 일치하는 항목이 없습니다</string>
+    <string name="transactions_search_continue">계속 검색</string>
     <string name="Market_Filters">필터</string>
     <string name="Market_AdvancedSearch_Results">결과</string>
     <string name="Market_Search_Hint">검색</string>

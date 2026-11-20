@@ -89,6 +89,7 @@ class TokenBalanceModule {
         val searchActive: Boolean = false,
         val searchQuery: String = "",
         val searchScanning: Boolean = false,
+        val searchPausedCount: String? = null,
         val searchEmptyResult: Boolean = false,
         val offlineSince: Long? = null,
         val moneroHardwareWallet: Boolean = false,

@@ -36,10 +36,18 @@ interface ITransactionRecordRepository : Clearable {
  * @param searchExhausted true when the scan exhausted the source (a further loadNext would be a no-op).
  * @param loadFailed true when the batch is empty only because a source did not answer - an empty
  *   batch with this flag unset is a trustworthy "no transactions".
+ * @param searchScannedCount records this search has scanned so far, summed over sources.
+ * @param searchSessionId changes whenever the search restarts from its first page.
+ * @param searchTimedOut true when the scan step stopped on its time limit or a source did not answer.
+ * @param searchRefresh true when an update re-read an already published search page.
  */
 data class RecordsBatch(
     val records: List<TransactionRecord>,
     val searchCompleted: Boolean = false,
     val searchExhausted: Boolean = false,
     val loadFailed: Boolean = false,
+    val searchScannedCount: Int = 0,
+    val searchSessionId: Long = 0,
+    val searchTimedOut: Boolean = false,
+    val searchRefresh: Boolean = false,
 )

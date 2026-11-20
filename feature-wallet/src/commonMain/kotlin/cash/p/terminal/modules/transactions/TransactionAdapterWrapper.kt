@@ -52,6 +52,8 @@ class TransactionAdapterWrapper(
 ) : Clearable {
     private companion object {
         const val CREATED_MARK_MIN_CONFIDENCE = 0.9
+        const val SEARCH_HEAD_SIZE = 100
+        const val MAX_SEARCH_SYNC_PASSES = 3
     }
 
     private data class PendingRealMatchCandidate(
@@ -77,8 +79,21 @@ class TransactionAdapterWrapper(
         val allLoaded: Boolean = false,
     )
 
+    // revision is the cache revision the newest records were last read at.
+    private class SearchCursor(val key: SourceSearch.Key, var revision: Long) {
+        var newestRawRecord: TransactionRecord? = null
+        var lastRawRecord: TransactionRecord? = null
+        var scannedCount = 0
+        val matches = mutableListOf<TransactionRecord>()
+        var allLoaded = false
+    }
+
     @Volatile
     private var cache = RecordsCache()
+
+    // Guarded by getMutex.
+    private var searchCursor: SearchCursor? = null
+
     internal val cacheRevision: Long get() = cache.revision
     private val coinManager: CoinManager by inject(CoinManager::class.java)
 
@@ -201,8 +216,7 @@ class TransactionAdapterWrapper(
         scanLimit: Int,
         requestedFilterType: FilterTransactionType,
         requestedContact: Contact?,
-        query: String,
-        matcher: TransactionRecordSearchMatcher,
+        sourceSearch: SourceSearch,
     ): SearchPage = getMutex.withLock {
         if (transactionType != requestedFilterType || contact != requestedContact) {
             return@withLock emptySearchPage
@@ -217,25 +231,125 @@ class TransactionAdapterWrapper(
             return@withLock emptySearchPage
         }
 
-        var currentCache = cache
-        var matchedRecords = currentCache.records.matchingRecords(scanLimit, query, matcher)
+        var cursor = searchCursor?.takeIf { it.key == sourceSearch.key }
+            ?: SearchCursor(sourceSearch.key, cache.revision).also { searchCursor = it }
+        // An update during the read is applied before returning. A busy address gets a bounded number
+        // of passes; whatever is left is applied by the refresh the update triggers.
+        var passes = 0
+        do {
+            cursor = syncedSearchCursor(cursor, sourceSearch, requestedFilterType, requestedContact, requestedAddress)
+            while (cursor.matches.size < limit && cursor.scannedCount < scanLimit && !cursor.allLoaded) {
+                val count = scanLimit - cursor.scannedCount
+                readSearchChunk(cursor, count, sourceSearch, requestedFilterType, requestedContact, requestedAddress)
+            }
+        } while (cursor.revision != cache.revision && ++passes < MAX_SEARCH_SYNC_PASSES)
 
-        while (
-            matchedRecords.size < limit &&
-            currentCache.records.size < scanLimit &&
-            !currentCache.allLoaded
-        ) {
-            currentCache = loadRecords(currentCache, scanLimit, requestedFilterType, requestedContact, requestedAddress)
-            matchedRecords = currentCache.records.matchingRecords(scanLimit, query, matcher)
+        SearchPage(
+            records = cursor.matches.take(limit),
+            exhausted = cursor.allLoaded,
+            scannedCount = cursor.scannedCount,
+            frontierTimestamp = cursor.lastRawRecord?.timestamp,
+        )
+    }
+
+    /**
+     * New records arrive on top and recent ones may change, so an update re-reads only the newest
+     * records and keeps the scanned depth; a full rescan would never finish on a busy address.
+     */
+    private suspend fun syncedSearchCursor(
+        cursor: SearchCursor,
+        sourceSearch: SourceSearch,
+        requestedFilterType: FilterTransactionType,
+        requestedContact: Contact?,
+        requestedAddress: String?,
+    ): SearchCursor {
+        val revision = cache.revision
+        if (cursor.revision == revision) return cursor
+        val knownNewest = cursor.newestRawRecord
+        val head = if (knownNewest != null && cursor.scannedCount >= SEARCH_HEAD_SIZE) {
+            readSearchHead(knownNewest, requestedFilterType, requestedAddress)
+        } else {
+            emptyList()
+        }
+        checkFilter(requestedFilterType, requestedContact)
+        if (knownNewest == null || head.isEmpty()) {
+            return SearchCursor(cursor.key, revision).also { searchCursor = it }
         }
 
-        val scannedCount = minOf(currentCache.records.size, scanLimit)
-        SearchPage(
-            records = matchedRecords.take(limit),
-            exhausted = currentCache.allLoaded && currentCache.records.size <= scanLimit,
-            scannedCount = scannedCount,
-            frontierTimestamp = currentCache.records.getOrNull(scannedCount - 1)?.timestamp,
+        val headMatches = mergePendingAndReal(head).filter(sourceSearch::accepts)
+        currentCoroutineContext().ensureActive()
+        checkFilter(requestedFilterType, requestedContact)
+        cursor.applyHead(head, headMatches, knownNewest)
+        cursor.revision = revision
+        return cursor
+    }
+
+    // Older matches newer than the re-read head were removed from history; pending ones are re-merged.
+    private fun SearchCursor.applyHead(
+        head: List<TransactionRecord>,
+        headMatches: List<TransactionRecord>,
+        knownNewest: TransactionRecord,
+    ) {
+        val headUids = head.mapTo(HashSet()) { it.uid }
+        val oldestHeadTimestamp = head.last().timestamp
+        val olderMatches = matches.filter {
+            it !is PendingTransactionRecord && it.uid !in headUids && it.timestamp <= oldestHeadTimestamp
+        }
+        matches.clear()
+        matches += headMatches + olderMatches
+        scannedCount += head.count { it > knownNewest }
+        newestRawRecord = head.first()
+    }
+
+    // Reads from the top until it reaches the newest record scanned before, at least one chunk deep.
+    private suspend fun readSearchHead(
+        knownNewest: TransactionRecord,
+        requestedFilterType: FilterTransactionType,
+        requestedAddress: String?,
+    ): List<TransactionRecord> {
+        val head = mutableListOf<TransactionRecord>()
+        do {
+            val chunk = transactionsAdapter.getTransactions(
+                from = head.lastOrNull(),
+                token = transactionWallet.token,
+                limit = SEARCH_HEAD_SIZE,
+                transactionType = requestedFilterType,
+                address = requestedAddress,
+            )
+            currentCoroutineContext().ensureActive()
+            head += chunk
+        } while (chunk.size == SEARCH_HEAD_SIZE && chunk.none { it <= knownNewest })
+        return head
+    }
+
+    // Each record is accepted or dropped once; only accepted ones are kept, the display cache is never written.
+    private suspend fun readSearchChunk(
+        cursor: SearchCursor,
+        count: Int,
+        sourceSearch: SourceSearch,
+        requestedFilterType: FilterTransactionType,
+        requestedContact: Contact?,
+        requestedAddress: String?,
+    ) {
+        val received = transactionsAdapter.getTransactions(
+            from = cursor.lastRawRecord,
+            token = transactionWallet.token,
+            limit = count,
+            transactionType = requestedFilterType,
+            address = requestedAddress,
         )
+        currentCoroutineContext().ensureActive()
+        checkFilter(requestedFilterType, requestedContact)
+        // Pending records are the newest, so only the first chunk merges them.
+        val records = if (cursor.scannedCount == 0) mergePendingAndReal(received) else received
+        currentCoroutineContext().ensureActive()
+        checkFilter(requestedFilterType, requestedContact)
+
+        if (cursor.scannedCount == 0) cursor.newestRawRecord = received.firstOrNull()
+        cursor.matches += records.filter(sourceSearch::accepts)
+        cursor.lastRawRecord = received.lastOrNull() ?: cursor.lastRawRecord
+        cursor.scannedCount += received.size
+        cursor.allLoaded = received.size < count
     }
 
     @Synchronized
@@ -273,17 +387,14 @@ class TransactionAdapterWrapper(
         requestedFilterType: FilterTransactionType,
         requestedContact: Contact?,
     ) {
-        if (cache.revision != revision || transactionType != requestedFilterType || contact != requestedContact) {
-            throw StaleTransactionReadException()
-        }
+        if (cache.revision != revision) throw StaleTransactionReadException()
+        checkFilter(requestedFilterType, requestedContact)
     }
 
-    private fun List<TransactionRecord>.matchingRecords(
-        scanLimit: Int,
-        query: String,
-        matcher: TransactionRecordSearchMatcher,
-    ): List<TransactionRecord> {
-        return take(scanLimit).filter { matcher.matches(it, query) }
+    private fun checkFilter(requestedFilterType: FilterTransactionType, requestedContact: Contact?) {
+        if (transactionType != requestedFilterType || contact != requestedContact) {
+            throw StaleTransactionReadException()
+        }
     }
 
     private fun getPending(pendingEntities: List<PendingTransactionEntity>): List<TransactionRecord> {

@@ -37,9 +37,11 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
@@ -822,6 +824,135 @@ class TransactionAdapterWrapperTest {
     }
 
     @Test
+    fun search_pendingMatchAcrossChunks_appearsOnce() = runTest {
+        val token = createToken()
+        val source = createSource(blockchain = token.blockchain)
+        val realRecords = (0 until 150).map { searchRecord(token, source, "real-$it", 1_715_000_000L - it) }
+        val pendingRecord = createPendingRecord(
+            token = token,
+            source = source,
+            uid = "pending-1",
+            transactionHash = "",
+            timestamp = 1_715_000_100,
+            amount = BigDecimal("0.00001"),
+            toAddress = "bc1needle",
+        )
+        val wrapper = createWrapper(
+            transactionWallet = TransactionWallet(token = token, source = source, badge = null),
+            realRecords = realRecords,
+            pendingRecords = listOf(pendingRecord),
+            realRecordPages = listOf(realRecords.take(100), realRecords.drop(100)),
+        )
+        val search = sourceSearch("needle")
+
+        val firstChunk = wrapper.search(20, 100, FilterTransactionType.All, null, search)
+        val secondChunk = wrapper.search(20, 200, FilterTransactionType.All, null, search)
+
+        assertEquals(listOf("pending-1"), firstChunk.records.map { it.uid })
+        assertEquals(listOf("pending-1"), secondChunk.records.map { it.uid })
+        assertTrue(secondChunk.exhausted)
+    }
+
+    @Test
+    fun search_adapterUpdateDuringMultiChunkSearch_keepsDepthAndAddsNewRecords() = runTest {
+        val token = createToken()
+        val source = createSource(blockchain = token.blockchain)
+        val oldHistory = (0 until 200).map { searchRecord(token, source, "old-$it", 2_000L - it, needle = it == 150) }
+        val newRecords = (0 until 3).map { searchRecord(token, source, "new-$it", 3_000L - it, needle = it == 1) }
+        val scenario = updateDuringSecondRead(token, source, oldHistory) { newRecords + it }
+
+        scenario.wrapper.search(20, 100, FilterTransactionType.All, null, scenario.search)
+        val page = scenario.wrapper.search(20, 200, FilterTransactionType.All, null, scenario.search)
+
+        assertEquals(listOf(null, "old-99", null), scenario.requestedFrom)
+        assertEquals(listOf("new-1", "old-150"), page.records.map { it.uid })
+        assertEquals(203, page.scannedCount)
+    }
+
+    @Test
+    fun search_recentRecordRemovedAfterDeepScan_dropsItsMatch() = runTest {
+        val token = createToken()
+        val source = createSource(blockchain = token.blockchain)
+        val history = (0 until 200).map { searchRecord(token, source, "old-$it", 2_000L - it, needle = it % 150 == 0) }
+        val scenario = updateDuringSecondRead(token, source, history) { it.drop(1) }
+
+        scenario.wrapper.search(20, 100, FilterTransactionType.All, null, scenario.search)
+        val page = scenario.wrapper.search(20, 200, FilterTransactionType.All, null, scenario.search)
+
+        assertEquals(listOf(null, "old-99", null), scenario.requestedFrom)
+        assertEquals(listOf("old-150"), page.records.map { it.uid })
+    }
+
+    @Test
+    fun search_updateDuringEveryRead_returnsAfterBoundedReads() = runTest {
+        val token = createToken()
+        val source = createSource(blockchain = token.blockchain)
+        var history = (0 until 50).map { searchRecord(token, source, "old-$it", 2_000L - it, needle = false) }
+        var reads = 0
+        val updates = MutableSharedFlow<List<TransactionRecord>>(extraBufferCapacity = 1)
+        val adapter = mockk<ITransactionsAdapter> {
+            coEvery { getTransactions(any(), any(), any(), any(), any()) } coAnswers {
+                val readHistory = history
+                // Stops after 30 reads only so an unbounded search still ends the test.
+                if (++reads < 30) {
+                    history = listOf(searchRecord(token, source, "new-$reads", 3_000L + reads, needle = false)) + history
+                    updates.tryEmit(history)
+                    delay(1)
+                }
+                val from = firstArg<TransactionRecord?>()
+                val start = from?.let { readHistory.indexOfFirst { it.uid == from.uid } + 1 } ?: 0
+                readHistory.drop(start).take(thirdArg())
+            }
+            every { getTransactionRecordsFlow(any(), any(), any()) } returns updates
+            every { getTransactionsReloadSignalFlow() } returns emptyFlow()
+        }
+        val wrapper = createWrapper(TransactionWallet(token = token, source = source, badge = null), adapter)
+        runCurrent()
+
+        val page = wrapper.search(20, 100, FilterTransactionType.All, null, sourceSearch("needle"))
+
+        assertTrue("reads=$reads", reads < 10)
+        assertTrue(page.scannedCount > 0)
+    }
+
+    private class UpdateDuringRead(
+        val wrapper: TransactionAdapterWrapper,
+        val search: SourceSearch,
+        val requestedFrom: List<String?>,
+    )
+
+    // The wallet update lands while the second chunk is being read.
+    private fun TestScope.updateDuringSecondRead(
+        token: Token,
+        source: TransactionSource,
+        initialHistory: List<TransactionRecord>,
+        update: (List<TransactionRecord>) -> List<TransactionRecord>,
+    ): UpdateDuringRead {
+        var history = initialHistory
+        val requestedFrom = mutableListOf<String?>()
+        val updates = MutableSharedFlow<List<TransactionRecord>>(extraBufferCapacity = 1)
+        val adapter = mockk<ITransactionsAdapter> {
+            coEvery { getTransactions(any(), any(), any(), any(), any()) } coAnswers {
+                val from = firstArg<TransactionRecord?>()
+                val readHistory = history
+                requestedFrom += from?.uid
+                if (requestedFrom.size == 2) {
+                    history = update(history)
+                    updates.tryEmit(history)
+                    delay(1)
+                }
+                val start = from?.let { readHistory.indexOfFirst { it.uid == from.uid } + 1 } ?: 0
+                readHistory.drop(start).take(thirdArg())
+            }
+            every { getTransactionRecordsFlow(any(), any(), any()) } returns updates
+            every { getTransactionsReloadSignalFlow() } returns emptyFlow()
+        }
+        val wrapper = createWrapper(TransactionWallet(token = token, source = source, badge = null), adapter)
+        runCurrent()
+        return UpdateDuringRead(wrapper, sourceSearch("needle"), requestedFrom)
+    }
+
+    @Test
     fun get_twoMatchingPendingRecordsOnlyClosestOneIsFilteredOut() = runTest {
         val token = createToken()
         val source = createSource(blockchain = token.blockchain)
@@ -1068,6 +1199,48 @@ class TransactionAdapterWrapperTest {
 
     private fun TestScope.createWrapper(
         transactionWallet: TransactionWallet,
+        transactionsAdapter: ITransactionsAdapter,
+        pendingRepository: PendingTransactionRepository = createPendingRepository(emptyList()),
+        pendingConverter: PendingTransactionConverter = mockk(),
+        locallyCreatedTransactionRepository: LocallyCreatedTransactionRepository = mockk(relaxed = true),
+    ) = TransactionAdapterWrapper(
+        transactionsAdapter = transactionsAdapter,
+        transactionWallet = transactionWallet,
+        transactionType = FilterTransactionType.All,
+        contact = null,
+        pendingRepository = pendingRepository,
+        pendingConverter = pendingConverter,
+        pendingTransactionMatcher = PendingTransactionMatcher(),
+        locallyCreatedTransactionRepository = locallyCreatedTransactionRepository,
+        dispatcherProvider = TestDispatcherProvider(StandardTestDispatcher(testScheduler), this),
+    )
+
+    private fun sourceSearch(query: String): SourceSearch {
+        val matcher = testSearchMatcher()
+        val key = SourceSearch.Key(
+            matcher.prepare(query), FilterTransactionType.All, false, hideSuspiciousTx = true, sessionId = 1,
+        )
+        return SourceSearch(key, matcher, testSearchVisibility())
+    }
+
+    private fun searchRecord(
+        token: Token,
+        source: TransactionSource,
+        uid: String,
+        timestamp: Long,
+        needle: Boolean = false,
+    ) = createBitcoinOutgoingRecord(
+        token = token,
+        source = source,
+        uid = uid,
+        transactionHash = uid,
+        timestamp = timestamp,
+        amount = BigDecimal("-0.00000563"),
+        toAddress = if (needle) "bc1needle" else "bc1other",
+    )
+
+    private fun TestScope.createWrapper(
+        transactionWallet: TransactionWallet,
         realRecords: List<TransactionRecord>,
         pendingRecords: List<PendingTransactionRecord>,
         realRecordPages: List<List<TransactionRecord>> = listOf(realRecords),
@@ -1091,16 +1264,12 @@ class TransactionAdapterWrapperTest {
             }
         }
 
-        return TransactionAdapterWrapper(
-            transactionsAdapter = transactionsAdapter,
-            transactionWallet = transactionWallet,
-            transactionType = FilterTransactionType.All,
-            contact = null,
-            pendingRepository = pendingRepository,
-            pendingConverter = pendingConverter,
-            pendingTransactionMatcher = PendingTransactionMatcher(),
-            locallyCreatedTransactionRepository = locallyCreatedTransactionRepository,
-            dispatcherProvider = TestDispatcherProvider(StandardTestDispatcher(testScheduler), this),
+        return createWrapper(
+            transactionWallet,
+            transactionsAdapter,
+            pendingRepository,
+            pendingConverter,
+            locallyCreatedTransactionRepository,
         )
     }
 

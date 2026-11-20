@@ -248,6 +248,9 @@
     <!--Market Search-->
     <string name="EmptyResults">Nenhum resultado encontrado</string>
     <string name="transactions_empty_search_results">Nenhuma transação encontrada</string>
+    <string name="transactions_search_not_found_in_last">Não encontrado entre as últimas %1$s transações</string>
+    <string name="transactions_search_no_more_in_last">Nenhuma outra correspondência entre as últimas %1$s transações</string>
+    <string name="transactions_search_continue">Buscar mais</string>
     <string name="Market_Filters">Filtros</string>
     <string name="Market_AdvancedSearch_Results">Resultados</string>
     <string name="Market_Search_Hint">Buscar</string>

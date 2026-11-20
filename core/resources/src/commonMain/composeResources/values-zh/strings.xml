@@ -248,6 +248,9 @@
     <!--Market Search-->
     <string name="EmptyResults">未发现结果</string>
     <string name="transactions_empty_search_results">未找到交易</string>
+    <string name="transactions_search_not_found_in_last">在最近的 %1$s 笔交易中未找到</string>
+    <string name="transactions_search_no_more_in_last">在最近的 %1$s 笔交易中没有其他匹配项</string>
+    <string name="transactions_search_continue">继续搜索</string>
     <string name="Market_Filters">高级搜索</string>
     <string name="Market_AdvancedSearch_Results">搜索结果</string>
     <string name="Market_Search_Hint">搜索</string>

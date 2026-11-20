@@ -248,6 +248,9 @@
     <!--Market Search-->
     <string name="EmptyResults">نتیجه‌ای پیدا نشد</string>
     <string name="transactions_empty_search_results">تراکنشی پیدا نشد</string>
+    <string name="transactions_search_not_found_in_last">در میان %1$s تراکنش اخیر یافت نشد</string>
+    <string name="transactions_search_no_more_in_last">در میان %1$s تراکنش اخیر مورد مشابه دیگری وجود ندارد</string>
+    <string name="transactions_search_continue">ادامه جستجو</string>
     <string name="Market_Filters">Filters</string>
     <string name="Market_AdvancedSearch_Results">Results</string>
     <string name="Market_Search_Hint">Search</string>

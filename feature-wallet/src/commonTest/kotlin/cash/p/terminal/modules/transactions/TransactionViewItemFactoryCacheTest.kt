@@ -700,11 +700,11 @@ class TransactionViewItemFactoryCacheTest {
     @Test
     fun matches_beamIdentifiersAndFailure_searchesWithoutInventedAddresses() {
         val record = beamHistoryRecord(failureReason = "Transaction expired")
-        val matcher = TransactionRecordSearchMatcher()
+        val matcher = testSearchMatcher()
         listOf("transaction-id", "KERNEL-ID", "expired", "BEAM").forEach {
-            assertTrue(matcher.matches(record, it))
+            assertTrue(matcher.matches(record, matcher.prepare(it)))
         }
-        assertEquals(false, matcher.matches(record, "recipient-address"))
+        assertEquals(false, matcher.matches(record, matcher.prepare("recipient-address")))
         assertEquals(emptyList<String>(), record.getSenderAddresses())
     }
 

@@ -248,6 +248,9 @@
     <!--Market Search-->
     <string name="EmptyResults">Sonuç bulunamadı</string>
     <string name="transactions_empty_search_results">İşlem bulunamadı</string>
+    <string name="transactions_search_not_found_in_last">Son %1$s işlem arasında bulunamadı</string>
+    <string name="transactions_search_no_more_in_last">Son %1$s işlem arasında başka eşleşme yok</string>
+    <string name="transactions_search_continue">Aramaya devam et</string>
     <string name="Market_Filters">Filtreler</string>
     <string name="Market_AdvancedSearch_Results">Sonuçlar</string>
     <string name="Market_Search_Hint">Ara</string>
