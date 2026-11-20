@@ -53,6 +53,7 @@ import cash.p.terminal.ui_compose.components.RestoreHeightMode
 import cash.p.terminal.ui_compose.components.RestoreHeightScreen
 import cash.p.terminal.ui_compose.components.caption_lucian
 import cash.p.terminal.ui_compose.components.title3_leah
+import cash.p.terminal.ui.compose.components.coinIconPlate
 import io.horizontalsystems.chartview.rememberAsyncImagePainterWithFallback
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.imageUrl
@@ -240,7 +241,8 @@ fun BirthdayHeightAppBar(
                 Image(
                     modifier = Modifier
                         .padding(end = 16.dp)
-                        .size(24.dp),
+                        .size(24.dp)
+                        .coinIconPlate(),
                     painter = rememberAsyncImagePainterWithFallback(
                         model = blockchainType.imageUrl,
                         error = painterResource(Res.drawable.ic_platform_placeholder_32)

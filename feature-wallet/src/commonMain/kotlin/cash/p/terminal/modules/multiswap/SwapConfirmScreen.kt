@@ -88,6 +88,7 @@ import cash.p.terminal.resources.send_confirmation_syncing_warning
 import cash.p.terminal.resources.swap_order_created_tap_card_again
 import cash.p.terminal.resources.swap_reapprove_action
 import cash.p.terminal.ui_compose.components.rememberHudMessenger
+import cash.p.terminal.ui.compose.components.coinIconPlate
 
 data class SwapConfirmNavigation(
     val navigation: HSNavigation,
@@ -644,7 +645,7 @@ fun TokenRowPure(
 ) {
     CellUniversal(borderTop = borderTop) {
         HsImageCircle(
-            modifier = Modifier.size(32.dp),
+            modifier = Modifier.size(32.dp).coinIconPlate(),
             url = imageUrl,
             alternativeUrl = alternativeImageUrl,
             placeholder = imagePlaceholder

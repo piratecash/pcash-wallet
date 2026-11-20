@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,7 +27,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -85,6 +83,7 @@ import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.TitleAndTwoValuesCell
 import cash.p.terminal.ui_compose.components.TitleAndValueCell
 import cash.p.terminal.ui_compose.components.VSpacer
+import cash.p.terminal.ui.compose.components.coinIconPlate
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.alternativeImageUrl
@@ -597,7 +596,7 @@ private fun CoinBalanceBlock(
             placeholder = coin?.imagePlaceholder,
             modifier = modifier
                 .size(56.dp)
-                .clip(CircleShape)
+                .coinIconPlate()
         )
         VSpacer(height = 12.dp)
         Text(
