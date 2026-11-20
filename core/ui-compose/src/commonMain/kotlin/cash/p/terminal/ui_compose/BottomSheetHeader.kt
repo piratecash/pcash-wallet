@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.ui_compose.components.BottomSheetSurface
 import cash.p.terminal.ui_compose.components.HsIconButton
+import cash.p.terminal.ui.compose.components.coinIconPlate
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.resources.Res
@@ -30,6 +31,7 @@ fun BottomSheetHeader(
     iconPainter: Painter? = null,
     titleColor: Color = ComposeAppTheme.colors.textPrimary,
     iconTint: ColorFilter? = null,
+    iconPlate: Boolean = false,
     content: @Composable() (ColumnScope.() -> Unit),
 ) {
     BottomSheetHeader(
@@ -51,6 +53,7 @@ fun BottomSheetHeader(
         },
         onCloseClick = onCloseClick,
         iconTint = iconTint,
+        iconPlate = iconPlate,
         modifier = modifier,
         content = content
     )
@@ -63,6 +66,7 @@ fun BottomSheetHeaderMultiline(
     subtitle: String,
     onCloseClick: () -> Unit,
     iconTint: ColorFilter? = null,
+    iconPlate: Boolean = false,
     content: @Composable() (ColumnScope.() -> Unit),
 ) {
     BottomSheetHeader(
@@ -87,6 +91,7 @@ fun BottomSheetHeaderMultiline(
         },
         onCloseClick = onCloseClick,
         iconTint = iconTint,
+        iconPlate = iconPlate,
         content = content
     )
 }
@@ -97,6 +102,7 @@ private fun BottomSheetHeader(
     titleContent: @Composable() (RowScope.() -> Unit),
     onCloseClick: () -> Unit,
     iconTint: ColorFilter?,
+    iconPlate: Boolean,
     modifier: Modifier = Modifier,
     content: @Composable() (ColumnScope.() -> Unit)
 ) {
@@ -109,7 +115,9 @@ private fun BottomSheetHeader(
             ) {
                 iconPainter?.let {
                     Image(
-                        modifier = Modifier.size(24.dp),
+                        modifier = Modifier
+                            .size(24.dp)
+                            .coinIconPlate(enabled = iconPlate),
                         painter = iconPainter,
                         colorFilter = iconTint,
                         contentDescription = null

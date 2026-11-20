@@ -28,6 +28,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
 import com.google.gson.Gson
 import java.io.File
 import java.util.UUID
@@ -164,8 +165,9 @@ class DesktopWalletStorageTest {
 
         graph.accountManager.delete(monero.id)
 
-        assertTrue(files.all.none(File::exists), "the Monero wallet files outlived the account")
         assertNull(graph.accountManager.account(monero.id))
+        // The account leaves at once; its wallet files are removed in the background.
+        assertTrue(awaitBackground { files.all.none(File::exists) }, "the Monero wallet files outlived the account")
     }
 
     @Test
@@ -188,11 +190,11 @@ class DesktopWalletStorageTest {
         provider.restoreFullBackup(decrypted, BACKUP_PASSPHRASE)
         // The restore writes contacts in the background; a restart before that drops them.
         val contactsFile = graph.koin.get<DesktopVaultFiles>().contactsFile
-        withTimeout(CONTACTS_TIMEOUT_MS) { while (!contactsFile.exists()) delay(POLL_MS) }
+        assertTrue(awaitBackground(contactsFile::exists), "the restored contacts were never written")
 
         graph.restart()
         assertEquals(UnlockOutcome.Success, graph.vault.unlock(password()))
-        val contacts = withTimeout(CONTACTS_TIMEOUT_MS) {
+        val contacts = withTimeout(BACKGROUND_TIMEOUT_MS) {
             graph.koin.get<ContactsRepository>().contactsFlow.first { it.isNotEmpty() }
         }
         assertEquals(listOf("Alice"), contacts.map(Contact::name))
@@ -201,6 +203,13 @@ class DesktopWalletStorageTest {
     private suspend fun create() = assertEquals(CreateOutcome.SUCCESS, graph.vault.create(password()))
 
     private fun save(account: Account): Account = account.also { graph.accountManager.save(it) }
+
+    /** The graph runs on real IO, so background work is awaited by its visible result. */
+    private suspend fun awaitBackground(isDone: () -> Boolean): Boolean =
+        withTimeoutOrNull(BACKGROUND_TIMEOUT_MS) {
+            while (!isDone()) delay(POLL_MS)
+            true
+        } ?: false
 
     private fun moneroAccount(walletPassword: String) = Account(
         id = UUID.randomUUID().toString(),
@@ -220,7 +229,7 @@ class DesktopWalletStorageTest {
         const val MONERO_WORDS = 25
         const val WALLET_INNER_NAME = "monero-wallet"
         const val BACKUP_PASSPHRASE = "backup passphrase"
-        const val CONTACTS_TIMEOUT_MS = 10_000L
+        const val BACKGROUND_TIMEOUT_MS = 10_000L
         const val POLL_MS = 10L
     }
 }

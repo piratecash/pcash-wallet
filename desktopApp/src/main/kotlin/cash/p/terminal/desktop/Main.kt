@@ -44,6 +44,7 @@ import coil3.ImageLoader
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.crossfade
 import coil3.svg.SvgDecoder
+import io.horizontalsystems.core.DesktopClipboardManager
 import io.horizontalsystems.core.DesktopLanguageManager
 import io.horizontalsystems.dashlibnative.DashjBlsLibrary
 import io.horizontalsystems.ethereumkit.core.EthereumKit
@@ -51,6 +52,7 @@ import io.horizontalsystems.sqlcipher.SqlCipherDriver
 import java.awt.Desktop
 import java.io.File
 import java.util.Locale
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
@@ -135,7 +137,7 @@ fun main(args: Array<String>) {
             }
         }
     }
-    closeAndExit(vault)
+    closeAndExit(vault, koin.get())
 }
 
 /** macOS Quit (Cmd+Q, menu, Dock) would otherwise exit at once and skip closing the vault. */
@@ -148,7 +150,9 @@ private fun routeSystemQuit(appExit: DesktopAppExit) {
 }
 
 /** After the screens and their ViewModels are gone: a storage closed under them fails what they still run. */
-private fun closeAndExit(vault: DesktopVault) {
+private fun closeAndExit(vault: DesktopVault, clipboard: DesktopClipboardManager) {
+    // Only now no window is left that could copy a secret after the clear.
+    runBlocking(Dispatchers.Main) { clipboard.clearCopiedSecret() }
     try {
         applicationScope.cancel()
         runBlocking { vault.close() }

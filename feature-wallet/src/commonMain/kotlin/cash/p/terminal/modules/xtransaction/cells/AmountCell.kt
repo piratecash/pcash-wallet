@@ -31,6 +31,7 @@ import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.components.subhead2_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.ui_compose.components.CellUniversal
+import cash.p.terminal.ui.compose.components.coinIconPlate
 
 @Composable
 fun AmountCell(
@@ -41,6 +42,7 @@ fun AmountCell(
     coinAmountColor: Color,
     fiatAmount: String?,
     onClick: (() -> Unit)?,
+    iconPlate: Boolean,
     borderTop: Boolean = true
 ) {
     CellUniversal(
@@ -50,7 +52,7 @@ fun AmountCell(
         Image(
             painter = coinIcon,
             contentDescription = null,
-            modifier = Modifier.size(32.dp),
+            modifier = Modifier.size(32.dp).coinIconPlate(enabled = iconPlate),
             colorFilter = null,
             contentScale = ContentScale.Fit
         )
@@ -97,6 +99,7 @@ fun AmountCellTV(
             alternativeUrl = transactionValue.alternativeCoinIconUrl,
             placeholder = transactionValue.coinIconPlaceholder
         ),
+        iconPlate = transactionValue !is TransactionValue.NftValue,
         coinProtocolType = if (nft != null) {
             nft.tokenName
         } else {
