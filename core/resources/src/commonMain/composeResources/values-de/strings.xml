@@ -504,8 +504,16 @@
     <string name="FeeInfo_TronFee_Description">Die geschätzten Kosten für den Versand einer Transaktion im Netzwerk (ohne Energie-, Bandbreiten- und Aktivierungsgebühren)</string>
     <string name="FeeInfo_TronActivationFee_Title">Aktivierungsgebühr</string>
     <string name="FeeInfo_TronActivationFee_Description">This address is not active. Transferring TRX or TRC-10 tokens to an inactive account address will activate the account.</string>
-    <string name="FeeInfo_TronResourcesConsumed_Title">Verbrauchte Ressourcen</string>
     <string name="FeeInfo_TronResourcesConsumed_Description">Bandbreite ist die Einheit, die die Größe der in der Blockchain-Datenbank gespeicherten Transaktionsbytes misst. Je größer die Transaktion, desto mehr Ressourcen werden verbraucht.\n\nEnergie ist die Einheit, die die Anzahl der Berechnungen misst, die von der virtuellen TRON-Maschine benötigt werden, um bestimmte Operationen im TRON-Netzwerk durchzuführen.\n\nDa intelligente Vertragsabschlüsse die Verwendung von Rechnerressourcen erfordern, muss für jeden Smart Contract eine Energiegebühr bezahlt werden.</string>
+    <string name="tron_resources_title">TRON-Ressourcen</string>
+    <string name="tron_resource_free_bandwidth">Kostenlose Bandwidth</string>
+    <string name="tron_resource_staked_bandwidth">Bandwidth aus Staking</string>
+    <string name="tron_resource_available_of">%1$s von %2$s</string>
+    <string name="tron_fee_covered_free">aus Gratiskontingent</string>
+    <string name="tron_fee_covered_staked">aus Staking</string>
+    <string name="tron_fee_energy_own">%1$s eigene</string>
+    <string name="tron_fee_energy_contract">%1$s vom Vertrag</string>
+    <string name="tron_activation_caution">Die Empfängeradresse ist im TRON-Netzwerk noch nicht aktiviert. Das Netzwerk berechnet %1$s für ihre Aktivierung.</string>
 
     <!--Network Fee Warning-->
     <string name="network_fee_warning_title">%1$s Netzwerkgebühr</string>

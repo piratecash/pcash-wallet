@@ -300,6 +300,7 @@ class SwapConfirmViewModel(
             priceImpactLevel = priceImpactState.priceImpactLevel,
             quoteFields = quoteFields,
             transactionFields = sendTransactionState.fields,
+            feeDetails = sendTransactionState.feeDetails,
             criticalError = criticalError,
             finalQuoteCancelled = finalQuoteCancelled,
             isAdvancedSettingsAvailable = isAdvancedSettingsAvailable,
@@ -867,6 +868,7 @@ data class SwapConfirmUiState(
     val moneroPreparationInProgress: Boolean = false,
     val moneroPreparationError: StringResource? = null,
     val moneroPreparationRetryAvailable: Boolean = false,
+    val feeDetails: List<DataField> = emptyList(),
     val tapCardAgainHintVisible: Boolean = false,
     val finalQuoteCancelled: Boolean = false,
 )

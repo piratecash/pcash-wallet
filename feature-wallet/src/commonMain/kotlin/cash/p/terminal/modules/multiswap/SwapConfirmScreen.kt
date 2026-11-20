@@ -425,6 +425,7 @@ private fun SwapConfirmContent(
         SwapTransactionFields(uiState, navigation.navigation)
         SwapConfirmFeeInfo(
             uiState,
+            navigation.navigation,
             balanceParams,
             inlineFeeWarningData,
             hasFeeProblem,
@@ -499,6 +500,7 @@ private fun SwapTransactionFields(uiState: SwapConfirmUiState, navigation: HSNav
 @Composable
 private fun SwapConfirmFeeInfo(
     uiState: SwapConfirmUiState,
+    navigation: HSNavigation,
     balance: SwapConfirmBalanceParams,
     inlineFeeWarningData: NetworkFeeWarningData?,
     hasFeeProblem: Boolean,
@@ -518,6 +520,7 @@ private fun SwapConfirmFeeInfo(
         feeWarningData = inlineFeeWarningData,
         // Services put the caution message in the title.
         insufficientFeeText = uiState.feeCaution?.title,
+        feeDetails = { uiState.feeDetails.forEach { it.GetContent(navigation, true) } },
     )
 }
 

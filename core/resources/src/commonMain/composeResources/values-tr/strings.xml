@@ -510,8 +510,16 @@
     <string name="FeeInfo_TronFee_Description">Ağda belirli bir işlemi göndermenin tahmini maliyeti. (Enerji, Bant Genişliği ve Aktivasyon Ücreti hariç)</string>
     <string name="FeeInfo_TronActivationFee_Title">Aktivasyon ücreti</string>
     <string name="FeeInfo_TronActivationFee_Description">This address is not active. Transferring TRX or TRC-10 tokens to an inactive account address will activate the account.</string>
-    <string name="FeeInfo_TronResourcesConsumed_Title">Tüketilen Kaynaklar</string>
     <string name="FeeInfo_TronResourcesConsumed_Description">Band Width, blockchain veritabanında saklanan işlem baytlarının boyutunu ölçen birimdir. İşlem ne kadar büyük olursa, o kadar fazla bant genişliği kaynağı tüketilir.\n\nEnergy, TRON sanal makinesinin TRON ağında belirli işlemleri gerçekleştirmek için ihtiyaç duyduğu hesaplama miktarını ölçen birimdir.\n\nAkıllı sözleşmeden beri işlemlerin yürütülmesi için bilgi işlem kaynakları gerekir, her akıllı sözleşme işleminin energy ücretini ödemesi gerekir.</string>
+    <string name="tron_resources_title">TRON kaynakları</string>
+    <string name="tron_resource_free_bandwidth">Ücretsiz Bandwidth</string>
+    <string name="tron_resource_staked_bandwidth">Staking\'den Bandwidth</string>
+    <string name="tron_resource_available_of">%1$s / %2$s</string>
+    <string name="tron_fee_covered_free">ücretsiz kotadan</string>
+    <string name="tron_fee_covered_staked">staking\'den</string>
+    <string name="tron_fee_energy_own">%1$s kendi</string>
+    <string name="tron_fee_energy_contract">%1$s sözleşmeden</string>
+    <string name="tron_activation_caution">Alıcı adresi TRON ağında henüz etkinleştirilmedi. Ağ, etkinleştirme için %1$s alacak.</string>
 
     <!--Network Fee Warning-->
     <string name="network_fee_warning_title">%1$s Ağ Komisyonu</string>
