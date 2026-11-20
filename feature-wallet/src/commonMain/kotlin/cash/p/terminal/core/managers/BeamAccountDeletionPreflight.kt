@@ -55,6 +55,10 @@ class BeamAccountDeletionPreflight(
         }
     }
 
+    override fun fenceDeleted(accountIds: List<String>) = guardedSync {
+        owner.value.fenceDeletion(accountIds)
+    }
+
     override suspend fun prepareExplicitReset() = guarded {
         cleanupMutex.withLock {
             deletionState.beginReset()
