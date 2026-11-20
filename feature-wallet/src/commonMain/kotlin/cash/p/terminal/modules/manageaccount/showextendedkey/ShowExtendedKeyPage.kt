@@ -56,6 +56,7 @@ import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead1_grey
 import cash.p.terminal.modules.manageaccount.ui.rememberCopyWithHud
+import cash.p.terminal.modules.manageaccount.ui.rememberCopySecretWithHud
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.hdwalletkit.HDExtendedKey
 import kotlinx.coroutines.launch
@@ -121,6 +122,7 @@ private fun ShowExtendedKeyScreen(
         }
 
     val copyWithHud = rememberCopyWithHud()
+    val copySecretWithHud = rememberCopySecretWithHud()
     val coroutineScope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
@@ -132,7 +134,7 @@ private fun ShowExtendedKeyScreen(
             ConfirmCopyBottomSheet(
                 onConfirm = {
                     coroutineScope.launch {
-                        copyWithHud(viewModel.extendedKey)
+                        copySecretWithHud(viewModel.extendedKey)
                         sheetState.hide()
                     }
                 },
