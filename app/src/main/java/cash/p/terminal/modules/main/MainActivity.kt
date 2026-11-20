@@ -42,6 +42,7 @@ import cash.p.terminal.modules.walletconnect.session.WCSessionPage
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.rememberResultLauncher
 import cash.p.terminal.tangem.domain.sdk.CardSdkProvider
+import cash.p.terminal.ui.helpers.TextHelper
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import com.reown.walletkit.client.Wallet
 import io.horizontalsystems.core.BackgroundManager
@@ -120,6 +121,11 @@ open class MainActivity : BaseActivity() {
     override fun onPause() {
         super.onPause()
         protectCalculatorScreenOnPause()
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) TextHelper.clearCopiedSecretIfExpired()
     }
 
     override fun onStop() {
