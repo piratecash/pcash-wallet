@@ -40,8 +40,16 @@ fun valueIncome(
     StakingIncomePoint(
         timestampSec = bucket.from / 1000,
         coins = bucket.value.toBigDecimal(),
-        fiat = days?.filter { bucket.covers(it) && it.value > 0 }?.sumFiat(rates),
+        fiat = days?.let { bucket.fiatFrom(it, rates) },
     )
+}
+
+/** `null` unless the days add up to the bucket: the two series are separate requests and may disagree. */
+private fun PricePoint.fiatFrom(days: List<PricePoint>, rates: Map<Long, BigDecimal>): BigDecimal? {
+    val incomeDays = days.filter { covers(it) && it.value > 0 }
+    val coveredCoins = incomeDays.fold(BigDecimal.ZERO) { sum, day -> sum + day.value.toBigDecimal() }
+    if (coveredCoins.compareTo(value.toBigDecimal()) != 0) return null
+    return incomeDays.sumFiat(rates)
 }
 
 private fun PricePoint.covers(day: PricePoint) = day.from == from || day.from in from until to

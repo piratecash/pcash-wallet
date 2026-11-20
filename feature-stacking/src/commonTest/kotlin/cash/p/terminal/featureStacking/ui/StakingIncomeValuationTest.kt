@@ -83,6 +83,46 @@ class StakingIncomeValuationTest {
     }
 
     @Test
+    fun valueIncome_bucketWithoutDailyIncome_noFiat() {
+        val days = listOf(incomeDay(7, 10.0))
+        val rates = dailyRates(listOf(usdRate(0, "0.20"), usdRate(7, "0.20")))
+
+        val week = valueIncome(listOf(incomeBucket(fromDay = 0, toDay = 7, value = 70.0)), days, rates).single()
+
+        assertNull(week.fiat)
+    }
+
+    @Test
+    fun valueIncome_dailyIncomeShortOfBucket_noFiat() {
+        val days = listOf(incomeDay(0, 10.0))
+        val rates = dailyRates(listOf(usdRate(0, "0.20")))
+
+        val week = valueIncome(listOf(incomeBucket(fromDay = 0, toDay = 7, value = 15.0)), days, rates).single()
+
+        assertNull(week.fiat)
+    }
+
+    @Test
+    fun valueIncome_tinyBucketWithoutDailyIncome_noFiat() {
+        val rates = dailyRates(listOf(usdRate(0, "0.20")))
+
+        val bucket = incomeBucket(fromDay = 0, toDay = 7, value = 0.000001)
+
+        val week = valueIncome(listOf(bucket), emptyList(), rates).single()
+
+        assertNull(week.fiat)
+    }
+
+    @Test
+    fun valueIncome_zeroBucketWithoutDailyIncome_fiatZero() {
+        val bucket = incomeBucket(fromDay = 0, toDay = 7, value = 0.0)
+
+        val week = valueIncome(listOf(bucket), emptyList(), emptyMap()).single()
+
+        assertAmount("0", week.fiat)
+    }
+
+    @Test
     fun dailyRates_severalPointsInDay_earliestWins() {
         val rates = dailyRates(listOf(usdRate(3, "0.50", hourOffset = 6), usdRate(3, "0.25")))
 
