@@ -75,6 +75,8 @@ orgJson = "20250517"
 piratecash-ton = "v2.0.0-pcash.21"
 beam-sdk = "v0.3.2"
 openpnp-capture-java = "v0.0.30-2-pcash.2"
+# The version openpnp-capture-java resolves to: its jnidispatch natives are the ones packaged.
+jna = "5.13.0"
 piratecash-bitcoin = "v0.1.0-pcash.47"
 
 hd-wallet-kit = "1.0.1"
@@ -86,7 +88,7 @@ piratecash-solana = "v2.0.0-pcash.8"
 monero-kit-android = "v0.18.3.4-pcash.27"
 netcipher = "2.1.0"
 solanakt = "v1.0.0-pcash.5"
-piratecash-tron = "v2.0.0-pcash.5"
+piratecash-tron = "v2.0.0-pcash.7"
 tangem-sdk = "3.9.2-pcash.5"
 gson = "2.13.2"
 retrofit = "3.0.0"
@@ -99,7 +101,7 @@ android-core-ktx = "1.18.0"
 twitterText = "3.1.0"
 workRuntimeKtx = "2.11.2"
 workRxjava2 = "2.11.2"
-zcashSdkKmp = "v1.5.5"
+zcashSdkKmp = "v1.6.3"
 junitJupiter = "6.0.3"
 google-play-core = "2.1.0"
 bitcoinj = "0.17"
@@ -236,6 +238,7 @@ org-json = { module = "org.json:json", version.ref = "orgJson" }
 ton-kit = { group = "com.github.piratecash.ton-kit-android", name = "tonkit", version.ref = "piratecash-ton" }
 beam-sdk = { module = "com.github.piratecash.beam-sdk-kmp:beam-sdk", version.ref = "beam-sdk" }
 openpnp-capture-java = { group = "com.github.piratecash", name = "openpnp-capture-java", version.ref = "openpnp-capture-java" }
+jna = { group = "net.java.dev.jna", name = "jna", version.ref = "jna" }
 bitcoin-core = { group = "com.github.piratecash.bitcoin-kit-android", name = "bitcoincore", version.ref = "piratecash-bitcoin" }
 bitcoin-kit = { group = "com.github.piratecash.bitcoin-kit-android", name = "bitcoinkit", version.ref = "piratecash-bitcoin" }
 bitcoin-cash-kit = { group = "com.github.piratecash.bitcoin-kit-android", name = "bitcoincashkit", version.ref = "piratecash-bitcoin" }

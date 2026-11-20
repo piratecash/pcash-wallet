@@ -1,5 +1,5 @@
-## 🚀 Version 1.3.263 Update
-_Release date: November 15, 2026_
+## 🚀 Version 1.3.264 Update
+_Release date: November 18, 2026_
 
 ### ✨ New Features
 

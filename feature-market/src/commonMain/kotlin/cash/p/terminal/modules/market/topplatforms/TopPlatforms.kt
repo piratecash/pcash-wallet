@@ -45,6 +45,7 @@ import cash.p.terminal.ui.compose.components.MarketCoinFirstRow
 import cash.p.terminal.ui.compose.components.MarketDataValueComponent
 import cash.p.terminal.ui_compose.components.SectionItemBorderedRowUniversalClear
 import cash.p.terminal.ui_compose.components.subhead2_grey
+import cash.p.terminal.ui.compose.components.coinIconPlate
 import java.math.BigDecimal
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.CoinPage_Period
@@ -203,6 +204,7 @@ fun TopPlatformItem(item: TopPlatformViewItem, onItemClick: (Platform) -> Unit) 
             modifier = Modifier
                 .padding(end = 16.dp)
                 .size(32.dp)
+                .coinIconPlate()
         )
         Column(modifier = Modifier.fillMaxWidth()) {
             MarketCoinFirstRow(item.platform.name, item.marketCap)

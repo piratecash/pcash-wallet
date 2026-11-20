@@ -7,6 +7,7 @@ import cash.p.terminal.core.adapters.zcash.server.ZcashServerSelector
 import cash.p.terminal.core.managers.OfflineKey
 import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.modules.pin.core.UptimeProvider
+import cash.p.zcash.BlockDownload
 import cash.p.zcash.PoolBalance
 import cash.p.zcash.SyncState
 import cash.p.zcash.Transaction
@@ -51,6 +52,9 @@ class ZcashSyncSchedulerTest {
     private val session = mockk<ZcashSession>(relaxed = true)
     private val selector = mockk<ZcashServerSelector>(relaxed = true)
     private val prober = mockk<ZcashServerProber>(relaxed = true)
+    private val blockDownloadPolicy = mockk<ZcashBlockDownloadPolicy> {
+        every { blockDownload } returns BlockDownload()
+    }
 
     @Before
     fun setUp() {
@@ -71,6 +75,7 @@ class ZcashSyncSchedulerTest {
         uptimeProvider = uptimeProvider,
         selector = selector,
         prober = prober,
+        blockDownloadPolicy = blockDownloadPolicy,
         dispatcherProvider = TestDispatcherProvider(
             dispatcher = StandardTestDispatcher(testScheduler),
             applicationScope = backgroundScope,
@@ -86,6 +91,21 @@ class ZcashSyncSchedulerTest {
         advanceTimeBy(1_000)
 
         coVerify(exactly = 0) { session.sync() }
+        scheduler.remove(session)
+        advanceTimeBy(LONG_ENOUGH_FOR_A_FULL_TURN_MS)
+    }
+
+    @Test
+    fun enqueue_syncPass_usesThePolicyBlockDownload() = runTest {
+        val blockDownload = BlockDownload(maxStreams = 3, bufferMegabytes = 24)
+        every { blockDownloadPolicy.blockDownload } returns blockDownload
+        coEvery { session.sync(any()) } returns SYNCED
+        val scheduler = scheduler()
+
+        scheduler.enqueue(session)
+        advanceTimeBy(1_000)
+
+        coVerify(exactly = 1) { session.sync(blockDownload) }
         scheduler.remove(session)
         advanceTimeBy(LONG_ENOUGH_FOR_A_FULL_TURN_MS)
     }

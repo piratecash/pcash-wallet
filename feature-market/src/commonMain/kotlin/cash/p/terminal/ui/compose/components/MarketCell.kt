@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,6 +47,7 @@ fun MarketCoinClear(
     coinIconUrl: String,
     alternativeCoinIconUrl: String? = null,
     coinIconPlaceholder: DrawableResource,
+    iconPlate: Boolean = false,
     value: String? = null,
     marketDataValue: MarketDataValue? = null,
     label: String? = null,
@@ -64,6 +64,7 @@ fun MarketCoinClear(
             modifier = Modifier
                 .padding(end = 16.dp)
                 .size(32.dp)
+                .coinIconPlate(enabled = iconPlate)
         )
         Column(
             modifier = Modifier.fillMaxWidth()
@@ -111,7 +112,7 @@ fun MarketCoin(
             modifier = Modifier
                 .padding(end = 16.dp)
                 .size(32.dp)
-                .clip(CircleShape)
+                .coinIconPlate()
         )
         Column(
             modifier = Modifier.fillMaxWidth()

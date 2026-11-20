@@ -47,6 +47,8 @@ import cash.p.terminal.core.managers.TronKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.TrezorAttachments
 import cash.p.terminal.core.providers.AddressResolutionConfig
 import cash.p.terminal.core.NonFatalReporter
+import cash.p.terminal.core.adapters.zcash.session.DesktopZcashBlockDownloadPolicy
+import cash.p.terminal.core.adapters.zcash.session.ZcashBlockDownloadPolicy
 import cash.p.terminal.core.adapters.zcash.session.ZcashDbKeyProvider
 import cash.p.terminal.shared.desktop.vault.DesktopZcashDbKeyProvider
 import cash.p.terminal.core.storage.AccountsStorage
@@ -233,6 +235,7 @@ internal val desktopWalletModule = module {
     singleOf(::DesktopSolanaKitDatabaseKeyProvider) bind SolanaKitDatabaseKeyProvider::class
     singleOf(::DesktopStellarKitDatabaseKeyProvider) bind StellarKitDatabaseKeyProvider::class
     singleOf(::DesktopZcashDbKeyProvider) bind ZcashDbKeyProvider::class
+    singleOf(::DesktopZcashBlockDownloadPolicy) bind ZcashBlockDownloadPolicy::class
     singleOf(::DesktopBeamKitDatabaseKeyProvider) bind BeamKitDatabaseKeyProvider::class
     single<NonFatalReporter> { DesktopNonFatalReporter }
     single<TorSyncState> { DesktopTorSyncState }

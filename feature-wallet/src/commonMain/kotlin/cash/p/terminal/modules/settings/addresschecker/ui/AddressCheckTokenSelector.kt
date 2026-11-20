@@ -9,13 +9,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
 import cash.p.terminal.resources.Res
@@ -29,6 +27,7 @@ import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
+import cash.p.terminal.ui.compose.components.coinIconPlate
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.Token
@@ -106,7 +105,7 @@ private fun TokenCell(
                 modifier = Modifier
                     .padding(end = 16.dp, top = 12.dp, bottom = 12.dp)
                     .size(32.dp)
-                    .clip(CircleShape)
+                    .coinIconPlate()
             )
             Column(
                 modifier = Modifier

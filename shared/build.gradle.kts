@@ -79,6 +79,7 @@ kotlin {
                 implementation(libs.room.runtime)
                 implementation(libs.bitcoin.kit.sqlcipher.driver)
                 implementation(libs.openpnp.capture.java)
+                implementation(libs.jna)
                 implementation(libs.zxing.core)
             }
         }

@@ -13,6 +13,13 @@ class LocallyCreatedTransactionStorage(
         transactionHash: String,
     ): Boolean = dao(accountId)?.exists(accountId, blockchainTypeUid, transactionHash) == true
 
+    suspend fun hashesCreatedBetween(
+        accountId: String,
+        blockchainTypeUid: String,
+        fromMs: Long,
+        toMs: Long,
+    ): List<String> = dao(accountId)?.getHashesCreatedBetween(accountId, blockchainTypeUid, fromMs, toMs).orEmpty()
+
     suspend fun insert(record: LocallyCreatedTransactionRecord): Boolean =
         dao(record.accountId)?.insert(record).let { it != null && it != -1L }
 

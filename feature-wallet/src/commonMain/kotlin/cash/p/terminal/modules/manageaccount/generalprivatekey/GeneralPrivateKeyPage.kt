@@ -26,7 +26,7 @@ import cash.p.terminal.modules.manageaccount.ui.HidableContent
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.strings.helpers.TranslatableString
-import cash.p.terminal.modules.manageaccount.ui.rememberCopyWithHud
+import cash.p.terminal.modules.manageaccount.ui.rememberCopySecretWithHud
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.MenuItem
@@ -62,7 +62,7 @@ private fun GeneralPrivateKeyScreen(
     generalPrivateKey: String,
     title: String
 ) {
-    val copyWithHud = rememberCopyWithHud()
+    val copyWithHud = rememberCopySecretWithHud()
     val coroutineScope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
