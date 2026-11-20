@@ -589,6 +589,13 @@
     <string name="WalletConnect_Error_RequestNotFoundError">خطا: درخواست پیدا نشد</string>
     <string name="WalletConnect_NoConnection">هیچ dApp متصلی ندارید</string>
     <string name="WalletConnect_PendingRequests">درخواست‌های در انتظار</string>
+    <string name="wallet_connect_verify_scam_title">کلاهبرداری شناخته‌شده</string>
+    <string name="wallet_connect_verify_scam">این سایت در فهرست دامنه‌های مخرب شناخته‌شده است. اتصال به آن به احتمال زیاد باعث از دست رفتن دارایی شما می‌شود.</string>
+    <string name="wallet_connect_verify_mismatch_title">جعل سایت</string>
+    <string name="wallet_connect_verify_mismatch">این درخواست از %1$s آمده است که با سایتی که ادعا می‌کند مطابقت ندارد. این یک روش رایج فیشینگ است.</string>
+    <string name="wallet_connect_verify_mismatch_no_origin">این درخواست از سایتی غیر از سایتی که ادعا می‌کند آمده است. این یک روش رایج فیشینگ است.</string>
+    <string name="wallet_connect_verify_unknown_title">سایت تأیید نشده</string>
+    <string name="wallet_connect_verify_unknown">WalletConnect نتوانست این سایت را تأیید کند. پیش از اتصال، نشانی را با دقت بررسی کنید.</string>
     <string name="WalletConnect_ActiveWallet">کیف پول فعال</string>
     <string name="connect">اتصال</string>
     <string name="connect_trezor_to_add_message">برای افزودن توکن‌ها باید Trezor را متصل کنید</string>

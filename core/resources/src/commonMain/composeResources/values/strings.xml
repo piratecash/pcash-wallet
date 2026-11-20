@@ -721,6 +721,13 @@ Proceed only if you\u0027re sure.</string>
     <string name="WalletConnect_Error_RequestNotFoundError">Request not found</string>
     <string name="WalletConnect_NoConnection">You don\u0027t have any connected dApps</string>
     <string name="WalletConnect_PendingRequests">Pending Requests</string>
+    <string name="wallet_connect_verify_scam_title">Known scam</string>
+    <string name="wallet_connect_verify_scam">This site is on the list of known malicious domains. Connecting to it will very likely cost you funds.</string>
+    <string name="wallet_connect_verify_mismatch_title">Site impersonation</string>
+    <string name="wallet_connect_verify_mismatch">This request comes from %1$s, which does not match the site it claims to be. This is a common phishing technique.</string>
+    <string name="wallet_connect_verify_mismatch_no_origin">This request comes from a different site than the one it claims to be. This is a common phishing technique.</string>
+    <string name="wallet_connect_verify_unknown_title">Site not verified</string>
+    <string name="wallet_connect_verify_unknown">WalletConnect could not confirm this site. Check the address carefully before connecting.</string>
     <string name="WalletConnect_ActiveWallet">Active Wallet</string>
     <string name="WalletConnect_Unnamed">Unnamed</string>
     <string name="delete_all">Delete All</string>

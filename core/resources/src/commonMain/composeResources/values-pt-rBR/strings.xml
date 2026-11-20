@@ -589,6 +589,13 @@
     <string name="WalletConnect_Error_RequestNotFoundError">Erro: solicitação não encontrada</string>
     <string name="WalletConnect_NoConnection">Você não tem nenhuma dApp conectada</string>
     <string name="WalletConnect_PendingRequests">Solicitações pendentes</string>
+    <string name="wallet_connect_verify_scam_title">Golpe conhecido</string>
+    <string name="wallet_connect_verify_scam">Este site está na lista de domínios maliciosos conhecidos. Conectar-se a ele muito provavelmente fará você perder fundos.</string>
+    <string name="wallet_connect_verify_mismatch_title">Falsificação de site</string>
+    <string name="wallet_connect_verify_mismatch">Esta solicitação vem de %1$s, que não corresponde ao site que afirma ser. É uma técnica de phishing comum.</string>
+    <string name="wallet_connect_verify_mismatch_no_origin">Esta solicitação vem de um site diferente daquele que afirma ser. É uma técnica de phishing comum.</string>
+    <string name="wallet_connect_verify_unknown_title">Site não verificado</string>
+    <string name="wallet_connect_verify_unknown">O WalletConnect não conseguiu confirmar este site. Verifique o endereço com atenção antes de se conectar.</string>
     <string name="WalletConnect_ActiveWallet">Carteira ativa</string>
     <string name="WalletConnect_Unnamed">Sem nome</string>
     <string name="delete_all">Excluir Tudo</string>

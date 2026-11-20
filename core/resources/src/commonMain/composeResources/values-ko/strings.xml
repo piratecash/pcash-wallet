@@ -589,6 +589,13 @@
     <string name="WalletConnect_Error_RequestNotFoundError">요청을 찾을 수 없습니다</string>
     <string name="WalletConnect_NoConnection">연결된 dApp이 없습니다</string>
     <string name="WalletConnect_PendingRequests">보류 중인 요청</string>
+    <string name="wallet_connect_verify_scam_title">알려진 사기</string>
+    <string name="wallet_connect_verify_scam">이 사이트는 알려진 악성 도메인 목록에 있습니다. 연결하면 자금을 잃을 가능성이 매우 높습니다.</string>
+    <string name="wallet_connect_verify_mismatch_title">사이트 사칭</string>
+    <string name="wallet_connect_verify_mismatch">이 요청은 %1$s에서 왔으며, 자신이 주장하는 사이트와 일치하지 않습니다. 흔한 피싱 수법입니다.</string>
+    <string name="wallet_connect_verify_mismatch_no_origin">이 요청은 자신이 주장하는 사이트가 아닌 다른 사이트에서 왔습니다. 흔한 피싱 수법입니다.</string>
+    <string name="wallet_connect_verify_unknown_title">확인되지 않은 사이트</string>
+    <string name="wallet_connect_verify_unknown">WalletConnect가 이 사이트를 확인하지 못했습니다. 연결하기 전에 주소를 꼼꼼히 확인하세요.</string>
     <string name="WalletConnect_ActiveWallet">활성 지갑</string>
     <string name="WalletConnect_Unnamed">이름 없음</string>
     <string name="delete_all">모두 삭제</string>

@@ -572,6 +572,13 @@
     <string name="WalletConnect_Error_RequestNotFoundError">Запрос не найден</string>
     <string name="WalletConnect_NoConnection">У вас нет подключенных dApps</string>
     <string name="WalletConnect_PendingRequests">Ожидающие запросы</string>
+    <string name="wallet_connect_verify_scam_title">Известный скам</string>
+    <string name="wallet_connect_verify_scam">Этот сайт в списке известных мошеннических доменов. Подключение к нему, скорее всего, приведёт к потере средств.</string>
+    <string name="wallet_connect_verify_mismatch_title">Подмена сайта</string>
+    <string name="wallet_connect_verify_mismatch">Запрос пришёл с %1$s, а не с сайта, за который он себя выдаёт. Это частый приём фишинга.</string>
+    <string name="wallet_connect_verify_mismatch_no_origin">Запрос пришёл не с того сайта, за который он себя выдаёт. Это частый приём фишинга.</string>
+    <string name="wallet_connect_verify_unknown_title">Сайт не подтверждён</string>
+    <string name="wallet_connect_verify_unknown">WalletConnect не смог подтвердить этот сайт. Внимательно проверьте адрес перед подключением.</string>
     <string name="WalletConnect_ActiveWallet">Активный кошелек</string>
     <string name="WalletConnect_Unnamed">Без имени</string>
     <string name="delete_all">Удалить всё</string>

@@ -585,6 +585,13 @@
     <string name="WalletConnect_Error_RequestNotFoundError">Erreur : requête introuvable</string>
     <string name="WalletConnect_NoConnection">Vous n\u0027avez aucune dapp connectée</string>
     <string name="WalletConnect_PendingRequests">Demandes en attente</string>
+    <string name="wallet_connect_verify_scam_title">Arnaque connue</string>
+    <string name="wallet_connect_verify_scam">Ce site figure dans la liste des domaines malveillants connus. Vous connecter à ce site vous fera très probablement perdre des fonds.</string>
+    <string name="wallet_connect_verify_mismatch_title">Usurpation de site</string>
+    <string name="wallet_connect_verify_mismatch">Cette demande provient de %1$s, qui ne correspond pas au site qu\'elle prétend être. C\'est une technique d\'hameçonnage courante.</string>
+    <string name="wallet_connect_verify_mismatch_no_origin">Cette demande provient d\'un autre site que celui qu\'elle prétend être. C\'est une technique d\'hameçonnage courante.</string>
+    <string name="wallet_connect_verify_unknown_title">Site non vérifié</string>
+    <string name="wallet_connect_verify_unknown">WalletConnect n\'a pas pu confirmer ce site. Vérifiez attentivement l\'adresse avant de vous connecter.</string>
     <string name="WalletConnect_ActiveWallet">Portefeuille actif</string>
     <string name="WalletConnect_Unnamed">Sans nom</string>
     <string name="delete_all">Tout supprimer</string>
