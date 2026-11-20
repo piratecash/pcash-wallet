@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
+import cash.p.terminal.featureStacking.ui.StakingChartDisplayMode
 import cash.p.terminal.featureStacking.ui.staking.StackingType
 import cash.p.terminal.premium.data.config.PremiumConfig
 import cash.p.terminal.premium.domain.usecase.PremiumType
@@ -81,6 +82,7 @@ import cash.p.terminal.ui_compose.components.HsIconButton
 import cash.p.terminal.ui_compose.components.HsImage
 import cash.p.terminal.ui_compose.components.InfoBottomSheet
 import cash.p.terminal.ui_compose.components.LocalHudMessenger
+import cash.p.terminal.ui_compose.components.TabItem
 import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.TitleAndTwoValuesCell
 import cash.p.terminal.ui_compose.components.TitleAndValueCell
@@ -95,6 +97,7 @@ import io.horizontalsystems.chartview.chart.ChartModule
 import io.horizontalsystems.chartview.chart.ChartUiState
 import io.horizontalsystems.chartview.chart.SelectedItem
 import io.horizontalsystems.chartview.ui.Chart
+import io.horizontalsystems.chartview.ui.ChartTab
 import io.horizontalsystems.core.models.HsTimePeriod
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
@@ -114,14 +117,18 @@ internal fun StackingCoinScreen(
         val job = viewModel.loadData()
         onPauseOrDispose { job.cancel() }
     }
-    LaunchedEffect(viewModel.uiState.value.receiveAddress) {
-        viewModel.uiState.value.receiveAddress?.let(chartViewModel::setReceiveAddress)
+    val receiveAddress = viewModel.uiState.value.receiveAddress
+    val token = viewModel.uiState.value.token
+    LaunchedEffect(receiveAddress, token) {
+        if (receiveAddress != null && token != null) {
+            chartViewModel.setStakingSource(receiveAddress, token)
+        }
     }
     HSSwipeRefresh(
         refreshing = viewModel.uiState.value.isRefreshing,
         onRefresh = {
             viewModel.refresh()
-            chartViewModel.refresh()
+            chartViewModel.refreshIncome()
         }
     ) {
         PirateCoinScreenContent(
@@ -132,8 +139,10 @@ internal fun StackingCoinScreen(
             onCalculatorClicked = onCalculatorClicked,
             onChartClicked = onChartClicked,
             graphUIState = chartViewModel.uiState,
-            getSelectedPointCallback = chartViewModel::getSelectedPoint,
+            getSelectedPointCallback = chartViewModel::getSelectedIncomePoint,
             onSelectChartInterval = chartViewModel::onSelectChartInterval,
+            displayModeTabs = chartViewModel.displayModeTabs,
+            onSelectDisplayMode = chartViewModel::onSelectDisplayMode,
             onToggleBalanceVisibility = viewModel::toggleBalanceVisibility
         )
     }
@@ -150,6 +159,8 @@ internal fun PirateCoinScreenContent(
     graphUIState: ChartUiState,
     getSelectedPointCallback: (SelectedItem) -> ChartModule.ChartHeaderView,
     onSelectChartInterval: (HsTimePeriod?) -> Unit,
+    displayModeTabs: List<TabItem<StakingChartDisplayMode>>,
+    onSelectDisplayMode: (StakingChartDisplayMode) -> Unit,
     onToggleBalanceVisibility: () -> Unit
 ) {
     Column {
@@ -179,6 +190,8 @@ internal fun PirateCoinScreenContent(
                     graphUIState = graphUIState,
                     getSelectedPointCallback = getSelectedPointCallback,
                     onSelectChartInterval = onSelectChartInterval,
+                    displayModeTabs = displayModeTabs,
+                    onSelectDisplayMode = onSelectDisplayMode,
                     onToggleBalanceVisibility = onToggleBalanceVisibility
                 )
             }
@@ -283,6 +296,8 @@ private fun PirateCoinScreenWithGraph(
     graphUIState: ChartUiState,
     getSelectedPointCallback: (SelectedItem) -> ChartModule.ChartHeaderView,
     onSelectChartInterval: (HsTimePeriod?) -> Unit,
+    displayModeTabs: List<TabItem<StakingChartDisplayMode>>,
+    onSelectDisplayMode: (StakingChartDisplayMode) -> Unit,
     onToggleBalanceVisibility: () -> Unit
 ) {
     LazyColumn {
@@ -344,6 +359,7 @@ private fun PirateCoinScreenWithGraph(
                 getSelectedPointCallback = getSelectedPointCallback,
                 onSelectChartInterval = onSelectChartInterval
             )
+            ChartTab(tabItems = displayModeTabs, onSelect = onSelectDisplayMode)
         }
         item {
             Spacer(

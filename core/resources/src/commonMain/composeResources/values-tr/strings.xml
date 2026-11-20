@@ -1998,6 +1998,8 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="accruals">Accruals</string>
     <string name="payouts">Payouts</string>
     <string name="how_my_income_grows">Gelirim nasıl büyüyor</string>
+    <string name="staking_chart_mode_both">İkisi de</string>
+    <string name="staking_chart_no_fiat_estimate">%1$s cinsinden tahmin yok</string>
     <string name="payouts_history">Payouts History</string>
     <string name="pos_calculator">POS Calculator</string>
     <string name="pos_calculator_pirate_description">Calculation of profitability mining PirateCash staking in the pool.</string>

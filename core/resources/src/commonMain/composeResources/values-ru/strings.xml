@@ -1904,6 +1904,8 @@
     <string name="accruals">Начисления</string>
     <string name="payouts">Выплаты</string>
     <string name="how_my_income_grows">Как растёт мой доход</string>
+    <string name="staking_chart_mode_both">Оба</string>
+    <string name="staking_chart_no_fiat_estimate">Нет оценки в %1$s</string>
     <string name="payouts_history">История выплат</string>
     <string name="pos_calculator">Калькулятор POS</string>
     <string name="pos_calculator_pirate_description">Расчет прибыльности майнинга PirateCash при стейкинге в пуле.</string>

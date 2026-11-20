@@ -2351,6 +2351,8 @@ Proceed only if you\u0027re sure.</string>
     <string name="accruals">Accruals</string>
     <string name="payouts">Payouts</string>
     <string name="how_my_income_grows">How my income grows</string>
+    <string name="staking_chart_mode_both">Both</string>
+    <string name="staking_chart_no_fiat_estimate">No estimate in %1$s</string>
     <string name="payouts_history">Payouts History</string>
     <string name="pos_calculator">POS Calculator</string>
     <string name="pos_calculator_pirate_description">Calculation of profitability mining PirateCash staking in the pool.</string>
