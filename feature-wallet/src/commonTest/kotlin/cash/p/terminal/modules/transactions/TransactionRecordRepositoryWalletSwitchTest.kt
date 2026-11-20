@@ -405,6 +405,63 @@ class TransactionRecordRepositoryWalletSwitchTest {
     }
 
     @Test
+    fun searchQuery_providerStatusChangesOnAllTab_reloadsMatchingRecord() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+        mockRussianTitles()
+
+        val fixture = providerSearchFixture()
+        val repository = createRepository(
+            adapterManager = adapterManager(fixture.source, pagedAdapter(listOf(fixture.record))),
+            dispatcher = testDispatcher,
+            scope = this,
+            swapProviderTransactionsStorage = fixture.storage,
+        )
+        val (emissions, collectorJob) = collectRecordUids(repository, testDispatcher)
+
+        repository.searchAllTab(fixture.wallet, searchQuery = "процесс обмена")
+        advanceUntilIdle()
+        assertTrue(
+            "a waiting swap must not match the exchanging title, but got: $emissions",
+            emissions.none { it.contains(fixture.record.uid) }
+        )
+
+        fixture.storedSwap = testProviderSwap(TransactionStatusEnum.EXCHANGING, fixture.record.uid)
+        fixture.updates.emit(listOf(fixture.storedSwap))
+        advanceUntilIdle()
+
+        assertEquals(listOf(fixture.record.uid), emissions.last())
+
+        collectorJob.cancel()
+        repository.clear()
+    }
+
+    @Test
+    fun searchQuery_notInProviderTitleOnAllTab_doesNotObserveProviderStorage() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+        mockRussianTitles()
+
+        val fixture = providerSearchFixture()
+        val repository = createRepository(
+            adapterManager = adapterManager(fixture.source, pagedAdapter(listOf(fixture.record))),
+            dispatcher = testDispatcher,
+            scope = this,
+            swapProviderTransactionsStorage = fixture.storage,
+        )
+        val (emissions, collectorJob) = collectRecordUids(repository, testDispatcher)
+
+        repository.searchAllTab(fixture.wallet, searchQuery = "provider-deposit")
+        advanceUntilIdle()
+
+        assertEquals(listOf(fixture.record.uid), emissions.last())
+        verify(exactly = 0) { fixture.storage.observeAll() }
+
+        collectorJob.cancel()
+        repository.clear()
+    }
+
+    @Test
     fun searchQuery_matchAfterFirstUiPage_emitsOlderMatch() = runTest {
         val testDispatcher = UnconfinedTestDispatcher(testScheduler)
         startKoinForTests()
@@ -2063,6 +2120,45 @@ class TransactionRecordRepositoryWalletSwitchTest {
 
     // Mirrors the production contract: TransactionsService calls set() and only reloads
     // when it reports a change. set() no longer triggers the reload itself.
+    private class ProviderSearchFixture(
+        val source: TransactionSource,
+        val wallet: TransactionWallet,
+        val record: TransactionRecord,
+    ) {
+        var storedSwap = testProviderSwap(TransactionStatusEnum.WAITING, record.uid)
+        val updates = MutableSharedFlow<List<SwapProviderTransaction>>(extraBufferCapacity = 1)
+        val storage = mockk<SwapProviderTransactionsStorage>(relaxed = true) {
+            every { getAllAcrossAccounts() } answers { listOf(storedSwap) }
+            every { getByOutgoingRecordUid(record.uid) } answers { storedSwap }
+            every { getByTokenIn(any(), any(), any()) } returns null
+            every { observeAll() } returns updates
+        }
+    }
+
+    private fun providerSearchFixture(): ProviderSearchFixture {
+        val token = createToken()
+        val source = createSource(accountId = "account-1", blockchain = token.blockchain)
+        val record = createBitcoinOutgoingRecord(
+            token = token,
+            source = source,
+            uid = "provider-payment",
+            timestamp = 1_715_000_000L,
+            amount = BigDecimal("-0.001"),
+            toAddress = "provider-deposit",
+        )
+        return ProviderSearchFixture(source, TransactionWallet(token = token, source = source, badge = null), record)
+    }
+
+    private fun TransactionRecordRepository.searchAllTab(wallet: TransactionWallet, searchQuery: String) =
+        setAndReload(
+            transactionWallets = listOf(wallet),
+            wallet = null,
+            transactionType = FilterTransactionType.All,
+            blockchain = null,
+            contact = null,
+            searchQuery = searchQuery,
+        )
+
     private fun TransactionRecordRepository.setAndReload(
         transactionWallets: List<TransactionWallet>,
         wallet: TransactionWallet?,

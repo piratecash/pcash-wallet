@@ -35,11 +35,14 @@ class TransactionRecordSearchMatcher(
     private val swapProviderTransactionsStorage: SwapProviderTransactionsStorage,
 ) {
 
+    /** Whether [prepare] for the same arguments depends on swap storage; reads no storage itself. */
+    fun readsProviderSwaps(query: String, readsProviderSwaps: Boolean): Boolean =
+        readsProviderSwaps || query.normalizedSearchValue().isInProviderTitle()
+
     /** [readsProviderSwaps]: the caller's own acceptance reads swap storage, so the fingerprint must cover it. */
     fun prepare(query: String, readsProviderSwaps: Boolean = false): PreparedSearchQuery {
         val normalizedQuery = query.normalizedSearchValue()
-        val inProviderTitle = normalizedQuery.isNotEmpty() &&
-            TransactionStatusEnum.entries.any { it.listTitle().containsQuery(normalizedQuery) }
+        val inProviderTitle = normalizedQuery.isInProviderTitle()
         if (!inProviderTitle && !readsProviderSwaps) {
             return PreparedSearchQuery(normalizedQuery, null, searchesProviderSwaps = false)
         }
@@ -250,4 +253,7 @@ class TransactionRecordSearchMatcher(
     private fun String.normalizedSearchValue() = trim().lowercase(Locale.ROOT)
 
     private fun String.containsQuery(normalizedQuery: String) = normalizedSearchValue().contains(normalizedQuery)
+
+    private fun String.isInProviderTitle() =
+        isNotEmpty() && TransactionStatusEnum.entries.any { it.listTitle().containsQuery(this) }
 }
