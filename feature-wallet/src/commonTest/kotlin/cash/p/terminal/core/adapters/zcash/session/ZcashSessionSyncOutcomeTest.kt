@@ -1,6 +1,7 @@
 package cash.p.terminal.core.adapters.zcash.session
 
 import cash.p.terminal.core.managers.NetworkErrorTracker
+import cash.p.zcash.BlockDownload
 import cash.p.zcash.SyncState
 import io.horizontalsystems.core.entities.BlockchainType
 import io.mockk.every
@@ -39,6 +40,18 @@ class ZcashSessionSyncOutcomeTest {
         every { wallet.sync(any()) } returns flowOf(SyncState.Synced)
 
         assertEquals(ZcashSessionResult.Success(ZcashPassOutcome.Synced), session().sync())
+    }
+
+    @Test
+    fun sync_blockDownloadGiven_passesItToTheWallet() = runTest {
+        val blockDownload = BlockDownload(maxStreams = 3, bufferMegabytes = 24)
+        every { wallet.sync(any(), any(), any(), any(), any()) } returns flowOf(SyncState.Synced)
+
+        val session = zcashSession(wallet)
+
+        session.sync(blockDownload)
+
+        verify { wallet.sync(listOf(session.dbAccountId), any(), any(), any(), blockDownload) }
     }
 
     @Test

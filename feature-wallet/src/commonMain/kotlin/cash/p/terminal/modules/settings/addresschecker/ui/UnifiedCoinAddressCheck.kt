@@ -92,6 +92,7 @@ import cash.p.terminal.ui_compose.components.TextImportantError
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.placeholderPainter
+import cash.p.terminal.ui.compose.components.coinIconPlate
 import cash.p.terminal.ui_compose.entities.DataState
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.imageUrl
@@ -255,6 +256,7 @@ fun UnifiedAddressCheckScreen(
                                 model = fullCoin.coin.imageUrl,
                                 error = placeholderPainter(Res.drawable.coin_placeholder)
                             ),
+                            iconPlate = true,
                             description = description,
                             onInfoClick = { info ->
                                 bottomCheckInfo = info
@@ -325,6 +327,7 @@ fun SecurityCheckCard(
     infoTitle: String = title,
     description: String,
     onInfoClick: (BottomCheckInfo) -> Unit = {},
+    iconPlate: Boolean = false,
     results: @Composable ColumnScope.() -> Unit
 ) {
     Card(
@@ -351,7 +354,7 @@ fun SecurityCheckCard(
                     Icon(
                         painter = icon,
                         contentDescription = "Check Icon",
-                        modifier = Modifier.size(24.dp),
+                        modifier = Modifier.size(24.dp).coinIconPlate(enabled = iconPlate),
                         tint = Color.Unspecified
                     )
 

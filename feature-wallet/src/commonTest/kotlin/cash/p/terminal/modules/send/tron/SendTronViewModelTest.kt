@@ -36,6 +36,7 @@ import cash.p.terminal.wallet.policy.HardwareWalletTokenPolicy
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.entities.CurrencyValue
+import io.horizontalsystems.tronkit.models.AccountResources
 import io.horizontalsystems.tronkit.models.Address as TronAddress
 import io.horizontalsystems.tronkit.network.NowBlock
 import io.horizontalsystems.tronkit.transaction.Fee
@@ -118,6 +119,7 @@ class SendTronViewModelTest : KoinTest {
     private val amount = BigDecimal("1.2")
     private val address = Address(TRON_ADDRESS)
     private val isConnected = MutableStateFlow(true)
+    private val resourcesFlow = MutableStateFlow<AccountResources?>(null)
 
     @get:Rule
     val koinRule = KoinTestRule.create {
@@ -151,7 +153,11 @@ class SendTronViewModelTest : KoinTest {
         coEvery { offlineSignedTransactionRepository.save(any(), any()) } returns Unit
         every { adapter.trxBalanceData } returns BalanceData(available = BigDecimal.TEN)
         every { adapter.balanceData } returns BalanceData(available = BigDecimal.TEN)
-        every { adapter.maxSpendableBalance } returns BigDecimal("8.9")
+        every { adapter.accountResourcesFlow } returns resourcesFlow
+        every { adapter.accountActivationFees() } returns listOf(
+            Fee.Bandwidth(points = 100, price = 1_000),
+            Fee.AccountActivation(amount = 1_000_000),
+        )
         every { adapterManager.getAdjustedBalanceData(any()) } returns null
         coEvery { adapter.estimateFee(any(), any()) } returns listOf(Fee.Energy(required = 10, price = 2))
         coEvery { adapter.getNowBlock() } returns nowBlock
@@ -291,7 +297,7 @@ class SendTronViewModelTest : KoinTest {
         advanceUntilIdle()
 
         val confirmationData = checkNotNull(viewModel.confirmationData)
-        assertEquals(BigDecimal("1.000000"), confirmationData.activationFee)
+        assertEquals(BigDecimal("1.000000"), confirmationData.feeBreakdown?.activationFee)
         assertEquals(BigDecimal("1.000020"), confirmationData.fee)
     }
 
@@ -378,6 +384,64 @@ class SendTronViewModelTest : KoinTest {
 
         assertEquals(BigDecimal("8.900000"), availableBalanceUpdates().last())
         assertFalse(BigDecimal("9.731000") in availableBalanceUpdates())
+    }
+
+    @Test
+    fun onEnterAddress_freeBandwidthCoversTransfer_raisesLimitToFullBalance() = runTest(dispatcher) {
+        coEvery { adapter.estimateFee(any(), any()) } returns
+            listOf(Fee.Bandwidth(points = 269, price = 1_000, source = Fee.Bandwidth.Source.Free))
+        val viewModel = createViewModel()
+
+        viewModel.onEnterAddress(address)
+        advanceUntilIdle()
+
+        assertEquals(BigDecimal("10.000000"), availableBalanceUpdates().last())
+    }
+
+    @Test
+    fun onEnterAddress_unactivatedRecipientWithStakedBandwidth_reservesOnlyActivation() = runTest(dispatcher) {
+        coEvery { adapter.estimateFee(any(), any()) } returns listOf(
+            Fee.Bandwidth(points = 269, price = 1_000, source = Fee.Bandwidth.Source.Staked, burnInSuns = 100_000),
+            Fee.AccountActivation(amount = 1_000_000),
+        )
+        val viewModel = createViewModel()
+
+        viewModel.onEnterAddress(address)
+        advanceUntilIdle()
+
+        assertEquals(BigDecimal("9.000000"), availableBalanceUpdates().last())
+    }
+
+    @Test
+    fun accountResourcesFlow_emits_updatesUiState() = runTest(dispatcher) {
+        val resources = AccountResources(energy = AccountResources.Resource(limit = 65_000, used = 1_000))
+        val viewModel = createViewModel()
+
+        resourcesFlow.value = resources
+        advanceUntilIdle()
+
+        assertEquals(resources, viewModel.uiState.resources)
+        coVerify { adapter.refreshAccountResources() }
+    }
+
+    @Test
+    fun onClickSend_trc20OwnEnergyCoversCall_signsFullEnergyCostAsFeeLimit() = runTest(dispatcher) {
+        coEvery { adapter.estimateFee(any(), any()) } returns listOf(
+            Fee.Energy(required = 64_895, price = 100, fromAccount = 64_895),
+            Fee.Bandwidth(points = 345, price = 1_000, source = Fee.Bandwidth.Source.Free),
+        )
+        val viewModel = createViewModel(wallet = createWallet(trc20Token()))
+        viewModel.onEnterAddress(address)
+        viewModel.onEnterAmount(amount)
+        advanceUntilIdle()
+        viewModel.onNavigateToConfirmation()
+        advanceUntilIdle()
+
+        viewModel.onClickSendWithWarningCheck()
+        advanceUntilIdle()
+
+        assertEquals(BigDecimal.ZERO.setScale(6), viewModel.confirmationData?.fee)
+        coVerify { adapter.send(amount, match { it.base58 == TRON_ADDRESS }, 6_489_500L) }
     }
 
     @Test

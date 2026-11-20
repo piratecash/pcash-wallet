@@ -31,7 +31,7 @@ import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.VSpacer
-import cash.p.terminal.modules.manageaccount.ui.rememberCopyWithHud
+import cash.p.terminal.modules.manageaccount.ui.rememberCopySecretWithHud
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import kotlinx.coroutines.launch
 import io.horizontalsystems.core.common.CommonParcelize
@@ -61,7 +61,7 @@ private fun EvmPrivateKeyScreen(
     navigation: HSNavigation,
     evmPrivateKey: String,
 ) {
-    val copyWithHud = rememberCopyWithHud()
+    val copyWithHud = rememberCopySecretWithHud()
     val coroutineScope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,

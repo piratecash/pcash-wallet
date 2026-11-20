@@ -28,10 +28,15 @@ internal fun Scope.sendTronViewModel(
     val amountValidator = AmountValidator()
     val coinMaxAllowedDecimals = wallet.token.decimals
 
+    val spendable = if (wallet.token.type.isNative) {
+        adapter.unknownRecipientSpendable(wallet.token.decimals)
+    } else {
+        adapter.maxSpendableBalance
+    }
     val amountService = SendAmountService(
         amountValidator,
         wallet.token.coin.code,
-        adapterManager.tronSendableBalance(wallet, adapter.maxSpendableBalance),
+        adapterManager.tronSendableBalance(wallet, spendable),
         wallet.token.type.isNative,
     )
     val addressService = SendTronAddressService(adapter, wallet.token)
@@ -58,6 +63,10 @@ internal fun Scope.sendTronViewModel(
         offlineSignedTransactionRepository = get(),
     )
 }
+
+// Until the recipient is known, reserve the worst case for TRX: activating it.
+internal fun ISendTronAdapter.unknownRecipientSpendable(decimals: Int): BigDecimal =
+    (balanceData.available - accountActivationFees().toTronFeeBreakdown(decimals).totalFee).max(BigDecimal.ZERO)
 
 internal fun IAdapterManager.tronSendableBalance(wallet: Wallet, adapterSpendable: BigDecimal): BigDecimal =
     getMaxSendableBalance(wallet, adapterSpendable).setScale(wallet.token.decimals, RoundingMode.DOWN)

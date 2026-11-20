@@ -14,7 +14,9 @@ import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.IAccountManager
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlin.concurrent.Volatile
 import cash.p.terminal.resources.ManageAccount_DeleteWarning
 import cash.p.terminal.resources.ManageAccount_Delete_hardware_wallet_warning
 import cash.p.terminal.resources.ManageKeys_Delete_FromPhone
@@ -35,6 +37,8 @@ class UnlinkAccountViewModel(
         private set
     var closeScreen by mutableStateOf(false)
         private set
+    @Volatile
+    private var deleting = false
 
     val deleteButtonText = when {
             account.isWatchAccount -> Res.string.ManageKeys_StopWatching
@@ -71,12 +75,21 @@ class UnlinkAccountViewModel(
      * We use GlobalScope to finish the process even after dialog was closed
      */
     @OptIn(DelicateCoroutinesApi::class)
-    fun onUnlink() = GlobalScope.launch {
-        closeScreen = deletionState.run { accountManager.delete(account.id) }
+    fun onUnlink(): Job? {
+        if (deleting) return null
+        deleting = true
+        updateUnlinkEnabledState()
+        return GlobalScope.launch {
+            closeScreen = deletionState.run { accountManager.delete(account.id) }
+            if (!closeScreen) {
+                deleting = false
+                updateUnlinkEnabledState()
+            }
+        }
     }
 
     private fun updateUnlinkEnabledState() {
-        unlinkEnabled = confirmations.none { !it.confirmed }
+        unlinkEnabled = !deleting && confirmations.none { !it.confirmed }
     }
 }
 

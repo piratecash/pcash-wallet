@@ -50,6 +50,7 @@ import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
+import cash.p.terminal.ui.compose.components.coinIconPlate
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.chartview.rememberAsyncImagePainterWithFallback
 import org.jetbrains.compose.resources.painterResource
@@ -131,6 +132,7 @@ internal fun BlockchainSettingsAppBar(title: String, iconUrl: String, onClose: (
                 modifier = Modifier
                     .padding(start = 14.dp)
                     .size(24.dp)
+                    .coinIconPlate()
             )
         },
         menuItems = listOf(
@@ -200,7 +202,8 @@ internal fun BlockchainSettingCell(
             HSpacer(width = 16.dp)
             Image(
                 modifier = Modifier
-                    .size(32.dp),
+                    .size(32.dp)
+                    .coinIconPlate(enabled = icon is BlockchainSettingsIcon.BlockchainIcon),
                 painter = when (icon) {
                     is BlockchainSettingsIcon.ApiIcon -> painterResource(icon.resId)
                     is BlockchainSettingsIcon.BlockchainIcon -> rememberAsyncImagePainterWithFallback(

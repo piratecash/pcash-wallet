@@ -167,6 +167,7 @@ private fun MetricsPageScreen(
                                     coinIconUrl = viewItem.fullCoin.coin.imageUrl,
                                     alternativeCoinIconUrl = viewItem.fullCoin.coin.alternativeImageUrl,
                                     coinIconPlaceholder = viewItem.fullCoin.iconPlaceholder,
+                                    iconPlate = true,
                                     value = viewItem.coinRate,
                                     marketDataValue = viewItem.marketDataValue,
                                     label = viewItem.rank,
