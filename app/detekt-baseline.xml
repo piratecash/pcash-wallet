@@ -256,7 +256,7 @@
     <ID>LongMethod:TransactionAutoHideBlock.kt$@Composable internal fun TransactionAutoHideBlock( transactionAutoHideEnabled: Boolean, displayLevel: TransactionDisplayLevel, transactionAutoHideSeparatePinExists: Boolean, onTransactionAutoHideEnabledChange: (Boolean) -&gt; Unit, onPinClicked: () -&gt; Unit, onDisablePinClicked: () -&gt; Unit, onChangeDisplayClicked: () -&gt; Unit )</ID>
     <ID>LongMethod:TweetsPageResponse.kt$TweetsPageResponse$fun tweets(user: TwitterUser): List&lt;Tweet&gt;</ID>
     <ID>LongMethod:WCRequestPage.kt$WCRequestPage$@Composable fun WcRequestEvm(navigation: HSNavigation)</ID>
-    <ID>LongMethod:WCSendEthScreen.kt$@Composable fun WCSendEthRequestScreen( navigation: HSNavigation, logger: AppLogger, blockchainType: BlockchainType, transaction: WalletConnectTransaction, peerName: String, )</ID>
+    <ID>LongMethod:WCSendEthScreen.kt$@Composable fun WCSendEthRequestScreen( navigation: HSNavigation, logger: AppLogger, blockchainType: BlockchainType, transaction: WalletConnectTransaction, peerName: String, verifyAlert: WCVerifyAlert?, )</ID>
     <ID>LongMethod:WCSessionCell.kt$@Composable fun WCSessionCell( shape: Shape, showDivider: Boolean = false, session: WalletConnectListModule.SessionViewItem, navigation: HSNavigation, )</ID>
     <ID>LongMethod:WCSessionPage.kt$@Composable private fun ColumnScope.WCSessionListContent( navigation: HSNavigation, viewModel: WCSessionViewModel )</ID>
     <ID>LongMethod:WCSessionScreen.kt$@Composable fun WCSessionsScreen( navigation: HSNavigation, deepLinkUri: String?, windowInsets: WindowInsets = NavigationBarDefaults.windowInsets, )</ID>

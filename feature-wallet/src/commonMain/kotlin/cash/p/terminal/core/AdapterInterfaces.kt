@@ -403,8 +403,15 @@ interface IMoneroReceiveAdapter : IReceiveAdapter, IMoneroHardwareWalletAdapter 
     suspend fun displayAddressOnDevice(addressIndex: Int)
 }
 
-/** [requiredTon] is all TON the transaction debits: the attached value plus every fee. */
-data class TonFeeEstimate(val fee: BigDecimal, val requiredTon: BigDecimal)
+/**
+ * [requiredTon] is all TON the transaction debits: the attached value plus every fee.
+ * [nftNotTransferred] is set when the emulated NFT transfer does not hand the item to the recipient.
+ */
+data class TonFeeEstimate(
+    val fee: BigDecimal,
+    val requiredTon: BigDecimal,
+    val nftNotTransferred: Boolean = false,
+)
 
 /**
  * [broadcast] holds the addresses whose transaction was handed to the node; [error] stopped the rest.
