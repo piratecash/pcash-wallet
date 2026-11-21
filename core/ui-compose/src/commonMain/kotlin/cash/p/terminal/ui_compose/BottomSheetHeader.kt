@@ -31,6 +31,7 @@ fun BottomSheetHeader(
     iconPainter: Painter? = null,
     titleColor: Color = ComposeAppTheme.colors.textPrimary,
     iconTint: ColorFilter? = null,
+    closeIconTint: Color = ComposeAppTheme.colors.iconSecondary,
     iconPlate: Boolean = false,
     content: @Composable() (ColumnScope.() -> Unit),
 ) {
@@ -53,6 +54,7 @@ fun BottomSheetHeader(
         },
         onCloseClick = onCloseClick,
         iconTint = iconTint,
+        closeIconTint = closeIconTint,
         iconPlate = iconPlate,
         modifier = modifier,
         content = content
@@ -104,6 +106,7 @@ private fun BottomSheetHeader(
     iconTint: ColorFilter?,
     iconPlate: Boolean,
     modifier: Modifier = Modifier,
+    closeIconTint: Color = ComposeAppTheme.colors.iconSecondary,
     content: @Composable() (ColumnScope.() -> Unit)
 ) {
     BottomSheetSurface(modifier = modifier) {
@@ -130,7 +133,7 @@ private fun BottomSheetHeader(
                 ) {
                     Icon(
                         painter = painterResource(Res.drawable.ic_close_24),
-                        tint = ComposeAppTheme.colors.iconSecondary,
+                        tint = closeIconTint,
                         contentDescription = null,
                     )
                 }

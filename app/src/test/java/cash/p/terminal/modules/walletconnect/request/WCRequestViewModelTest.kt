@@ -3,6 +3,7 @@ package cash.p.terminal.modules.walletconnect.request
 import cash.p.terminal.core.ServiceStateFlow
 import cash.p.terminal.ledger.domain.LedgerBlindSigningRequiredException
 import cash.p.terminal.ledger.domain.LedgerRejectedException
+import cash.p.terminal.modules.walletconnect.WCManager
 import cash.p.terminal.strings.helpers.TranslatableString
 import io.horizontalsystems.core.Translator
 import io.mockk.coEvery
@@ -27,6 +28,7 @@ import kotlin.test.assertTrue
 class WCRequestViewModelTest {
 
     private val wcAction = mockk<AbstractWCAction>(relaxed = true)
+    private val wcManager = mockk<WCManager>()
 
     @Before
     fun setUp() {
@@ -35,6 +37,7 @@ class WCRequestViewModelTest {
             ServiceStateFlow(MutableStateFlow(WCActionState(runnable = true, items = emptyList())))
         every { wcAction.getTitle() } returns TranslatableString.PlainString("Sign")
         every { wcAction.getApproveButtonTitle() } returns TranslatableString.PlainString("Sign")
+        coEvery { wcManager.getRequestVerifyAlert(any()) } returns null
         mockkObject(Translator)
         every { Translator.getString(any(), *anyVararg()) } answers { firstArg<StringResource>().key }
     }
@@ -71,7 +74,7 @@ class WCRequestViewModelTest {
 
     private suspend fun approveFailingWith(error: Exception): WCRequestViewModel {
         coEvery { wcAction.performAction() } throws error
-        val viewModel = WCRequestViewModel(mockk(relaxed = true), wcAction)
+        val viewModel = WCRequestViewModel(mockk(relaxed = true), wcAction, wcManager)
         viewModel.approve().join()
         return viewModel
     }

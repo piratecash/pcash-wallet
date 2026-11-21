@@ -5,7 +5,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import cash.p.terminal.modules.send.signingErrorText
 import cash.p.terminal.modules.sendevmtransaction.SectionViewItem
+import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.modules.walletconnect.WCDelegate
+import cash.p.terminal.modules.walletconnect.WCManager
+import cash.p.terminal.modules.walletconnect.WCVerifyAlert
 import cash.p.terminal.strings.helpers.TranslatableString
 import com.reown.walletkit.client.Wallet
 import io.horizontalsystems.core.ViewModelUiState
@@ -15,12 +18,14 @@ import kotlinx.coroutines.launch
 
 class WCRequestViewModel(
     private val sessionRequest: Wallet.Model.SessionRequest,
-    private val wcAction: AbstractWCAction
+    private val wcAction: AbstractWCAction,
+    private val wcManager: WCManager,
 ) : ViewModelUiState<WCRequestUiState>() {
 
     private var approveInProgress = false
     private var finish: Boolean = false
     private var errorText: String? = null
+    private var verifyAlert: WCVerifyAlert? = null
 
     private var actionState = wcAction.stateFlow.value
 
@@ -33,6 +38,11 @@ class WCRequestViewModel(
             }
         }
 
+        viewModelScope.launch {
+            verifyAlert = wcManager.getRequestVerifyAlert(sessionRequest.request.id)
+            emitState()
+        }
+
         wcAction.start(viewModelScope)
     }
 
@@ -42,7 +52,8 @@ class WCRequestViewModel(
         runnable = !approveInProgress && actionState.runnable,
         approveButtonTitle = wcAction.getApproveButtonTitle(),
         contentItems = actionState.items,
-        errorText = errorText
+        errorText = errorText,
+        verifyAlert = verifyAlert,
     )
 
     fun errorShown() {
@@ -109,7 +120,7 @@ class WCRequestViewModel(
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return WCRequestViewModel(sessionRequest, wcAction) as T
+            return WCRequestViewModel(sessionRequest, wcAction, getKoinInstance()) as T
         }
     }
 }
@@ -120,5 +131,6 @@ data class WCRequestUiState(
     val runnable: Boolean,
     val approveButtonTitle: TranslatableString,
     val contentItems: List<SectionViewItem>,
-    val errorText: String? = null
+    val errorText: String? = null,
+    val verifyAlert: WCVerifyAlert? = null,
 )
