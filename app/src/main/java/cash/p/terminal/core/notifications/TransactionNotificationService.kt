@@ -6,12 +6,15 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.notifications.polling.TransactionPollingWorker
+import io.horizontalsystems.core.IBackgroundManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.isActive
 import org.koin.android.ext.android.inject
 import timber.log.Timber
 
@@ -20,20 +23,22 @@ class TransactionNotificationService : Service() {
     private val notificationManager: TransactionNotificationManager by inject()
     private val transactionMonitor: TransactionMonitor by inject()
     private val localStorage: ILocalStorage by inject()
+    private val backgroundManager: IBackgroundManager by inject()
 
-    private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private var serviceScope = newServiceScope()
     private var foregroundStarted = false
     private var stopped = false
+    private var lastStartId = 0
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        // A stopped instance should not accept new work; later starts get a fresh Service instance.
-        if (stopped) return START_NOT_STICKY
-
+        lastStartId = startId
         if (intent?.action == ACTION_STOP) {
             stopMonitoring()
             return START_NOT_STICKY
         }
 
+        // Every other start came from startForegroundService(): reach startForeground() before any early return,
+        // even for a start that is no longer wanted, or the system kills the process.
         try {
             startForeground(
                 TransactionNotificationManager.SERVICE_NOTIFICATION_ID,
@@ -48,7 +53,21 @@ class TransactionNotificationService : Service() {
             return START_NOT_STICKY
         }
 
-        transactionMonitor.onPremiumExpired = { stopMonitoring() }
+        // The app came back before this start was delivered.
+        if (backgroundManager.inForeground) {
+            stopMonitoring()
+            return START_NOT_STICKY
+        }
+
+        if (stopped) {
+            stopped = false
+            serviceScope = newServiceScope()
+        }
+        // Expiry fires on the monitor's IO coroutine: hop to main, and ignore it if its session already ended.
+        val session = serviceScope
+        transactionMonitor.onPremiumExpired = {
+            ContextCompat.getMainExecutor(this).execute { if (session.isActive) stopMonitoring() }
+        }
         transactionMonitor.start(serviceScope)
 
         return START_STICKY
@@ -74,17 +93,21 @@ class TransactionNotificationService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     private fun stopMonitoring() {
-        if (stopped) return
-        stopped = true
-        transactionMonitor.onPremiumExpired = null
-        transactionMonitor.stop()
-        serviceScope.cancel()
+        if (!stopped) {
+            stopped = true
+            transactionMonitor.onPremiumExpired = null
+            transactionMonitor.stop()
+            serviceScope.cancel()
+        }
         if (foregroundStarted) {
             stopForeground(STOP_FOREGROUND_REMOVE)
             foregroundStarted = false
         }
-        stopSelf()
+        // With the id, a newer start that is still pending keeps the service alive.
+        stopSelf(lastStartId)
     }
+
+    private fun newServiceScope() = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private fun activateFallback(resetBaseline: Boolean): Boolean {
         val started = TransactionPollingWorker.startFallback(applicationContext, localStorage)
@@ -95,7 +118,7 @@ class TransactionNotificationService : Service() {
     }
 
     companion object {
-        private const val ACTION_STOP = "cash.p.terminal.STOP_MONITORING"
+        internal const val ACTION_STOP = "cash.p.terminal.STOP_MONITORING"
 
         fun start(context: Context): Boolean {
             try {

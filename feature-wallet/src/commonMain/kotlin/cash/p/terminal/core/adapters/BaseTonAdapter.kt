@@ -134,7 +134,11 @@ abstract class BaseTonAdapter(
     )
 
     protected fun KitTonFeeEstimate.toAppEstimate() =
-        TonFeeEstimate(fee = fee.toTonAmount(), requiredTon = totalDebit.toTonAmount())
+        TonFeeEstimate(
+            fee = fee.toTonAmount(),
+            requiredTon = totalDebit.toTonAmount(),
+            nftNotTransferred = nftNotTransferred,
+        )
 
     protected fun BigInteger.toTonAmount(): BigDecimal = toBigDecimal(TON_DECIMALS).stripTrailingZeros()
 

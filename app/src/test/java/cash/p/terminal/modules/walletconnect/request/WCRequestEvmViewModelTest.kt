@@ -7,6 +7,7 @@ import cash.p.terminal.core.managers.EvmMessageSigning
 import cash.p.terminal.modules.walletconnect.WCDelegate
 import cash.p.terminal.modules.walletconnect.WCManager
 import cash.p.terminal.modules.walletconnect.WCSessionManager
+import cash.p.terminal.modules.walletconnect.WCVerifyAlert
 import cash.p.terminal.trezor.domain.TrezorSigningException
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.IAccountManager
@@ -111,12 +112,14 @@ class WCRequestEvmViewModelTest {
     private fun viewModelWithKitManager(
         accountManager: IAccountManager,
         evmKitManager: EvmKitManager,
+        verifyAlert: WCVerifyAlert? = null,
     ): WCRequestEvmViewModel {
         val evmBlockchainManager: EvmBlockchainManager = mockk(relaxed = true)
         every { evmBlockchainManager.getEvmKitManager(any()) } returns evmKitManager
 
         val wcManager: WCManager = mockk(relaxed = true)
         every { wcManager.getBlockchainType(any()) } returns BlockchainType.Ethereum
+        coEvery { wcManager.getRequestVerifyAlert(any()) } returns verifyAlert
 
         return WCRequestEvmViewModel(
             accountManager = accountManager,
@@ -127,6 +130,10 @@ class WCRequestEvmViewModelTest {
 
     private fun failingKitManager(error: Throwable): EvmKitManager = mockk(relaxed = true) {
         coEvery { getEvmKitWrapper(any(), any()) } throws error
+    }
+
+    private fun readyKitManager(): EvmKitManager = mockk(relaxed = true) {
+        coEvery { getEvmKitWrapper(any(), any()) } returns mockk(relaxed = true)
     }
 
     private fun suspendedKitManager(kit: CompletableDeferred<EvmKitWrapper>): EvmKitManager =
@@ -224,6 +231,25 @@ class WCRequestEvmViewModelTest {
         kit.complete(mockk(relaxed = true))
 
         assertTrue(viewModel.sessionRequestUi is SessionRequestUI.Content)
+    }
+
+    @Test(timeout = TEST_TIMEOUT_MS)
+    fun init_verifyAlertResolved_contentCarriesAlert() {
+        WCDelegate.sessionRequestEvent = buildSessionRequest("""["0x68656c6c6f", "0xAddress"]""")
+        val alert = WCVerifyAlert.Impersonation("https://evil.example")
+        val viewModel = viewModelWithKitManager(accountManagerWithActiveAccount(), readyKitManager(), alert)
+
+        assertEquals(alert, (viewModel.sessionRequestUi as SessionRequestUI.Content).verifyAlert)
+    }
+
+    @Test(timeout = TEST_TIMEOUT_MS)
+    fun init_noVerifyAlert_contentPendingWithoutAlert() {
+        WCDelegate.sessionRequestEvent = buildSessionRequest("""["0x68656c6c6f", "0xAddress"]""")
+        val viewModel = viewModelWithKitManager(accountManagerWithActiveAccount(), readyKitManager())
+
+        val content = viewModel.sessionRequestUi as SessionRequestUI.Content
+        assertEquals(null, content.verifyAlert)
+        assertEquals(RequestStatus.Pending, content.status)
     }
 
     @Test(timeout = TEST_TIMEOUT_MS)

@@ -414,7 +414,7 @@ val managerModule = module {
     singleOf(::RateAppManager) bind IRateAppManager::class
     singleOf(::WCSessionStorage)
     single {
-        WCManager(accountManager = get()).also {
+        WCManager(accountManager = get(), dispatcherProvider = get()).also {
             it.addWcHandler(WCHandlerEvm(get(), get()))
             it.addWcHandler(WCHandlerStellar(get()))
         }
