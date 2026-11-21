@@ -29,7 +29,8 @@ class SendEvmSettingsService(
         MutableSharedFlow(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     val stateFlow: Flow<DataState<Transaction>> = _stateFlow.asSharedFlow()
 
-    suspend fun start() = withContext(Dispatchers.IO) {
+    // One thread: two concurrent sync() calls could publish a stale Loading after the fee error.
+    suspend fun start() = withContext(Dispatchers.IO.limitedParallelism(1)) {
         launch {
             feeService.transactionStatusFlow.collect {
                 feeState = it
