@@ -46,6 +46,8 @@ import cash.p.terminal.core.IRateAppManager
 import cash.p.terminal.core.NonFatalReporter
 import cash.p.terminal.core.ITorManager
 import cash.p.terminal.core.WalletOnboardingStorage
+import cash.p.terminal.core.adapters.zcash.session.AndroidZcashBlockDownloadPolicy
+import cash.p.terminal.core.adapters.zcash.session.ZcashBlockDownloadPolicy
 import cash.p.terminal.core.adapters.zcash.session.ZcashDbKeyProvider
 import cash.p.terminal.core.adapters.zcash.session.ZcashDbKeyProviderImpl
 import cash.p.terminal.core.deeplink.DeeplinkParser
@@ -288,6 +290,7 @@ val managerModule = module {
     single<AddressResolutionConfig> { AppConfigProvider }
     singleOf(::CrashlyticsNonFatalReporter) bind NonFatalReporter::class
     singleOf(::ZcashDbKeyProviderImpl) bind ZcashDbKeyProvider::class
+    singleOf(::AndroidZcashBlockDownloadPolicy) bind ZcashBlockDownloadPolicy::class
     singleOf(::TonFallbackAddressProvider)
     single<FallbackAddressProvider> {
         CompositeFallbackAddressProvider(
@@ -408,7 +411,7 @@ val managerModule = module {
     singleOf(::RateAppManager) bind IRateAppManager::class
     singleOf(::WCSessionStorage)
     single {
-        WCManager(accountManager = get()).also {
+        WCManager(accountManager = get(), dispatcherProvider = get()).also {
             it.addWcHandler(WCHandlerEvm(get(), get()))
             it.addWcHandler(WCHandlerStellar(get()))
         }

@@ -11,6 +11,7 @@ import cash.p.terminal.wallet.AccountDeletionPreflight
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
+import cash.p.terminal.wallet.IAccountsStorage
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.Token
@@ -54,6 +55,7 @@ class AccountCleanerTest {
     private lateinit var thorchainKitManagers: ThorchainKitManagers
     private lateinit var evmBlockchainManager: EvmBlockchainManager
     private val deletionPreflight = mockk<AccountDeletionPreflight>(relaxed = true)
+    private val accountsStorage = mockk<IAccountsStorage>(relaxed = true)
     private val solanaKitManager = mockk<SolanaKitManager>(relaxed = true)
     private val tonKitManager = mockk<TonKitManager>(relaxed = true)
 
@@ -99,6 +101,7 @@ class AccountCleanerTest {
             thorchainKitManagers,
             evmBlockchainManager,
             deletionPreflight,
+            accountsStorage,
         )
     }
 
@@ -175,6 +178,18 @@ class AccountCleanerTest {
         coVerify(exactly = 1) { removeMoneroWalletFilesUseCase.invoke(account) }
         coVerify(exactly = 1) { moneroFileDao.deleteAssociatedRecord(account.id) }
         coVerify(exactly = 0) { clearZCashWalletDataUseCase.invoke(any()) }
+    }
+
+    @Test
+    fun clearAccounts_tombstonedMoneroAccount_removesMoneroFilesFromStorageAccount() = runTest {
+        val account = account("acc-deleted-monero")
+        every { accountManager.account(account.id) } returns null
+        every { accountsStorage.loadAccount(account.id) } returns account
+
+        accountCleaner.clearAccounts(listOf(account.id))
+
+        coVerify(exactly = 1) { removeMoneroWalletFilesUseCase.invoke(account) }
+        coVerify(exactly = 1) { moneroFileDao.deleteAssociatedRecord(account.id) }
     }
 
     @Test

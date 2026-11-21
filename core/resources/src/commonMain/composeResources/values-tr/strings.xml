@@ -510,8 +510,16 @@
     <string name="FeeInfo_TronFee_Description">Ağda belirli bir işlemi göndermenin tahmini maliyeti. (Enerji, Bant Genişliği ve Aktivasyon Ücreti hariç)</string>
     <string name="FeeInfo_TronActivationFee_Title">Aktivasyon ücreti</string>
     <string name="FeeInfo_TronActivationFee_Description">This address is not active. Transferring TRX or TRC-10 tokens to an inactive account address will activate the account.</string>
-    <string name="FeeInfo_TronResourcesConsumed_Title">Tüketilen Kaynaklar</string>
     <string name="FeeInfo_TronResourcesConsumed_Description">Band Width, blockchain veritabanında saklanan işlem baytlarının boyutunu ölçen birimdir. İşlem ne kadar büyük olursa, o kadar fazla bant genişliği kaynağı tüketilir.\n\nEnergy, TRON sanal makinesinin TRON ağında belirli işlemleri gerçekleştirmek için ihtiyaç duyduğu hesaplama miktarını ölçen birimdir.\n\nAkıllı sözleşmeden beri işlemlerin yürütülmesi için bilgi işlem kaynakları gerekir, her akıllı sözleşme işleminin energy ücretini ödemesi gerekir.</string>
+    <string name="tron_resources_title">TRON kaynakları</string>
+    <string name="tron_resource_free_bandwidth">Ücretsiz Bandwidth</string>
+    <string name="tron_resource_staked_bandwidth">Staking\'den Bandwidth</string>
+    <string name="tron_resource_available_of">%1$s / %2$s</string>
+    <string name="tron_fee_covered_free">ücretsiz kotadan</string>
+    <string name="tron_fee_covered_staked">staking\'den</string>
+    <string name="tron_fee_energy_own">%1$s kendi</string>
+    <string name="tron_fee_energy_contract">%1$s sözleşmeden</string>
+    <string name="tron_activation_caution">Alıcı adresi TRON ağında henüz etkinleştirilmedi. Ağ, etkinleştirme için %1$s alacak.</string>
 
     <!--Network Fee Warning-->
     <string name="network_fee_warning_title">%1$s Ağ Komisyonu</string>
@@ -581,6 +589,13 @@
     <string name="WalletConnect_Error_RequestNotFoundError">Hata: istek bulunamadı</string>
     <string name="WalletConnect_NoConnection">Bağlı dApp\u0027iniz yok</string>
     <string name="WalletConnect_PendingRequests">Bekleyen istekler</string>
+    <string name="wallet_connect_verify_scam_title">Bilinen dolandırıcılık</string>
+    <string name="wallet_connect_verify_scam">Bu site bilinen kötü amaçlı alan adları listesinde. Bağlanmak büyük olasılıkla para kaybetmenize yol açar.</string>
+    <string name="wallet_connect_verify_mismatch_title">Site taklidi</string>
+    <string name="wallet_connect_verify_mismatch">Bu istek %1$s adresinden geliyor ve olduğunu iddia ettiği siteyle eşleşmiyor. Bu yaygın bir kimlik avı yöntemidir.</string>
+    <string name="wallet_connect_verify_mismatch_no_origin">Bu istek, olduğunu iddia ettiği siteden farklı bir siteden geliyor. Bu yaygın bir kimlik avı yöntemidir.</string>
+    <string name="wallet_connect_verify_unknown_title">Site doğrulanmadı</string>
+    <string name="wallet_connect_verify_unknown">WalletConnect bu siteyi doğrulayamadı. Bağlanmadan önce adresi dikkatlice kontrol edin.</string>
     <string name="WalletConnect_ActiveWallet">Aktif cüzdan</string>
     <string name="WalletConnect_Unnamed">İsimsiz</string>
     <string name="delete_all">Tümünü sil</string>
@@ -1912,7 +1927,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="PinSet_ErrorPinsDontMatch">Kod uyuşmadı. Tekrar deneyin.</string>
     <string name="PinSet_ErrorFailedToSavePin">Şifre kaydedilirken hata oluştu. Tekrar deneyin.</string>
     <string name="PinSet_ForBiometrics">Biyometriyi etkinleştirmek için bir şifre belirleyin</string>
-    <string name="PinSet_ForDuress">Duress Modunu etkinleştirmek için bir şifre kodu ayarlayın</string>
+    <string name="PinSet_ForDuress">Önce cüzdanınız için bir şifre belirleyin. Duress Modunu etkinleştirmek için gereklidir</string>
     <string name="pin_set_for_login_logging">Giriş günlüğünü etkinleştirmek için şifre belirleyin</string>
     <string name="pin_set_for_login_logging_passcode">Giriş günlüğünü korumak için şifre belirleyin</string>
     <string name="confirm_pin_to_disable_login_logging_passcode">Giriş günlüğünü devre dışı bırakmak için şifreyi girin</string>
@@ -2534,6 +2549,21 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="nft_burn_domain_body">Alan adı yakma adresine gönderilecek ve onu kaybedeceksiniz. %1$s adresine yapılan transferler artık cüzdanınıza ulaşmayacak. Bu işlem geri alınamaz.</string>
     <string name="nft_burn_address">Yakma adresi</string>
     <string name="nft_burn_confirm">Yak</string>
+    <string name="nft_trap_transfer_title">NFT aktarımı gerçekleşmeyecek</string>
+    <string name="nft_trap_transfer_body">İşlemi göndermeden önce kontrol ettik. Bu NFT\u0027nin sözleşmesi onu alıcıya aktarmayacak ve eklenen %1$s tutarını kendine alacak. Spam NFT\u0027ler böyle çalışır.</string>
+    <string name="nft_trap_sheet_title">NFT aktarılmayacak</string>
+    <string name="nft_trap_sheet_body">İşlemi göndermeden önce kontrol ettik. %1$s NFT\u0027sinin sözleşmesi onu alıcıya aktarmayacak ve eklenen %2$s tutarını kendine alacak.</string>
+    <string name="nft_trap_outcome_header">Gönderince ne olacak</string>
+    <string name="nft_trap_row_recipient">Alıcı</string>
+    <string name="nft_trap_row_recipient_value">hiçbir şey almayacak</string>
+    <string name="nft_trap_row_nft">NFT %1$s</string>
+    <string name="nft_trap_row_nft_value">cüzdanda kalır</string>
+    <string name="nft_trap_row_loss">Kayıp</string>
+    <string name="nft_trap_dont_send">Gönderme</string>
+    <string name="nft_trap_send_anyway">Yine de gönder</string>
+    <string name="nft_trap_burn_title">Yakılamaz</string>
+    <string name="nft_trap_burn_body">İşlemi göndermeden önce kontrol ettik. Bu NFT\u0027nin sözleşmesi onu yakmayacak ve eklenen %1$s tutarını kendine alacak. NFT\u0027yi listeden kaldırmak için gizleyin.</string>
+    <string name="nft_trap_burn_anyway">Yine de yak</string>
     <string name="nft_burn_sent">NFT yakılmak üzere gönderildi</string>
     <string name="nft_domain_burn_sent">Alan adı yakılmak üzere gönderildi</string>
     <plurals name="nft_domains_expiring_banner">

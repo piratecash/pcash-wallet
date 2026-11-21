@@ -25,6 +25,7 @@ import cash.p.terminal.wallet.entities.TokenQuery
 import io.horizontalsystems.bitcoincore.storage.UtxoFilters
 import io.horizontalsystems.solanakit.models.FullTransaction
 import io.horizontalsystems.tonkit.FriendlyAddress
+import io.horizontalsystems.tronkit.models.AccountResources
 import io.horizontalsystems.tronkit.models.Contract
 import io.horizontalsystems.tronkit.network.CreatedTransaction
 import io.horizontalsystems.tronkit.network.NowBlock
@@ -93,6 +94,8 @@ interface ITransactionsAdapter {
     ): List<TransactionRecord> = emptyList()
 
     fun getRawTransaction(transactionHash: String): String? = null
+
+    suspend fun fetchMissingDetails(record: TransactionRecord) = Unit
 
     fun getTransactionRecordsFlow(
         token: Token?,
@@ -400,8 +403,15 @@ interface IMoneroReceiveAdapter : IReceiveAdapter, IMoneroHardwareWalletAdapter 
     suspend fun displayAddressOnDevice(addressIndex: Int)
 }
 
-/** [requiredTon] is all TON the transaction debits: the attached value plus every fee. */
-data class TonFeeEstimate(val fee: BigDecimal, val requiredTon: BigDecimal)
+/**
+ * [requiredTon] is all TON the transaction debits: the attached value plus every fee.
+ * [nftNotTransferred] is set when the emulated NFT transfer does not hand the item to the recipient.
+ */
+data class TonFeeEstimate(
+    val fee: BigDecimal,
+    val requiredTon: BigDecimal,
+    val nftNotTransferred: Boolean = false,
+)
 
 /**
  * [broadcast] holds the addresses whose transaction was handed to the node; [error] stopped the rest.
@@ -447,6 +457,10 @@ interface ILastKnownBalanceAdapter {
 
 interface ISendTronAdapter : IBalanceAdapter {
     val trxBalanceData: BalanceData
+    val accountResourcesFlow: StateFlow<AccountResources?>
+
+    suspend fun refreshAccountResources()
+    fun accountActivationFees(): List<Fee>
 
     suspend fun estimateFee(amount: BigDecimal, to: TronAddress): List<Fee>
     suspend fun estimateFee(transaction: CreatedTransaction): List<Fee>

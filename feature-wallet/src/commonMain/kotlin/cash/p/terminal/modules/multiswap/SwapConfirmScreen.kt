@@ -88,6 +88,7 @@ import cash.p.terminal.resources.send_confirmation_syncing_warning
 import cash.p.terminal.resources.swap_order_created_tap_card_again
 import cash.p.terminal.resources.swap_reapprove_action
 import cash.p.terminal.ui_compose.components.rememberHudMessenger
+import cash.p.terminal.ui.compose.components.coinIconPlate
 
 data class SwapConfirmNavigation(
     val navigation: HSNavigation,
@@ -425,6 +426,7 @@ private fun SwapConfirmContent(
         SwapTransactionFields(uiState, navigation.navigation)
         SwapConfirmFeeInfo(
             uiState,
+            navigation.navigation,
             balanceParams,
             inlineFeeWarningData,
             hasFeeProblem,
@@ -499,6 +501,7 @@ private fun SwapTransactionFields(uiState: SwapConfirmUiState, navigation: HSNav
 @Composable
 private fun SwapConfirmFeeInfo(
     uiState: SwapConfirmUiState,
+    navigation: HSNavigation,
     balance: SwapConfirmBalanceParams,
     inlineFeeWarningData: NetworkFeeWarningData?,
     hasFeeProblem: Boolean,
@@ -518,6 +521,7 @@ private fun SwapConfirmFeeInfo(
         feeWarningData = inlineFeeWarningData,
         // Services put the caution message in the title.
         insufficientFeeText = uiState.feeCaution?.title,
+        feeDetails = { uiState.feeDetails.forEach { it.GetContent(navigation, true) } },
     )
 }
 
@@ -641,7 +645,7 @@ fun TokenRowPure(
 ) {
     CellUniversal(borderTop = borderTop) {
         HsImageCircle(
-            modifier = Modifier.size(32.dp),
+            modifier = Modifier.size(32.dp).coinIconPlate(),
             url = imageUrl,
             alternativeUrl = alternativeImageUrl,
             placeholder = imagePlaceholder

@@ -25,6 +25,7 @@ import kotlinx.coroutines.launch
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
+import cash.p.terminal.modules.walletconnect.WCVerifyAlert
 
 private const val PERSONAL_SIGN_METHOD = "personal_sign"
 private const val TYPED_DATA_METHOD = "eth_signTypedData"
@@ -59,7 +60,8 @@ class WCRequestEvmViewModel(
     init {
         viewModelScope.launch {
             evmKitWrapper = getEthereumKitWrapper()
-            sessionRequestUi = generateSessionRequestUI()
+            val verifyAlert = sessionRequestEvent?.let { wcManager.getRequestVerifyAlert(it.request.id) }
+            sessionRequestUi = generateSessionRequestUI(verifyAlert)
         }
     }
 
@@ -80,7 +82,7 @@ class WCRequestEvmViewModel(
         sessionRequestUi = SessionRequestUI.Initial
     }
 
-    private fun generateSessionRequestUI(): SessionRequestUI {
+    private fun generateSessionRequestUI(verifyAlert: WCVerifyAlert?): SessionRequestUI {
         return sessionRequestEvent?.let { sessionRequest ->
             if (evmKitWrapper == null) {
                 return@let SessionRequestUI.Initial
@@ -100,6 +102,7 @@ class WCRequestEvmViewModel(
                 chainName = chainName,
                 chainAddress = chainAddress,
                 status = RequestStatus.Pending,
+                verifyAlert = verifyAlert,
             )
         } ?: SessionRequestUI.Initial
     }
@@ -285,6 +288,7 @@ sealed class SessionRequestUI {
         val chainName: String?,
         val chainAddress: String?,
         val status: RequestStatus,
+        val verifyAlert: WCVerifyAlert? = null,
     ) : SessionRequestUI()
 }
 

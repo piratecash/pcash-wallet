@@ -107,9 +107,10 @@ private fun MarketCoinWithBackground(
         marketViewItem.iconUrl,
         marketViewItem.alternativeIconUrl,
         marketViewItem.iconPlaceHolder,
-        marketViewItem.value,
-        marketViewItem.marketDataValue,
-        marketViewItem.rank,
-        onClick
+        iconPlate = true,
+        value = marketViewItem.value,
+        marketDataValue = marketViewItem.marketDataValue,
+        label = marketViewItem.rank,
+        onClick = onClick
     )
 }

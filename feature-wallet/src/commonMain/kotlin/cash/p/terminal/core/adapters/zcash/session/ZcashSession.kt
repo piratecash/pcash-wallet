@@ -12,6 +12,7 @@ import cash.p.terminal.core.managers.sanitizeNetworkUrl
 import cash.p.terminal.core.managers.warningSanitized
 import cash.p.terminal.wallet.AdapterStoppedException
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.zcash.BlockDownload
 import cash.p.zcash.BroadcastResult
 import cash.p.zcash.MempoolEvent
 import cash.p.zcash.PoolBalance
@@ -210,9 +211,11 @@ class ZcashSession internal constructor(
     }
 
     /** Runs one sync pass. Only [ZcashSyncScheduler] calls it — syncs are serialized SDK-wide. */
-    suspend fun sync(): ZcashSessionResult<ZcashPassOutcome> = supervisorScope {
+    suspend fun sync(
+        blockDownload: BlockDownload = BlockDownload(),
+    ): ZcashSessionResult<ZcashPassOutcome> = supervisorScope {
         var generation = 0
-        val collector = async(start = CoroutineStart.LAZY) { collectSync(generation) }
+        val collector = async(start = CoroutineStart.LAZY) { collectSync(generation, blockDownload) }
         val operation = enter(collector)
         if (operation == null) {
             collector.cancel()
@@ -233,12 +236,12 @@ class ZcashSession internal constructor(
     }
 
     /** A pass that ends without reaching Synced or Failed was stopped. */
-    private suspend fun collectSync(generation: Int): ZcashPassOutcome {
+    private suspend fun collectSync(generation: Int, blockDownload: BlockDownload): ZcashPassOutcome {
         logger.info("sync: start gen=$generation")
         val progress = SyncProgressLog(logger)
         var outcome: ZcashPassOutcome = ZcashPassOutcome.Cancelled
         try {
-            wallet.sync(listOf(dbAccountId)).collect { state ->
+            wallet.sync(listOf(dbAccountId), blockDownload = blockDownload).collect { state ->
                 onSyncState(state, generation, progress)?.let { outcome = it }
             }
         } catch (e: CancellationException) {
@@ -276,11 +279,25 @@ class ZcashSession internal constructor(
         rawTransaction: ByteArray,
         height: Int,
         requireOwnInputs: Boolean,
+        recipientAddresses: List<String> = emptyList(),
     ): ZcashSessionResult<BroadcastResult> = withOperation {
         reserveOrNotBroadcast(rawTransaction, requireOwnInputs)
+        rememberSentAddresses(rawTransaction, recipientAddresses)
         publishLocalState(readLocalState())
         wallet.broadcast(dbAccountId, rawTransaction, height, requireOwnInputs).also {
             if (it.inputsReleased) readReportingFailure { publishLocalState(readLocalState()) }
+        }
+    }
+
+    /** Only history shows these addresses, so failing to keep them must not stop the send. */
+    private suspend fun rememberSentAddresses(rawTransaction: ByteArray, addresses: List<String>) {
+        if (addresses.isEmpty()) return
+        try {
+            wallet.rememberSentAddresses(dbAccountId, rawTransaction, addresses)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            logger.warningSanitized("Remembering the sent addresses failed", e)
         }
     }
 

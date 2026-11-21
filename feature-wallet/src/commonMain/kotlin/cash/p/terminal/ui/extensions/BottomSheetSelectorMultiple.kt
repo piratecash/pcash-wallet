@@ -25,6 +25,7 @@ import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui_compose.components.HeaderStick
 import cash.p.terminal.ui_compose.components.HsImage
 import cash.p.terminal.ui_compose.components.HsSwitch
+import cash.p.terminal.ui_compose.components.ImageSource
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.SectionUniversalItem
 import cash.p.terminal.ui_compose.components.TextImportantWarning
@@ -53,6 +54,7 @@ fun BottomSheetSelectorMultiple(
     ComposeAppTheme {
         BottomSheetHeader(
             iconPainter = config.icon.painter(),
+            iconPlate = config.icon is ImageSource.Remote,
             title = config.title,
             onCloseClick = onCloseClick
         ) {

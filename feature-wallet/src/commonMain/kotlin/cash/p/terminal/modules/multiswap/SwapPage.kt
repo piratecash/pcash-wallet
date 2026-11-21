@@ -59,6 +59,7 @@ import cash.p.terminal.entities.CoinValue
 import cash.p.terminal.modules.multiswap.action.ActionCreate
 import cash.p.terminal.modules.multiswap.action.ISwapProviderAction
 import cash.p.terminal.modules.fee.FeeInfoSection
+import cash.p.terminal.modules.send.tron.TronResourcesSection
 import cash.p.terminal.modules.fee.QuoteInfoRow
 import cash.p.terminal.modules.multiswap.providers.IMultiSwapProvider
 import cash.p.terminal.modules.multiswap.providers.isOffChain
@@ -728,6 +729,7 @@ private fun swapErrorText(error: Throwable): String = when (error) {
 private fun SwapFeeInfo(uiState: SwapUiState, controller: SwapScreenController) {
     val feeToken = uiState.feeToken
     val networkFee = uiState.networkFee
+    TronResourcesSection(uiState.tronResources, uiState.balanceHidden)
     FeeInfoSection(
         tokenIn = uiState.tokenIn,
         displayBalance = uiState.displayBalance,

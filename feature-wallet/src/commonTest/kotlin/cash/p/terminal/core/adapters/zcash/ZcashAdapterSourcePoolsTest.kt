@@ -159,7 +159,16 @@ class ZcashAdapterSourcePoolsTest : ZcashAdapterTestFixture() {
 
         adapter.send(AMOUNT, RECIPIENT, memo = "")
 
-        coVerify(exactly = 1) { session.broadcastReserved(any(), HEIGHT, requireOwnInputs = true) }
+        coVerify(exactly = 1) { session.broadcastReserved(any(), HEIGHT, requireOwnInputs = true, any()) }
+    }
+
+    @Test
+    fun send_enteredAddress_isRememberedWithTheBroadcast() = runTest(dispatcher) {
+        startAdapter(AddressSpecType.Transparent)
+
+        adapter.send(AMOUNT, RECIPIENT, memo = "")
+
+        coVerify(exactly = 1) { session.broadcastReserved(any(), HEIGHT, true, listOf(RECIPIENT)) }
     }
 
     @Test

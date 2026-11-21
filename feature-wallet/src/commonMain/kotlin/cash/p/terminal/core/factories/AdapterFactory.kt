@@ -618,7 +618,7 @@ class AdapterFactory(
             evmLabelManager
         )
 
-        return TronTransactionsAdapter(tronKitWrapper, tronTransactionConverter)
+        return TronTransactionsAdapter(tronKitWrapper, tronTransactionConverter, dispatcherProvider)
     }
 
     suspend fun tonTransactionsAdapter(source: TransactionSource): ITransactionsAdapter? {
