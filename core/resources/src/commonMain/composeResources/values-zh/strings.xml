@@ -2469,6 +2469,10 @@
     <string name="nft_copy_address">复制 NFT 地址</string>
     <string name="nft_burn_action">销毁 NFT</string>
     <string name="nft_unverified_nft">未验证的 NFT</string>
+    <string name="nft_artwork_hidden_title">图片已隐藏</string>
+    <string name="nft_artwork_hidden_reason">NFT 未经 TonAPI 验证</string>
+    <string name="nft_artwork_hidden_spam">NFT 已被标记为垃圾内容</string>
+    <string name="nft_artwork_hidden_tap">点击显示</string>
     <string name="nft_report_spam">举报垃圾内容</string>
     <string name="nft_report_title">举报为垃圾内容？</string>
     <string name="nft_report_body">收藏集“%1$s”将被隐藏，并移至收藏集管理中的“垃圾”分区。你可以在那里通过“非垃圾”按钮恢复。</string>

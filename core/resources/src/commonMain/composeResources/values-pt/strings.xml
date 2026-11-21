@@ -2496,6 +2496,10 @@
     <string name="nft_copy_address">Copiar endereço do NFT</string>
     <string name="nft_burn_action">Queimar NFT</string>
     <string name="nft_unverified_nft">NFT não verificado</string>
+    <string name="nft_artwork_hidden_title">Imagem oculta</string>
+    <string name="nft_artwork_hidden_reason">NFT não verificado pela TonAPI</string>
+    <string name="nft_artwork_hidden_spam">NFT marcado como spam</string>
+    <string name="nft_artwork_hidden_tap">Toque para mostrar</string>
     <string name="nft_report_spam">Denunciar spam</string>
     <string name="nft_report_title">Denunciar como spam?</string>
     <string name="nft_report_body">A coleção «%1$s» será ocultada e movida para a secção «Spam» da gestão de coleções. Pode restaurá-la aí com o botão «Não é spam».</string>

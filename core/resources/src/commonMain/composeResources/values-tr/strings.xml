@@ -2491,6 +2491,10 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="nft_copy_address">NFT adresini kopyala</string>
     <string name="nft_burn_action">NFT\u0027yi yak</string>
     <string name="nft_unverified_nft">Doğrulanmamış NFT</string>
+    <string name="nft_artwork_hidden_title">Görsel gizlendi</string>
+    <string name="nft_artwork_hidden_reason">NFT, TonAPI tarafından doğrulanmadı</string>
+    <string name="nft_artwork_hidden_spam">NFT spam olarak işaretlendi</string>
+    <string name="nft_artwork_hidden_tap">Göstermek için dokunun</string>
     <string name="nft_report_spam">Spam bildir</string>
     <string name="nft_report_title">Spam olarak bildirilsin mi?</string>
     <string name="nft_report_body">“%1$s” koleksiyonu gizlenecek ve koleksiyon yönetimindeki Spam bölümüne taşınacak. Orada “Spam değil” düğmesiyle geri alabilirsiniz.</string>

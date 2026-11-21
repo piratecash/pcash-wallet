@@ -2478,6 +2478,10 @@
     <string name="nft_copy_address">NFT 주소 복사</string>
     <string name="nft_burn_action">NFT 소각</string>
     <string name="nft_unverified_nft">확인되지 않은 NFT</string>
+    <string name="nft_artwork_hidden_title">이미지 숨김</string>
+    <string name="nft_artwork_hidden_reason">TonAPI에서 확인되지 않은 NFT</string>
+    <string name="nft_artwork_hidden_spam">스팸으로 표시된 NFT</string>
+    <string name="nft_artwork_hidden_tap">탭하여 표시</string>
     <string name="nft_report_spam">스팸 신고</string>
     <string name="nft_report_title">스팸으로 신고할까요?</string>
     <string name="nft_report_body">“%1$s” 컬렉션이 숨겨지고 컬렉션 관리의 스팸 섹션으로 이동합니다. 그곳에서 ‘스팸 아님’ 버튼으로 복원할 수 있습니다.</string>

@@ -2494,6 +2494,10 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="nft_copy_address">Copier l\u0027adresse du NFT</string>
     <string name="nft_burn_action">Détruire le NFT</string>
     <string name="nft_unverified_nft">NFT non vérifié</string>
+    <string name="nft_artwork_hidden_title">Image masquée</string>
+    <string name="nft_artwork_hidden_reason">NFT non vérifié par TonAPI</string>
+    <string name="nft_artwork_hidden_spam">NFT signalé comme spam</string>
+    <string name="nft_artwork_hidden_tap">Touchez pour afficher</string>
     <string name="nft_report_spam">Signaler comme spam</string>
     <string name="nft_report_title">Signaler comme spam ?</string>
     <string name="nft_report_body">La collection « %1$s » sera masquée et placée dans la section « Spam » de la gestion des collections. Vous pourrez la restaurer là-bas avec le bouton « Pas du spam ».</string>

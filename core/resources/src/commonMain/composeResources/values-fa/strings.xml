@@ -2494,6 +2494,10 @@
     <string name="nft_copy_address">کپی آدرس NFT</string>
     <string name="nft_burn_action">سوزاندن NFT</string>
     <string name="nft_unverified_nft">NFT تأییدنشده</string>
+    <string name="nft_artwork_hidden_title">تصویر پنهان شده است</string>
+    <string name="nft_artwork_hidden_reason">NFT توسط TonAPI تأیید نشده است</string>
+    <string name="nft_artwork_hidden_spam">NFT به‌عنوان اسپم علامت‌گذاری شده است</string>
+    <string name="nft_artwork_hidden_tap">برای نمایش ضربه بزنید</string>
     <string name="nft_report_spam">گزارش اسپم</string>
     <string name="nft_report_title">گزارش به‌عنوان اسپم؟</string>
     <string name="nft_report_body">مجموعه «%1$s» پنهان می‌شود و به بخش «اسپم» در مدیریت مجموعه‌ها می‌رود. می‌توانید آن را همان‌جا با دکمه «اسپم نیست» بازگردانید.</string>

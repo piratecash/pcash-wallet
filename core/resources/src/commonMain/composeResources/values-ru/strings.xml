@@ -2672,6 +2672,10 @@
     <string name="nft_copy_address">Скопировать адрес NFT</string>
     <string name="nft_burn_action">Сжечь NFT</string>
     <string name="nft_unverified_nft">Непроверенный NFT</string>
+    <string name="nft_artwork_hidden_title">Изображение скрыто</string>
+    <string name="nft_artwork_hidden_reason">NFT не проверен TonAPI</string>
+    <string name="nft_artwork_hidden_spam">NFT помечен как спам</string>
+    <string name="nft_artwork_hidden_tap">Нажмите, чтобы показать</string>
     <string name="nft_report_spam">Пожаловаться на спам</string>
     <string name="nft_report_title">Пожаловаться на спам?</string>
     <string name="nft_report_body">Коллекция «%1$s» будет скрыта и попадёт в раздел «Спам» в управлении коллекциями. Вернуть её можно там же кнопкой «Не спам».</string>

@@ -2482,6 +2482,10 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="nft_copy_address">NFT-Adresse kopieren</string>
     <string name="nft_burn_action">NFT verbrennen</string>
     <string name="nft_unverified_nft">Ungeprüftes NFT</string>
+    <string name="nft_artwork_hidden_title">Bild ausgeblendet</string>
+    <string name="nft_artwork_hidden_reason">NFT nicht von TonAPI geprüft</string>
+    <string name="nft_artwork_hidden_spam">NFT als Spam markiert</string>
+    <string name="nft_artwork_hidden_tap">Zum Anzeigen tippen</string>
     <string name="nft_report_spam">Spam melden</string>
     <string name="nft_report_title">Als Spam melden?</string>
     <string name="nft_report_body">Die Sammlung „%1$s“ wird ausgeblendet und in den Bereich „Spam“ der Sammlungsverwaltung verschoben. Dort kannst du sie mit „Kein Spam“ wiederherstellen.</string>
