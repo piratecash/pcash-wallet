@@ -37,7 +37,10 @@ class WCDelegateTest {
         val evmBlockchainManager = mockk<EvmBlockchainManager>(relaxed = true) {
             every { getChain(any()) } returns Chain.Ethereum
         }
-        val wcManager = WCManager(accountManager = mockk(relaxed = true)).apply {
+        val wcManager = WCManager(
+            accountManager = mockk(relaxed = true),
+            dispatcherProvider = mockk(relaxed = true),
+        ).apply {
             addWcHandler(WCHandlerEvm(evmBlockchainManager, mockk(relaxed = true)))
         }
         startKoin {
