@@ -552,6 +552,8 @@
     <string name="TonConnect_NewConnect">新连接</string>
     <string name="TonConnect_Error_InvalidUrl">无效的URL地址</string>
     <string name="ton_connect_request_expired">确认时间已过期。请在网站上重新操作。</string>
+    <string name="ton_connect_unknown_action_warning">应用无法识别此操作。确认前请检查下方的金额和地址。</string>
+    <string name="ton_connect_action_unknown">未知</string>
     <string name="TonConnect_Unnamed">未命名</string>
     <string name="TonConnect_Wallet">钱包</string>
     <string name="TonConnect_ChooseWallet">选择钱包</string>
@@ -2523,6 +2525,7 @@
     <string name="nft_burn_body">%1$s 将被发送到销毁地址，并从钱包中永久消失。此操作无法撤销。</string>
     <string name="nft_burn_domain_body">域名将被发送到销毁地址，您将失去它。发往 %1$s 的转账将不再到达您的钱包。此操作无法撤销。</string>
     <string name="nft_burn_address">销毁地址</string>
+    <string name="nft_address">NFT 地址</string>
     <string name="nft_burn_confirm">销毁</string>
     <string name="nft_trap_transfer_title">NFT 转移不会成功</string>
     <string name="nft_trap_transfer_body">我们在发送前检查了交易。此 NFT 的合约不会将其转给接收方，并会扣下附带的 %1$s。垃圾 NFT 就是这样运作的。</string>

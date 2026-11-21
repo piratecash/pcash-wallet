@@ -96,6 +96,9 @@ class TonTransactionRecord(
     val isNftOnly: Boolean
         get() = actions.isNotEmpty() && actions.all { it.type.transferredValue is TransactionValue.NftValue }
 
+    val hasUnsupportedAction: Boolean
+        get() = actions.any { it.type is Action.Type.Unsupported }
+
     private val Action.Type.transferredValue: TransactionValue?
         get() = when (this) {
             is Action.Type.Receive -> value

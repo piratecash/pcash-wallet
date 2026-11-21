@@ -556,6 +556,8 @@
     <string name="TonConnect_NewConnect">Nova conexão</string>
     <string name="TonConnect_Error_InvalidUrl">Endereço URL inválido</string>
     <string name="ton_connect_request_expired">O tempo para confirmar expirou. Repita a operação no site.</string>
+    <string name="ton_connect_unknown_action_warning">O app não conseguiu reconhecer esta ação. Confira os valores e os endereços abaixo antes de confirmar.</string>
+    <string name="ton_connect_action_unknown">Desconhecida</string>
     <string name="TonConnect_Unnamed">Sem nome</string>
     <string name="TonConnect_Wallet">Carteira</string>
     <string name="TonConnect_ChooseWallet">Escolher carteira</string>
@@ -2556,6 +2558,7 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="nft_burn_body">%1$s será enviado para o endereço de queima e sumirá da carteira para sempre. Isso não pode ser desfeito.</string>
     <string name="nft_burn_domain_body">O domínio será enviado para o endereço de queima e você o perderá. As transferências para %1$s deixarão de chegar à sua carteira. Isso não pode ser desfeito.</string>
     <string name="nft_burn_address">Endereço de queima</string>
+    <string name="nft_address">Endereço do NFT</string>
     <string name="nft_burn_confirm">Queimar</string>
     <string name="nft_trap_transfer_title">A transferência do NFT não vai acontecer</string>
     <string name="nft_trap_transfer_body">Verificamos a transação antes do envio. O contrato deste NFT não vai entregá-lo ao destinatário e vai ficar com os %1$s anexados. É assim que funcionam os NFTs de spam.</string>
