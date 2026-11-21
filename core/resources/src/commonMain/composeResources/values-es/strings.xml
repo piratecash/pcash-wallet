@@ -2621,6 +2621,12 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="desktop_duress_password_edit_description">Introduce una nueva contraseña para el modo Duress</string>
     <string name="desktop_hidden_wallet_password_title">Contraseña de la billetera oculta</string>
     <string name="desktop_hidden_wallet_password_description">Crea una contraseña para la billetera oculta</string>
+    <string name="desktop_transactions_hide_set_password">Establecer una contraseña aparte</string>
+    <string name="desktop_transactions_hide_edit_password">Cambiar la contraseña</string>
+    <string name="desktop_transactions_hide_delete_password">Eliminar la contraseña aparte</string>
+    <string name="desktop_transactions_hide_description">Modo de seguridad: oculta las transacciones y permite establecer una contraseña aparte para desbloquearlas.</string>
+    <string name="desktop_transactions_hide_password_description">Establece una contraseña para el modo «Transaction Auto Hide»</string>
+    <string name="desktop_transactions_hide_password_enter">Introduce la contraseña de «Transaction Auto Hide»</string>
     <string name="desktop_hidden_wallet_password_terms_warning">La billetera global no verá esta billetera y, si olvidas su contraseña, puedes recuperar el acceso con la frase semilla.</string>
     <string-array name="desktop_hidden_wallet_password_terms">
         <item>El usuario entiende que la billetera no será visible entre las demás billeteras.</item>

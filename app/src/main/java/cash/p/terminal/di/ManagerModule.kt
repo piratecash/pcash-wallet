@@ -157,10 +157,6 @@ import cash.p.terminal.modules.softwareupdate.domain.ShouldAutoCheckUseCase
 import cash.p.terminal.modules.softwareupdate.domain.SystemTimeProvider
 import cash.p.terminal.modules.softwareupdate.domain.TimeProvider
 import cash.p.terminal.network.github.data.GithubApiConfig
-import cash.p.terminal.core.providers.CompositeFallbackAddressProvider
-import cash.p.terminal.core.providers.TonFallbackAddressProvider
-import cash.p.terminal.core.providers.ZcashFallbackAddressProvider
-import cash.p.terminal.wallet.FallbackAddressProvider
 import cash.p.terminal.feature.miniapp.domain.storage.IUniqueCodeStorage
 import cash.p.terminal.feature.miniapp.domain.usecase.CreateRequiredTokensUseCase
 import cash.p.terminal.feature.miniapp.domain.usecase.EvmPersonalSigner
@@ -291,15 +287,6 @@ val managerModule = module {
     singleOf(::CrashlyticsNonFatalReporter) bind NonFatalReporter::class
     singleOf(::ZcashDbKeyProviderImpl) bind ZcashDbKeyProvider::class
     singleOf(::AndroidZcashBlockDownloadPolicy) bind ZcashBlockDownloadPolicy::class
-    singleOf(::TonFallbackAddressProvider)
-    single<FallbackAddressProvider> {
-        CompositeFallbackAddressProvider(
-            providers = listOf(
-                get<TonFallbackAddressProvider>(),
-                get<ZcashFallbackAddressProvider>()
-            )
-        )
-    }
     singleOf(::EffectiveMonitoredChains)
     singleOf(::LocalStorageManager) {
         bind<ILocalStorage>()

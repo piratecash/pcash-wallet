@@ -2620,6 +2620,12 @@
     <string name="desktop_duress_password_edit_description">رمز عبور جدید حالت اجبار را وارد کنید</string>
     <string name="desktop_hidden_wallet_password_title">رمز عبور کیف‌پول مخفی</string>
     <string name="desktop_hidden_wallet_password_description">یک رمز عبور برای کیف‌پول مخفی ایجاد کنید</string>
+    <string name="desktop_transactions_hide_set_password">تنظیم رمز عبور جداگانه</string>
+    <string name="desktop_transactions_hide_edit_password">تغییر رمز عبور</string>
+    <string name="desktop_transactions_hide_delete_password">حذف رمز عبور جداگانه</string>
+    <string name="desktop_transactions_hide_description">حالت امنیتی: تراکنش‌ها را پنهان می‌کند و امکان تنظیم رمز عبور جداگانه برای نمایش آن‌ها را می‌دهد.</string>
+    <string name="desktop_transactions_hide_password_description">برای حالت «Transaction Auto Hide» رمز عبور تنظیم کنید</string>
+    <string name="desktop_transactions_hide_password_enter">رمز عبور «Transaction Auto Hide» را وارد کنید</string>
     <string name="desktop_hidden_wallet_password_terms_warning">کیف‌پول سراسری این کیف‌پول را نمی‌بیند و اگر رمز عبور آن را فراموش کنید، می‌توانید با عبارت بازیابی دوباره به آن دسترسی پیدا کنید.</string>
     <string-array name="desktop_hidden_wallet_password_terms">
         <item>کاربر می‌داند که این کیف‌پول میان سایر کیف‌پول‌ها نمایش داده نمی‌شود.</item>

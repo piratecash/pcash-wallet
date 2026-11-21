@@ -5,8 +5,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cash.p.terminal.core.managers.TransactionHiddenManager
 import cash.p.terminal.modules.pin.DuressSecretController
 import cash.p.terminal.modules.pin.LevelOutcome
+import cash.p.terminal.shared.desktop.vault.DesktopVault
+import cash.p.terminal.shared.desktop.vault.HiddenPasswordResolution
 import cash.p.terminal.wallet.PassphraseValidator
 import cash.p.terminal.wallet.PasswordRequirement
 import cash.p.terminal.wallet.managers.UserManager
@@ -102,4 +105,30 @@ class HiddenWalletPasswordViewModel(
 ) : SecretPasswordViewModel(passphraseValidator) {
 
     override suspend fun save(secret: CharArray): LevelOutcome = controller.createHiddenWallet(secret)
+}
+
+/** The separate password of transaction auto-hide; as Android's `isPinUnique`, it may open no level. */
+class TransactionsHidePasswordViewModel(
+    private val vault: DesktopVault,
+    private val transactionHiddenManager: TransactionHiddenManager,
+    passphraseValidator: PassphraseValidator,
+) : SecretPasswordViewModel(passphraseValidator) {
+
+    private val logger = Logger.withTag("TransactionsHidePasswordViewModel")
+
+    override suspend fun save(secret: CharArray): LevelOutcome = try {
+        when (vault.resolveHiddenPassword(secret.copyOf())) {
+            HiddenPasswordResolution.NEW -> {
+                transactionHiddenManager.setSeparatePin(secret.concatToString())
+                LevelOutcome.SUCCESS
+            }
+            HiddenPasswordResolution.IN_USE, HiddenPasswordResolution.REUSE_EMPTY -> LevelOutcome.PASSWORD_IN_USE
+            HiddenPasswordResolution.FAILED -> LevelOutcome.FAILED
+        }
+    } catch (e: Exception) {
+        logger.w(e) { "Storing the separate password failed" }
+        LevelOutcome.FAILED
+    } finally {
+        secret.fill('\u0000')
+    }
 }

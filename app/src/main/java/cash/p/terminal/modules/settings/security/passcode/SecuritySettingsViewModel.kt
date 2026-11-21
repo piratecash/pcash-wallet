@@ -82,9 +82,7 @@ class SecuritySettingsViewModel(
     }
 
     fun onTransactionAutoHideEnabledChange(enabled: Boolean, emitState: Boolean = true) {
-        transactionHiddenManager.setTransactionHideEnabled(enabled)
-        transactionHiddenManager.clearSeparatePin()
-        transactionHiddenManager.setTransactionDisplayLevel(TransactionDisplayLevel.NOTHING)
+        transactionHiddenManager.setAutoHideEnabled(enabled)
         if (emitState) {
             emitState()
         }

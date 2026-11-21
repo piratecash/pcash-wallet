@@ -112,7 +112,6 @@ object DesktopBalancePlatformActions : BalancePlatformActions {
         onPairingResult: (paired: Boolean) -> Unit,
     ) = false
 
-    override fun isOfflineTransaction(text: String) = false
     override fun onBalancePageActive() = Unit
     override fun onBalancePageInactive() = Unit
 }
