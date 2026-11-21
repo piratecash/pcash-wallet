@@ -72,6 +72,9 @@ interface SwapProviderTransactionsDao {
     @Query("SELECT * FROM SwapProviderTransaction ORDER BY date DESC LIMIT 100")
     fun observeAll(): Flow<List<SwapProviderTransaction>>
 
+    @Query("SELECT * FROM SwapProviderTransaction ORDER BY date")
+    fun getAllRows(): List<SwapProviderTransaction>
+
     // accountId IN ('', :accountId): '' covers legacy rows created before accountId existed
     @Query("SELECT * FROM SwapProviderTransaction WHERE accountId IN ('', :accountId) ORDER BY date DESC LIMIT :limit")
     fun observeAllByAccount(

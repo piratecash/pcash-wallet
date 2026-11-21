@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -33,8 +34,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.ui.compose.components.ListEmptyView
+import cash.p.terminal.ui.compose.components.ScreenMessageWithAction
+import cash.p.terminal.ui_compose.components.ButtonSecondaryDefault
 import cash.p.terminal.ui_compose.components.HSCircularProgressIndicator
 import cash.p.terminal.ui_compose.components.HsIconButton
 import cash.p.terminal.ui_compose.components.VSpacer
@@ -47,6 +51,9 @@ import cash.p.terminal.resources.Market_Search_Hint
 import cash.p.terminal.resources.ic_close_24
 import cash.p.terminal.resources.ic_not_found
 import cash.p.terminal.resources.transactions_empty_search_results
+import cash.p.terminal.resources.transactions_search_continue
+import cash.p.terminal.resources.transactions_search_no_more_in_last
+import cash.p.terminal.resources.transactions_search_not_found_in_last
 
 // The hoisted [query] is a plain String fed from the ViewModel (emitState). The
 // String overload of BasicTextField does NOT let us own the caret/selection or the
@@ -190,3 +197,59 @@ fun SearchInProgressView(modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * A search that stopped after [scannedCount] records without a new result. Without results it replaces
+ * the list; with results it is the list footer.
+ */
+@Composable
+fun SearchPausedView(
+    scannedCount: String,
+    hasResults: Boolean,
+    onSearchFurther: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val searchFurtherButton = @Composable {
+        ButtonSecondaryDefault(
+            title = stringResource(Res.string.transactions_search_continue),
+            onClick = onSearchFurther,
+        )
+    }
+    if (!hasResults) {
+        ScreenMessageWithAction(
+            text = stringResource(Res.string.transactions_search_not_found_in_last, scannedCount),
+            icon = Res.drawable.ic_not_found,
+            modifier = modifier,
+            actionsComposable = searchFurtherButton,
+        )
+        return
+    }
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 32.dp, vertical = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        subhead2_grey(
+            text = stringResource(Res.string.transactions_search_no_more_in_last, scannedCount),
+            textAlign = TextAlign.Center,
+        )
+        VSpacer(16.dp)
+        searchFurtherButton()
+    }
+}
+
+@Preview
+@Composable
+private fun SearchPausedViewNoResultsPreview() {
+    ComposeAppTheme {
+        SearchPausedView(scannedCount = "10,000", hasResults = false, onSearchFurther = {})
+    }
+}
+
+@Preview
+@Composable
+private fun SearchPausedViewFooterPreview() {
+    ComposeAppTheme {
+        SearchPausedView(scannedCount = "20,000", hasResults = true, onSearchFurther = {})
+    }
+}

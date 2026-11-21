@@ -1582,6 +1582,66 @@ class TokenBalanceViewModelTest : KoinTest {
     }
 
     @Test
+    fun searchScanState_scanningThenPausedWithoutResults_neverShowsFinalNoResults() = runTest(dispatcher) {
+        every { numberFormatter.format(any(), 0, 0, any(), any()) } answers { "#${firstArg<Number>()}" }
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onSearchClick()
+        viewModel.onSearchQueryChange("nothing-matches")
+        advanceUntilIdle()
+
+        searchScanStateFlow.value = SearchScanState.Scanning
+        advanceUntilIdle()
+        assertEquals(false, viewModel.uiState.searchEmptyResult)
+        assertEquals(null, viewModel.uiState.searchPausedCount)
+
+        searchScanStateFlow.value = SearchScanState.Paused(scannedCount = 12_345)
+        advanceUntilIdle()
+        assertEquals(false, viewModel.uiState.searchScanning)
+        assertEquals(false, viewModel.uiState.searchEmptyResult)
+        assertEquals("#12300", viewModel.uiState.searchPausedCount)
+    }
+
+    @Test
+    fun searchScanState_pausedWithResults_keepsResultsAndReportsPausedCount() = runTest(dispatcher) {
+        every { numberFormatter.format(any(), 0, 0, any(), any()) } answers { "#${firstArg<Number>()}" }
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onSearchClick()
+        viewModel.onSearchQueryChange("needle")
+        advanceUntilIdle()
+
+        transactionItemsFlow.value = listOf(createTransactionItem("match-1"))
+        searchScanStateFlow.value = SearchScanState.Paused(scannedCount = 20_000)
+        advanceUntilIdle()
+
+        assertEquals(1, viewModel.uiState.transactions?.values?.flatten()?.size)
+        assertEquals(false, viewModel.uiState.searchEmptyResult)
+        assertEquals("#20000", viewModel.uiState.searchPausedCount)
+    }
+
+    @Test
+    fun searchFurther_pausedWithResults_keepsResultsWhileScanning() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onSearchClick()
+        viewModel.onSearchQueryChange("needle")
+        advanceUntilIdle()
+        transactionItemsFlow.value = listOf(createTransactionItem("match-1"))
+        searchScanStateFlow.value = SearchScanState.Paused(scannedCount = 10_000)
+        advanceUntilIdle()
+
+        viewModel.searchFurther()
+        searchScanStateFlow.value = SearchScanState.Scanning
+        advanceUntilIdle()
+
+        verify(exactly = 1) { transactionsService.searchFurther() }
+        assertEquals(true, viewModel.uiState.searchScanning)
+        assertEquals(1, viewModel.uiState.transactions?.values?.flatten()?.size)
+        assertEquals(false, viewModel.uiState.searchEmptyResult)
+    }
+
+    @Test
     fun onSearchClose_afterActiveSearch_reopensLoadingWindowThenShowsFullList() = runTest(dispatcher) {
         val viewModel = createViewModel()
         advanceUntilIdle()

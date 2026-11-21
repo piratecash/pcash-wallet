@@ -89,6 +89,7 @@ import cash.p.terminal.modules.transactions.FilterTransactionType
 import cash.p.terminal.modules.transactions.FilterTypeTabs
 import cash.p.terminal.modules.transactions.SearchEmptyResultsView
 import cash.p.terminal.modules.transactions.SearchInProgressView
+import cash.p.terminal.modules.transactions.SearchPausedView
 import cash.p.terminal.modules.transactions.TransactionSearchField
 import cash.p.terminal.modules.transactions.TransactionViewItem
 import cash.p.terminal.modules.transactions.TransactionsViewModel
@@ -284,6 +285,7 @@ fun TokenBalanceScreen(
             transactionsViewModel.toggleTransactionInfoHidden(it.uid)
         },
         onBottomReached = viewModel::onBottomReached,
+        onSearchFurther = viewModel::searchFurther,
         onSetAmlCheckEnabled = setAmlCheckEnabled,
         onDismissAmlPromo = {
             viewModel.dismissAmlPromo()
@@ -365,6 +367,7 @@ internal fun TokenBalanceScreenContent(
     onSettingsClick: () -> Unit,
     onGoOnline: () -> Unit,
     nftSection: (@Composable () -> Unit)? = null,
+    onSearchFurther: () -> Unit = {},
 ) {
     val hud = rememberHudMessenger()
 
@@ -692,6 +695,7 @@ internal fun TokenBalanceScreenContent(
                                 )
                                 val placeholder = transactionsPlaceholder(
                                     searchScanning = uiState.searchScanning,
+                                    searchPaused = uiState.searchPausedCount != null,
                                     searchEmptyResult = uiState.searchEmptyResult,
                                     loadFailed = uiState.transactionsLoadFailed,
                                     syncing = uiState.syncing,
@@ -701,6 +705,15 @@ internal fun TokenBalanceScreenContent(
                                     TransactionsPlaceholder.SearchInProgress ->
                                         Box(modifier = Modifier.padding(paddingValues)) {
                                             SearchInProgressView()
+                                        }
+
+                                    TransactionsPlaceholder.SearchPaused ->
+                                        Box(modifier = Modifier.padding(paddingValues)) {
+                                            SearchPausedView(
+                                                scannedCount = uiState.searchPausedCount.orEmpty(),
+                                                hasResults = false,
+                                                onSearchFurther = onSearchFurther,
+                                            )
                                         }
 
                                     TransactionsPlaceholder.SearchEmpty ->
@@ -740,6 +753,9 @@ internal fun TokenBalanceScreenContent(
                                 shortBlock = transactionItems.isNotEmpty(),
                                 onShowAllTransactionsClicked = onShowAllTransactionsClicked
                             )
+                        }
+                        uiState.searchPausedCount?.let { count ->
+                            item { SearchPausedView(count, hasResults = true, onSearchFurther = onSearchFurther) }
                         }
                     }
                 }
@@ -1358,12 +1374,15 @@ internal fun shouldShowNotSyncedSection(
 private fun Map<String, List<TransactionViewItem>>?.hasTransactions(): Boolean =
     this?.values?.any { it.isNotEmpty() } == true
 
-internal enum class TransactionsPlaceholder { SearchInProgress, SearchEmpty, WaitForSync, EmptyList, None }
+internal enum class TransactionsPlaceholder {
+    SearchInProgress, SearchPaused, SearchEmpty, WaitForSync, EmptyList, None
+}
 
 // loadFailed wins over a search spinner: a query typed while the read is dead never reaches the
 // repository, so its scan state would otherwise hang over a screen that has already given up.
 internal fun transactionsPlaceholder(
     searchScanning: Boolean,
+    searchPaused: Boolean,
     searchEmptyResult: Boolean,
     loadFailed: Boolean,
     syncing: Boolean,
@@ -1371,6 +1390,7 @@ internal fun transactionsPlaceholder(
 ): TransactionsPlaceholder = when {
     loadFailed -> TransactionsPlaceholder.None
     searchScanning -> TransactionsPlaceholder.SearchInProgress
+    searchPaused -> TransactionsPlaceholder.SearchPaused
     searchEmptyResult -> TransactionsPlaceholder.SearchEmpty
     !transactionsKnown || syncing -> TransactionsPlaceholder.WaitForSync
     else -> TransactionsPlaceholder.EmptyList

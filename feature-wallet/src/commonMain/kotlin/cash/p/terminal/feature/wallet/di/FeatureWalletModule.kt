@@ -258,9 +258,12 @@ import cash.p.terminal.modules.transactionInfo.transactionInfoViewModel
 import cash.p.terminal.modules.transactions.CheckAmlIncomingTransactionUseCase
 import cash.p.terminal.modules.transactions.ITransactionRecordRepository
 import cash.p.terminal.modules.transactions.SelectContactViewModel
+import cash.p.terminal.modules.transactions.SwapProviderRecordResolver
 import cash.p.terminal.modules.transactions.TransactionFilterService
 import cash.p.terminal.modules.transactions.TransactionItem
 import cash.p.terminal.modules.transactions.TransactionRecordRepository
+import cash.p.terminal.modules.transactions.TransactionRecordSearchMatcher
+import cash.p.terminal.modules.transactions.TransactionSearchVisibility
 import cash.p.terminal.modules.transactions.TransactionSyncStateRepository
 import cash.p.terminal.modules.transactions.TransactionViewItemFactory
 import cash.p.terminal.modules.transactions.TransactionsRateRepository
@@ -653,6 +656,9 @@ val featureWalletModule = module {
     singleOf(::PendingMultiSwapStorage)
     singleOf(::UpdateSwapProviderTransactionsStatusUseCase)
     singleOf(::SyncPendingMultiSwapUseCase)
+    factoryOf(::SwapProviderRecordResolver)
+    factoryOf(::TransactionRecordSearchMatcher)
+    factoryOf(::TransactionSearchVisibility)
     factoryOf(::TransactionRecordRepository) bind ITransactionRecordRepository::class
     factoryOf(::TransactionViewItemFactory)
     factoryOf(::TransactionsRateRepository)

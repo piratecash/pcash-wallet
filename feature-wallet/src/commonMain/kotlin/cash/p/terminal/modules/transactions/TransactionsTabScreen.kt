@@ -159,11 +159,7 @@ fun TransactionsScreen(
                             transactions?.let { transactionItems ->
                                 if (transactionItems.isEmpty() && !uiState.hasHiddenTransactions) {
                                     if (uiState.searchQuery.isNotBlank()) {
-                                        if (uiState.searchScanning) {
-                                            SearchInProgressView()
-                                        } else {
-                                            SearchEmptyResultsView()
-                                        }
+                                        SearchWithoutRowsView(uiState, viewModel::searchFurther)
                                     } else if (uiState.syncing) {
                                         ListEmptyView(
                                             text = stringResource(Res.string.Transactions_WaitForSync),
@@ -190,7 +186,8 @@ fun TransactionsScreen(
                                         },
                                         willShow = viewModel::willShow,
                                         onReachBottom = viewModel::onBottomReached,
-                                        onClickShowAll = onShowAllTransactionsClicked
+                                        onClickShowAll = onShowAllTransactionsClicked,
+                                        onSearchFurther = viewModel::searchFurther,
                                     ) {
                                         AmlCheckPromoBanner(
                                             amlCheckEnabled = uiState.amlCheckEnabled,
@@ -361,6 +358,16 @@ private fun OfflineSignedTransactionsTabContent(
 }
 
 @Composable
+private fun SearchWithoutRowsView(uiState: TransactionsUiState, onSearchFurther: () -> Unit) {
+    val pausedCount = uiState.searchPausedCount
+    when {
+        uiState.searchScanning -> SearchInProgressView()
+        pausedCount != null -> SearchPausedView(pausedCount, hasResults = false, onSearchFurther = onSearchFurther)
+        else -> SearchEmptyResultsView()
+    }
+}
+
+@Composable
 private fun TransactionListContent(
     uiState: TransactionsUiState,
     onClickTransaction: (TransactionViewItem) -> Unit,
@@ -370,6 +377,7 @@ private fun TransactionListContent(
     onReachBottom: () -> Unit,
     accountViewItemId: String? = null,
     onClickShowAll: () -> Unit = {},
+    onSearchFurther: () -> Unit = {},
     amlPromoContent: @Composable () -> Unit = {}
 ) {
     val transactionItems = uiState.transactions ?: return
@@ -405,6 +413,9 @@ private fun TransactionListContent(
             )
             if (uiState.hasHiddenTransactions) {
                 transactionsHiddenBlock(transactionItems.isNotEmpty(), onClickShowAll)
+            }
+            uiState.searchPausedCount?.let { count ->
+                item { SearchPausedView(count, hasResults = true, onSearchFurther = onSearchFurther) }
             }
         }
         HideBalanceOverlay(

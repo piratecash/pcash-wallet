@@ -109,6 +109,20 @@ class SwapTransactionMatcherTest {
     }
 
     @Test
+    fun findMatch_addressMatch_returnsMatchWithoutWritingLink() {
+        val swap = swap()
+        every { storage.getByIncomingRecordUid(any()) } returns null
+        every {
+            storage.getByAddressAndAmount("ltc1qzvd", litecoinToken, "acc-1", any(), any())
+        } returns swap
+
+        val match = matcher.findMatch(incoming())
+
+        assertEquals(swap, match?.swap)
+        verify(exactly = 0) { storage.setIncomingRecordUid(any(), any(), any()) }
+    }
+
+    @Test
     fun findMatchingSwap_noAddresses_usesAmountTimestampPathAndCaches() {
         val swap = swap()
         every { storage.getByIncomingRecordUid(any()) } returns null

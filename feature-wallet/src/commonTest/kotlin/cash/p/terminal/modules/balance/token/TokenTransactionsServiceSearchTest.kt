@@ -3,9 +3,11 @@ package cash.p.terminal.modules.balance.token
 import cash.p.terminal.core.ITransactionsAdapter
 import cash.p.terminal.core.managers.SpamManager
 import cash.p.terminal.core.managers.TransactionAdapterManager
+import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.modules.transactions.FilterTransactionType
 import cash.p.terminal.modules.transactions.ITransactionRecordRepository
 import cash.p.terminal.modules.transactions.RecordsBatch
+import cash.p.terminal.modules.transactions.SearchPaging
 import cash.p.terminal.modules.transactions.SearchScanState
 import cash.p.terminal.modules.transactions.TransactionSyncStateRepository
 import cash.p.terminal.modules.transactions.TransactionsRateRepository
@@ -260,8 +262,223 @@ class TokenTransactionsServiceSearchTest : KoinTest {
         service.clear()
     }
 
+    @Test
+    fun handleUpdatedRecords_emptySearchBatchNotExhausted_loadsNextAndKeepsScanning() = runBlocking {
+        val loadNextCount = countLoadNext()
+        val service = readyService(mockk(relaxed = true))
+        service.setSearchQuery("needle")
+
+        repositoryItemsFlow.emit(RecordsBatch(emptyList(), searchCompleted = true, searchExhausted = false))
+
+        assertTrue("loadNext was not called for an empty page", waitUntilTrue { loadNextCount.get() >= 1 })
+        assertEquals(SearchScanState.Scanning, service.searchScanStateFlow.value)
+        assertTrue(service.transactionItemsFlow.value.isEmpty())
+        service.clear()
+    }
+
+    @Test
+    fun handleUpdatedRecords_emptySearchBatchExhausted_finishesEmpty() = runBlocking {
+        val loadNextCount = countLoadNext()
+        val service = readyService(mockk(relaxed = true))
+        service.setSearchQuery("needle")
+
+        repositoryItemsFlow.emit(RecordsBatch(emptyList(), searchCompleted = true, searchExhausted = true))
+        waitUntil { service.searchScanStateFlow.value == SearchScanState.Finished }
+
+        assertEquals(SearchScanState.Finished, service.searchScanStateFlow.value)
+        assertTrue(service.transactionItemsFlow.value.isEmpty())
+        assertEquals(0, loadNextCount.get())
+        service.clear()
+    }
+
+    @Test
+    fun handleUpdatedRecords_repeatedEmptySearchBatches_eachLoadsNext() = runBlocking {
+        val loadNextCount = countLoadNext()
+        val service = readyService(mockk(relaxed = true))
+        service.setSearchQuery("needle")
+
+        repeat(3) { page ->
+            repositoryItemsFlow.emit(RecordsBatch(emptyList(), searchCompleted = true, searchExhausted = false))
+            assertTrue("page ${page + 1} did not load the next one", waitUntilTrue { loadNextCount.get() > page })
+        }
+
+        assertEquals(SearchScanState.Scanning, service.searchScanStateFlow.value)
+        service.clear()
+    }
+
+    @Test
+    fun handleUpdatedRecords_noResultPastAutoScanLimit_pausesAndStopsReading() = runBlocking {
+        val loadNextCount = countLoadNext()
+        val service = readyService(mockk(relaxed = true))
+        service.setSearchQuery("needle")
+
+        repositoryItemsFlow.emit(searchPage(scannedCount = WINDOW / 2))
+        assertTrue(waitUntilTrue { loadNextCount.get() >= 1 })
+        repositoryItemsFlow.emit(searchPage(scannedCount = WINDOW))
+        waitUntil { service.searchScanStateFlow.value is SearchScanState.Paused }
+        service.loadNext()
+
+        assertEquals(SearchScanState.Paused(WINDOW), service.searchScanStateFlow.value)
+        assertEquals(1, loadNextCount.get())
+        service.clear()
+    }
+
+    @Test
+    fun handleUpdatedRecords_firstFullPageWithoutResult_pauses() = runBlocking {
+        val loadNextCount = countLoadNext()
+        val service = readyService(mockk(relaxed = true))
+        service.setSearchQuery("needle")
+
+        repositoryItemsFlow.emit(searchPage(scannedCount = 5_000))
+        waitUntil { service.searchScanStateFlow.value is SearchScanState.Paused }
+
+        assertEquals(SearchScanState.Paused(5_000), service.searchScanStateFlow.value)
+        assertEquals(0, loadNextCount.get())
+        service.clear()
+    }
+
+    @Test
+    fun searchFurther_afterPause_scansNextWindow() = runBlocking {
+        val loadNextCount = countLoadNext()
+        val service = readyService(mockk(relaxed = true))
+        service.setSearchQuery("needle")
+        repositoryItemsFlow.emit(searchPage(scannedCount = WINDOW))
+        waitUntil { service.searchScanStateFlow.value is SearchScanState.Paused }
+
+        service.searchFurther()
+        assertEquals(SearchScanState.Scanning, service.searchScanStateFlow.value)
+        assertTrue(waitUntilTrue { loadNextCount.get() >= 1 })
+        repositoryItemsFlow.emit(searchPage(scannedCount = WINDOW + WINDOW / 2))
+        assertTrue(waitUntilTrue { loadNextCount.get() >= 2 })
+        repositoryItemsFlow.emit(searchPage(scannedCount = 2 * WINDOW))
+        waitUntil { service.searchScanStateFlow.value is SearchScanState.Paused }
+
+        assertEquals(SearchScanState.Paused(2 * WINDOW), service.searchScanStateFlow.value)
+        assertEquals(2, loadNextCount.get())
+        service.clear()
+    }
+
+    @Test
+    fun handleUpdatedRecords_resultInsideWindow_restartsWindow() = runBlocking {
+        val loadNextCount = countLoadNext()
+        val source = mockk<TransactionSource>(relaxed = true)
+        val service = readyService(source)
+        service.setSearchQuery("needle")
+        val match = listOf(mockRecord("match-1", source))
+
+        repositoryItemsFlow.emit(searchPage(scannedCount = FOUND_AT, records = match))
+        waitUntil { service.searchScanStateFlow.value == SearchScanState.Finished }
+        repositoryItemsFlow.emit(searchPage(scannedCount = FOUND_AT + WINDOW / 2, records = match))
+        assertTrue(waitUntilTrue { loadNextCount.get() >= 1 })
+        repositoryItemsFlow.emit(searchPage(scannedCount = FOUND_AT + WINDOW, records = match))
+        waitUntil { service.searchScanStateFlow.value is SearchScanState.Paused }
+
+        assertEquals(SearchScanState.Paused(FOUND_AT + WINDOW), service.searchScanStateFlow.value)
+        assertEquals(listOf("match-1"), service.transactionItemsFlow.value.map { it.record.uid })
+        service.clear()
+    }
+
+    @Test
+    fun setTransactionType_afterSecondPause_newSearchPausesAfterOneWindow() = runBlocking {
+        val loadNextCount = countLoadNext()
+        val service = readyService(mockk(relaxed = true))
+        service.setSearchQuery("needle")
+        repositoryItemsFlow.emit(searchPage(scannedCount = WINDOW))
+        waitUntil { service.searchScanStateFlow.value is SearchScanState.Paused }
+        service.searchFurther()
+        repositoryItemsFlow.emit(searchPage(scannedCount = 2 * WINDOW))
+        waitUntil { service.searchScanStateFlow.value == SearchScanState.Paused(2 * WINDOW) }
+
+        service.setTransactionType(FilterTransactionType.Outgoing)
+        repositoryItemsFlow.emit(searchPage(scannedCount = WINDOW, sessionId = 2))
+        waitUntil { service.searchScanStateFlow.value is SearchScanState.Paused }
+
+        assertEquals(SearchScanState.Paused(WINDOW), service.searchScanStateFlow.value)
+        assertEquals(1, loadNextCount.get())
+        service.clear()
+    }
+
+    @Test
+    fun reload_whilePaused_scansFreshWindow() = runBlocking {
+        val loadNextCount = countLoadNext()
+        val setQueries = recordSetQueries()
+        val service = readyService(mockk(relaxed = true))
+        waitUntil { setQueries.isNotEmpty() }
+        service.setSearchQuery("needle")
+        // Issued after the initial load, a set() for the query means initialization has finished.
+        waitUntil { "needle" in setQueries }
+        repositoryItemsFlow.emit(searchPage(scannedCount = WINDOW))
+        waitUntil { service.searchScanStateFlow.value is SearchScanState.Paused }
+
+        service.reload()
+        repositoryItemsFlow.emit(searchPage(scannedCount = WINDOW / 2, sessionId = 2))
+
+        assertTrue(waitUntilTrue { loadNextCount.get() >= 1 })
+        assertEquals(SearchScanState.Scanning, service.searchScanStateFlow.value)
+        service.clear()
+    }
+
+    @Test
+    fun handleUpdatedRecords_refreshedBatchDropsMatch_removesRowAndPauses() = runBlocking {
+        val source = mockk<TransactionSource>(relaxed = true)
+        val service = readyService(source)
+        service.setSearchQuery("needle")
+        repositoryItemsFlow.emit(searchPage(scannedCount = WINDOW / 2, records = listOf(mockRecord("match-1", source))))
+        waitUntil { service.searchScanStateFlow.value == SearchScanState.Finished }
+
+        repositoryItemsFlow.emit(searchPage(scannedCount = WINDOW / 2 + WINDOW))
+        waitUntil { service.searchScanStateFlow.value is SearchScanState.Paused }
+
+        assertEquals(SearchScanState.Paused(WINDOW / 2 + WINDOW), service.searchScanStateFlow.value)
+        assertTrue(service.transactionItemsFlow.value.isEmpty())
+        service.clear()
+    }
+
+    @Test
+    fun handleUpdatedRecords_refreshedBatchDropsMatchInsideWindow_removesRowAndScansOn() = runBlocking {
+        val loadNextCount = countLoadNext()
+        val source = mockk<TransactionSource>(relaxed = true)
+        val service = readyService(source)
+        service.setSearchQuery("needle")
+        repositoryItemsFlow.emit(searchPage(scannedCount = WINDOW / 2, records = listOf(mockRecord("match-1", source))))
+        waitUntil { service.searchScanStateFlow.value == SearchScanState.Finished }
+
+        repositoryItemsFlow.emit(searchPage(scannedCount = WINDOW))
+
+        assertTrue(waitUntilTrue { loadNextCount.get() >= 1 })
+        assertEquals(SearchScanState.Scanning, service.searchScanStateFlow.value)
+        assertTrue(service.transactionItemsFlow.value.isEmpty())
+        service.clear()
+    }
+
+    private fun searchPage(
+        scannedCount: Int,
+        records: List<TransactionRecord> = emptyList(),
+        sessionId: Long = 1,
+    ) = RecordsBatch(records, true, searchScannedCount = scannedCount, searchSessionId = sessionId)
+
+    private fun countLoadNext(): AtomicInteger {
+        val count = AtomicInteger(0)
+        every { repository.loadNext() } answers { count.incrementAndGet(); Unit }
+        return count
+    }
+
+    private fun recordSetQueries(): MutableList<String?> {
+        val queries = Collections.synchronizedList(mutableListOf<String?>())
+        every { repository.set(any(), any(), any(), any(), any(), any()) } answers {
+            queries.add(arg(5))
+            false
+        }
+        return queries
+    }
+
     private fun waitUntilTrue(timeoutMs: Long = 5_000, condition: () -> Boolean): Boolean {
         waitUntil(timeoutMs, condition)
         return condition()
     }
 }
+
+private const val WINDOW = SearchPaging.AUTO_SCAN_LIMIT
+
+// Scanned count of the batch that finds the match, inside the first window.
+private const val FOUND_AT = WINDOW - 1_000

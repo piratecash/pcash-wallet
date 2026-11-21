@@ -230,6 +230,9 @@
     <!--Market Search-->
     <string name="EmptyResults">Нічого не знайдено</string>
     <string name="transactions_empty_search_results">Транзакцій не знайдено</string>
+    <string name="transactions_search_not_found_in_last">Не знайдено серед останніх %1$s транзакцій</string>
+    <string name="transactions_search_no_more_in_last">Інших збігів серед останніх %1$s транзакцій немає</string>
+    <string name="transactions_search_continue">Шукати далі</string>
     <string name="Market_Filters">Фільтри</string>
     <string name="Market_AdvancedSearch_Results">Результат</string>
     <string name="Market_Search_Hint">Пошук</string>
