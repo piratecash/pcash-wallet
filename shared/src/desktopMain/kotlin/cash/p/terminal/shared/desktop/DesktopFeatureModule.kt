@@ -74,6 +74,19 @@ import io.horizontalsystems.core.IEncryptionManager
 import io.horizontalsystems.core.ILanguageManager
 import io.horizontalsystems.core.ILockoutStorage
 import io.horizontalsystems.core.MarketSettingsStore
+import cash.p.terminal.core.ITorManager
+import cash.p.terminal.core.managers.TorManager
+import cash.p.terminal.core.tor.TorGateway
+import cash.p.terminal.core.tor.TorPlatform
+import cash.p.terminal.core.tor.TorSettings
+import cash.p.terminal.manager.ITorConnectionStatusUseCase
+import cash.p.terminal.modules.settings.security.tor.SecurityTorSettingsViewModel
+import cash.p.terminal.modules.tor.TorConnectionStatusUseCase
+import cash.p.terminal.shared.desktop.qrscanner.DesktopOs
+import cash.p.terminal.shared.desktop.tor.DesktopTorPlatform
+import cash.p.terminal.shared.desktop.tor.DesktopTorSettings
+import cash.p.terminal.shared.desktop.tor.ProcessTorGateway
+import java.io.File
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
@@ -111,6 +124,14 @@ val desktopFeatureModule = module {
     singleOf(::DesktopBackgroundManager) bind IBackgroundManager::class
     single<NetworkInterfaceProbe> { SystemNetworkInterfaceProbe }
     singleOf(::DesktopConnectivityManager) bind IConnectivityManager::class
+    single { DesktopTorPlatform(DesktopOs.current) } bind TorPlatform::class
+    singleOf(::DesktopTorSettings) bind TorSettings::class
+    single {
+        val resources = System.getProperty("compose.application.resources.dir")
+        ProcessTorGateway(resources?.let { File(it, "tor/tor") }, desktopAppDataFile("tor"), DesktopOs.current)
+    } bind TorGateway::class
+    singleOf(::TorManager) bind ITorManager::class
+    singleOf(::TorConnectionStatusUseCase) bind ITorConnectionStatusUseCase::class
     singleOf(::DesktopClipboardManager) bind IClipboardManager::class
     singleOf(::DefaultDispatcherProvider) bind DispatcherProvider::class
 
@@ -143,6 +164,7 @@ val desktopFeatureModule = module {
     viewModelOf(::ChangePasswordViewModel)
     viewModelOf(::ConfirmPasswordViewModel)
     viewModelOf(::DesktopSecurityViewModel)
+    viewModelOf(::SecurityTorSettingsViewModel)
     viewModelOf(::DesktopDuressSectionViewModel)
     viewModel { (accountIds: List<String>) -> DuressPasswordViewModel(accountIds, get(), get(), get(), get()) }
     viewModelOf(::HiddenWalletPasswordViewModel)

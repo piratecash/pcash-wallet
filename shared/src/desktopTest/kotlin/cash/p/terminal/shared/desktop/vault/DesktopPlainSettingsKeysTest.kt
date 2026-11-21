@@ -4,6 +4,7 @@ import cash.p.terminal.shared.desktop.DesktopWalletSettingsStorage
 import cash.p.terminal.shared.desktop.vault.VaultLevelsFixture.Companion.DURESS_ACCOUNT
 import cash.p.terminal.shared.desktop.vault.VaultLevelsFixture.Companion.MAIN_ACCOUNT
 import io.horizontalsystems.core.DesktopSettingsStore
+import io.mockk.mockk
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -33,6 +34,7 @@ class DesktopPlainSettingsKeysTest {
         val storage = DesktopWalletSettingsStorage(
             DesktopSettingsStore(settingsFile, scope),
             DesktopAccountSettings(fixture.vault),
+            mockk(relaxed = true),
         )
 
         storage.zcashAccountIds = setOf(MAIN_ACCOUNT, DURESS_ACCOUNT)

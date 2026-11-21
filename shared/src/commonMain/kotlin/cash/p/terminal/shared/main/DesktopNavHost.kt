@@ -27,6 +27,7 @@ import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.LocalHostLifecycleOwner
 import cash.p.terminal.navigation.rememberSharedViewModelStoreNavEntryDecorator
 import cash.p.terminal.ui_compose.components.AppSnackbar
+import cash.p.terminal.ui_compose.components.ConnectionStatusView
 import cash.p.terminal.ui_compose.components.HudAction
 import cash.p.terminal.ui_compose.components.LocalHudMessenger
 import cash.p.terminal.ui_compose.components.LocalUrlOpener
@@ -77,12 +78,21 @@ fun DesktopNavHost(
                 entryProvider = { page ->
                     NavEntry(page, page.contentKey(), page.metadata()) {
                         if (!page.screenshotEnabled) ScreenCaptureProtectedEffect(captureProtection)
-                        page.Content(navigation)
+                        PageWithConnectionPanel(page, navigation)
                     }
                 },
             )
             HudSnackbar(hudMessenger, Modifier.align(Alignment.BottomCenter))
         }
+    }
+}
+
+@Composable
+private fun PageWithConnectionPanel(page: HSPage, navigation: HSNavigation) {
+    if (page.bottomSheet || !page.showConnectionPanel) return page.Content(navigation)
+    Box(Modifier.fillMaxSize()) {
+        page.Content(navigation)
+        ConnectionStatusView(modifier = Modifier.align(Alignment.BottomCenter))
     }
 }
 

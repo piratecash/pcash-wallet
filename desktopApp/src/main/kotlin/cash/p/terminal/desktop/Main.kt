@@ -33,6 +33,8 @@ import cash.p.terminal.shared.desktop.lock.DesktopRoot
 import cash.p.terminal.shared.desktop.vault.DesktopVault
 import cash.p.terminal.shared.desktop.vault.SingleInstanceLock
 import cash.p.terminal.shared.market.MarketCatalogSyncer
+import cash.p.terminal.core.ITorManager
+import cash.p.terminal.core.tor.TorSyncState
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.di.marketModule
@@ -109,6 +111,9 @@ fun main(args: Array<String>) {
     installRxErrorHandler(koin.get())
     // Applies the stored language before the first request reads Locale.getDefault() for its headers.
     koin.get<DesktopLanguageManager>()
+    // Sets the SOCKS proxy before the first request, as createdAtStart does on Android.
+    koin.get<ITorManager>()
+    koin.get<TorSyncState>()
     SingletonImageLoader.setSafe(::buildImageLoader)
     koin.get<MarketCatalogSyncer>().start(applicationScope)
     koin.get<DesktopWalletSession>().start(applicationScope)

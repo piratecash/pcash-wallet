@@ -150,7 +150,7 @@ internal class DesktopSettingsBackupFixture {
         backup = newBackup()
     }
 
-    private fun newBaseTokenManager() = BaseTokenManager(coinManager, DesktopWalletSettingsStorage(settingsStore, mockk(relaxed = true)))
+    private fun newBaseTokenManager() = BaseTokenManager(coinManager, DesktopWalletSettingsStorage(settingsStore, mockk(relaxed = true), mockk(relaxed = true)))
 
     private fun newBackup() = DesktopAppSettingsBackup(
         languageManager = languageManager,

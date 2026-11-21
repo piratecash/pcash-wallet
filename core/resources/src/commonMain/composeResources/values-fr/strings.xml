@@ -2333,6 +2333,7 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="desktop_wipe_restart_manually">Données supprimées. Relancez l\u0027application</string>
     <string name="desktop_restart_manually">Relancez l\u0027application</string>
     <string name="platform_not_supported_yet">Pas encore pris en charge dans la version de bureau</string>
+    <string name="tor_not_supported_windows">Tor n’est pas encore pris en charge dans la version Windows</string>
     <string name="desktop_change_password_title">Changer le mot de passe</string>
     <string name="desktop_change_password_current_hint">Mot de passe actuel</string>
     <string name="desktop_change_password_new_hint">Nouveau mot de passe</string>

@@ -5,17 +5,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.horizontalsystems.core.logger.AppLogger
 import cash.p.terminal.core.ITorManager
-import io.horizontalsystems.core.IPinComponent
+import cash.p.terminal.core.tor.TorPlatform
+import co.touchlab.kermit.Logger
 import kotlinx.coroutines.launch
 
 class SecurityTorSettingsViewModel(
     private val torManager: ITorManager,
-    private val pinComponent: IPinComponent,
+    private val torPlatform: TorPlatform,
 ) : ViewModel() {
 
-    private val logger = AppLogger("SecurityTorSettingsViewModel")
+    private val logger = Logger.withTag("SecurityTorSettingsViewModel")
 
     var torCheckEnabled by mutableStateOf(torManager.isTorEnabled)
         private set
@@ -23,10 +23,17 @@ class SecurityTorSettingsViewModel(
     var showRestartAlert by mutableStateOf(false)
         private set
 
+    var showNotSupported by mutableStateOf(false)
+        private set
+
     var restartApp by mutableStateOf(false)
         private set
 
     fun setTorEnabledWithChecks(enabled: Boolean) {
+        if (enabled && !torPlatform.isSupported) {
+            showNotSupported = true
+            return
+        }
         torCheckEnabled = enabled
         showRestartAlert = true
     }
@@ -41,9 +48,9 @@ class SecurityTorSettingsViewModel(
                 try {
                     torManager.stop()
                 } catch (e: Throwable) {
-                    logger.warning("Tor exception", e)
+                    logger.w(e) { "Tor exception" }
                 } finally {
-                    pinComponent.updateLastExitDateBeforeRestart()
+                    torPlatform.beforeRestartAfterDisable()
                     restartApp = true
                 }
             }
@@ -52,6 +59,10 @@ class SecurityTorSettingsViewModel(
 
     fun restartAppAlertShown() {
         showRestartAlert = false
+    }
+
+    fun notSupportedShown() {
+        showNotSupported = false
     }
 
     fun appRestarted() {

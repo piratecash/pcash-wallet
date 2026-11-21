@@ -2335,6 +2335,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="desktop_wipe_restart_manually">Veriler silindi. Uygulamayı yeniden başlatın</string>
     <string name="desktop_restart_manually">Uygulamayı yeniden başlatın</string>
     <string name="platform_not_supported_yet">Masaüstü sürümünde henüz desteklenmiyor</string>
+    <string name="tor_not_supported_windows">Tor, Windows sürümünde henüz desteklenmiyor</string>
     <string name="desktop_change_password_title">Şifreyi değiştir</string>
     <string name="desktop_change_password_current_hint">Mevcut şifre</string>
     <string name="desktop_change_password_new_hint">Yeni şifre</string>

@@ -10,6 +10,7 @@ import android.net.LocalSocket
 import android.net.LocalSocketAddress
 import android.os.IBinder
 import androidx.core.content.ContextCompat
+import cash.p.terminal.core.tor.TorGateway.Event
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -19,12 +20,10 @@ import java.io.File
 import java.io.IOException
 
 /** Binds tor-android's in-process [TorService] and reports when its Tor is gone. */
-class TorServiceGateway(private val context: Context) {
-
-    enum class Event { ServiceLost, TorExited }
+class TorServiceGateway(private val context: Context) : TorGateway {
 
     private val _events = MutableSharedFlow<Event>(extraBufferCapacity = EVENT_BUFFER)
-    val events: SharedFlow<Event> = _events.asSharedFlow()
+    override val events: SharedFlow<Event> = _events.asSharedFlow()
 
     @Volatile
     private var bound = false
@@ -38,7 +37,7 @@ class TorServiceGateway(private val context: Context) {
     @Volatile
     private var control: Control? = null
 
-    val isTorRunning: Boolean
+    override val isTorRunning: Boolean
         get() = bound && !torExited
 
     // Holds the TorService reference itself: tor-android ships Java 24 bytecode that JVM unit tests
@@ -68,7 +67,7 @@ class TorServiceGateway(private val context: Context) {
         }
     }
 
-    fun bind(): Boolean {
+    override fun bind(): Boolean {
         if (!receiverRegistered) {
             ContextCompat.registerReceiver(
                 context,
@@ -86,7 +85,7 @@ class TorServiceGateway(private val context: Context) {
     }
 
     // Unbinding destroys the service, so the next bind starts a fresh Tor
-    fun unbind() {
+    override fun unbind() {
         closeControl()
         if (bound) {
             context.unbindService(serviceConnection)
@@ -95,13 +94,10 @@ class TorServiceGateway(private val context: Context) {
         serviceConnection.service = null
     }
 
-    fun controlClient(): TorControlClient? = control?.client
+    override fun controlClient(): TorControlClient? = control?.client
 
-    /**
-     * Opens our own control connection, replacing the previous one; null until Tor accepts it. Blocking.
-     * TorService's connection is not used: it is published before TorService finishes setting it up.
-     */
-    fun openControlClient(): TorControlClient? {
+    // TorService's connection is not used: it is published before TorService finishes setting it up
+    override fun openControlClient(): TorControlClient? {
         if (serviceConnection.service == null) return null
         closeControl()
         val socket = LocalSocket()
@@ -109,7 +105,7 @@ class TorServiceGateway(private val context: Context) {
             socket.connect(LocalSocketAddress(controlSocketPath(), LocalSocketAddress.Namespace.FILESYSTEM))
             val connection = TorControlConnection(socket.inputStream, socket.outputStream)
             connection.launchThread(true)
-            Control(socket, TorControlClient(connection)).also { control = it }.client
+            Control(socket, TorControlClient(connection, ByteArray(0))).also { control = it }.client
         } catch (e: IOException) {
             socket.close()
             null
@@ -125,29 +121,16 @@ class TorServiceGateway(private val context: Context) {
         File(context.getDir(TOR_SERVICE_DIR, Context.MODE_PRIVATE), "data/ControlSocket").path
 
     // Tor used to run as a separate executable with its own files; they are useless now
-    fun deleteLegacyFiles() {
+    override fun deleteStaleFiles(torEnabled: Boolean) {
         listOf("torrc", "torrc.custom", "control.txt", "geoip", "geoip6").forEach {
             File(context.filesDir, it).delete()
         }
         context.getDir(LEGACY_DATA_DIR, Context.MODE_PRIVATE).deleteRecursively()
     }
 
-    // TorService passes this file with -f, so its options override the defaults it writes.
-    // The SOCKS listener stays closed until TorManager opens it on a working circuit.
+    // TorService passes this file with -f, so its options override the defaults it writes
     private fun writeTorrc() {
-        TorService.getTorrc(context).writeText(
-            """
-            SOCKSPort 0
-            HTTPTunnelPort 0
-            DNSPort 0
-            TransPort 0
-            SafeSocks 0
-            TestSocks 0
-            AvoidDiskWrites 1
-            ReducedConnectionPadding 1
-            ReducedCircuitPadding 1
-            """.trimIndent()
-        )
+        TorService.getTorrc(context).writeText(TorGateway.BASE_TORRC_OPTIONS.joinToString("\n"))
     }
 
     private class Control(val socket: LocalSocket, val client: TorControlClient)

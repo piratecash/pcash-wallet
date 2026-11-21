@@ -2335,6 +2335,7 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="desktop_wipe_restart_manually">Dados excluídos. Inicie o aplicativo novamente</string>
     <string name="desktop_restart_manually">Inicie o aplicativo novamente</string>
     <string name="platform_not_supported_yet">Ainda não compatível com a versão para desktop</string>
+    <string name="tor_not_supported_windows">O Tor ainda não é compatível com a versão para Windows</string>
     <string name="desktop_change_password_title">Alterar senha</string>
     <string name="desktop_change_password_current_hint">Senha atual</string>
     <string name="desktop_change_password_new_hint">Nova senha</string>

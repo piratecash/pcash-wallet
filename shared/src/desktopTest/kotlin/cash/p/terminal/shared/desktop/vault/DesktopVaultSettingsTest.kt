@@ -16,7 +16,8 @@ import kotlin.test.assertTrue
 class DesktopVaultSettingsTest {
     private val fixture = VaultLevelsFixture()
 
-    private val storage get() = DesktopWalletSettingsStorage(mockk(relaxed = true), DesktopAccountSettings(fixture.vault))
+    private val storage
+        get() = DesktopWalletSettingsStorage(mockk(relaxed = true), DesktopAccountSettings(fixture.vault), mockk(relaxed = true))
     private val levelSettings get() = DesktopLevelSettings(fixture.vault)
 
     @AfterTest

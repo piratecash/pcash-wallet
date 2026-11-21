@@ -2327,6 +2327,7 @@
     <string name="desktop_wipe_restart_manually">데이터가 삭제되었습니다. 앱을 다시 시작하세요</string>
     <string name="desktop_restart_manually">앱을 다시 시작하세요</string>
     <string name="platform_not_supported_yet">데스크톱 버전에서는 아직 지원되지 않습니다</string>
+    <string name="tor_not_supported_windows">Windows 버전에서는 아직 Tor를 지원하지 않습니다</string>
     <string name="desktop_change_password_title">비밀번호 변경</string>
     <string name="desktop_change_password_current_hint">현재 비밀번호</string>
     <string name="desktop_change_password_new_hint">새 비밀번호</string>

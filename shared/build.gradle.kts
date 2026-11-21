@@ -57,11 +57,12 @@ kotlin {
                 implementation(libs.koin.compose.viewmodel)
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kermit)
+                implementation(libs.jtorctl)
+                implementation(libs.compose.multiplatform.ui.tooling.preview)
             }
         }
         val desktopMain by getting {
             dependencies {
-                implementation(libs.compose.multiplatform.ui.tooling.preview)
                 implementation(project(":core:vault"))
                 implementation(project(":feature-premium"))
                 implementation(libs.hd.wallet.kit)

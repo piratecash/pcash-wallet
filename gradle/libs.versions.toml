@@ -119,6 +119,7 @@ accompanist-permissions = "0.37.3"
 lint = "32.1.0"
 
 tor-android = "0.4.9.11"
+jtorctl = "0.4.5.7"
 
 [libraries]
 android-bom = { module = "com.reown:android-bom", version.ref = "reownBom" }
@@ -315,6 +316,7 @@ kermit = { group = "co.touchlab", name = "kermit", version.ref = "kermit" }
 secp256k1-jni-jvm = { group = "fr.acinq.secp256k1", name = "secp256k1-kmp-jni-jvm", version.ref = "secp256k1" }
 
 tor-android = { group = "info.guardianproject", name = "tor-android", version.ref = "tor-android" }
+jtorctl = { group = "info.guardianproject", name = "jtorctl", version.ref = "jtorctl" }
 
 # CameraX for QR scanning
 camerax-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "camerax" }

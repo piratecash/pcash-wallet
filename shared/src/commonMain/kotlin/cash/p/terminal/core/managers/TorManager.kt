@@ -1,11 +1,11 @@
 package cash.p.terminal.core.managers
 
-import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.ITorManager
 import cash.p.terminal.core.tor.TorControlClient
 import cash.p.terminal.core.tor.TorControlClient.Companion.BOOTSTRAP_DONE
 import cash.p.terminal.core.tor.TorControlClient.Companion.SOCKS_HOST
-import cash.p.terminal.core.tor.TorServiceGateway
+import cash.p.terminal.core.tor.TorGateway
+import cash.p.terminal.core.tor.TorSettings
 import cash.p.terminal.manager.IConnectivityManager
 import cash.p.terminal.modules.pin.core.UptimeProvider
 import cash.p.terminal.modules.settings.security.tor.TorStatus
@@ -34,12 +34,12 @@ import java.net.InetAddress
 import java.net.ServerSocket
 
 /**
- * Routes the app's traffic to an in-process Tor through the JVM SOCKS properties, set once per process.
+ * Routes the app's traffic to the platform's Tor through the JVM SOCKS properties, set once per process.
  * Tor listens on that port only while it carries traffic, so until then proxied connections fail fast.
  */
 class TorManager(
-    private val localStorage: ILocalStorage,
-    private val gateway: TorServiceGateway,
+    private val torSettings: TorSettings,
+    private val gateway: TorGateway,
     private val connectivityManager: IConnectivityManager,
     private val backgroundManager: IBackgroundManager,
     private val uptimeProvider: UptimeProvider,
@@ -65,8 +65,9 @@ class TorManager(
     private var lastValidatedNetworks: Set<Any> = emptySet()
 
     init {
-        scope.launch(dispatcherProvider.io) { gateway.deleteLegacyFiles() }
-        if (localStorage.torEnabled) {
+        val torEnabled = torSettings.torEnabled
+        scope.launch(dispatcherProvider.io) { gateway.deleteStaleFiles(torEnabled) }
+        if (torEnabled) {
             System.setProperty(SOCKS_HOST_PROPERTY, SOCKS_HOST)
             System.setProperty(SOCKS_PORT_PROPERTY, socksPort.toString())
             monitoringLease = connectivityManager.acquireMonitoringLease()
@@ -78,15 +79,15 @@ class TorManager(
     }
 
     override val isTorEnabled: Boolean
-        get() = localStorage.torEnabled
+        get() = torSettings.torEnabled
 
     override fun setTorAsEnabled() {
-        localStorage.torEnabled = true
+        torSettings.torEnabled = true
         logger.i { "Tor enabled" }
     }
 
     override fun setTorAsDisabled() {
-        localStorage.torEnabled = false
+        torSettings.torEnabled = false
         logger.i { "Tor disabled" }
     }
 
@@ -94,7 +95,7 @@ class TorManager(
         scope.launch { restart() }
     }
 
-    // Makes no Tor or service call: the process restarts right after, and the in-process Tor dies with it
+    // Makes no Tor or service call: the process restarts right after, and its Tor dies with it
     override suspend fun stop() = withContext(stateDispatcher) {
         scope.coroutineContext.cancelChildren()
         System.clearProperty(SOCKS_HOST_PROPERTY)
@@ -152,12 +153,23 @@ class TorManager(
         gateway.bind()
     }
 
+    // A slow network may bootstrap for minutes, so only a bootstrap that stopped advancing fails
     private suspend fun awaitBootstrap(client: TorControlClient): Boolean = try {
-        poll(BOOTSTRAP_WAIT_TRIES) {
+        var best: Int? = null
+        var stalledTries = 0
+        while (stalledTries < BOOTSTRAP_STALL_TRIES) {
             val progress = client.call { bootstrapProgress() }
             _bootstrapProgressFlow.value = progress
-            progress.takeIf { it == BOOTSTRAP_DONE }
-        } != null
+            if (progress == BOOTSTRAP_DONE) return true
+            if (progress != null && progress > (best ?: -1)) {
+                best = progress
+                stalledTries = 0
+            } else {
+                stalledTries++
+            }
+            delay(POLL_INTERVAL_MILLIS)
+        }
+        false
     } finally {
         _bootstrapProgressFlow.value = null
     }
@@ -177,7 +189,7 @@ class TorManager(
         }
     }
 
-    private suspend fun onTorLost(event: TorServiceGateway.Event) {
+    private suspend fun onTorLost(event: TorGateway.Event) {
         connectJob?.cancel()
         fail("Tor lost: $event")
     }
@@ -252,7 +264,7 @@ class TorManager(
         const val NEWNYM_WAIT_MILLIS = 2_000L
         const val POLL_INTERVAL_MILLIS = 500L
         const val CONTROL_WAIT_TRIES = 60 // 30 s
-        const val BOOTSTRAP_WAIT_TRIES = 240 // 2 min
+        const val BOOTSTRAP_STALL_TRIES = 240 // 2 min without progress
         const val CIRCUIT_WAIT_TRIES = 120 // 1 min
     }
 }

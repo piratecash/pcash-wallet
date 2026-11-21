@@ -2,11 +2,9 @@ package cash.p.terminal.core
 
 import com.google.gson.JsonObject
 import cash.p.terminal.modules.market.MarketModule
-import cash.p.terminal.modules.settings.security.tor.TorStatus
 import io.reactivex.Flowable
 import io.reactivex.Single
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.StateFlow
 
 interface IMarketStorage {
     var currentMarketTab: MarketModule.Tab?
@@ -23,21 +21,6 @@ interface INetworkManager {
 
     fun ping(host: String, url: String, isSafeCall: Boolean): Flowable<Any>
     fun getEvmInfo(host: String, path: String): Single<JsonObject>
-}
-
-interface ITorManager {
-    fun start()
-    suspend fun stop()
-    fun setTorAsEnabled()
-    fun setTorAsDisabled()
-    val isTorEnabled: Boolean
-    val torStatusFlow: StateFlow<TorStatus>
-
-    /** Bootstrap percentage while Tor bootstraps, null otherwise. */
-    val bootstrapProgressFlow: StateFlow<Int?>
-
-    /** Asks Tor for fresh circuits when connected; never waits long. */
-    suspend fun newCircuits()
 }
 
 interface IRateAppManager {

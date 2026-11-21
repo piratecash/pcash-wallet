@@ -2335,6 +2335,7 @@
     <string name="desktop_wipe_restart_manually">Dados eliminados. Inicie a aplicação novamente</string>
     <string name="desktop_restart_manually">Inicie a aplicação novamente</string>
     <string name="platform_not_supported_yet">Ainda não suportado na versão para computador</string>
+    <string name="tor_not_supported_windows">O Tor ainda não é suportado na versão para Windows</string>
     <string name="desktop_change_password_title">Alterar senha</string>
     <string name="desktop_change_password_current_hint">Senha atual</string>
     <string name="desktop_change_password_new_hint">Nova senha</string>

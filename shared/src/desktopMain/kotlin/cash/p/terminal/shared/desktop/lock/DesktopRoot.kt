@@ -86,7 +86,7 @@ fun DesktopRoot(wipeFailed: Boolean, modifier: Modifier = Modifier) {
         modifier = modifier,
     )
     (wipeProgress as? WipeProgress.RestartManually)?.let {
-        RestartManuallyDialog(outcome = it.outcome, onConfirm = appExit::request)
+        RestartManuallyDialog(messages = restartManuallyMessages(it.outcome), onConfirm = appExit::request)
     }
 }
 

@@ -3,10 +3,13 @@ package cash.p.terminal.core.tor
 import net.freehaven.tor.control.TorControlConnection
 
 /** Blocking calls over Tor's control connection; each throws IOException when Tor refuses or is gone. */
-class TorControlClient(private val connection: TorControlConnection) {
+class TorControlClient(
+    private val connection: TorControlConnection,
+    private val authSecret: ByteArray,
+) {
 
-    // Tor runs with no auth method, but still refuses other commands before AUTHENTICATE
-    fun authenticate() = connection.authenticate(ByteArray(0))
+    // Tor refuses other commands before AUTHENTICATE, even when it needs no secret
+    fun authenticate() = connection.authenticate(authSecret)
 
     fun bootstrapProgress(): Int? =
         connection.getInfo("status/bootstrap-phase")?.let(PROGRESS::find)?.groupValues?.get(1)?.toIntOrNull()

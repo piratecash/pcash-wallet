@@ -1,9 +1,9 @@
 package cash.p.terminal.core.managers
 
-import cash.p.terminal.core.ILocalStorage
+import cash.p.terminal.core.tor.TorSettings
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.tor.TorControlClient
-import cash.p.terminal.core.tor.TorServiceGateway
+import cash.p.terminal.core.tor.TorGateway
 import cash.p.terminal.manager.IConnectivityManager
 import cash.p.terminal.modules.pin.core.UptimeProvider
 import cash.p.terminal.modules.settings.security.tor.TorStatus
@@ -47,15 +47,15 @@ import kotlin.test.fail
 class TorManagerTest {
 
     private val dispatcher = StandardTestDispatcher()
-    private val localStorage = mockk<ILocalStorage>(relaxed = true)
-    private val gateway = mockk<TorServiceGateway>(relaxed = true)
+    private val torSettings = mockk<TorSettings>(relaxed = true)
+    private val gateway = mockk<TorGateway>(relaxed = true)
     private val client = mockk<TorControlClient>(relaxed = true)
     private val connectivityManager = mockk<IConnectivityManager>(relaxed = true)
     private val backgroundManager = mockk<IBackgroundManager>()
     private val uptimeProvider = mockk<UptimeProvider>()
     private val lease = mockk<AutoCloseable>(relaxed = true)
 
-    private val gatewayEvents = MutableSharedFlow<TorServiceGateway.Event>()
+    private val gatewayEvents = MutableSharedFlow<TorGateway.Event>()
     private val appState = MutableStateFlow(BackgroundManagerState.Unknown)
     private val validatedNetworks = MutableStateFlow<Set<Any>>(emptySet())
     private var torRunning = false
@@ -76,7 +76,7 @@ class TorManagerTest {
         System.clearProperty(HOST_PROPERTY)
         System.clearProperty(PORT_PROPERTY)
 
-        every { localStorage.torEnabled } returns true
+        every { torSettings.torEnabled } returns true
         every { gateway.events } returns gatewayEvents
         every { gateway.isTorRunning } answers { torRunning }
         every { gateway.bind() } answers { torRunning = true; true }
@@ -108,7 +108,7 @@ class TorManagerTest {
 
     @Test
     fun init_torDisabled_leavesPropsUnset() = runTest(dispatcher) {
-        every { localStorage.torEnabled } returns false
+        every { torSettings.torEnabled } returns false
 
         val manager = createManager()
         advanceUntilIdle()
@@ -145,13 +145,48 @@ class TorManagerTest {
         every { client.bootstrapProgress() } returns 10
 
         val manager = createManager()
-        advanceTimeBy(BOOTSTRAP_WAIT_MILLIS - 1_000)
+        advanceTimeBy(BOOTSTRAP_STALL_MILLIS - 1_000)
         assertEquals(TorStatus.Connecting, manager.torStatusFlow.value)
         advanceUntilIdle()
 
         assertEquals(TorStatus.Failed, manager.torStatusFlow.value)
         verify { client.closeSocks() }
         verify { client.setNetworkEnabled(false) }
+        verify(exactly = 0) { client.openSocks(any()) }
+    }
+
+    @Test
+    fun start_slowBootstrapKeepsAdvancing_connectsAfterStallLimit() = runTest(dispatcher) {
+        // One step per 100 s: four minutes in total, yet never two minutes without progress
+        var progress = 0
+        var nextStepAt = 0L
+        every { client.bootstrapProgress() } answers {
+            if (currentTime >= nextStepAt && progress < 100) {
+                progress += 40
+                nextStepAt = currentTime + 100_000
+            }
+            progress.coerceAtMost(100)
+        }
+
+        val manager = createManager()
+        advanceTimeBy(BOOTSTRAP_STALL_MILLIS + 1_000)
+        assertEquals(TorStatus.Connecting, manager.torStatusFlow.value)
+        advanceUntilIdle()
+
+        assertEquals(TorStatus.Connected, manager.torStatusFlow.value)
+        assertTrue(currentTime > BOOTSTRAP_STALL_MILLIS)
+    }
+
+    @Test
+    fun start_bootstrapStallsAfterProgress_reportsFailedAfterStallLimit() = runTest(dispatcher) {
+        every { client.bootstrapProgress() } answers { if (currentTime < 90_000) (currentTime / 1_000).toInt() else 89 }
+
+        val manager = createManager()
+        advanceTimeBy(90_000 + BOOTSTRAP_STALL_MILLIS - 5_000)
+        assertEquals(TorStatus.Connecting, manager.torStatusFlow.value)
+        advanceUntilIdle()
+
+        assertEquals(TorStatus.Failed, manager.torStatusFlow.value)
         verify(exactly = 0) { client.openSocks(any()) }
     }
 
@@ -400,7 +435,7 @@ class TorManagerTest {
         val manager = connectedManager()
 
         torRunning = false
-        gatewayEvents.emit(TorServiceGateway.Event.TorExited)
+        gatewayEvents.emit(TorGateway.Event.TorExited)
         advanceUntilIdle()
 
         assertEquals(TorStatus.Failed, manager.torStatusFlow.value)
@@ -411,7 +446,7 @@ class TorManagerTest {
     fun start_afterTorExited_rebindsService() = runTest(dispatcher) {
         val manager = connectedManager()
         torRunning = false
-        gatewayEvents.emit(TorServiceGateway.Event.TorExited)
+        gatewayEvents.emit(TorGateway.Event.TorExited)
         advanceUntilIdle()
 
         manager.start()
@@ -443,7 +478,7 @@ class TorManagerTest {
     }
 
     private fun TestScope.createManager(io: CoroutineDispatcher = dispatcher) = TorManager(
-        localStorage = localStorage,
+        torSettings = torSettings,
         gateway = gateway,
         connectivityManager = connectivityManager,
         backgroundManager = backgroundManager,
@@ -497,7 +532,7 @@ class TorManagerTest {
     private companion object {
         const val HOST_PROPERTY = "socksProxyHost"
         const val PORT_PROPERTY = "socksProxyPort"
-        const val BOOTSTRAP_WAIT_MILLIS = 120_000L
+        const val BOOTSTRAP_STALL_MILLIS = 120_000L
         const val RECONNECT_AFTER_BACKGROUND_MILLIS = 60_000L
         const val CONTROL_CALL_TIMEOUT_MILLIS = 10_000L
         const val NEWNYM_WAIT_MILLIS = 2_000L

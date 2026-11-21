@@ -7,6 +7,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cash.p.terminal.core.TransactionSettingsStorage
 import cash.p.terminal.modules.settings.security.autolock.AutoLockInterval
+import cash.p.terminal.shared.desktop.DesktopAppExit
+import cash.p.terminal.shared.desktop.DesktopAppRelauncher
 import cash.p.terminal.shared.desktop.vault.DesktopVault
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
 import io.horizontalsystems.core.DesktopSettingsStore
@@ -17,6 +19,8 @@ class DesktopSecurityViewModel(
     private val settingsStore: DesktopSettingsStore,
     private val balanceHiddenManager: IBalanceHiddenManager,
     private val transactionSettings: TransactionSettingsStorage,
+    private val relauncher: DesktopAppRelauncher,
+    private val appExit: DesktopAppExit,
 ) : ViewModel() {
 
     var uiState by mutableStateOf(
@@ -45,10 +49,22 @@ class DesktopSecurityViewModel(
     fun onLockClick() {
         viewModelScope.launch { vault.lock() }
     }
+
+    // Tor routing is fixed at process start, so a failed relaunch must not leave this process running
+    fun restartApp() {
+        if (relauncher.relaunch(wipeFailed = false)) {
+            appExit.request()
+        } else {
+            uiState = uiState.copy(restartManually = true)
+        }
+    }
+
+    fun onRestartManuallyConfirmed() = appExit.request()
 }
 
 data class DesktopSecurityUiState(
     val autoLockInterval: AutoLockInterval,
     val balanceAutoHideEnabled: Boolean,
     val transferPasswordEnabled: Boolean,
+    val restartManually: Boolean = false,
 )

@@ -12,8 +12,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Divider
-import androidx.compose.material.Text
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -23,8 +23,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.tooling.preview.Preview
@@ -33,24 +31,28 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cash.p.terminal.manager.ITorConnectionStatusUseCase
 import cash.p.terminal.manager.ITorConnectionStatusUseCase.RestartResult
 import cash.p.terminal.manager.TorViewState
+import cash.p.terminal.resources.Button_Retry
+import cash.p.terminal.resources.Hud_Text_NoInternet
 import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.TorPage_Connecting
 import cash.p.terminal.resources.TorPage_ConnectingProgress
-import cash.p.terminal.ui_compose.R
+import cash.p.terminal.resources.Tor_TorIsActive
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.stringResource as cmpStringResource
+import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
 @Composable
-internal actual fun TorStatusView(
-    modifier: Modifier
+internal fun TorStatusView(
+    modifier: Modifier = Modifier
 ) {
     val torConnectionUseCase: ITorConnectionStatusUseCase = koinInject()
 
     val torViewState by torConnectionUseCase.torViewState.collectAsStateWithLifecycle(
         initialValue = TorViewState(
-            stateText = R.string.TorPage_Connecting,
+            stateText = Res.string.TorPage_Connecting,
             showRetryButton = false,
             torIsActive = false,
             showNetworkConnectionError = false
@@ -66,7 +68,7 @@ internal actual fun TorStatusView(
         animationSpec = tween(durationMillis = 250, easing = LinearOutSlowInEasing)
     )
 
-    Divider(
+    HorizontalDivider(
         thickness = 1.dp,
         color = ComposeAppTheme.colors.borderDivider,
         modifier = modifier.fillMaxWidth()
@@ -100,7 +102,7 @@ internal actual fun TorStatusView(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = stringResource(R.string.Tor_TorIsActive),
+                    text = stringResource(Res.string.Tor_TorIsActive),
                     style = ComposeAppTheme.typography.micro,
                     color = textColor.value,
                 )
@@ -117,7 +119,7 @@ internal actual fun TorStatusView(
 
                 if (torViewState.showRetryButton) {
                     ButtonSecondaryTransparent(
-                        title = stringResource(R.string.Button_Retry).toUpperCase(Locale.current),
+                        title = stringResource(Res.string.Button_Retry).toUpperCase(Locale.current),
                         onClick = {
                             scope.launch {
                                 when (torConnectionUseCase.restartTor()) {
@@ -138,9 +140,9 @@ internal actual fun TorStatusView(
     }
 
     if (torViewState.showNetworkConnectionError || showNetworkError) {
-        val view = LocalView.current
+        val hudMessenger = rememberHudMessenger()
         LaunchedEffect(torViewState.showNetworkConnectionError, showNetworkError) {
-            HudHelper.showErrorMessage(view, R.string.Hud_Text_NoInternet)
+            hudMessenger.showError(getString(Res.string.Hud_Text_NoInternet))
         }
     }
 
@@ -156,7 +158,7 @@ private fun TorStateText(viewState: TorViewState, modifier: Modifier = Modifier)
     val progress = viewState.bootstrapProgress
     Text(
         text = if (progress != null) {
-            cmpStringResource(Res.string.TorPage_ConnectingProgress, progress)
+            stringResource(Res.string.TorPage_ConnectingProgress, progress)
         } else {
             stringResource(viewState.stateText)
         },
@@ -177,7 +179,7 @@ private fun TorStateTextProgressPreview() {
     ComposeAppTheme {
         TorStateText(
             TorViewState(
-                stateText = R.string.TorPage_Connecting,
+                stateText = Res.string.TorPage_Connecting,
                 showRetryButton = false,
                 torIsActive = false,
                 showNetworkConnectionError = false,

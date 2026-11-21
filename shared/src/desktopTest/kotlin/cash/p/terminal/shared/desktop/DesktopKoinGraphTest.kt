@@ -58,6 +58,7 @@ import cash.p.terminal.wallet.policy.PlatformOperationSupport
 import cash.p.terminal.wallet.useCases.WalletUseCase
 import io.horizontalsystems.core.IAppNumberFormatter
 import io.horizontalsystems.core.logger.LogScope
+import cash.p.terminal.shared.desktop.qrscanner.DesktopOs
 import okio.FileSystem
 import okio.Path
 import org.koin.core.error.InstanceCreationException
@@ -806,6 +807,7 @@ class DesktopKoinGraphTest {
             HttpClientEngine::class,
             FileSystem::class,
             Path::class,
+            DesktopOs::class,
         )
 
         /** Built inside the view model definitions from their injected parameters. */

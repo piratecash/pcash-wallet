@@ -26,11 +26,11 @@ internal fun restartManuallyMessages(outcome: WipeOutcome): List<StringResource>
     WipeOutcome.FAILED -> listOf(Res.string.desktop_forgot_password_failed, Res.string.desktop_restart_manually)
 }
 
-/** The app could not start itself again after the wipe; confirming quits it. */
+/** The app could not start itself again; confirming quits it. */
 @Composable
-internal fun RestartManuallyDialog(outcome: WipeOutcome, onConfirm: () -> Unit) {
+internal fun RestartManuallyDialog(messages: List<StringResource>, onConfirm: () -> Unit) {
     AppDialog(onDismissRequest = onConfirm) {
-        restartManuallyMessages(outcome).forEach { message ->
+        messages.forEach { message ->
             body_leah(
                 text = stringResource(message),
                 modifier = Modifier.padding(start = 24.dp, top = 24.dp, end = 24.dp),
@@ -50,6 +50,6 @@ internal fun RestartManuallyDialog(outcome: WipeOutcome, onConfirm: () -> Unit) 
 @Composable
 private fun RestartManuallyDialogPreview() {
     ComposeAppTheme {
-        RestartManuallyDialog(outcome = WipeOutcome.FAILED, onConfirm = {})
+        RestartManuallyDialog(messages = restartManuallyMessages(WipeOutcome.FAILED), onConfirm = {})
     }
 }

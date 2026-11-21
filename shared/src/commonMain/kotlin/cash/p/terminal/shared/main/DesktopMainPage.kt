@@ -1,6 +1,7 @@
 package cash.p.terminal.shared.main
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -61,6 +62,7 @@ import cash.p.terminal.modules.settings.main.settingsAlertPainter
 import cash.p.terminal.shared.settings.appShareText
 import cash.p.terminal.shared.settings.SettingsPages
 import cash.p.terminal.shared.settings.currentLanguageName
+import cash.p.terminal.ui_compose.components.ConnectionStatusView
 import cash.p.terminal.ui_compose.components.LocalHudMessenger
 import cash.p.terminal.ui_compose.components.LocalUrlOpener
 import cash.p.terminal.ui_compose.components.UrlOpener
@@ -86,7 +88,8 @@ private val DESKTOP_HIDDEN_SETTINGS = setOf(
 )
 
 /** Root of the desktop back stack: the main tabs; pages opened from them stack above it. */
-class DesktopMainPage : HSPage() {
+// Draws the connection panel itself, above the bottom navigation, as the Android main page does
+class DesktopMainPage : HSPage(showConnectionPanel = false) {
 
     @Composable
     override fun GetContent(navigation: HSNavigation) {
@@ -116,11 +119,16 @@ class DesktopMainPage : HSPage() {
             },
             modifier = Modifier.fillMaxSize(),
         ) { destination ->
-            when (destination) {
-                MainDestination.Balance -> BalancePane(navigation)
-                MainDestination.Market -> MarketScreen(navigation, PaddingValues())
-                MainDestination.Transactions -> TransactionsPane(navigation)
-                MainDestination.Settings -> SettingsPane(navigation)
+            Column {
+                Box(Modifier.weight(1f)) {
+                    when (destination) {
+                        MainDestination.Balance -> BalancePane(navigation)
+                        MainDestination.Market -> MarketScreen(navigation, PaddingValues())
+                        MainDestination.Transactions -> TransactionsPane(navigation)
+                        MainDestination.Settings -> SettingsPane(navigation)
+                    }
+                }
+                ConnectionStatusView()
             }
         }
     }

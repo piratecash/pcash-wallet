@@ -1,5 +1,6 @@
 package cash.p.terminal.core
 
+import cash.p.terminal.core.tor.TorSettings
 import cash.p.terminal.entities.SyncMode
 import cash.p.terminal.shared.main.MainTabStorage
 import cash.p.terminal.modules.market.TimeDuration
@@ -17,7 +18,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface ILocalStorage : ILoggingSettings, ISmsNotificationSettings, BaseCurrencyStorage, WalletOnboardingStorage,
     AppearanceSettingsStore, MainTabStorage, ReleaseNotesStorage, AppVersionStorage,
-    BalanceSettingsStorage, TransactionSettingsStorage, NetworkSettingsStorage {
+    BalanceSettingsStorage, TransactionSettingsStorage, NetworkSettingsStorage, TorSettings {
     var marketSearchRecentCoinUids: List<String>
 
     var autoLockInterval: AutoLockInterval

@@ -58,6 +58,7 @@ import cash.p.terminal.core.storage.StorageRouter
 import cash.p.terminal.core.storage.sessionLevel
 import io.horizontalsystems.core.logger.LogScope
 import io.horizontalsystems.core.storage.LogsDao
+import cash.p.terminal.core.tor.TorSyncCoordinator
 import cash.p.terminal.core.tor.TorSyncState
 import cash.p.terminal.core.storage.BlockchainSettingsStorage
 import cash.p.terminal.core.storage.EnabledWalletsStorage
@@ -118,9 +119,6 @@ import cash.p.terminal.wallet.useCases.ScanToAddUseCase
 import io.horizontalsystems.core.ISystemInfoManager
 import io.horizontalsystems.core.IThirdKeyboard
 import io.horizontalsystems.hdwalletkit.Mnemonic
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
@@ -240,7 +238,10 @@ internal val desktopWalletModule = module {
     singleOf(::DesktopZcashBlockDownloadPolicy) bind ZcashBlockDownloadPolicy::class
     singleOf(::DesktopBeamKitDatabaseKeyProvider) bind BeamKitDatabaseKeyProvider::class
     single<NonFatalReporter> { DesktopNonFatalReporter }
-    single<TorSyncState> { DesktopTorSyncState }
+    single {
+        // Lazy: the wallet stack opens the storage, which exists only after the first unlock.
+        TorSyncCoordinator(get(), lazy { get() }, lazy { get() }, lazy { get() }, get())
+    } bind TorSyncState::class
     // The TON fallback address provider stays in the Android app; desktop has none for TON.
     single<FallbackAddressProvider> { get<ZcashFallbackAddressProvider>() }
 }
@@ -249,10 +250,4 @@ internal val desktopWalletModule = module {
 private object DesktopNoTrezorAttachments : TrezorAttachments {
     override val attached = emptyFlow<Unit>()
     override val detached = emptyFlow<Unit>()
-}
-
-/** Desktop has no Tor. */
-private object DesktopTorSyncState : TorSyncState {
-    override val syncErrorsHidden: StateFlow<Boolean> = MutableStateFlow(false).asStateFlow()
-    override suspend fun requestNewCircuits() = Unit
 }

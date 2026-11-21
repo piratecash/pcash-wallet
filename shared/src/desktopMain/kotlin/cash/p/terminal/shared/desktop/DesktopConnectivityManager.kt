@@ -1,7 +1,9 @@
 package cash.p.terminal.shared.desktop
 
+import cash.p.terminal.core.tor.TorSettings
 import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.manager.IConnectivityManager
+import cash.p.terminal.modules.pin.core.UptimeProvider
 import io.horizontalsystems.core.DispatcherProvider
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
@@ -33,6 +35,8 @@ object SystemNetworkInterfaceProbe : NetworkInterfaceProbe {
 /** The JVM has no connectivity callbacks, so the interfaces are polled; monitoring never stops. */
 class DesktopConnectivityManager(
     private val probe: NetworkInterfaceProbe,
+    private val torSettings: TorSettings,
+    private val uptimeProvider: UptimeProvider,
     private val dispatcherProvider: DispatcherProvider,
 ) : IConnectivityManager {
 
@@ -48,13 +52,22 @@ class DesktopConnectivityManager(
     private val _validatedNetworksFlow = MutableStateFlow<Set<Any>>(emptySet())
     override val validatedNetworksFlow: StateFlow<Set<Any>> = _validatedNetworksFlow.asStateFlow()
 
-    override val torEnabled: Boolean = false
+    override val torEnabled: Boolean
+        get() = torSettings.torEnabled
+
+    // Connections made before a sleep are dead after it, though the interfaces usually stay the same
+    @Volatile
+    private var wakeEpoch = 0
 
     init {
         update(forceEmit = true)
         dispatcherProvider.applicationScope.launch(dispatcherProvider.io) {
+            var lastPoll = uptimeProvider.uptime
             while (isActive) {
                 delay(POLL_INTERVAL_MS)
+                val now = uptimeProvider.uptime
+                if (now - lastPoll > POLL_INTERVAL_MS + WAKE_GAP_MS) wakeEpoch++
+                lastPoll = now
                 refresh()
             }
         }
@@ -69,7 +82,7 @@ class DesktopConnectivityManager(
     private fun update(forceEmit: Boolean): Boolean {
         val interfaces = probe.activeInterfaceNames()
         val connected = interfaces.isNotEmpty()
-        _validatedNetworksFlow.value = interfaces
+        _validatedNetworksFlow.value = if (connected && wakeEpoch > 0) interfaces + WakeEpoch(wakeEpoch) else interfaces
         val wasConnected = _isConnected.getAndUpdate { connected }
         if (forceEmit || wasConnected != connected) {
             _networkAvailabilityFlow.tryEmit(connected)
@@ -79,5 +92,10 @@ class DesktopConnectivityManager(
 
     private companion object {
         const val POLL_INTERVAL_MS = 5_000L
+
+        // The wall clock runs on during a sleep while the poll delay does not
+        const val WAKE_GAP_MS = 30_000L
     }
+
+    private data class WakeEpoch(val value: Int)
 }
