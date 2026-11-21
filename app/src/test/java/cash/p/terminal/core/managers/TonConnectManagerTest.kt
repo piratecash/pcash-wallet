@@ -8,7 +8,9 @@ import cash.p.terminal.core.storage.AppDatabase
 import cash.p.terminal.core.storage.SingleDatabaseStorageRouter
 import cash.p.terminal.core.storage.StaticAppDatabaseProvider
 import cash.p.terminal.wallet.Account
+import cash.p.terminal.wallet.ActiveAccountState
 import cash.p.terminal.wallet.IAccountManager
+import cash.p.terminal.wallet.VisibleAccounts
 import co.touchlab.kermit.LogWriter
 import co.touchlab.kermit.Logger
 import co.touchlab.kermit.Severity
@@ -35,6 +37,8 @@ import io.reactivex.BackpressureStrategy
 import io.reactivex.subjects.PublishSubject
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
@@ -61,10 +65,14 @@ class TonConnectManagerTest {
     private val accountsDao = mockk<AccountsDao>()
     private val appDatabase = mockk<AppDatabase> { every { accountsDao() } returns accountsDao }
     private val accountsDeleted = PublishSubject.create<Unit>()
+    private var loadedAccounts: VisibleAccounts? = VisibleAccounts(level = 0, accountIds = setOf(VISIBLE_ID))
+    private val accountState = MutableStateFlow<ActiveAccountState>(ActiveAccountState.ActiveAccount(null))
     private val accountManager = mockk<IAccountManager>(relaxed = true) {
         every { accountsDeletedFlowable } returns accountsDeleted.toFlowable(BackpressureStrategy.BUFFER)
         // Only the current level's accounts: live dApps must never be derived from this list.
         every { accounts } returns listOf(mockk<Account> { every { id } returns VISIBLE_ID })
+        every { visibleAccounts } answers { loadedAccounts }
+        every { activeAccountStateFlow } returns accountState
     }
     private val kit = mockk<TonConnectKit>(relaxed = true)
     private val tonApi = mockk<TonApi>()
@@ -278,13 +286,13 @@ class TonConnectManagerTest {
         backgroundScope.launch { manager.sendRequestFlow.toList(collected) }
         manager.kit()
         runCurrent()
-        val beforeReset = mockk<SignTransaction>()
+        val beforeReset = signTransaction(VISIBLE_ID)
         oldRequests.emit(beforeReset)
         runCurrent()
 
         manager.reset()
         runCurrent()
-        oldRequests.emit(mockk())
+        oldRequests.emit(signTransaction(VISIBLE_ID))
         runCurrent()
 
         assertEquals(listOf(beforeReset), collected)
@@ -318,7 +326,7 @@ class TonConnectManagerTest {
 
     @Test
     fun getDApps_beforeKitReady_emitsOnceKitIsCreated() = runTest(dispatcher) {
-        val dApp = mockk<DAppEntity>()
+        val dApp = dApp(VISIBLE_ID)
         every { kit.getDApps() } returns flowOf(listOf(dApp))
         val manager = createManager()
         val emitted = mutableListOf<List<DAppEntity>>()
@@ -330,6 +338,82 @@ class TonConnectManagerTest {
         runCurrent()
 
         assertEquals(listOf(listOf(dApp)), emitted)
+    }
+
+    @Test
+    fun getDApps_sessionOfAccountOutsideLevel_isHidden() = runTest(dispatcher) {
+        val v4r2 = dApp(VISIBLE_ID)
+        val w5 = dApp("$VISIBLE_ID-w5")
+        every { kit.getDApps() } returns flowOf(listOf(v4r2, w5, dApp(HIDDEN_ID), dApp("$HIDDEN_ID-w5")))
+        val manager = createManager()
+        manager.kit()
+
+        assertEquals(listOf(v4r2, w5), manager.getDApps().first())
+    }
+
+    @Test
+    fun getDApps_noLevelLoaded_emitsEmptyList() = runTest(dispatcher) {
+        loadedAccounts = null
+        every { kit.getDApps() } returns flowOf(listOf(dApp(VISIBLE_ID)))
+        val manager = createManager()
+        manager.kit()
+
+        assertEquals(emptyList<DAppEntity>(), manager.getDApps().first())
+    }
+
+    @Test
+    fun sendRequestFlow_requestOfAccountOutsideLevel_isDropped() = runTest(dispatcher) {
+        val requests = MutableSharedFlow<SignTransaction>()
+        every { kit.sendRequestFlow } returns requests
+        val manager = createManager()
+        val collected = mutableListOf<SignTransaction>()
+        backgroundScope.launch { manager.sendRequestFlow.toList(collected) }
+        manager.kit()
+        runCurrent()
+
+        val visible = signTransaction("$VISIBLE_ID-w5")
+        requests.emit(signTransaction(HIDDEN_ID))
+        requests.emit(visible)
+        runCurrent()
+
+        assertEquals(listOf(visible), collected)
+    }
+
+    @Test
+    fun sendRequestFlow_beforeLevelLoaded_forwardsAfterUnlockIntoItsLevel() = runTest(dispatcher) {
+        val collected = collectRequestArrivingBeforeUnlock(unlockedAccountIds = setOf(VISIBLE_ID))
+
+        assertEquals(1, collected.size)
+    }
+
+    @Test
+    fun sendRequestFlow_beforeLevelLoaded_dropsWhenUnlockedLevelHidesIt() = runTest(dispatcher) {
+        val collected = collectRequestArrivingBeforeUnlock(unlockedAccountIds = setOf(HIDDEN_ID))
+
+        assertEquals(emptyList<SignTransaction>(), collected)
+    }
+
+    private suspend fun TestScope.collectRequestArrivingBeforeUnlock(
+        unlockedAccountIds: Set<String>,
+    ): List<SignTransaction> {
+        loadedAccounts = null
+        accountState.value = ActiveAccountState.NotLoaded
+        val requests = MutableSharedFlow<SignTransaction>()
+        every { kit.sendRequestFlow } returns requests
+        val manager = createManager()
+        val collected = mutableListOf<SignTransaction>()
+        backgroundScope.launch { manager.sendRequestFlow.toList(collected) }
+        manager.kit()
+        runCurrent()
+
+        requests.emit(signTransaction(VISIBLE_ID))
+        runCurrent()
+        assertEquals(emptyList<SignTransaction>(), collected)
+
+        loadedAccounts = VisibleAccounts(level = 0, accountIds = unlockedAccountIds)
+        accountState.value = ActiveAccountState.ActiveAccount(null)
+        runCurrent()
+        return collected
     }
 
     @Test
@@ -403,7 +487,11 @@ class TonConnectManagerTest {
         dispatcherProvider = TestDispatcherProvider(dispatcher, backgroundScope),
     )
 
-    private fun keyMismatch() = DatabaseKeyMismatchException("ton-connect", IllegalStateException("wrong key"))
+    private fun dApp(walletId: String) = mockk<DAppEntity> { every { this@mockk.walletId } returns walletId }
+
+    private fun signTransaction(walletId: String) = SignTransaction(mockk(), dApp(walletId))
+
+    private fun keyMismatch() =DatabaseKeyMismatchException("ton-connect", IllegalStateException("wrong key"))
 
     private class CapturingLogWriter : LogWriter() {
         val entries = mutableListOf<Pair<String, Throwable?>>()
