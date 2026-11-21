@@ -1,7 +1,5 @@
 package cash.p.terminal.trezor.di
 
-import android.content.Context
-import android.hardware.usb.UsbManager
 import cash.p.terminal.trezor.client.TrezorEthereumDefinitionsProviderImpl
 import cash.p.terminal.trezor.client.TrezorUsbPermissionRequester
 import cash.p.terminal.trezor.client.UsbTrezorClientProvider
@@ -17,7 +15,6 @@ import cash.p.terminal.trezorkit.client.TrezorEthereumDefinitionsProvider
 import cash.p.terminal.trezorkit.transport.TrezorUsbCoordinator
 import cash.p.terminal.trezorkit.transport.UsbPermissionRequester
 import cash.p.terminal.wallet.useCases.ScanToAddUseCase
-import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.qualifier.named
@@ -27,9 +24,6 @@ import org.koin.dsl.module
 val featureTrezorModule = module {
     singleOf(::TrezorHardwareWalletTokenPolicy)
 
-    single<UsbManager> {
-        androidContext().getSystemService(Context.USB_SERVICE) as UsbManager
-    }
     singleOf(::TrezorUsbPermissionRequester) bind UsbPermissionRequester::class
     single { TrezorUsbCoordinator(get(), get()) }
     singleOf(::TrezorEthereumDefinitionsProviderImpl) bind TrezorEthereumDefinitionsProvider::class

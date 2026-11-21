@@ -16,6 +16,7 @@ import cash.p.terminal.modules.multiswap.action.ISwapProviderAction
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.swap_reapprove_required
 import cash.p.terminal.strings.helpers.TranslatableString
+import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IReceiveAdapter
 import cash.p.terminal.wallet.NoActiveAccount
 import cash.p.terminal.wallet.SeedAccountType
@@ -93,7 +94,10 @@ object SwapHelper {
 
                 BlockchainType.Thorchain,
                 BlockchainType.Mayachain -> {
-                    if (account.type !is SeedAccountType) throw SwapError.NoDestinationAddress()
+                    val type = account.type
+                    if (type !is SeedAccountType && type !is AccountType.LedgerDevice) {
+                        throw SwapError.NoDestinationAddress()
+                    }
                     val thorchainKitManagers: ThorchainKitManagers by inject(ThorchainKitManagers::class.java)
                     thorchainKitManagers.forType(blockchainType).getAddress(account)
                 }

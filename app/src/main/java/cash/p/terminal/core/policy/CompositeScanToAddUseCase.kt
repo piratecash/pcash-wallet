@@ -11,6 +11,7 @@ internal class CompositeScanToAddUseCase(
     private val accountManager: IAccountManager,
     private val tangemScanToAdd: ScanToAddUseCase,
     private val trezorScanToAdd: ScanToAddUseCase,
+    private val ledgerScanToAdd: ScanToAddUseCase,
     private val addMoneroToTrezorAccount: AddMoneroToTrezorAccountUseCase,
 ) : ScanToAddUseCase {
 
@@ -36,6 +37,13 @@ internal class CompositeScanToAddUseCase(
                     true
                 }
                 publicKeysCreated && moneroCreated
+            }
+
+            is AccountType.LedgerDevice -> {
+                val keysCreated = ledgerScanToAdd.addTokensByScan(blockchainsToDerive, cardId, accountId)
+                // The Monero wallet is created from the device once its key is stored.
+                if (blockchainsToDerive.any { it.isMonero }) addMoneroToTrezorAccount.provision(account)
+                keysCreated
             }
 
             else -> tangemScanToAdd.addTokensByScan(

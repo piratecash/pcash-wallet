@@ -62,6 +62,7 @@ class SolanaKitManagerOfflineGateTest {
             walletManager = mockk(relaxed = true),
             backgroundManager = mockk<IBackgroundManager>(relaxed = true),
             hardwarePublicKeyStorage = mockk(relaxed = true),
+            deviceSigners = DeviceSignerFactory(mockk(relaxed = true), mockk(relaxed = true), mockk(relaxed = true)),
             platformContexts = mockk<KitPlatformContexts>(relaxed = true) { every { resolverFor(any()) } returns DatabaseNameResolver.Identity },
             backgroundKeepAliveManager = mockk(relaxed = true),
             networkErrorTracker = mockk(relaxed = true),

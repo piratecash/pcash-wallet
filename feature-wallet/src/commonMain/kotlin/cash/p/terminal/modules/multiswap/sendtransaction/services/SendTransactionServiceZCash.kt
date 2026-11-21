@@ -25,7 +25,6 @@ import cash.p.terminal.modules.send.SendModule
 import cash.p.terminal.modules.send.SendResult
 import cash.p.terminal.modules.send.zcash.SendZCashAddressService
 import cash.p.terminal.modules.send.zcash.ZcashSendFeeQuote
-import cash.p.terminal.modules.send.zcash.zcashInsufficientBalanceCaution
 import cash.p.terminal.modules.send.zcash.zcashPendingDraft
 import cash.p.terminal.modules.xrate.XRateService
 import cash.p.terminal.wallet.Token
@@ -129,8 +128,7 @@ class SendTransactionServiceZCash(
         cautions = listOfNotNull(
             addressState.addressError?.let { createCaution(it) },
             sendCaution,
-            zcashInsufficientBalanceCaution().toCautionViewItem()
-                .takeIf { feeQuote.quote.value.insufficientBalance },
+            feeQuote.quote.value.planCaution?.toCautionViewItem(),
         ),
         sendable = sendable,
         loading = loading || !feeQuote.quote.value.isCurrent,
@@ -173,7 +171,7 @@ class SendTransactionServiceZCash(
 
     private fun refreshSendability() {
         val quote = feeQuote.quote.value
-        sendable = amountState.canBeSend && addressState.canBeSend && quote.isCurrent && !quote.insufficientBalance
+        sendable = amountState.canBeSend && addressState.canBeSend && quote.isCurrent && quote.planCaution == null
         emitState()
     }
 
