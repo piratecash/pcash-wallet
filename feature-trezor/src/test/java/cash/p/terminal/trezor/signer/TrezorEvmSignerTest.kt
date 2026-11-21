@@ -369,13 +369,6 @@ class TrezorEvmSignerTest {
     }
 
     @Test
-    fun signLegacyHash_always_throwsNotSupported() {
-        assertThrows(TrezorSigningException::class.java) {
-            runBlocking { createSigner().signLegacyHash(ByteArray(32)) }
-        }
-    }
-
-    @Test
     fun signTypedDataMessage_safeModel_sendsConvertedTreeAndReturnsRsRecId() = runBlocking {
         val dataSlot = slot<TrezorTypedData>()
         coEvery { session.signEthereumTypedData(any(), capture(dataSlot)) } returns typedDataSignature(m1Signature)

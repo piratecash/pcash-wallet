@@ -30,7 +30,6 @@ import cash.p.terminal.modules.walletconnect.WCVerifyAlert
 private const val PERSONAL_SIGN_METHOD = "personal_sign"
 private const val TYPED_DATA_METHOD = "eth_signTypedData"
 private const val TYPED_DATA_METHOD_V4 = "eth_signTypedData_v4"
-private const val ETH_SIGN_METHOD = "eth_sign"
 private const val SEND_TRANSACTION_METHOD = "eth_sendTransaction"
 private const val SIGN_TRANSACTION_METHOD = "eth_signTransaction"
 
@@ -113,15 +112,6 @@ class WCRequestEvmViewModel(
                 extractMessageParamFromPersonalSign(sessionRequest.request.params)
             }
 
-            ETH_SIGN_METHOD -> {
-                val params = JsonParser.parseString(sessionRequest.request.params).asJsonArray
-                if (params.size() >= 2) {
-                    params.get(1).asString
-                } else {
-                    throw Exception("Invalid Data")
-                }
-            }
-
             TYPED_DATA_METHOD, TYPED_DATA_METHOD_V4, SEND_TRANSACTION_METHOD, SIGN_TRANSACTION_METHOD -> {
                 val params = JsonParser.parseString(sessionRequest.request.params).asJsonArray
                 params.firstOrNull { it.isJsonObject }?.asJsonObject?.toString()
@@ -184,15 +174,6 @@ class WCRequestEvmViewModel(
 
         val result = try {
             when (content.method) {
-                ETH_SIGN_METHOD -> {
-                    val message = content.param.hexStringToByteArray()
-                    if (message.size == 32) {
-                        EvmMessageSigning.signLegacyHash(signer, message)
-                    } else {
-                        EvmMessageSigning.signPersonalMessage(signer, message)
-                    }
-                }
-
                 PERSONAL_SIGN_METHOD -> {
                     EvmMessageSigning.signPersonalMessage(signer, personalSignBytes())
                 }
@@ -201,12 +182,12 @@ class WCRequestEvmViewModel(
                     EvmMessageSigning.signTypedData(signer, content.param)
                 }
 
-                else -> throw Exception("Unsupported Chain")
+                else -> throw UnsupportedOperationException("Unsupported method: ${content.method}")
             }
         } catch (e: Throwable) {
-            // Signing failed or is unsupported by the hardware wallet (e.g. eth_sign or typed data
-            // on Trezor, or the user cancelled on the device): respond with a JSON-RPC error so the
-            // dApp doesn't hang, and propagate the failure to the caller.
+            // Signing failed or is unsupported by the hardware wallet (e.g. typed data on Trezor,
+            // or the user cancelled on the device): respond with a JSON-RPC error so the dApp
+            // doesn't hang, and propagate the failure to the caller.
             return suspendCoroutine { continuation ->
                 WCDelegate.respondError(
                     content.topic,
