@@ -51,6 +51,7 @@ import cash.p.terminal.shared.desktop.vault.SqlCipherDriverFactory
 import cash.p.terminal.shared.desktop.vault.VaultLoginEvents
 import cash.p.terminal.vault.PasswordVault
 import cash.p.terminal.shared.main.DesktopHudMessenger
+import cash.p.terminal.shared.main.ScreenCaptureProtection
 import cash.p.terminal.shared.main.MainTabStorage
 import cash.p.terminal.shared.market.MarketCatalogSyncer
 import cash.p.terminal.shared.settings.SettingsPages
@@ -166,6 +167,7 @@ val desktopFeatureModule = module {
 
     singleOf(::DesktopMarketPages) bind MarketPages::class
     singleOf(::DesktopHudMessenger) bind HudMessenger::class
+    singleOf(::ScreenCaptureProtection)
     singleOf(::DesktopUrlOpener) bind UrlOpener::class
     singleOf(::MarketCatalogSyncer)
 }

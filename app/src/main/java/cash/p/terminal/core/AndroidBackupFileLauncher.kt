@@ -20,6 +20,7 @@ import io.horizontalsystems.core.IPinComponent
 import io.horizontalsystems.core.launchExternalActivity
 import org.jetbrains.compose.resources.stringResource
 import java.io.File
+import java.io.IOException
 
 class AndroidBackupFileLauncher(
     private val pinComponent: IPinComponent,
@@ -38,21 +39,12 @@ class AndroidBackupFileLauncher(
         val currentBytes by rememberUpdatedState(bytes)
         val contract = ActivityResultContracts.CreateDocument("application/octet-stream")
         val launcher = rememberLauncherForActivityResult(contract) { uri ->
-            if (uri == null) {
+            val backupData = currentBytes
+            if (uri == null || backupData == null) {
                 onCancel()
                 return@rememberLauncherForActivityResult
             }
-            context.contentResolver.openOutputStream(uri)?.use { outputStream ->
-                currentBytes?.let { backupData ->
-                    try {
-                        outputStream.write(backupData)
-                        outputStream.flush()
-                        onSave()
-                    } catch (e: Throwable) {
-                        onError(e)
-                    }
-                }
-            }
+            context.contentResolver.saveBackup(uri, backupData, onSave, onError)
         }
         return { fileName -> launchPicker(noFileManager) { launcher.launch(fileName) } }
     }
@@ -92,6 +84,24 @@ class AndroidBackupFileLauncher(
             onNoFileManager()
         }
     }
+}
+
+/** Reports success only after close(): a provider may still fail the write there. */
+internal fun ContentResolver.saveBackup(
+    uri: Uri,
+    bytes: ByteArray,
+    onSave: () -> Unit,
+    onError: (Throwable) -> Unit,
+) {
+    try {
+        // "w" may keep the tail of a longer existing file.
+        val stream = openOutputStream(uri, "wt") ?: throw IOException("Unable to open file")
+        stream.use { it.write(bytes) }
+    } catch (e: Throwable) {
+        onError(e)
+        return
+    }
+    onSave()
 }
 
 private fun Context.getFileName(uri: Uri): String? = when (uri.scheme) {

@@ -15,7 +15,10 @@ import cash.p.terminal.modules.send.register
 import cash.p.terminal.modules.xrate.XRateService
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.insufficient_balance_required_available
+import cash.p.terminal.resources.nft_trap_burn_body
+import cash.p.terminal.resources.nft_trap_burn_title
 import cash.p.terminal.strings.helpers.TranslatableString
+import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.Token
@@ -51,6 +54,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -91,7 +95,9 @@ class NftBurnViewModelTest {
     private val wallet = mockk<Wallet> {
         every { token } returns tonToken
         every { coin } returns tonToken.coin
+        every { account.id } returns ACCOUNT_ID
     }
+    private val locallyCreated = mockk<LocallyCreatedTransactionRepository>(relaxed = true)
     private val adapter = mockk<ISendTonAdapter> {
         every { balanceData } returns BalanceData(BigDecimal("1"))
         every { balanceState } returns AdapterState.Synced
@@ -137,7 +143,12 @@ class NftBurnViewModelTest {
         Dispatchers.setMain(dispatcher)
         mockkObject(HardwareWalletSupport)
         every { HardwareWalletSupport.isUserCancellation(any()) } answers { firstArg<Throwable>() === cancellation }
-        startKoin { modules(module { single { numberFormatter } }) }
+        startKoin {
+            modules(module {
+                single { numberFormatter }
+                single { locallyCreated }
+            })
+        }
     }
 
     @After
@@ -180,6 +191,25 @@ class NftBurnViewModelTest {
     }
 
     @Test
+    fun uiState_trapEstimate_trapCautionAndBurnStillAllowed() = runTest(dispatcher) {
+        coEvery { adapter.estimateNftTransferFee(any(), any(), any()) } returns
+            TonFeeEstimate(BigDecimal("0.01"), BigDecimal("0.05"), nftNotTransferred = true)
+        val viewModel = createViewModel()
+
+        val caution = viewModel.uiState.trapCaution
+        assertEquals(Res.string.nft_trap_burn_title, (caution?.s as TranslatableString.ResString).id)
+        assertEquals(Res.string.nft_trap_burn_body, (caution.description as TranslatableString.ResString).id)
+        assertTrue(viewModel.uiState.canBurn)
+    }
+
+    @Test
+    fun uiState_regularEstimate_noTrapCaution() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+
+        assertNull(viewModel.uiState.trapCaution)
+    }
+
+    @Test
     fun uiState_domainBalanceHidden_nameMasked() = runTest(dispatcher) {
         every { balanceHiddenManager.isWalletBalanceHidden(any()) } returns true
         val viewModel = createViewModel(domain = "piratecash.ton")
@@ -198,6 +228,27 @@ class NftBurnViewModelTest {
         assertEquals(NftOperationOutcome.Done(sent = 1), viewModel.uiState.outcome)
         coVerify(exactly = 1) { adapter.sendNftTransfer(any(), any(), any()) }
         coVerify(exactly = 1) { adapter.sendNftTransfer(NFT_ADDRESS, match(::isBurnAddress), null) }
+    }
+
+    @Test
+    fun onBurn_sent_marksTransferCreatedByWallet() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+
+        viewModel.onBurn()
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) { locallyCreated.markNftTransferCreated(ACCOUNT_ID, NFT_ADDRESS, TON_BURN_ADDRESS) }
+    }
+
+    @Test
+    fun onBurn_sendFails_notMarkedCreated() = runTest(dispatcher) {
+        coEvery { adapter.sendNftTransfer(any(), any(), any()) } throws IllegalStateException("boom")
+        val viewModel = createViewModel()
+
+        viewModel.onBurn()
+        advanceUntilIdle()
+
+        coVerify(exactly = 0) { locallyCreated.markNftTransferCreated(any(), any(), any()) }
     }
 
     @Test
@@ -262,5 +313,6 @@ class NftBurnViewModelTest {
 
     private companion object {
         const val NFT_ADDRESS = "nft-1"
+        const val ACCOUNT_ID = "account"
     }
 }

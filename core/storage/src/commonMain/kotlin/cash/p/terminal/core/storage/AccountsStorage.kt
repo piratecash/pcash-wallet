@@ -5,6 +5,7 @@ import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountsStorage
+import cash.p.terminal.wallet.normalizedAccountName
 import cash.p.terminal.wallet.entities.AccountRecord
 import cash.p.terminal.wallet.entities.SecretList
 import cash.p.terminal.wallet.entities.SecretString
@@ -126,7 +127,8 @@ class AccountsStorage(private val router: StorageRouter) : IAccountsStorage {
             }
             Account(
                 id = record.id,
-                name = record.name,
+                // Older versions saved names with line breaks; show them compact without a migration.
+                name = record.name.normalizedAccountName(),
                 type = accountType!!,
                 origin = AccountOrigin.valueOf(record.origin),
                 level = record.level,

@@ -1,5 +1,6 @@
 package cash.p.terminal.modules.nft.ui
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -30,8 +32,10 @@ import cash.p.terminal.entities.NftItemRecord
 import cash.p.terminal.entities.NftTrust
 import cash.p.terminal.modules.transactions.supportsBlur
 import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_eye_off
 import cash.p.terminal.resources.ic_fire_24
 import cash.p.terminal.resources.ic_nft_sale_14
+import cash.p.terminal.resources.nft_artwork_hidden_title
 import cash.p.terminal.resources.nft_artwork_placeholder
 import cash.p.terminal.resources.nft_domain_on_sale_badge
 import cash.p.terminal.resources.nft_unnamed
@@ -39,12 +43,18 @@ import cash.p.terminal.resources.nft_unnamed_collection
 import cash.p.terminal.resources.nft_unverified
 import cash.p.terminal.ui_compose.components.HsImage
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import coil3.compose.LocalPlatformContext
+import coil3.compose.rememberAsyncImagePainter
+import coil3.request.ImageRequest
+import coil3.size.Precision
 import io.horizontalsystems.core.entities.BlockchainType
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 internal const val HIDDEN_NAME = "****"
 internal const val HIDDEN_COLLECTION = "***"
+private const val UNTRUSTED_ARTWORK_SIDE_PX = 8
+private val ARTWORK_BLUR = 14.dp
 
 @Composable
 fun NftCard(
@@ -66,7 +76,8 @@ fun NftCard(
                 .aspectRatio(1f)
                 .background(ComposeAppTheme.colors.surfacePlaceholder)
         ) {
-            NftArtwork(url = item.imageUrl, hidden = hidden)
+            NftArtwork(url = item.imageUrl, hidden = hidden, untrusted = item.isUntrusted)
+            if (item.isUntrusted) UntrustedArtworkMark(Modifier.align(Alignment.Center))
             if (item.inSale) NftSaleBadge(Modifier.align(Alignment.TopEnd).padding(8.dp))
             if (expiringSoon) {
                 Icon(
@@ -112,14 +123,22 @@ internal fun NftSaleBadge(modifier: Modifier = Modifier) {
 internal fun NftItemRecord.displayName(hidden: Boolean): String =
     if (hidden) HIDDEN_NAME else name.takeUnless { it.isNullOrBlank() } ?: stringResource(Res.string.nft_unnamed)
 
+internal val NftItemRecord.isUntrusted: Boolean
+    get() = trust != NftTrust.Whitelist
+
 /** Dimming leaves the artwork recognizable, so without blur support the image is not loaded at all. */
 @Composable
 internal fun NftArtwork(
     url: String?,
     hidden: Boolean,
+    untrusted: Boolean,
     modifier: Modifier = Modifier,
     alternativeUrl: String? = null,
 ) {
+    if (untrusted) {
+        UntrustedArtwork(url = alternativeUrl ?: url, modifier = modifier)
+        return
+    }
     val concealed = hidden && !supportsBlur
     HsImage(
         url = url.takeUnless { concealed },
@@ -127,10 +146,48 @@ internal fun NftArtwork(
         placeholder = Res.drawable.nft_artwork_placeholder,
         modifier = modifier
             .fillMaxSize()
-            .then(if (hidden && supportsBlur) Modifier.blur(14.dp) else Modifier),
+            .then(if (hidden && supportsBlur) Modifier.blur(ARTWORK_BLUR) else Modifier),
         contentScale = ContentScale.Crop,
         showAlternativeWhileLoading = true,
     )
+}
+
+/** Downscaling first leaves only a color blob at any size, also where `Modifier.blur` is a no-op. */
+@Composable
+private fun UntrustedArtwork(url: String?, modifier: Modifier = Modifier) {
+    val context = LocalPlatformContext.current
+    val request = remember(url) {
+        ImageRequest.Builder(context)
+            .data(url)
+            .size(UNTRUSTED_ARTWORK_SIDE_PX)
+            .precision(Precision.EXACT)
+            .decodeAsStill()
+            .build()
+    }
+    val placeholder = painterResource(Res.drawable.nft_artwork_placeholder)
+    Image(
+        painter = rememberAsyncImagePainter(model = request, placeholder = placeholder, error = placeholder),
+        contentDescription = null,
+        modifier = modifier
+            .fillMaxSize()
+            .then(if (supportsBlur) Modifier.blur(ARTWORK_BLUR) else Modifier),
+        contentScale = ContentScale.Crop,
+    )
+}
+
+@Composable
+private fun UntrustedArtworkMark(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier.size(32.dp).background(ComposeAppTheme.colors.backgroundOverlay, CircleShape),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            painter = painterResource(Res.drawable.ic_eye_off),
+            contentDescription = stringResource(Res.string.nft_artwork_hidden_title),
+            tint = ComposeAppTheme.colors.contentOnColor,
+            modifier = Modifier.size(20.dp),
+        )
+    }
 }
 
 @Composable

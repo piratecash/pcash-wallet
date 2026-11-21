@@ -510,8 +510,16 @@
     <string name="FeeInfo_TronFee_Description">The estimated cost of sending given transaction on the network. (Without excluding Energy, Bandwidth and Activating Fee)</string>
     <string name="FeeInfo_TronActivationFee_Title">Activation Fee</string>
     <string name="FeeInfo_TronActivationFee_Description">This address is not active. Transferring TRX or TRC-10 tokens to an inactive account address will activate the account.</string>
-    <string name="FeeInfo_TronResourcesConsumed_Title">Resources Consumed</string>
     <string name="FeeInfo_TronResourcesConsumed_Description">Bandwidth is the unit that measures the size of the transaction bytes stored in the blockchain database. The larger the transaction, the more bandwidth resources will be consumed.\n\nEnergy is the unit that measures the amount of computation required by the TRON virtual machine to perform specific operations on the TRON network.\n\nSince smart contract transactions require computing resources to execute, each smart contract transaction requires to pay for the energy fee.</string>
+    <string name="tron_resources_title">منابع TRON</string>
+    <string name="tron_resource_free_bandwidth">Bandwidth رایگان</string>
+    <string name="tron_resource_staked_bandwidth">Bandwidth از استیکینگ</string>
+    <string name="tron_resource_available_of">%1$s از %2$s</string>
+    <string name="tron_fee_covered_free">از سهمیه رایگان</string>
+    <string name="tron_fee_covered_staked">از استیکینگ</string>
+    <string name="tron_fee_energy_own">%1$s از خودتان</string>
+    <string name="tron_fee_energy_contract">%1$s از قرارداد</string>
+    <string name="tron_activation_caution">آدرس گیرنده هنوز در شبکه TRON فعال نشده است. شبکه برای فعال‌سازی آن %1$s دریافت می‌کند.</string>
 
     <!--Network Fee Warning-->
     <string name="network_fee_warning_title">کارمزد شبکه %1$s</string>
@@ -581,6 +589,13 @@
     <string name="WalletConnect_Error_RequestNotFoundError">خطا: درخواست پیدا نشد</string>
     <string name="WalletConnect_NoConnection">هیچ dApp متصلی ندارید</string>
     <string name="WalletConnect_PendingRequests">درخواست‌های در انتظار</string>
+    <string name="wallet_connect_verify_scam_title">کلاهبرداری شناخته‌شده</string>
+    <string name="wallet_connect_verify_scam">این سایت در فهرست دامنه‌های مخرب شناخته‌شده است. اتصال به آن به احتمال زیاد باعث از دست رفتن دارایی شما می‌شود.</string>
+    <string name="wallet_connect_verify_mismatch_title">جعل سایت</string>
+    <string name="wallet_connect_verify_mismatch">این درخواست از %1$s آمده است که با سایتی که ادعا می‌کند مطابقت ندارد. این یک روش رایج فیشینگ است.</string>
+    <string name="wallet_connect_verify_mismatch_no_origin">این درخواست از سایتی غیر از سایتی که ادعا می‌کند آمده است. این یک روش رایج فیشینگ است.</string>
+    <string name="wallet_connect_verify_unknown_title">سایت تأیید نشده</string>
+    <string name="wallet_connect_verify_unknown">WalletConnect نتوانست این سایت را تأیید کند. پیش از اتصال، نشانی را با دقت بررسی کنید.</string>
     <string name="WalletConnect_ActiveWallet">کیف پول فعال</string>
     <string name="connect">اتصال</string>
     <string name="connect_trezor_to_add_message">برای افزودن توکن‌ها باید Trezor را متصل کنید</string>
@@ -1915,7 +1930,7 @@
     <string name="PinSet_ErrorPinsDontMatch">کد عبور مطابقت نداشت. دوباره امتحان کنید.</string>
     <string name="PinSet_ErrorFailedToSavePin">هنگام ذخیره کد عبور شما خطایی روی داد. لطفا دوباره تلاش کنید.</string>
     <string name="PinSet_ForBiometrics">Set a passcode to enable Biometrics</string>
-    <string name="PinSet_ForDuress">Set a passcode to enable Duress Mode</string>
+    <string name="PinSet_ForDuress">ابتدا یک کد عبور برای کیف پول خود تنظیم کنید. این کد برای فعال‌سازی حالت Duress لازم است</string>
     <string name="pin_set_for_login_logging">رمز عبور برای فعال کردن ثبت ورود تعیین کنید</string>
     <string name="pin_set_for_login_logging_passcode">رمز عبور برای محافظت از ثبت ورود تعیین کنید</string>
     <string name="confirm_pin_to_disable_login_logging_passcode">رمز عبور را برای غیرفعال کردن ثبت ورود وارد کنید</string>
@@ -2479,6 +2494,10 @@
     <string name="nft_copy_address">کپی آدرس NFT</string>
     <string name="nft_burn_action">سوزاندن NFT</string>
     <string name="nft_unverified_nft">NFT تأییدنشده</string>
+    <string name="nft_artwork_hidden_title">تصویر پنهان شده است</string>
+    <string name="nft_artwork_hidden_reason">NFT توسط TonAPI تأیید نشده است</string>
+    <string name="nft_artwork_hidden_spam">NFT به‌عنوان اسپم علامت‌گذاری شده است</string>
+    <string name="nft_artwork_hidden_tap">برای نمایش ضربه بزنید</string>
     <string name="nft_report_spam">گزارش اسپم</string>
     <string name="nft_report_title">گزارش به‌عنوان اسپم؟</string>
     <string name="nft_report_body">مجموعه «%1$s» پنهان می‌شود و به بخش «اسپم» در مدیریت مجموعه‌ها می‌رود. می‌توانید آن را همان‌جا با دکمه «اسپم نیست» بازگردانید.</string>
@@ -2537,6 +2556,21 @@
     <string name="nft_burn_domain_body">دامنه به آدرس سوزاندن ارسال می‌شود و آن را از دست می‌دهید. انتقال‌ها به %1$s دیگر به کیف پول شما نمی‌رسند. این کار قابل بازگشت نیست.</string>
     <string name="nft_burn_address">آدرس سوزاندن</string>
     <string name="nft_burn_confirm">سوزاندن</string>
+    <string name="nft_trap_transfer_title">انتقال NFT انجام نمی‌شود</string>
+    <string name="nft_trap_transfer_body">تراکنش را پیش از ارسال بررسی کردیم. قرارداد این NFT آن را به گیرنده منتقل نمی‌کند و %1$s پیوست‌شده را برای خود نگه می‌دارد. NFTهای اسپم این‌گونه کار می‌کنند.</string>
+    <string name="nft_trap_sheet_title">NFT منتقل نخواهد شد</string>
+    <string name="nft_trap_sheet_body">تراکنش را پیش از ارسال بررسی کردیم. قرارداد NFT %1$s آن را به گیرنده منتقل نمی‌کند و %2$s پیوست‌شده را برای خود نگه می‌دارد.</string>
+    <string name="nft_trap_outcome_header">با ارسال چه اتفاقی می‌افتد</string>
+    <string name="nft_trap_row_recipient">گیرنده</string>
+    <string name="nft_trap_row_recipient_value">چیزی دریافت نمی‌کند</string>
+    <string name="nft_trap_row_nft">NFT %1$s</string>
+    <string name="nft_trap_row_nft_value">در کیف پول می‌ماند</string>
+    <string name="nft_trap_row_loss">زیان</string>
+    <string name="nft_trap_dont_send">ارسال نکن</string>
+    <string name="nft_trap_send_anyway">در هر صورت ارسال شود</string>
+    <string name="nft_trap_burn_title">سوزاندن ممکن نیست</string>
+    <string name="nft_trap_burn_body">تراکنش را پیش از ارسال بررسی کردیم. قرارداد این NFT آن را نمی‌سوزاند و %1$s پیوست‌شده را برای خود نگه می‌دارد. برای حذف NFT از فهرست، آن را پنهان کنید.</string>
+    <string name="nft_trap_burn_anyway">در هر صورت بسوزان</string>
     <string name="nft_burn_sent">NFT برای سوزاندن ارسال شد</string>
     <string name="nft_domain_burn_sent">دامنه برای سوزاندن ارسال شد</string>
     <plurals name="nft_domains_expiring_banner">
@@ -2608,4 +2642,39 @@
         <item>می‌دانم که این گذرواژه برای حذف فوری دفترچه آدرس رمزارز استفاده می‌شود.</item>
         <item>می‌دانم که پس از وارد کردن این گذرواژه، دفترچه آدرس حذف می‌شود و بدون نسخه پشتیبان قابل بازیابی نیست.</item>
     </string-array>
+
+    <!-- WalletConnect Stellar -->
+    <string name="wallet_connect_stellar_op_payment">پرداخت</string>
+    <string name="wallet_connect_stellar_op_account_merge">ادغام حساب (کل موجودی را ارسال می‌کند)</string>
+    <string name="wallet_connect_stellar_op_path_payment">پرداخت با تبدیل</string>
+    <string name="wallet_connect_stellar_op_sell_offer">پیشنهاد فروش</string>
+    <string name="wallet_connect_stellar_op_buy_offer">پیشنهاد خرید</string>
+    <string name="wallet_connect_stellar_op_set_options">تغییر تنظیمات حساب</string>
+    <string name="wallet_connect_stellar_amount">مقدار</string>
+    <string name="wallet_connect_stellar_max_sent">حداکثر ارسال</string>
+    <string name="wallet_connect_stellar_min_received">حداقل دریافت</string>
+    <string name="wallet_connect_stellar_received">دریافتی</string>
+    <string name="wallet_connect_stellar_asset">دارایی</string>
+    <string name="wallet_connect_stellar_asset_issuer">صادرکننده دارایی</string>
+    <string name="wallet_connect_stellar_trust_limit">سقف اعتماد</string>
+    <string name="wallet_connect_stellar_selling">فروش</string>
+    <string name="wallet_connect_stellar_buying">خرید</string>
+    <string name="wallet_connect_stellar_source_account">حساب مبدأ</string>
+    <string name="wallet_connect_stellar_signer">امضاکننده</string>
+    <string name="wallet_connect_stellar_signer_weight">وزن امضاکننده</string>
+    <string name="wallet_connect_stellar_master_key_weight">وزن کلید اصلی</string>
+    <string name="wallet_connect_stellar_low_threshold">آستانه پایین</string>
+    <string name="wallet_connect_stellar_medium_threshold">آستانه متوسط</string>
+    <string name="wallet_connect_stellar_high_threshold">آستانه بالا</string>
+    <string name="wallet_connect_stellar_set_flags">تنظیم پرچم‌ها</string>
+    <string name="wallet_connect_stellar_clear_flags">پاک کردن پرچم‌ها</string>
+    <string name="wallet_connect_stellar_home_domain">دامنه اصلی</string>
+    <string name="wallet_connect_stellar_inflation_destination">مقصد تورم</string>
+    <string name="wallet_connect_stellar_set_options_title">تغییر کنترل حساب</string>
+    <string name="wallet_connect_stellar_set_options">این درخواست امضاکنندگان، آستانه‌ها یا پرچم‌های حساب شما را تغییر می‌دهد. با تأیید آن ممکن است کنترل حساب به شخص دیگری برسد. فقط در صورتی ادامه دهید که کاملاً به این برنامه اعتماد دارید.</string>
+    <string name="wallet_connect_stellar_account_merge_title">بستن حساب</string>
+    <string name="wallet_connect_stellar_account_merge">این درخواست حساب Stellar شما را می‌بندد و کل موجودی آن را به آدرس دیگری می‌فرستد. فقط در صورتی ادامه دهید که کاملاً به این برنامه اعتماد دارید.</string>
+    <string name="wallet_connect_stellar_unreadable_operation_title">عملیات ناخوانا</string>
+    <string name="wallet_connect_stellar_unreadable_operation">این درخواست شامل عملیاتی (%1$s) است که کیف پول نمی‌تواند اثر آن را نشان دهد. فقط در صورتی ادامه دهید که کاملاً به این برنامه اعتماد دارید.</string>
+    <string name="wallet_connect_stellar_foreign_source">این تراکنش مربوط به حسابی غیر از کیف پول فعال شماست.</string>
 </resources>

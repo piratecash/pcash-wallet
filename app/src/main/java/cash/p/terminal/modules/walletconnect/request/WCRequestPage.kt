@@ -51,6 +51,7 @@ import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.logger.AppLogger
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
+import cash.p.terminal.modules.walletconnect.WCVerifyAlertCard
 
 class WCRequestPage : HSPage() {
     private val logger = AppLogger("wallet-connect request")
@@ -113,7 +114,8 @@ class WCRequestPage : HSPage() {
                         logger,
                         blockchainType,
                         transaction,
-                        sessionRequestUI.peerUI.peerName
+                        sessionRequestUI.peerUI.peerName,
+                        sessionRequestUI.verifyAlert,
                     )
                 } else if (sessionRequestUI.method == "eth_signTransaction") {
                     val blockchainType = wcRequestEvmViewModel.blockchainType ?: return
@@ -135,7 +137,8 @@ class WCRequestPage : HSPage() {
                         blockchainType,
                         transaction,
                         sessionRequestUI.peerUI.peerName,
-                        evmKitWrapper
+                        evmKitWrapper,
+                        sessionRequestUI.verifyAlert,
                     )
                 } else {
                     WCNewSignRequestScreen(
@@ -229,6 +232,8 @@ fun WCNewSignRequestScreen(
                 .fillMaxWidth()
         ) {
             VSpacer(12.dp)
+
+            WCVerifyAlertCard(sessionRequestUI.verifyAlert, Modifier.padding(horizontal = 16.dp))
 
             MessageContent(
                 sessionRequestUI.param,

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModelStore
 import cash.p.terminal.core.ISendTonAdapter
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
+import cash.p.terminal.core.managers.tonRawAddressOrNull
 import cash.p.terminal.core.managers.PoisonAddressManager
 import cash.p.terminal.core.managers.RecentAddressManager
 import cash.p.terminal.core.storage.PoisonAddressDao
@@ -25,6 +26,8 @@ import cash.p.terminal.modules.send.ton.TonFeeQuote
 import cash.p.terminal.modules.xrate.XRateService
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.insufficient_balance_required_available
+import cash.p.terminal.resources.nft_trap_transfer_body
+import cash.p.terminal.resources.nft_trap_transfer_title
 import cash.p.terminal.resources.not_enough_ton_for_fee
 import cash.p.terminal.resources.swap_insufficient_fee_balance
 import cash.p.terminal.strings.helpers.TranslatableString
@@ -86,6 +89,7 @@ class NftTransferViewModelTest {
     }
     private val poisonAddressManager = mockk<PoisonAddressManager>(relaxed = true)
     private val recentAddressManager = mockk<RecentAddressManager>(relaxed = true)
+    private val locallyCreated = mockk<LocallyCreatedTransactionRepository>(relaxed = true)
     private val offlineGate = mockk<OfflineOperationGate>(relaxed = true) {
         every { isBlocked(any()) } returns false
     }
@@ -116,7 +120,7 @@ class NftTransferViewModelTest {
                 single { mockk<MarketKitWrapper>(relaxed = true) }
                 single<IBalanceHiddenManager> { balanceHiddenManager }
                 single { poisonAddressManager }
-                single { mockk<LocallyCreatedTransactionRepository>(relaxed = true) }
+                single { locallyCreated }
                 single { mockConnectivityManager() }
                 single { offlineGate }
                 single<UptimeProvider> { mockk(relaxed = true) }
@@ -287,6 +291,33 @@ class NftTransferViewModelTest {
         coVerify { adapter.sendNftTransfer(item.address, match { it === tonAddress }, "hello") }
         verify { poisonAddressManager.saveKnownAddress(recipient.hex, any(), any()) }
         verify { recentAddressManager.setRecentAddress(recipient, BlockchainType.Ton) }
+    }
+
+    @Test
+    fun onClickSend_success_marksTransferCreatedByWallet() = runTest(dispatcher) {
+        val viewModel = readyViewModel()
+
+        viewModel.onClickSendWithWarningCheck()
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) {
+            locallyCreated.markNftTransferCreated(
+                wallet.account.id,
+                item.address,
+                match { tonRawAddressOrNull(it) == knownRaw },
+            )
+        }
+    }
+
+    @Test
+    fun onClickSend_failure_notMarkedCreated() = runTest(dispatcher) {
+        coEvery { adapter.sendNftTransfer(any(), any(), any()) } throws IllegalStateException("boom")
+        val viewModel = readyViewModel()
+
+        viewModel.onClickSendWithWarningCheck()
+        advanceUntilIdle()
+
+        coVerify(exactly = 0) { locallyCreated.markNftTransferCreated(any(), any(), any()) }
     }
 
     @Test
@@ -537,6 +568,27 @@ class NftTransferViewModelTest {
         assertEquals(recipient.hex, data?.address?.hex)
     }
 
+    @Test
+    fun confirmationData_trapQuote_carriesTrapCautionAndKeepsSendAllowed() = runTest(dispatcher) {
+        val viewModel = readyViewModel()
+        publishQuote(nftNotTransferred = true)
+        advanceUntilIdle()
+
+        val caution = viewModel.confirmationData()?.trapCaution
+
+        assertEquals(Res.string.nft_trap_transfer_title, (caution?.s as TranslatableString.ResString).id)
+        assertEquals(Res.string.nft_trap_transfer_body, (caution.description as TranslatableString.ResString).id)
+        assertTrue(viewModel.canContinue)
+    }
+
+    @Test
+    fun confirmationData_regularQuote_noTrapCaution() = runTest(dispatcher) {
+        val viewModel = readyViewModel()
+
+        assertNull(viewModel.confirmationData()?.trapCaution)
+        assertNotNull(viewModel.confirmationData())
+    }
+
     private fun TestScope.readyViewModel(
         entered: Address = recipient,
         quoted: FriendlyAddress = tonAddress,
@@ -591,11 +643,15 @@ class NftTransferViewModelTest {
         assertTrue(viewModel.canContinue)
     }
 
-    private fun publishQuote(memo: String? = null, address: FriendlyAddress = tonAddress) {
+    private fun publishQuote(
+        memo: String? = null,
+        address: FriendlyAddress = tonAddress,
+        nftNotTransferred: Boolean = false,
+    ) {
         feeFlow.value = SendTonFeeService.State(
             feeStatus = FeeStatus.Success(BigDecimal("0.01"), BigDecimal("0.06")),
             inProgress = false,
-            quote = TonFeeQuote(BigDecimal("0.01"), NFT_TRANSFER_ATTACHED, address, memo),
+            quote = TonFeeQuote(BigDecimal("0.01"), NFT_TRANSFER_ATTACHED, address, memo, nftNotTransferred),
         )
     }
 

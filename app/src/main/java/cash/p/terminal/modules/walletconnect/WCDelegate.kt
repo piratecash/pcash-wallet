@@ -105,10 +105,14 @@ object WCDelegate : WalletKit.WalletDelegate, CoreClient.CoreDelegate {
         verifyContext: Wallet.Model.VerifyContext
     ) {
         Timber.d("WCDelegate onSessionRequest: $sessionRequest")
-        sessionRequestEvent = null
 
+        // Don't reset the presented request: the SDK re-delivers the oldest pending one after every response.
+        val requestHandler = getKoinInstance<WCWalletRequestHandler>()
+        // The SDK-delivered request may belong to a non-active account or differ from the queue pick.
+        val rejected = requestHandler.rejectIfUnsupported(sessionRequest)
         val newSessionRequest = App.wcSessionManager.getNewSessionRequest() ?: return
-        if (getKoinInstance<WCWalletRequestHandler>().handle(newSessionRequest)) return
+        if (rejected && newSessionRequest.isSameRequest(sessionRequest)) return
+        if (requestHandler.handle(newSessionRequest)) return
 
         sessionRequestEvent = newSessionRequest
 
@@ -164,6 +168,10 @@ object WCDelegate : WalletKit.WalletDelegate, CoreClient.CoreDelegate {
 //                deletePairing(it.topic)
 //            }
 //    }
+
+    fun notifyPendingRequestsChanged() {
+        scope.launch { _pendingRequestEvents.emit(Unit) }
+    }
 
     fun getActiveSessions(): List<Wallet.Model.Session> {
         return WalletKit.getListOfActiveSessions()
@@ -274,3 +282,7 @@ object WCDelegate : WalletKit.WalletDelegate, CoreClient.CoreDelegate {
     }
 
 }
+
+// JSON-RPC ids are only unique per peer.
+private fun Wallet.Model.SessionRequest.isSameRequest(other: Wallet.Model.SessionRequest) =
+    topic == other.topic && request.id == other.request.id

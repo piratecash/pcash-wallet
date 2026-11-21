@@ -7,6 +7,7 @@ import cash.p.terminal.core.managers.EvmMessageSigning
 import cash.p.terminal.modules.walletconnect.WCDelegate
 import cash.p.terminal.modules.walletconnect.WCManager
 import cash.p.terminal.modules.walletconnect.WCSessionManager
+import cash.p.terminal.modules.walletconnect.WCVerifyAlert
 import cash.p.terminal.trezor.domain.TrezorSigningException
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.IAccountManager
@@ -61,13 +62,16 @@ class WCRequestEvmViewModelTest {
         WCDelegate.sessionRequestEvent = null
     }
 
-    private fun buildSessionRequest(params: String) = Wallet.Model.SessionRequest(
+    private fun buildSessionRequest(
+        params: String,
+        method: String = "personal_sign",
+    ) = Wallet.Model.SessionRequest(
         topic = "topic",
         chainId = "eip155:1",
         peerMetaData = null,
         request = Wallet.Model.SessionRequest.JSONRPCRequest(
             id = 1L,
-            method = "personal_sign",
+            method = method,
             params = params,
         ),
     )
@@ -91,9 +95,12 @@ class WCRequestEvmViewModelTest {
      * [WCRequestEvmViewModel]'s evmKitWrapper/signer chain, wired via mocks. Requires
      * `mockkObject(WCDelegate)` to already be in effect (this stubs `sessionRequestEvent`).
      */
-    private fun viewModelReadyToSign(signerMock: Signer): WCRequestEvmViewModel {
-        every { WCDelegate.sessionRequestEvent } returns
-            buildSessionRequest("""["0x68656c6c6f", "0xAddress"]""")
+    private fun viewModelReadyToSign(
+        signerMock: Signer,
+        params: String = """["0x68656c6c6f", "0xAddress"]""",
+        method: String = "personal_sign",
+    ): WCRequestEvmViewModel {
+        every { WCDelegate.sessionRequestEvent } returns buildSessionRequest(params, method)
 
         val account: Account = mockk(relaxed = true)
         val accountManager: IAccountManager = mockk(relaxed = true)
@@ -111,12 +118,14 @@ class WCRequestEvmViewModelTest {
     private fun viewModelWithKitManager(
         accountManager: IAccountManager,
         evmKitManager: EvmKitManager,
+        verifyAlert: WCVerifyAlert? = null,
     ): WCRequestEvmViewModel {
         val evmBlockchainManager: EvmBlockchainManager = mockk(relaxed = true)
         every { evmBlockchainManager.getEvmKitManager(any()) } returns evmKitManager
 
         val wcManager: WCManager = mockk(relaxed = true)
         every { wcManager.getBlockchainType(any()) } returns BlockchainType.Ethereum
+        coEvery { wcManager.getRequestVerifyAlert(any()) } returns verifyAlert
 
         return WCRequestEvmViewModel(
             accountManager = accountManager,
@@ -127,6 +136,10 @@ class WCRequestEvmViewModelTest {
 
     private fun failingKitManager(error: Throwable): EvmKitManager = mockk(relaxed = true) {
         coEvery { getEvmKitWrapper(any(), any()) } throws error
+    }
+
+    private fun readyKitManager(): EvmKitManager = mockk(relaxed = true) {
+        coEvery { getEvmKitWrapper(any(), any()) } returns mockk(relaxed = true)
     }
 
     private fun suspendedKitManager(kit: CompletableDeferred<EvmKitWrapper>): EvmKitManager =
@@ -227,6 +240,25 @@ class WCRequestEvmViewModelTest {
     }
 
     @Test(timeout = TEST_TIMEOUT_MS)
+    fun init_verifyAlertResolved_contentCarriesAlert() {
+        WCDelegate.sessionRequestEvent = buildSessionRequest("""["0x68656c6c6f", "0xAddress"]""")
+        val alert = WCVerifyAlert.Impersonation("https://evil.example")
+        val viewModel = viewModelWithKitManager(accountManagerWithActiveAccount(), readyKitManager(), alert)
+
+        assertEquals(alert, (viewModel.sessionRequestUi as SessionRequestUI.Content).verifyAlert)
+    }
+
+    @Test(timeout = TEST_TIMEOUT_MS)
+    fun init_noVerifyAlert_contentPendingWithoutAlert() {
+        WCDelegate.sessionRequestEvent = buildSessionRequest("""["0x68656c6c6f", "0xAddress"]""")
+        val viewModel = viewModelWithKitManager(accountManagerWithActiveAccount(), readyKitManager())
+
+        val content = viewModel.sessionRequestUi as SessionRequestUI.Content
+        assertEquals(null, content.verifyAlert)
+        assertEquals(RequestStatus.Pending, content.status)
+    }
+
+    @Test(timeout = TEST_TIMEOUT_MS)
     fun allow_beforeKitResolved_throwsNoSuitableEvmKitWithoutSigning() {
         mockkObject(WCDelegate)
         mockkObject(EvmMessageSigning)
@@ -297,6 +329,32 @@ class WCRequestEvmViewModelTest {
         assertEquals(signingError, thrown)
         verify { WCDelegate.respondError(any(), any(), any(), any(), any()) }
         verify(exactly = 0) { WCDelegate.respondPendingRequest(any(), any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun allow_ethSignRequest_respondsErrorWithoutSigning() {
+        mockkObject(WCDelegate)
+        mockkObject(EvmMessageSigning)
+        every {
+            WCDelegate.respondError(any(), any(), any(), captureLambda(), any())
+        } answers {
+            lambda<() -> Unit>().captured.invoke()
+        }
+        val hash = "0x" + "ab".repeat(32)
+        val viewModel = viewModelReadyToSign(
+            signerMock = mockk(relaxed = true),
+            params = """["0xAddress", "$hash"]""",
+            method = "eth_sign",
+        )
+
+        assertThrows(Exception::class.java) {
+            runBlocking { viewModel.allow() }
+        }
+
+        verify { WCDelegate.respondError("topic", 1L, any(), any(), any()) }
+        verify(exactly = 0) { WCDelegate.respondPendingRequest(any(), any(), any(), any(), any()) }
+        coVerify(exactly = 0) { EvmMessageSigning.signPersonalMessage(any(), any()) }
+        coVerify(exactly = 0) { EvmMessageSigning.signTypedData(any(), any(), any()) }
     }
 
     @Test

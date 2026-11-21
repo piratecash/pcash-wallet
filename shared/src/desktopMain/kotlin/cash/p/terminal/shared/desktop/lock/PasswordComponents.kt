@@ -70,6 +70,7 @@ import cash.p.terminal.resources.desktop_unlock_failed
 import cash.p.terminal.resources.desktop_unlock_wrong_password
 import cash.p.terminal.shared.desktop.vault.UnlockOutcome
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
+import cash.p.terminal.ui.compose.secureKeyboardEntry
 
 /** The lock screens cover the whole window: an opaque sheet with one centered column on it. */
 @Composable
@@ -115,6 +116,7 @@ internal fun DesktopPasswordField(
     Column(modifier) {
         Box(
             Modifier
+                .secureKeyboardEntry()
                 .focusGroup()
                 .let { if (focusRequester == null) it else it.focusRequester(focusRequester) }
                 .onPreviewKeyEvent { event ->

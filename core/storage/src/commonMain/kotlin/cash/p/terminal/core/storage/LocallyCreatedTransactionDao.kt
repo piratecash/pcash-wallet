@@ -27,6 +27,21 @@ interface LocallyCreatedTransactionDao {
         transactionHash: String,
     ): Boolean
 
+    @Query(
+        """
+        SELECT transactionHash FROM LocallyCreatedTransaction
+        WHERE accountId = :accountId
+          AND blockchainTypeUid = :blockchainTypeUid
+          AND createdAt BETWEEN :fromMs AND :toMs
+        """
+    )
+    suspend fun getHashesCreatedBetween(
+        accountId: String,
+        blockchainTypeUid: String,
+        fromMs: Long,
+        toMs: Long,
+    ): List<String>
+
     @Query("SELECT DISTINCT accountId FROM LocallyCreatedTransaction")
     suspend fun getAccountIds(): List<String>
 

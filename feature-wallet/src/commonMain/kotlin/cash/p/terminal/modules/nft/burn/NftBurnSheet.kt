@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.tooling.preview.Preview
+import cash.p.terminal.core.HSCaution
 import cash.p.terminal.core.nft.NftCollectionsRepository
 import cash.p.terminal.core.nft.NftOwner
 import cash.p.terminal.core.nft.owner
@@ -11,6 +12,7 @@ import cash.p.terminal.entities.NftItemRecord
 import cash.p.terminal.feature.wallet.rememberTransferAction
 import cash.p.terminal.modules.nft.operation.NftConfirmSheetContent
 import cash.p.terminal.modules.nft.operation.NftConfirmStyle
+import cash.p.terminal.modules.nft.operation.NftInfoRow
 import cash.p.terminal.modules.nft.operation.NftOperationOutcome
 import cash.p.terminal.modules.nft.operation.NftOperationSheetHost
 import cash.p.terminal.navigation.HSBottomSheet
@@ -19,6 +21,7 @@ import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.navigation.rememberResultLauncher
 import cash.p.terminal.resources.FeeSettings_NetworkFee
 import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_attention_24
 import cash.p.terminal.resources.ic_fire_24
 import cash.p.terminal.resources.nft_burn_address
 import cash.p.terminal.resources.nft_burn_body
@@ -28,6 +31,7 @@ import cash.p.terminal.resources.nft_burn_domain_title
 import cash.p.terminal.resources.nft_burn_sent
 import cash.p.terminal.resources.nft_burn_title
 import cash.p.terminal.resources.nft_domain_burn_sent
+import cash.p.terminal.resources.nft_trap_burn_anyway
 import cash.p.terminal.resources.nft_unnamed
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.rememberHudMessenger
@@ -46,7 +50,7 @@ import org.koin.core.parameter.parametersOf
 class NftBurnSheet(
     private val item: NftItemRecord,
     private val domain: String?,
-    private val namesRevealed: Boolean,
+    internal val namesRevealed: Boolean,
 ) : HSBottomSheet() {
 
     /** [outcome] is [NftOperationOutcome.Done] or [NftOperationOutcome.Ended]. */
@@ -97,10 +101,11 @@ fun HSNavigation.rememberNftBurn(
         }
         onFinish(result)
     }
-    val burn = rememberTransferAction<Pair<NftItemRecord, String?>> { (item, domain) ->
-        launcher.slideFromBottom(NftBurnSheet(item, domain, revealed), item.owner)
+    val burn = rememberTransferAction<Triple<NftItemRecord, String?, Boolean>> { (item, domain, shown) ->
+        launcher.slideFromBottom(NftBurnSheet(item, domain, shown), item.owner)
     }
-    return { item, domain -> burn(item to domain) }
+    // Read at the click: the PIN page pauses the caller, which masks the names again.
+    return { item, domain -> burn(Triple(item, domain, revealed)) }
 }
 
 @Composable
@@ -122,11 +127,13 @@ internal fun NftBurnSheetContent(
             name,
         ),
         rows = listOf(
-            stringResource(Res.string.nft_burn_address) to uiState.burnAddress,
-            stringResource(Res.string.FeeSettings_NetworkFee) to uiState.fee,
+            NftInfoRow(stringResource(Res.string.nft_burn_address), uiState.burnAddress),
+            NftInfoRow(stringResource(Res.string.FeeSettings_NetworkFee), uiState.fee),
         ),
-        error = uiState.insufficientBalance?.getString(),
-        confirmTitle = stringResource(Res.string.nft_burn_confirm),
+        error = uiState.insufficientBalance?.let { HSCaution(it) } ?: uiState.trapCaution,
+        confirmTitle = stringResource(
+            if (uiState.trapCaution != null) Res.string.nft_trap_burn_anyway else Res.string.nft_burn_confirm
+        ),
         confirmStyle = NftConfirmStyle.Destructive,
         confirmEnabled = uiState.canBurn,
         inProgress = uiState.outcome == NftOperationOutcome.Running,
@@ -143,6 +150,7 @@ private val previewState = NftBurnUiState(
     insufficientBalance = null,
     canBurn = true,
     outcome = NftOperationOutcome.Idle,
+    trapCaution = null,
 )
 
 @Composable
@@ -155,6 +163,21 @@ private fun PreviewContent(uiState: NftBurnUiState) {
 @Preview
 @Composable
 private fun NftBurnSheetNftPreview() = PreviewContent(previewState)
+
+@Preview
+@Composable
+private fun NftBurnSheetTrapPreview() = PreviewContent(
+    previewState.copy(
+        trapCaution = HSCaution(
+            s = TranslatableString.PlainString("This NFT can't be burned"),
+            description = TranslatableString.PlainString(
+                "We checked the transaction before sending. This NFT's contract will not burn it and will keep " +
+                    "the attached 0.05 TON. To remove the NFT from the list, hide it."
+            ),
+            icon = Res.drawable.ic_attention_24,
+        ),
+    )
+)
 
 @Preview
 @Composable

@@ -5,9 +5,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.tooling.preview.Preview
+import cash.p.terminal.core.HSCaution
 import cash.p.terminal.core.nft.NftDomainExpiry
 import cash.p.terminal.feature.wallet.rememberTransferAction
 import cash.p.terminal.modules.nft.operation.NftConfirmSheetContent
+import cash.p.terminal.modules.nft.operation.NftInfoRow
 import cash.p.terminal.modules.nft.operation.NftOperationOutcome
 import cash.p.terminal.modules.nft.operation.NftOperationSheetHost
 import cash.p.terminal.navigation.HSBottomSheet
@@ -46,7 +48,7 @@ import org.koin.core.parameter.parametersOf
  */
 class NftDomainRenewSheet(
     private val domains: List<NftDomainExpiry>,
-    private val namesRevealed: Boolean,
+    internal val namesRevealed: Boolean,
 ) : HSBottomSheet() {
 
     /** [outcome] is [NftOperationOutcome.Done] or [NftOperationOutcome.Ended]. */
@@ -88,7 +90,11 @@ fun HSNavigation.rememberDomainRenewal(
         scope.launch { hud.showRenewResult(result) }
         onFinish()
     }
-    return rememberTransferAction { domains -> launcher.slideFromBottom(NftDomainRenewSheet(domains, revealed)) }
+    val renew = rememberTransferAction<Pair<List<NftDomainExpiry>, Boolean>> { (domains, shown) ->
+        launcher.slideFromBottom(NftDomainRenewSheet(domains, shown))
+    }
+    // Read at the click: the PIN page pauses the caller, which masks the names again.
+    return { domains -> renew(domains to revealed) }
 }
 
 private suspend fun HudMessenger.showRenewResult(result: NftDomainRenewSheet.Result) {
@@ -124,10 +130,10 @@ internal fun NftDomainRenewSheetContent(
         title = titleText(names),
         body = bodyText(names, uiState.renewUntil),
         rows = listOf(
-            stringResource(Res.string.nft_domain_renew_cost) to uiState.cost,
-            stringResource(Res.string.FeeSettings_NetworkFee) to uiState.fee,
+            NftInfoRow(stringResource(Res.string.nft_domain_renew_cost), uiState.cost),
+            NftInfoRow(stringResource(Res.string.FeeSettings_NetworkFee), uiState.fee),
         ),
-        error = uiState.insufficientBalance?.getString(),
+        error = uiState.insufficientBalance?.let { HSCaution(it) },
         confirmTitle = stringResource(Res.string.nft_domain_renew_confirm),
         confirmEnabled = uiState.canRenew,
         inProgress = uiState.outcome == NftOperationOutcome.Running,

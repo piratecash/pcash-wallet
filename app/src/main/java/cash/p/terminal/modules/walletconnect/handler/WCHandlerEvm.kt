@@ -27,7 +27,6 @@ class WCHandlerEvm(
 //        "eth_call",
 //        "eth_getBalance",
 //        "eth_sendRawTransaction",
-        "eth_sign",
         "eth_signTransaction",
         "eth_signTypedData",
         "eth_signTypedData_v4",
@@ -51,7 +50,6 @@ class WCHandlerEvm(
 
         val title = when (method) {
             "personal_sign" -> "Personal Sign Request"
-            "eth_sign" -> "Standard Sign Request"
             "eth_signTypedData" -> "Typed Sign Request"
             "eth_sendTransaction" -> "Approve Transaction"
             "eth_signTransaction" -> "Sign Transaction"

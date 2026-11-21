@@ -19,6 +19,9 @@
     <uses-feature
         android:name="android.hardware.camera.autofocus"
         android:required="false" />
+    <uses-feature
+        android:name="android.hardware.screen.portrait"
+        android:required="false" />
 
     <queries>
         <package android:name="org.telegram.messenger" />
@@ -40,6 +43,14 @@
             android:name=".core.notifications.TransactionNotificationService"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
+
+        <!-- Unused: widget list items only start activities. Test robots open them without extras and crash them. -->
+        <activity
+            android:name="androidx.glance.appwidget.action.ActionTrampolineActivity"
+            tools:node="remove" />
+        <activity
+            android:name="androidx.glance.appwidget.action.InvisibleActionTrampolineActivity"
+            tools:node="remove" />
 
         <receiver
             android:name=".widgets.MarketWidgetReceiver"

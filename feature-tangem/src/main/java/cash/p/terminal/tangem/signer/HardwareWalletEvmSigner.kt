@@ -56,10 +56,6 @@ class HardwareWalletEvmSigner(
     suspend fun signPersonalMessage(message: ByteArray): ByteArray =
         signMessageBytes(EvmSignatureRecovery.personalSignHash(message))
 
-    /** Signs a raw 32-byte hash (`eth_sign`, no EIP-191 prefix); returns `r‖s‖recId` (recId in 0..1). */
-    suspend fun signLegacyHash(hash: ByteArray): ByteArray =
-        signMessageBytes(hash)
-
     /** Signs an EIP-712 typed data payload; returns `r‖s‖recId` (recId in 0..1). */
     suspend fun signTypedDataMessage(rawJson: String, cardPrompt: String? = null): ByteArray =
         signMessageBytes(EIP712Encoder().encodeTypedDataHash(rawJson), cardPrompt)

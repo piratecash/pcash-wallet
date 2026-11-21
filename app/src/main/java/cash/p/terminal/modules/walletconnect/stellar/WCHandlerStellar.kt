@@ -1,19 +1,23 @@
 package cash.p.terminal.modules.walletconnect.stellar
 
-import cash.p.terminal.core.App
 import cash.p.terminal.core.managers.StellarKitManager
+import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.modules.walletconnect.handler.IWCHandler
 import cash.p.terminal.modules.walletconnect.handler.MethodData
 import cash.p.terminal.modules.walletconnect.handler.UnsupportedMethodException
 import cash.p.terminal.modules.walletconnect.request.AbstractWCAction
 import cash.p.terminal.wallet.Account
+import cash.p.terminal.wallet.IAccountManager
 import com.reown.android.Core
 import com.reown.walletkit.client.Wallet
 import io.horizontalsystems.stellarkit.StellarKit
 import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 
-class WCHandlerStellar(private val stellarKitManager: StellarKitManager) : IWCHandler {
+class WCHandlerStellar(
+    private val stellarKitManager: StellarKitManager,
+    private val accountManager: IAccountManager,
+) : IWCHandler {
     override val chainNamespace = "stellar"
 
     override val supportedChains = listOf("stellar:pubnet")
@@ -25,19 +29,24 @@ class WCHandlerStellar(private val stellarKitManager: StellarKitManager) : IWCHa
         peerMetaData: Core.Model.AppMetaData?,
         chainInternalId: String?,
     ): AbstractWCAction {
-        val stellarKit = getStellarKit(App.accountManager.activeAccount!!)
+        val account = requireNotNull(accountManager.activeAccount)
+        val stellarKit = getStellarKit(account)
+        // Best effort: null only skips the foreign-source check.
+        val walletAddress = tryOrNull { stellarKitManager.getAddress(account) }
 
         return when (request.method) {
             "stellar_signAndSubmitXDR" -> WCActionStellarSignAndSubmitXdr(
                 request.params,
                 peerMetaData?.name ?: "",
-                stellarKit
+                stellarKit,
+                walletAddress,
             )
 
             "stellar_signXDR" -> WCActionStellarSignXdr(
                 request.params,
                 peerMetaData?.name ?: "",
-                stellarKit
+                stellarKit,
+                walletAddress,
             )
 
             else -> throw UnsupportedMethodException(request.method)

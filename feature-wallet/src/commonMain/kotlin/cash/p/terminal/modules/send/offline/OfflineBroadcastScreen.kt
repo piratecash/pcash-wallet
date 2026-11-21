@@ -62,6 +62,7 @@ import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.getShape
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.components.subhead2_leah
+import cash.p.terminal.ui.compose.components.coinIconPlate
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.imageUrl
@@ -276,7 +277,7 @@ private fun BlockchainCell(
                 error = painterResource(Res.drawable.ic_platform_placeholder_32),
             ),
             contentDescription = null,
-            modifier = Modifier.size(32.dp),
+            modifier = Modifier.size(32.dp).coinIconPlate(),
         )
         body_leah(
             modifier = Modifier

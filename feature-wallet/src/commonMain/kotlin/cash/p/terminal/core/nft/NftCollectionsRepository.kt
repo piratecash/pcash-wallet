@@ -5,6 +5,7 @@ import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.core.managers.isNetworkPaused
 import cash.p.terminal.core.storage.NftItemStorage
 import cash.p.terminal.entities.NftItemRecord
+import cash.p.terminal.entities.NftTrust
 import cash.p.terminal.wallet.Wallet
 import co.touchlab.kermit.Logger
 import io.horizontalsystems.core.DispatcherProvider
@@ -41,6 +42,7 @@ class NftCollectionsRepository(
     providers: List<NftProvider>,
     private val offlineModeManager: OfflineModeManager,
     private val dispatcherProvider: DispatcherProvider,
+    private val trustedCollections: NftTrustedCollectionsRepository,
 ) {
     private val providersByType = providers.associateBy { it.blockchainType }
     private val refreshMutex = Mutex()
@@ -90,7 +92,7 @@ class NftCollectionsRepository(
 
         val rows = storage.observe(owners.first().accountId, owners.map { it.address })
         return combine(rows, fetchedOwners) { records, fetched ->
-            val items = records.filter { it.owner in owners }.distinctBy { it.address }
+            val items = records.filter { it.owner in owners }.distinctBy { it.address }.map { it.withTrusted() }
             NftItemsState(items, isLoaded = items.isNotEmpty() || owners.all { it in fetched })
         }.flowOn(dispatcherProvider.default)
     }
@@ -171,6 +173,9 @@ class NftCollectionsRepository(
 
     private fun isFetchedRecently(owner: NftOwner): Boolean =
         fetchedAt.value[owner]?.let { it.elapsedNow() < REFRESH_THROTTLE } == true
+
+    private fun NftItemRecord.withTrusted(): NftItemRecord =
+        if (trustedCollections.isTrusted(blockchainType, collectionAddress)) copy(trust = NftTrust.Whitelist) else this
 }
 
 internal val NftItemRecord.owner: NftOwner

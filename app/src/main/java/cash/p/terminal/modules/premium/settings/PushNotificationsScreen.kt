@@ -52,6 +52,7 @@ import cash.p.terminal.ui_compose.components.getShape
 import cash.p.terminal.ui_compose.components.showDivider
 import cash.p.terminal.ui_compose.components.subhead1_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
+import cash.p.terminal.ui.compose.components.coinIconPlate
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.chartview.rememberAsyncImagePainterWithFallback
 import io.horizontalsystems.core.entities.BlockchainType
@@ -331,6 +332,7 @@ private fun PushNotificationBlockchainCell(
             modifier = Modifier
                 .size(32.dp)
                 .alpha(if (enabled) 1f else 0.5f)
+                .coinIconPlate()
         )
         if (enabled) {
             body_leah(
