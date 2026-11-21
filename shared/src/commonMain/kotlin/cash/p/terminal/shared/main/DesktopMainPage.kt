@@ -44,6 +44,7 @@ import cash.p.terminal.modules.send.offline.rememberImportTransactionFile
 import cash.p.terminal.modules.settings.addresschecker.AddressCheckerPage
 import cash.p.terminal.modules.settings.appearance.AppearancePage
 import cash.p.terminal.modules.settings.donate.DonateTokenSelectPage
+import cash.p.terminal.modules.tonconnect.TonConnectMainPage
 import cash.p.terminal.modules.transactions.TransactionsScreen
 import cash.p.terminal.modules.transactions.TransactionsViewModel
 import cash.p.terminal.navigation.HSNavigation
@@ -79,7 +80,6 @@ import org.koin.compose.viewmodel.koinViewModel
 private val DESKTOP_HIDDEN_SETTINGS = setOf(
     SettingsAction.MiniApp,
     SettingsAction.WalletConnect,
-    SettingsAction.TonConnect,
     SettingsAction.SoftwareUpdate,
     SettingsAction.AdvancedSecurity,
     SettingsAction.RateApp,
@@ -218,6 +218,7 @@ private fun SettingsPane(navigation: HSNavigation) {
 private fun HSNavigation.openWalletSetting(action: SettingsAction, importTransactionFile: () -> Unit) {
     when (action) {
         SettingsAction.SwapProviders -> slideFromRight(SwapProvidersSettingsPage())
+        SettingsAction.TonConnect -> slideFromRight(TonConnectMainPage(null))
         SettingsAction.OfflineBroadcast -> slideFromRight(OfflineBroadcastInputPage())
         SettingsAction.ImportTransactionFile -> importTransactionFile()
         else -> Unit
