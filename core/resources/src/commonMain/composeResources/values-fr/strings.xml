@@ -2636,6 +2636,26 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="desktop_password_save_failed">Impossible d\u0027enregistrer le mot de passe. Veuillez réessayer</string>
     <string name="tron_controlled_by_others_title">D\'autres personnes peuvent contrôler ce compte</string>
     <string name="tron_controlled_by_others_warning">Les autorisations de ce compte ont été modifiées : d\'autres clés peuvent le contrôler. Les fonds que vous y envoyez peuvent être retirés sans votre intervention. N\'y déposez des fonds que si vous savez à qui appartiennent ces clés.</string>
+    <string name="sign_message_title">Signer un message</string>
+    <string name="sign_message_intro">La signature prouve que l\'adresse vous appartient. Les plateformes d\'échange la demandent lorsque vous ajoutez une adresse de retrait. Elle ne donne aucun accès à vos fonds.</string>
+    <string name="sign_message_message">Message</string>
+    <string name="sign_message_hint">Collez ou scannez le texte du site de la plateforme</string>
+    <string name="sign_message_format">Format de signature</string>
+    <string name="sign_message_format_standard">Standard</string>
+    <string name="sign_message_format_standard_description">Accepté par la plupart des plateformes</string>
+    <string name="sign_message_format_bip322_description">Nouveau standard, fonctionne aussi pour Taproot</string>
+    <string name="sign_message_format_info">Standard est le message signé Bitcoin classique, accepté par presque toutes les plateformes et tous les portefeuilles. BIP-322 est un format plus récent qui prend aussi en charge les adresses Taproot. Choisissez celui que demande la plateforme.</string>
+    <string name="sign_message_taproot_only">Seul BIP-322 est disponible pour les adresses Taproot.</string>
+    <string name="sign_message_trezor_taproot">Trezor ne peut pas signer de messages pour les adresses Taproot. Utilisez une adresse Bitcoin d\'un autre type, par exemple Native SegWit.</string>
+    <string name="sign_message_select_address_hint">Choisissez l\'adresse que vous avez indiquée à la plateforme.</string>
+    <string name="sign_message_current_receive_address">Adresse de réception actuelle</string>
+    <string name="sign_message_used">Utilisées</string>
+    <string name="sign_message_signature">Signature</string>
+    <string name="sign_message_result_intro">Copiez la signature et collez-la sur le site de la plateforme.</string>
+    <string name="sign_message_details">Détails</string>
+    <string name="sign_message_details_format">Format</string>
+    <string name="sign_message_not_ready">Le portefeuille est encore en cours de chargement. Réessayez dans un instant.</string>
+    <string name="sign_message_failed">Impossible de signer le message</string>
 
     <!-- WalletConnect Stellar -->
     <string name="wallet_connect_stellar_op_payment">Paiement</string>

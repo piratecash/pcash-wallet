@@ -2626,6 +2626,26 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="desktop_password_save_failed">Şifre kaydedilemedi. Lütfen tekrar deneyin</string>
     <string name="tron_controlled_by_others_title">Bu hesabı başkaları kontrol edebilir</string>
     <string name="tron_controlled_by_others_warning">Bu hesabın izinleri değiştirilmiş: başka anahtarlar hesabı kontrol edebilir. Hesaba gönderdiğiniz fonlar sizin haberiniz olmadan çekilebilir. Hesaba yalnızca bu anahtarların kime ait olduğunu biliyorsanız para yatırın.</string>
+    <string name="sign_message_title">Mesaj imzala</string>
+    <string name="sign_message_intro">İmza, adresin size ait olduğunu kanıtlar. Borsalar, çekim adresi eklediğinizde bunu ister. İmza, fonlarınıza erişim sağlamaz.</string>
+    <string name="sign_message_message">Mesaj</string>
+    <string name="sign_message_hint">Borsanın web sitesindeki metni yapıştırın veya tarayın</string>
+    <string name="sign_message_format">İmza biçimi</string>
+    <string name="sign_message_format_standard">Standart</string>
+    <string name="sign_message_format_standard_description">Çoğu borsa tarafından kabul edilir</string>
+    <string name="sign_message_format_bip322_description">Yeni standart, Taproot için de çalışır</string>
+    <string name="sign_message_format_info">Standart, neredeyse tüm borsaların ve cüzdanların kabul ettiği klasik Bitcoin imzalı mesajıdır. BIP-322, Taproot adreslerini de destekleyen daha yeni bir biçimdir. Borsanın istediğini seçin.</string>
+    <string name="sign_message_taproot_only">Taproot adresleri için yalnızca BIP-322 kullanılabilir.</string>
+    <string name="sign_message_trezor_taproot">Trezor, Taproot adresleri için mesaj imzalayamaz. Başka türde bir Bitcoin adresi kullanın, örneğin Native SegWit.</string>
+    <string name="sign_message_select_address_hint">Borsaya bildirdiğiniz adresi seçin.</string>
+    <string name="sign_message_current_receive_address">Mevcut alma adresi</string>
+    <string name="sign_message_used">Kullanılmış</string>
+    <string name="sign_message_signature">İmza</string>
+    <string name="sign_message_result_intro">İmzayı kopyalayın ve borsanın web sitesine yapıştırın.</string>
+    <string name="sign_message_details">Ayrıntılar</string>
+    <string name="sign_message_details_format">Biçim</string>
+    <string name="sign_message_not_ready">Cüzdan hâlâ yükleniyor. Birkaç saniye sonra tekrar deneyin.</string>
+    <string name="sign_message_failed">Mesaj imzalanamadı</string>
 
     <!-- WalletConnect Stellar -->
     <string name="wallet_connect_stellar_op_payment">Ödeme</string>

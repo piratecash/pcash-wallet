@@ -2617,6 +2617,26 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="desktop_password_save_failed">Das Passwort konnte nicht gespeichert werden. Bitte versuchen Sie es erneut</string>
     <string name="tron_controlled_by_others_title">Andere können dieses Konto kontrollieren</string>
     <string name="tron_controlled_by_others_warning">Die Berechtigungen für dieses Konto wurden geändert: Andere Schlüssel können es möglicherweise kontrollieren. Gelder, die Sie dorthin senden, können ohne Ihr Zutun abgehoben werden. Laden Sie es nur auf, wenn Sie wissen, wem diese Schlüssel gehören.</string>
+    <string name="sign_message_title">Nachricht signieren</string>
+    <string name="sign_message_intro">Die Signatur beweist, dass die Adresse Ihnen gehört. Börsen verlangen sie, wenn Sie eine Auszahlungsadresse hinzufügen. Zugriff auf Ihr Guthaben gibt sie nicht.</string>
+    <string name="sign_message_message">Nachricht</string>
+    <string name="sign_message_hint">Text von der Website der Börse einfügen oder scannen</string>
+    <string name="sign_message_format">Signaturformat</string>
+    <string name="sign_message_format_standard">Standard</string>
+    <string name="sign_message_format_standard_description">Von den meisten Börsen akzeptiert</string>
+    <string name="sign_message_format_bip322_description">Neuer Standard, funktioniert auch für Taproot</string>
+    <string name="sign_message_format_info">Standard ist die klassische signierte Bitcoin-Nachricht, die fast alle Börsen und Wallets akzeptieren. BIP-322 ist ein neueres Format, das auch Taproot-Adressen unterstützt. Wählen Sie das Format, das die Börse verlangt.</string>
+    <string name="sign_message_taproot_only">Für Taproot-Adressen ist nur BIP-322 verfügbar.</string>
+    <string name="sign_message_trezor_taproot">Trezor kann keine Nachrichten für Taproot-Adressen signieren. Verwenden Sie eine Bitcoin-Adresse eines anderen Typs, zum Beispiel Native SegWit.</string>
+    <string name="sign_message_select_address_hint">Wählen Sie die Adresse, die Sie bei der Börse angegeben haben.</string>
+    <string name="sign_message_current_receive_address">Aktuelle Empfangsadresse</string>
+    <string name="sign_message_used">Verwendet</string>
+    <string name="sign_message_signature">Signatur</string>
+    <string name="sign_message_result_intro">Kopieren Sie die Signatur und fügen Sie sie auf der Website der Börse ein.</string>
+    <string name="sign_message_details">Details</string>
+    <string name="sign_message_details_format">Format</string>
+    <string name="sign_message_not_ready">Die Wallet wird noch geladen. Versuchen Sie es gleich noch einmal.</string>
+    <string name="sign_message_failed">Nachricht konnte nicht signiert werden</string>
 
     <!-- WalletConnect Stellar -->
     <string name="wallet_connect_stellar_op_payment">Zahlung</string>
