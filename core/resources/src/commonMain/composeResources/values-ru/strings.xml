@@ -2819,4 +2819,39 @@
     <string name="desktop_password_save_failed">Не удалось сохранить пароль. Попробуйте ещё раз</string>
     <string name="tron_controlled_by_others_title">Аккаунтом могут управлять другие</string>
     <string name="tron_controlled_by_others_warning">Права на этот аккаунт изменены: им могут управлять другие ключи. Средства, которые вы на него переведёте, могут вывести без вашего участия. Пополняйте его, только если знаете, чьи это ключи.</string>
+
+    <!-- WalletConnect Stellar -->
+    <string name="wallet_connect_stellar_op_payment">Платёж</string>
+    <string name="wallet_connect_stellar_op_account_merge">Слияние аккаунта (отправляет весь баланс)</string>
+    <string name="wallet_connect_stellar_op_path_payment">Платёж с обменом</string>
+    <string name="wallet_connect_stellar_op_sell_offer">Ордер на продажу</string>
+    <string name="wallet_connect_stellar_op_buy_offer">Ордер на покупку</string>
+    <string name="wallet_connect_stellar_op_set_options">Изменение настроек аккаунта</string>
+    <string name="wallet_connect_stellar_amount">Сумма</string>
+    <string name="wallet_connect_stellar_max_sent">Максимум к отправке</string>
+    <string name="wallet_connect_stellar_min_received">Минимум к получению</string>
+    <string name="wallet_connect_stellar_received">Будет получено</string>
+    <string name="wallet_connect_stellar_asset">Актив</string>
+    <string name="wallet_connect_stellar_asset_issuer">Эмитент актива</string>
+    <string name="wallet_connect_stellar_trust_limit">Лимит доверия</string>
+    <string name="wallet_connect_stellar_selling">Продаёте</string>
+    <string name="wallet_connect_stellar_buying">Покупаете</string>
+    <string name="wallet_connect_stellar_source_account">Аккаунт-отправитель</string>
+    <string name="wallet_connect_stellar_signer">Подписант</string>
+    <string name="wallet_connect_stellar_signer_weight">Вес подписанта</string>
+    <string name="wallet_connect_stellar_master_key_weight">Вес мастер-ключа</string>
+    <string name="wallet_connect_stellar_low_threshold">Низкий порог</string>
+    <string name="wallet_connect_stellar_medium_threshold">Средний порог</string>
+    <string name="wallet_connect_stellar_high_threshold">Высокий порог</string>
+    <string name="wallet_connect_stellar_set_flags">Установить флаги</string>
+    <string name="wallet_connect_stellar_clear_flags">Сбросить флаги</string>
+    <string name="wallet_connect_stellar_home_domain">Домашний домен</string>
+    <string name="wallet_connect_stellar_inflation_destination">Адрес инфляции</string>
+    <string name="wallet_connect_stellar_set_options_title">Изменение доступа к аккаунту</string>
+    <string name="wallet_connect_stellar_set_options">Этот запрос меняет подписантов, пороги или флаги вашего аккаунта. Подтвердив его, вы можете передать управление аккаунтом другому человеку. Продолжайте, только если полностью доверяете этому приложению.</string>
+    <string name="wallet_connect_stellar_account_merge_title">Закрытие аккаунта</string>
+    <string name="wallet_connect_stellar_account_merge">Этот запрос закрывает ваш аккаунт Stellar и отправляет весь его баланс на другой адрес. Продолжайте, только если полностью доверяете этому приложению.</string>
+    <string name="wallet_connect_stellar_unreadable_operation_title">Нераспознанная операция</string>
+    <string name="wallet_connect_stellar_unreadable_operation">В запросе есть операция (%1$s), действие которой кошелёк не может показать. Продолжайте, только если полностью доверяете этому приложению.</string>
+    <string name="wallet_connect_stellar_foreign_source">Эта транзакция относится к другому аккаунту, а не к вашему активному кошельку.</string>
 </resources>
