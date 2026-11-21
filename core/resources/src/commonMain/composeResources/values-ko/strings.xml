@@ -2478,6 +2478,10 @@
     <string name="nft_copy_address">NFT 주소 복사</string>
     <string name="nft_burn_action">NFT 소각</string>
     <string name="nft_unverified_nft">확인되지 않은 NFT</string>
+    <string name="nft_artwork_hidden_title">이미지 숨김</string>
+    <string name="nft_artwork_hidden_reason">TonAPI에서 확인되지 않은 NFT</string>
+    <string name="nft_artwork_hidden_spam">스팸으로 표시된 NFT</string>
+    <string name="nft_artwork_hidden_tap">탭하여 표시</string>
     <string name="nft_report_spam">스팸 신고</string>
     <string name="nft_report_title">스팸으로 신고할까요?</string>
     <string name="nft_report_body">“%1$s” 컬렉션이 숨겨지고 컬렉션 관리의 스팸 섹션으로 이동합니다. 그곳에서 ‘스팸 아님’ 버튼으로 복원할 수 있습니다.</string>
@@ -2621,4 +2625,39 @@
     <string name="sign_message_details_format">형식</string>
     <string name="sign_message_not_ready">지갑을 아직 불러오는 중입니다. 잠시 후 다시 시도하세요.</string>
     <string name="sign_message_failed">메시지에 서명하지 못했습니다</string>
+
+    <!-- WalletConnect Stellar -->
+    <string name="wallet_connect_stellar_op_payment">결제</string>
+    <string name="wallet_connect_stellar_op_account_merge">계정 병합 (전체 잔액 전송)</string>
+    <string name="wallet_connect_stellar_op_path_payment">경로 결제</string>
+    <string name="wallet_connect_stellar_op_sell_offer">매도 주문</string>
+    <string name="wallet_connect_stellar_op_buy_offer">매수 주문</string>
+    <string name="wallet_connect_stellar_op_set_options">계정 설정 변경</string>
+    <string name="wallet_connect_stellar_amount">금액</string>
+    <string name="wallet_connect_stellar_max_sent">최대 전송</string>
+    <string name="wallet_connect_stellar_min_received">최소 수령</string>
+    <string name="wallet_connect_stellar_received">수령</string>
+    <string name="wallet_connect_stellar_asset">자산</string>
+    <string name="wallet_connect_stellar_asset_issuer">자산 발행자</string>
+    <string name="wallet_connect_stellar_trust_limit">신뢰 한도</string>
+    <string name="wallet_connect_stellar_selling">매도</string>
+    <string name="wallet_connect_stellar_buying">매수</string>
+    <string name="wallet_connect_stellar_source_account">출금 계정</string>
+    <string name="wallet_connect_stellar_signer">서명자</string>
+    <string name="wallet_connect_stellar_signer_weight">서명자 가중치</string>
+    <string name="wallet_connect_stellar_master_key_weight">마스터 키 가중치</string>
+    <string name="wallet_connect_stellar_low_threshold">낮은 임계값</string>
+    <string name="wallet_connect_stellar_medium_threshold">중간 임계값</string>
+    <string name="wallet_connect_stellar_high_threshold">높은 임계값</string>
+    <string name="wallet_connect_stellar_set_flags">플래그 설정</string>
+    <string name="wallet_connect_stellar_clear_flags">플래그 해제</string>
+    <string name="wallet_connect_stellar_home_domain">홈 도메인</string>
+    <string name="wallet_connect_stellar_inflation_destination">인플레이션 대상</string>
+    <string name="wallet_connect_stellar_set_options_title">계정 제어 변경</string>
+    <string name="wallet_connect_stellar_set_options">이 요청은 계정의 서명자, 임계값 또는 플래그를 변경합니다. 승인하면 계정 제어권이 다른 사람에게 넘어갈 수 있습니다. 이 앱을 완전히 신뢰하는 경우에만 계속하세요.</string>
+    <string name="wallet_connect_stellar_account_merge_title">계정 폐쇄</string>
+    <string name="wallet_connect_stellar_account_merge">이 요청은 Stellar 계정을 폐쇄하고 전체 잔액을 다른 주소로 보냅니다. 이 앱을 완전히 신뢰하는 경우에만 계속하세요.</string>
+    <string name="wallet_connect_stellar_unreadable_operation_title">읽을 수 없는 작업</string>
+    <string name="wallet_connect_stellar_unreadable_operation">이 요청에는 지갑이 효과를 표시할 수 없는 작업(%1$s)이 포함되어 있습니다. 이 앱을 완전히 신뢰하는 경우에만 계속하세요.</string>
+    <string name="wallet_connect_stellar_foreign_source">이 트랜잭션은 활성 지갑이 아닌 다른 계정의 것입니다.</string>
 </resources>

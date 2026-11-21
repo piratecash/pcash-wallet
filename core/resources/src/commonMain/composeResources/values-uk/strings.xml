@@ -2647,6 +2647,10 @@
     <string name="nft_copy_address">Скопіювати адресу NFT</string>
     <string name="nft_burn_action">Спалити NFT</string>
     <string name="nft_unverified_nft">Неперевірений NFT</string>
+    <string name="nft_artwork_hidden_title">Зображення приховано</string>
+    <string name="nft_artwork_hidden_reason">NFT не перевірено TonAPI</string>
+    <string name="nft_artwork_hidden_spam">NFT позначено як спам</string>
+    <string name="nft_artwork_hidden_tap">Натисніть, щоб показати</string>
     <string name="nft_report_spam">Поскаржитися на спам</string>
     <string name="nft_report_title">Поскаржитися на спам?</string>
     <string name="nft_report_body">Колекцію «%1$s» буде приховано, і вона потрапить до розділу «Спам» в керуванні колекціями. Повернути її можна там само кнопкою «Не спам».</string>
@@ -2814,4 +2818,39 @@
     <string name="sign_message_details_format">Формат</string>
     <string name="sign_message_not_ready">Гаманець ще завантажується. Спробуйте за кілька секунд.</string>
     <string name="sign_message_failed">Не вдалося підписати повідомлення</string>
+
+    <!-- WalletConnect Stellar -->
+    <string name="wallet_connect_stellar_op_payment">Платіж</string>
+    <string name="wallet_connect_stellar_op_account_merge">Злиття акаунта (надсилає весь баланс)</string>
+    <string name="wallet_connect_stellar_op_path_payment">Платіж з обміном</string>
+    <string name="wallet_connect_stellar_op_sell_offer">Ордер на продаж</string>
+    <string name="wallet_connect_stellar_op_buy_offer">Ордер на купівлю</string>
+    <string name="wallet_connect_stellar_op_set_options">Зміна налаштувань акаунта</string>
+    <string name="wallet_connect_stellar_amount">Сума</string>
+    <string name="wallet_connect_stellar_max_sent">Максимум до надсилання</string>
+    <string name="wallet_connect_stellar_min_received">Мінімум до отримання</string>
+    <string name="wallet_connect_stellar_received">Буде отримано</string>
+    <string name="wallet_connect_stellar_asset">Актив</string>
+    <string name="wallet_connect_stellar_asset_issuer">Емітент активу</string>
+    <string name="wallet_connect_stellar_trust_limit">Ліміт довіри</string>
+    <string name="wallet_connect_stellar_selling">Продаєте</string>
+    <string name="wallet_connect_stellar_buying">Купуєте</string>
+    <string name="wallet_connect_stellar_source_account">Акаунт-відправник</string>
+    <string name="wallet_connect_stellar_signer">Підписант</string>
+    <string name="wallet_connect_stellar_signer_weight">Вага підписанта</string>
+    <string name="wallet_connect_stellar_master_key_weight">Вага майстер-ключа</string>
+    <string name="wallet_connect_stellar_low_threshold">Низький поріг</string>
+    <string name="wallet_connect_stellar_medium_threshold">Середній поріг</string>
+    <string name="wallet_connect_stellar_high_threshold">Високий поріг</string>
+    <string name="wallet_connect_stellar_set_flags">Встановити прапорці</string>
+    <string name="wallet_connect_stellar_clear_flags">Скинути прапорці</string>
+    <string name="wallet_connect_stellar_home_domain">Домашній домен</string>
+    <string name="wallet_connect_stellar_inflation_destination">Адреса інфляції</string>
+    <string name="wallet_connect_stellar_set_options_title">Зміна доступу до акаунта</string>
+    <string name="wallet_connect_stellar_set_options">Цей запит змінює підписантів, пороги або прапорці вашого акаунта. Підтвердивши його, ви можете передати керування акаунтом іншій людині. Продовжуйте, лише якщо повністю довіряєте цьому застосунку.</string>
+    <string name="wallet_connect_stellar_account_merge_title">Закриття акаунта</string>
+    <string name="wallet_connect_stellar_account_merge">Цей запит закриває ваш акаунт Stellar і надсилає весь його баланс на іншу адресу. Продовжуйте, лише якщо повністю довіряєте цьому застосунку.</string>
+    <string name="wallet_connect_stellar_unreadable_operation_title">Нерозпізнана операція</string>
+    <string name="wallet_connect_stellar_unreadable_operation">Запит містить операцію (%1$s), дію якої гаманець не може показати. Продовжуйте, лише якщо повністю довіряєте цьому застосунку.</string>
+    <string name="wallet_connect_stellar_foreign_source">Ця транзакція стосується іншого акаунта, а не вашого активного гаманця.</string>
 </resources>

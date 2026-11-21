@@ -138,7 +138,6 @@
     <ID>AppSingletonAccess:UtxoExpertModeViewModel.kt$UtxoExpertModeViewModel$App.numberFormatter</ID>
     <ID>AppSingletonAccess:WCActionStellarSignAndSubmitXdr.kt$WCActionStellarSignAndSubmitXdr$App.marketKit</ID>
     <ID>AppSingletonAccess:WCDelegate.kt$WCDelegate$App.wcSessionManager</ID>
-    <ID>AppSingletonAccess:WCHandlerStellar.kt$WCHandlerStellar$App.accountManager</ID>
     <ID>AppSingletonAccess:WCManager.kt$WCManager$App.evmBlockchainManager</ID>
     <ID>AppSingletonAccess:WCRequestPreViewModel.kt$WCRequestPreViewModel$App.wcManager</ID>
     <ID>AppSingletonAccess:WCRequestRouterViewModel.kt$WCRequestRouterViewModel$App.evmBlockchainManager</ID>

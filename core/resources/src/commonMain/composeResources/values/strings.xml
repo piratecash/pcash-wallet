@@ -2910,6 +2910,10 @@ Proceed only if you\u0027re sure.</string>
     <string name="nft_copy_address">Copy NFT address</string>
     <string name="nft_burn_action">Burn NFT</string>
     <string name="nft_unverified_nft">Unverified NFT</string>
+    <string name="nft_artwork_hidden_title">Image hidden</string>
+    <string name="nft_artwork_hidden_reason">NFT not verified by TonAPI</string>
+    <string name="nft_artwork_hidden_spam">NFT marked as spam</string>
+    <string name="nft_artwork_hidden_tap">Tap to show</string>
     <string name="nft_report_spam">Report spam</string>
     <string name="nft_report_title">Report as spam?</string>
     <string name="nft_report_body">Collection “%1$s” will be hidden and moved to the Spam section in collection management. You can restore it there with the Not spam button.</string>
@@ -3062,4 +3066,39 @@ Proceed only if you\u0027re sure.</string>
     <string name="sign_message_not_ready">The wallet is still loading. Try again in a moment.</string>
     <string name="sign_message_failed">Could not sign the message</string>
     <string name="sign_message_format_bip322" translatable="false">BIP-322</string>
+
+    <!-- WalletConnect Stellar -->
+    <string name="wallet_connect_stellar_op_payment">Payment</string>
+    <string name="wallet_connect_stellar_op_account_merge">Merge account (sends entire balance)</string>
+    <string name="wallet_connect_stellar_op_path_payment">Path payment</string>
+    <string name="wallet_connect_stellar_op_sell_offer">Sell offer</string>
+    <string name="wallet_connect_stellar_op_buy_offer">Buy offer</string>
+    <string name="wallet_connect_stellar_op_set_options">Change account settings</string>
+    <string name="wallet_connect_stellar_amount">Amount</string>
+    <string name="wallet_connect_stellar_max_sent">Maximum sent</string>
+    <string name="wallet_connect_stellar_min_received">Minimum received</string>
+    <string name="wallet_connect_stellar_received">Received</string>
+    <string name="wallet_connect_stellar_asset">Asset</string>
+    <string name="wallet_connect_stellar_asset_issuer">Asset issuer</string>
+    <string name="wallet_connect_stellar_trust_limit">Trust limit</string>
+    <string name="wallet_connect_stellar_selling">Selling</string>
+    <string name="wallet_connect_stellar_buying">Buying</string>
+    <string name="wallet_connect_stellar_source_account">Source account</string>
+    <string name="wallet_connect_stellar_signer">Signer</string>
+    <string name="wallet_connect_stellar_signer_weight">Signer weight</string>
+    <string name="wallet_connect_stellar_master_key_weight">Master key weight</string>
+    <string name="wallet_connect_stellar_low_threshold">Low threshold</string>
+    <string name="wallet_connect_stellar_medium_threshold">Medium threshold</string>
+    <string name="wallet_connect_stellar_high_threshold">High threshold</string>
+    <string name="wallet_connect_stellar_set_flags">Set flags</string>
+    <string name="wallet_connect_stellar_clear_flags">Clear flags</string>
+    <string name="wallet_connect_stellar_home_domain">Home domain</string>
+    <string name="wallet_connect_stellar_inflation_destination">Inflation destination</string>
+    <string name="wallet_connect_stellar_set_options_title">Account control change</string>
+    <string name="wallet_connect_stellar_set_options">This request changes your account\'s signers, thresholds or flags. Approving it may hand control of your account to someone else. Only continue if you fully trust this app.</string>
+    <string name="wallet_connect_stellar_account_merge_title">Account closure</string>
+    <string name="wallet_connect_stellar_account_merge">This request closes your Stellar account and sends its entire balance to another address. Only continue if you fully trust this app.</string>
+    <string name="wallet_connect_stellar_unreadable_operation_title">Unreadable operation</string>
+    <string name="wallet_connect_stellar_unreadable_operation">This request contains an operation (%1$s) whose effect this wallet cannot display. Only continue if you fully trust this app.</string>
+    <string name="wallet_connect_stellar_foreign_source">This transaction is for a different account than your active wallet.</string>
 </resources>

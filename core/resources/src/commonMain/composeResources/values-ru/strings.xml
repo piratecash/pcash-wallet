@@ -2672,6 +2672,10 @@
     <string name="nft_copy_address">Скопировать адрес NFT</string>
     <string name="nft_burn_action">Сжечь NFT</string>
     <string name="nft_unverified_nft">Непроверенный NFT</string>
+    <string name="nft_artwork_hidden_title">Изображение скрыто</string>
+    <string name="nft_artwork_hidden_reason">NFT не проверен TonAPI</string>
+    <string name="nft_artwork_hidden_spam">NFT помечен как спам</string>
+    <string name="nft_artwork_hidden_tap">Нажмите, чтобы показать</string>
     <string name="nft_report_spam">Пожаловаться на спам</string>
     <string name="nft_report_title">Пожаловаться на спам?</string>
     <string name="nft_report_body">Коллекция «%1$s» будет скрыта и попадёт в раздел «Спам» в управлении коллекциями. Вернуть её можно там же кнопкой «Не спам».</string>
@@ -2839,4 +2843,39 @@
     <string name="sign_message_details_format">Формат</string>
     <string name="sign_message_not_ready">Кошелёк ещё загружается. Попробуйте через несколько секунд.</string>
     <string name="sign_message_failed">Не удалось подписать сообщение</string>
+
+    <!-- WalletConnect Stellar -->
+    <string name="wallet_connect_stellar_op_payment">Платёж</string>
+    <string name="wallet_connect_stellar_op_account_merge">Слияние аккаунта (отправляет весь баланс)</string>
+    <string name="wallet_connect_stellar_op_path_payment">Платёж с обменом</string>
+    <string name="wallet_connect_stellar_op_sell_offer">Ордер на продажу</string>
+    <string name="wallet_connect_stellar_op_buy_offer">Ордер на покупку</string>
+    <string name="wallet_connect_stellar_op_set_options">Изменение настроек аккаунта</string>
+    <string name="wallet_connect_stellar_amount">Сумма</string>
+    <string name="wallet_connect_stellar_max_sent">Максимум к отправке</string>
+    <string name="wallet_connect_stellar_min_received">Минимум к получению</string>
+    <string name="wallet_connect_stellar_received">Будет получено</string>
+    <string name="wallet_connect_stellar_asset">Актив</string>
+    <string name="wallet_connect_stellar_asset_issuer">Эмитент актива</string>
+    <string name="wallet_connect_stellar_trust_limit">Лимит доверия</string>
+    <string name="wallet_connect_stellar_selling">Продаёте</string>
+    <string name="wallet_connect_stellar_buying">Покупаете</string>
+    <string name="wallet_connect_stellar_source_account">Аккаунт-отправитель</string>
+    <string name="wallet_connect_stellar_signer">Подписант</string>
+    <string name="wallet_connect_stellar_signer_weight">Вес подписанта</string>
+    <string name="wallet_connect_stellar_master_key_weight">Вес мастер-ключа</string>
+    <string name="wallet_connect_stellar_low_threshold">Низкий порог</string>
+    <string name="wallet_connect_stellar_medium_threshold">Средний порог</string>
+    <string name="wallet_connect_stellar_high_threshold">Высокий порог</string>
+    <string name="wallet_connect_stellar_set_flags">Установить флаги</string>
+    <string name="wallet_connect_stellar_clear_flags">Сбросить флаги</string>
+    <string name="wallet_connect_stellar_home_domain">Домашний домен</string>
+    <string name="wallet_connect_stellar_inflation_destination">Адрес инфляции</string>
+    <string name="wallet_connect_stellar_set_options_title">Изменение доступа к аккаунту</string>
+    <string name="wallet_connect_stellar_set_options">Этот запрос меняет подписантов, пороги или флаги вашего аккаунта. Подтвердив его, вы можете передать управление аккаунтом другому человеку. Продолжайте, только если полностью доверяете этому приложению.</string>
+    <string name="wallet_connect_stellar_account_merge_title">Закрытие аккаунта</string>
+    <string name="wallet_connect_stellar_account_merge">Этот запрос закрывает ваш аккаунт Stellar и отправляет весь его баланс на другой адрес. Продолжайте, только если полностью доверяете этому приложению.</string>
+    <string name="wallet_connect_stellar_unreadable_operation_title">Нераспознанная операция</string>
+    <string name="wallet_connect_stellar_unreadable_operation">В запросе есть операция (%1$s), действие которой кошелёк не может показать. Продолжайте, только если полностью доверяете этому приложению.</string>
+    <string name="wallet_connect_stellar_foreign_source">Эта транзакция относится к другому аккаунту, а не к вашему активному кошельку.</string>
 </resources>

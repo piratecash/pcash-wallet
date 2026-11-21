@@ -32,8 +32,10 @@ import cash.p.terminal.entities.NftItemRecord
 import cash.p.terminal.entities.NftTrust
 import cash.p.terminal.modules.transactions.supportsBlur
 import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_eye_off
 import cash.p.terminal.resources.ic_fire_24
 import cash.p.terminal.resources.ic_nft_sale_14
+import cash.p.terminal.resources.nft_artwork_hidden_title
 import cash.p.terminal.resources.nft_artwork_placeholder
 import cash.p.terminal.resources.nft_domain_on_sale_badge
 import cash.p.terminal.resources.nft_unnamed
@@ -75,6 +77,7 @@ fun NftCard(
                 .background(ComposeAppTheme.colors.surfacePlaceholder)
         ) {
             NftArtwork(url = item.imageUrl, hidden = hidden, untrusted = item.isUntrusted)
+            if (item.isUntrusted) UntrustedArtworkMark(Modifier.align(Alignment.Center))
             if (item.inSale) NftSaleBadge(Modifier.align(Alignment.TopEnd).padding(8.dp))
             if (expiringSoon) {
                 Icon(
@@ -170,6 +173,21 @@ private fun UntrustedArtwork(url: String?, modifier: Modifier = Modifier) {
             .then(if (supportsBlur) Modifier.blur(ARTWORK_BLUR) else Modifier),
         contentScale = ContentScale.Crop,
     )
+}
+
+@Composable
+private fun UntrustedArtworkMark(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier.size(32.dp).background(ComposeAppTheme.colors.backgroundOverlay, CircleShape),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            painter = painterResource(Res.drawable.ic_eye_off),
+            contentDescription = stringResource(Res.string.nft_artwork_hidden_title),
+            tint = ComposeAppTheme.colors.contentOnColor,
+            modifier = Modifier.size(20.dp),
+        )
+    }
 }
 
 @Composable

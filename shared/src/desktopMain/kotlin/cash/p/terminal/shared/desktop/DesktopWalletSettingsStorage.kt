@@ -81,6 +81,11 @@ class DesktopWalletSettingsStorage(
         get() = accountSettings.strings(NFT_VERSION_HINTS_DISMISSED)
         set(value) = accountSettings.setStrings(NFT_VERSION_HINTS_DISMISSED, value) { it.substringBefore(':') }
 
+    // Public data, the same for every user, so it lives in the plain settings file.
+    override var trustedNftCollections: Set<String>
+        get() = store.string(TRUSTED_NFT_COLLECTIONS)?.split('\n')?.filterTo(mutableSetOf()) { it.isNotEmpty() }.orEmpty()
+        set(value) = store.setString(TRUSTED_NFT_COLLECTIONS, value.joinToString("\n"))
+
     override var transactionHideEnabled: Boolean
         get() = store.flag(TRANSACTION_HIDE) ?: false
         set(value) = store.setFlag(TRANSACTION_HIDE, value)
@@ -202,6 +207,7 @@ class DesktopWalletSettingsStorage(
         const val NON_RECOMMENDED_DISMISSED = "nonRecommendedAccountAlertDismissedAccounts"
         const val SHOW_NFT_COLLECTIONS = "showNftCollections"
         const val NFT_VERSION_HINTS_DISMISSED = "nftVersionHintsDismissed"
+        const val TRUSTED_NFT_COLLECTIONS = "trustedNftCollections"
         const val TRANSACTION_HIDE = "transactionHideEnabled"
         const val TRANSACTION_HIDE_PIN = "transactionHideSecretPin"
         const val TRANSACTION_DISPLAY_LEVEL = "transactionDisplayLevel"
