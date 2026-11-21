@@ -273,6 +273,27 @@ class DesktopMainPageDesktopTest {
     }
 
     @Test
+    fun selectTab_settings_showsSettingsWithoutRememberingIt() = runDesktopComposeUiTest {
+        tabStorage().mainTab = MainDestination.Transactions
+        showApp()
+
+        runOnIdle { mainPage().selectTab(MainDestination.Settings) }
+
+        onNodeWithContentDescription(SETTINGS).assertIsSelected()
+        assertEquals(MainDestination.Transactions, tabStorage().mainTab)
+    }
+
+    @Test
+    fun selectTab_transactions_remembersIt() = runDesktopComposeUiTest {
+        tabStorage().mainTab = MainDestination.Balance
+        showApp()
+
+        runOnIdle { mainPage().selectTab(MainDestination.Transactions) }
+
+        assertEquals(MainDestination.Transactions, tabStorage().mainTab)
+    }
+
+    @Test
     fun settings_accountWithoutBackup_flagsManageWallets() = runDesktopComposeUiTest {
         showApp()
         onNodeWithContentDescription(SETTINGS).performClick()
@@ -339,6 +360,10 @@ class DesktopMainPageDesktopTest {
     }
 
     private fun appearanceStore() = GlobalContext.get().get<AppearanceSettingsStore>()
+
+    private fun tabStorage() = GlobalContext.get().get<MainTabStorage>()
+
+    private fun mainPage() = navigation.backStack.first() as DesktopMainPage
 
     private fun ComposeUiTest.showApp() = setContent {
         TestWindowHost {

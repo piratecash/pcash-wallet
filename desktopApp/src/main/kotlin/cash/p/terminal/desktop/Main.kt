@@ -29,7 +29,8 @@ import cash.p.terminal.shared.desktop.WindowCaptureProtectionEffect
 import cash.p.terminal.shared.desktop.desktopFeatureModule
 import cash.p.terminal.shared.desktop.rememberDesktopDarkTheme
 import cash.p.terminal.shared.desktop.lock.DesktopInactivityLock
-import cash.p.terminal.shared.desktop.lock.DesktopRoot
+import cash.p.terminal.shared.desktop.menu.DesktopRootWithMenu
+import cash.p.terminal.shared.desktop.qrscanner.DesktopOs
 import cash.p.terminal.shared.desktop.vault.DesktopVault
 import cash.p.terminal.shared.desktop.vault.SingleInstanceLock
 import cash.p.terminal.shared.market.MarketCatalogSyncer
@@ -64,6 +65,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.core.context.startKoin
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import javax.swing.UIManager
 import kotlin.system.exitProcess
 
 private const val APPLICATION_NAME = "P.CASH"
@@ -82,6 +84,7 @@ private val applicationScope = MainScope()
 private var instanceLock: SingleInstanceLock? = null
 
 fun main(args: Array<String>) {
+    configureSwingLook()
     val launchArguments = DesktopLaunchArguments.parse(args)
     // The packager re-signs natives inside jars, so every kit native and JNA load their copies from the app resources.
     System.getProperty("compose.application.resources.dir")?.let {
@@ -139,11 +142,20 @@ fun main(args: Array<String>) {
             DesktopForegroundEffect(windowState.isMinimized)
             WindowCaptureProtectionEffect(window, koin.get())
             ComposeAppTheme(darkTheme = rememberDesktopDarkTheme()) {
-                DesktopRoot(launchArguments.wipeFailed)
+                DesktopRootWithMenu(launchArguments.wipeFailed)
             }
         }
     }
     closeAndExit(vault, koin.get())
+}
+
+/** Before anything touches AWT: macOS reads the menu bar placement once, at toolkit start. */
+private fun configureSwingLook() {
+    when (DesktopOs.current) {
+        DesktopOs.MacOs -> System.setProperty("apple.laf.useScreenMenuBar", "true")
+        DesktopOs.Windows -> UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
+        DesktopOs.Linux -> Unit
+    }
 }
 
 /** macOS Quit (Cmd+Q, menu, Dock) would otherwise exit at once and skip closing the vault. */

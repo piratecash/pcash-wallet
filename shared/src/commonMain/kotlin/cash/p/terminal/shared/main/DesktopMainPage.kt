@@ -12,7 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
@@ -22,6 +21,7 @@ import cash.p.terminal.core.AppearanceSettingsStore
 import cash.p.terminal.core.IBackupManager
 import cash.p.terminal.core.IClipboardManager
 import cash.p.terminal.core.ITermsManager
+import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.managers.AppVersionManager
 import cash.p.terminal.core.managers.ReleaseNotesManager
 import cash.p.terminal.core.providers.SharedAppConfig
@@ -70,6 +70,8 @@ import cash.p.terminal.wallet.IAccountManager
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.ILanguageManager
 import io.horizontalsystems.core.ISystemInfoManager
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.map
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -85,39 +87,52 @@ private val DESKTOP_HIDDEN_SETTINGS = setOf(
     SettingsAction.RateApp,
 )
 
-/** Root of the desktop back stack: the main tabs; pages opened from them stack above it. */
+/**
+ * Root of the desktop back stack: the main tabs; pages opened from them stack above it.
+ * The page lives as long as its back stack, so the chosen tab survives a lock without saved state.
+ */
 class DesktopMainPage : HSPage() {
+
+    private val launchTab by lazy {
+        val appearanceStore = getKoinInstance<AppearanceSettingsStore>()
+        launchDestination(
+            launchPage = appearanceStore.launchPage ?: LaunchPage.Auto,
+            marketsTabEnabled = appearanceStore.marketsTabEnabledFlow.value,
+            lastTab = getKoinInstance<MainTabStorage>().mainTab ?: MainDestination.Balance,
+        )
+    }
+    private var chosenTab by mutableStateOf<MainDestination?>(null)
+    private val balanceRefreshRequests = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
+    val selectedTab: MainDestination
+        get() = chosenTab ?: launchTab
+
+    fun selectTab(destination: MainDestination) {
+        rememberedMainTab(destination)?.let { getKoinInstance<MainTabStorage>().mainTab = it }
+        chosenTab = destination
+    }
+
+    fun refreshBalance() {
+        balanceRefreshRequests.tryEmit(Unit)
+    }
 
     @Composable
     override fun GetContent(navigation: HSNavigation) {
         val appearanceStore = koinInject<AppearanceSettingsStore>()
-        val mainTabStorage = koinInject<MainTabStorage>()
         val marketsTabEnabled by appearanceStore.marketsTabEnabledFlow.collectAsStateWithLifecycle()
         val destinations = remember(marketsTabEnabled) {
             MainDestination.entries.filter { it != MainDestination.Market || marketsTabEnabled }
         }
-        var selected by rememberSaveable {
-            mutableStateOf(
-                launchDestination(
-                    launchPage = appearanceStore.launchPage ?: LaunchPage.Auto,
-                    marketsTabEnabled = marketsTabEnabled,
-                    lastTab = mainTabStorage.mainTab ?: MainDestination.Balance,
-                )
-            )
-        }
-        val selectedDestination = selected.takeIf { it in destinations } ?: MainDestination.Balance
+        val selectedDestination = shownTab(selectedTab, marketsTabEnabled)
         ShowReleaseNotesAfterUpdate(navigation)
         MainNavigation(
             destinations = destinations,
             selectedDestination = selectedDestination,
-            onDestinationSelect = {
-                rememberedMainTab(it)?.let { tab -> mainTabStorage.mainTab = tab }
-                selected = it
-            },
+            onDestinationSelect = ::selectTab,
             modifier = Modifier.fillMaxSize(),
         ) { destination ->
             when (destination) {
-                MainDestination.Balance -> BalancePane(navigation)
+                MainDestination.Balance -> BalancePane(navigation, balanceRefreshRequests)
                 MainDestination.Market -> MarketScreen(navigation, PaddingValues())
                 MainDestination.Transactions -> TransactionsPane(navigation)
                 MainDestination.Settings -> SettingsPane(navigation)
@@ -125,6 +140,10 @@ class DesktopMainPage : HSPage() {
         }
     }
 }
+
+/** The tab on screen: a hidden Markets tab falls back to Balance. */
+fun shownTab(selected: MainDestination, marketsTabEnabled: Boolean): MainDestination =
+    if (selected == MainDestination.Market && !marketsTabEnabled) MainDestination.Balance else selected
 
 /** Composed only while unlocked; the back stack outlives a lock, so an already open page is not pushed again. */
 @Composable
@@ -140,8 +159,8 @@ private fun ShowReleaseNotesAfterUpdate(navigation: HSNavigation) {
 }
 
 @Composable
-private fun BalancePane(navigation: HSNavigation) {
-    BalanceScreen(navigation = navigation, paddingValues = PaddingValues())
+private fun BalancePane(navigation: HSNavigation, refreshRequests: Flow<Unit>) {
+    BalanceScreen(navigation = navigation, paddingValues = PaddingValues(), refreshRequests = refreshRequests)
 }
 
 @Composable
