@@ -3,7 +3,6 @@ package cash.p.terminal.modules.nft
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,7 +30,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,6 +41,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cash.p.terminal.entities.NftItemRecord
+import cash.p.terminal.modules.balance.ui.HideBalanceToggle
 import cash.p.terminal.modules.nft.ui.HIDDEN_COLLECTION
 import cash.p.terminal.modules.nft.ui.NftCard
 import cash.p.terminal.modules.nft.ui.NftCardSkeleton
@@ -51,10 +50,7 @@ import cash.p.terminal.modules.nft.ui.previewNftItems
 import cash.p.terminal.resources.Balance_Network
 import cash.p.terminal.resources.Balance_Receive
 import cash.p.terminal.resources.Res
-import cash.p.terminal.resources.hide_balance
 import cash.p.terminal.resources.ic_arrow_right
-import cash.p.terminal.resources.ic_eye_20
-import cash.p.terminal.resources.ic_eye_off
 import cash.p.terminal.resources.ic_manage_2_24
 import cash.p.terminal.resources.icon_24_nft_placeholder
 import cash.p.terminal.resources.nft_collections
@@ -68,7 +64,6 @@ import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonPrimaryTransparent
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
-import cash.p.terminal.ui_compose.components.HSpacer
 import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.LocalUrlOpener
 import cash.p.terminal.ui_compose.components.MenuItem
@@ -140,23 +135,7 @@ private fun HideBalanceRow(uiState: NftCollectionsUiState, onEyeClick: () -> Uni
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier.clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onEyeClick
-            ),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            subhead2_grey(text = stringResource(Res.string.hide_balance))
-            HSpacer(8.dp)
-            Icon(
-                painter = painterResource(if (uiState.hidden) Res.drawable.ic_eye_off else Res.drawable.ic_eye_20),
-                contentDescription = null,
-                tint = ComposeAppTheme.colors.iconSecondary,
-                modifier = Modifier.size(20.dp)
-            )
-        }
+        HideBalanceToggle(hidden = uiState.hidden, onToggle = onEyeClick)
         uiState.networkTitle?.let {
             Box(Modifier.weight(1f), Alignment.CenterEnd) {
                 subhead2_grey(text = "${stringResource(Res.string.Balance_Network)}: $it")
