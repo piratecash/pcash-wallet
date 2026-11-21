@@ -2506,6 +2506,10 @@
     <string name="nft_copy_address">复制 NFT 地址</string>
     <string name="nft_burn_action">销毁 NFT</string>
     <string name="nft_unverified_nft">未验证的 NFT</string>
+    <string name="nft_artwork_hidden_title">图片已隐藏</string>
+    <string name="nft_artwork_hidden_reason">NFT 未经 TonAPI 验证</string>
+    <string name="nft_artwork_hidden_spam">NFT 已被标记为垃圾内容</string>
+    <string name="nft_artwork_hidden_tap">点击显示</string>
     <string name="nft_report_spam">举报垃圾内容</string>
     <string name="nft_report_title">举报为垃圾内容？</string>
     <string name="nft_report_body">收藏集“%1$s”将被隐藏，并移至收藏集管理中的“垃圾”分区。你可以在那里通过“非垃圾”按钮恢复。</string>
@@ -2629,4 +2633,39 @@
     <string name="desktop_password_save_failed">无法保存密码，请重试</string>
     <string name="tron_controlled_by_others_title">其他人可能控制此账户</string>
     <string name="tron_controlled_by_others_warning">此账户的权限已被更改：其他密钥可能控制该账户。您转入的资金可能在未经您同意的情况下被提取。仅当您知道这些密钥属于谁时才向其充值。</string>
+
+    <!-- WalletConnect Stellar -->
+    <string name="wallet_connect_stellar_op_payment">付款</string>
+    <string name="wallet_connect_stellar_op_account_merge">合并账户（发送全部余额）</string>
+    <string name="wallet_connect_stellar_op_path_payment">路径付款</string>
+    <string name="wallet_connect_stellar_op_sell_offer">卖出报价</string>
+    <string name="wallet_connect_stellar_op_buy_offer">买入报价</string>
+    <string name="wallet_connect_stellar_op_set_options">更改账户设置</string>
+    <string name="wallet_connect_stellar_amount">金额</string>
+    <string name="wallet_connect_stellar_max_sent">最多发送</string>
+    <string name="wallet_connect_stellar_min_received">最少收到</string>
+    <string name="wallet_connect_stellar_received">收到</string>
+    <string name="wallet_connect_stellar_asset">资产</string>
+    <string name="wallet_connect_stellar_asset_issuer">资产发行方</string>
+    <string name="wallet_connect_stellar_trust_limit">信任额度</string>
+    <string name="wallet_connect_stellar_selling">卖出</string>
+    <string name="wallet_connect_stellar_buying">买入</string>
+    <string name="wallet_connect_stellar_source_account">来源账户</string>
+    <string name="wallet_connect_stellar_signer">签名者</string>
+    <string name="wallet_connect_stellar_signer_weight">签名者权重</string>
+    <string name="wallet_connect_stellar_master_key_weight">主密钥权重</string>
+    <string name="wallet_connect_stellar_low_threshold">低阈值</string>
+    <string name="wallet_connect_stellar_medium_threshold">中阈值</string>
+    <string name="wallet_connect_stellar_high_threshold">高阈值</string>
+    <string name="wallet_connect_stellar_set_flags">设置标志</string>
+    <string name="wallet_connect_stellar_clear_flags">清除标志</string>
+    <string name="wallet_connect_stellar_home_domain">主域名</string>
+    <string name="wallet_connect_stellar_inflation_destination">通胀目标地址</string>
+    <string name="wallet_connect_stellar_set_options_title">账户控制权变更</string>
+    <string name="wallet_connect_stellar_set_options">此请求会更改您账户的签名者、阈值或标志。批准后，您的账户控制权可能会交给他人。只有在完全信任此应用时才继续。</string>
+    <string name="wallet_connect_stellar_account_merge_title">关闭账户</string>
+    <string name="wallet_connect_stellar_account_merge">此请求会关闭您的 Stellar 账户，并将全部余额发送到另一个地址。只有在完全信任此应用时才继续。</string>
+    <string name="wallet_connect_stellar_unreadable_operation_title">无法识别的操作</string>
+    <string name="wallet_connect_stellar_unreadable_operation">此请求包含钱包无法显示其效果的操作（%1$s）。只有在完全信任此应用时才继续。</string>
+    <string name="wallet_connect_stellar_foreign_source">此交易属于另一个账户，而不是您当前的钱包。</string>
 </resources>

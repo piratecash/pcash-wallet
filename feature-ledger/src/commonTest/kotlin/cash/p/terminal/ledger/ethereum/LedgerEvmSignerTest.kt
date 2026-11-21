@@ -120,7 +120,6 @@ class LedgerEvmSignerTest {
 
         assertTrue(signer is ExternalEvmMessageSigner)
         assertFailsWith<LedgerSigningFailedException> { signer.signature(transfer(GasPrice.Legacy(1))) }
-        assertFailsWith<LedgerSigningFailedException> { signer.signLegacyHash(ByteArray(32)) }
     }
 
     private fun assertRecovers(expected: Address, hash: ByteArray, signature: ByteArray) {

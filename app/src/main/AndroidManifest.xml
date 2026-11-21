@@ -44,6 +44,14 @@
             android:exported="false"
             android:foregroundServiceType="dataSync" />
 
+        <!-- Unused: widget list items only start activities. Test robots open them without extras and crash them. -->
+        <activity
+            android:name="androidx.glance.appwidget.action.ActionTrampolineActivity"
+            tools:node="remove" />
+        <activity
+            android:name="androidx.glance.appwidget.action.InvisibleActionTrampolineActivity"
+            tools:node="remove" />
+
         <receiver
             android:name=".widgets.MarketWidgetReceiver"
             android:exported="false">

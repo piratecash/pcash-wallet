@@ -14,7 +14,6 @@ import java.math.BigInteger
 /** The base Signer's message methods sign with a mock key for external signers, so callers must route here. */
 interface ExternalEvmMessageSigner {
     suspend fun signPersonalMessage(message: ByteArray): ByteArray
-    suspend fun signLegacyHash(hash: ByteArray): ByteArray
     /** [cardPrompt] is shown only by devices that display one (the Tangem card session). */
     suspend fun signTypedDataMessage(rawJson: String, cardPrompt: String? = null): ByteArray
 }

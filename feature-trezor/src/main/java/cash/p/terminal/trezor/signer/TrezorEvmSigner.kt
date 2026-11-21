@@ -176,10 +176,6 @@ class TrezorEvmSigner(
             ?: throw TrezorSigningException("Device signed with an unexpected account")
     }
 
-    /** Not supported: Trezor has no raw-hash (`eth_sign`) operation for Ethereum. */
-    override suspend fun signLegacyHash(hash: ByteArray): ByteArray =
-        throw TrezorSigningException("eth_sign (raw hash) is not supported on Trezor")
-
     /** Signs EIP-712 typed data on-device (Trezor One signs the hashes only); returns `r‖s‖recId`. */
     override suspend fun signTypedDataMessage(rawJson: String, cardPrompt: String?): ByteArray {
         if (!TrezorModelSupport.supportsTypedData(model, firmwareVersion)) {

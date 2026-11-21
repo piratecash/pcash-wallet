@@ -63,12 +63,29 @@ class NftCollectionsRepositoryTest {
     private val provider = mockk<NftProvider> {
         every { blockchainType } returns BlockchainType.Ton
     }
+    private val trustedCollections = mockk<NftTrustedCollectionsRepository> {
+        every { isTrusted(any(), any()) } returns false
+        every { isTrusted(BlockchainType.Ton, TRUSTED_COLLECTION) } returns true
+    }
     private val repository = NftCollectionsRepository(
         storage,
         listOf(provider),
         offlineModeManager,
         TestDispatcherProvider(dispatcher, TestScope(dispatcher)),
+        trustedCollections,
     )
+
+    @Test
+    fun itemsFlow_trustedCollection_reportsWhitelist() = test {
+        rows.value = listOf(
+            record("ours", collectionAddress = TRUSTED_COLLECTION, trust = NftTrust.Graylist),
+            record("other", collectionAddress = OTHER_COLLECTION, trust = NftTrust.Graylist),
+        )
+
+        val trust = firstState(setOf(OWNER)).items.associate { it.address to it.trust }
+
+        assertEquals(mapOf("ours" to NftTrust.Whitelist, "other" to NftTrust.Graylist), trust)
+    }
 
     @Test
     fun itemsFlow_fetchStillRunning_emitsCachedRows() = test {
@@ -451,6 +468,8 @@ class NftCollectionsRepositoryTest {
         ownerAddress: String = ADDRESS,
         blockchainType: BlockchainType = BlockchainType.Ton,
         position: Int = 0,
+        collectionAddress: String? = null,
+        trust: NftTrust = NftTrust.Whitelist,
     ) = NftItemRecord(
         accountId = ACCOUNT_ID,
         blockchainType = blockchainType,
@@ -460,10 +479,10 @@ class NftCollectionsRepositoryTest {
         name = null,
         description = null,
         realOwnerAddress = null,
-        collectionAddress = null,
+        collectionAddress = collectionAddress,
         collectionName = null,
         collectionDescription = null,
-        trust = NftTrust.Whitelist,
+        trust = trust,
         verified = false,
         imageUrl = null,
         largeImageUrl = null,
@@ -478,6 +497,8 @@ class NftCollectionsRepositoryTest {
     }
 
     private companion object {
+        const val TRUSTED_COLLECTION = "EQBlPHLRW1w9NfKaakkYwJ8dmQVqexVozklmGVclUaUlQ4eQ"
+        const val OTHER_COLLECTION = "EQBqHGXO2Xadhze9xC9P6ofUsU_BKAspN5lMe95xVRF_oqcj"
         const val ACCOUNT_ID = "account-id"
         const val ADDRESS = "owner-address"
         const val OTHER_ADDRESS = "other-owner-address"

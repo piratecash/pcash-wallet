@@ -86,7 +86,10 @@ fun LocalBackupPasswordScreen(
             viewModel.backupFinished()
         },
         onCancel = viewModel::backupCanceled,
-        onError = { e -> hudMessenger.showError(e.message ?: e::class.simpleName.orEmpty()) },
+        onError = { e ->
+            hudMessenger.showError(e.message ?: e::class.simpleName.orEmpty())
+            viewModel.backupCanceled()
+        },
     )
 
     uiState.error?.let { error ->

@@ -51,6 +51,7 @@ private const val NFT_COUNT_LIMIT = 1000
 class TonNftProvider(
     private val tonKitManager: TonKitManager,
     private val dispatcherProvider: DispatcherProvider,
+    private val trustedCollections: NftTrustedCollectionsRepository,
 ) : NftProvider {
 
     // One client for every count; a kit is not started for a version the user has not added.
@@ -103,7 +104,10 @@ class TonNftProvider(
         try {
             tonApi.getAccountNftItems(Address.parse(address), NFT_COUNT_LIMIT)
                 .mapNotNull { it.toDraftOrNull() }
-                .count { it.trust != NftTrust.Blacklist }
+                .count { draft ->
+                    draft.trust != NftTrust.Blacklist ||
+                        trustedCollections.isTrusted(blockchainType, draft.collectionAddress)
+                }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {

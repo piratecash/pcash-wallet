@@ -15,11 +15,6 @@ object EvmMessageSigning {
         else -> signer.signByteArray(message)
     }
 
-    suspend fun signLegacyHash(signer: Signer, hash: ByteArray): ByteArray = when (signer) {
-        is ExternalEvmMessageSigner -> signer.signLegacyHash(hash)
-        else -> signer.signByteArrayLegacy(hash)
-    }
-
     suspend fun signTypedData(signer: Signer, rawJson: String, cardPrompt: String? = null): ByteArray = when (signer) {
         is ExternalEvmMessageSigner -> signer.signTypedDataMessage(rawJson, cardPrompt)
 

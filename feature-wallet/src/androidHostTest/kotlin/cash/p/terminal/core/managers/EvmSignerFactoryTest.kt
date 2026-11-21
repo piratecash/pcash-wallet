@@ -228,9 +228,6 @@ class EvmSignerFactoryTest {
         assertThrows(LedgerRejectedException::class.java) {
             runBlocking { EvmMessageSigning.signTypedData(ledgerSigner, BackendSwapGoldenVectors.m1.toTypedDataJson()) }
         }
-        assertThrows(LedgerSigningFailedException::class.java) {
-            runBlocking { EvmMessageSigning.signLegacyHash(ledgerSigner, ByteArray(32)) }
-        }
         assertThrows(LedgerSigningFailedException::class.java) { runBlocking { ledgerSigner.signature(transaction) } }
     }
 

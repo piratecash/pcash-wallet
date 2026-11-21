@@ -32,6 +32,7 @@ import cash.p.terminal.core.nft.NftCollectionsRepository
 import cash.p.terminal.core.nft.NftGramHintsRepository
 import cash.p.terminal.core.nft.NftLottieLoader
 import cash.p.terminal.core.nft.NftProvider
+import cash.p.terminal.core.nft.NftTrustedCollectionsRepository
 import cash.p.terminal.core.nft.TonNftProvider
 import cash.p.terminal.core.managers.ZcashBirthdayProvider
 import cash.p.terminal.core.providers.PredefinedBlockchainSettingsProvider
@@ -465,7 +466,8 @@ val featureWalletModule = module {
     singleOf(::NftCollectionPrefStorage)
     singleOf(::NftCollectionPrefsRepository)
     singleOf(::TonNftProvider) bind NftProvider::class
-    single { NftCollectionsRepository(get(), getAll(), get(), get()) }
+    singleOf(::NftTrustedCollectionsRepository)
+    single { NftCollectionsRepository(get(), getAll(), get(), get(), get()) }
     singleOf(::NftOwnerWalletResolver)
     singleOf(::NftTransferAvailabilityProvider)
     singleOf(::NftLottieLoader)

@@ -58,9 +58,6 @@ class LedgerEvmSigner(
         withEthereumApp { it.signPersonalMessage(path, message) }
             .toMessageSignature(EvmSignatureRecovery.personalSignHash(message))
 
-    override suspend fun signLegacyHash(hash: ByteArray): ByteArray =
-        throw LedgerSigningFailedException("eth_sign (raw hash) is not supported on Ledger")
-
     override suspend fun signTypedDataMessage(rawJson: String, cardPrompt: String?): ByteArray {
         // Hashing first rejects malformed data before the device prompt.
         val digest = EIP712Encoder().encodeTypedDataHash(rawJson)

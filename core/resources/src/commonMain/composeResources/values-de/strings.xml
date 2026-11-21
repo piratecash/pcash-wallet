@@ -2519,6 +2519,10 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="nft_copy_address">NFT-Adresse kopieren</string>
     <string name="nft_burn_action">NFT verbrennen</string>
     <string name="nft_unverified_nft">Ungeprüftes NFT</string>
+    <string name="nft_artwork_hidden_title">Bild ausgeblendet</string>
+    <string name="nft_artwork_hidden_reason">NFT nicht von TonAPI geprüft</string>
+    <string name="nft_artwork_hidden_spam">NFT als Spam markiert</string>
+    <string name="nft_artwork_hidden_tap">Zum Anzeigen tippen</string>
     <string name="nft_report_spam">Spam melden</string>
     <string name="nft_report_title">Als Spam melden?</string>
     <string name="nft_report_body">Die Sammlung „%1$s“ wird ausgeblendet und in den Bereich „Spam“ der Sammlungsverwaltung verschoben. Dort kannst du sie mit „Kein Spam“ wiederherstellen.</string>
@@ -2650,4 +2654,39 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="desktop_password_save_failed">Das Passwort konnte nicht gespeichert werden. Bitte versuchen Sie es erneut</string>
     <string name="tron_controlled_by_others_title">Andere können dieses Konto kontrollieren</string>
     <string name="tron_controlled_by_others_warning">Die Berechtigungen für dieses Konto wurden geändert: Andere Schlüssel können es möglicherweise kontrollieren. Gelder, die Sie dorthin senden, können ohne Ihr Zutun abgehoben werden. Laden Sie es nur auf, wenn Sie wissen, wem diese Schlüssel gehören.</string>
+
+    <!-- WalletConnect Stellar -->
+    <string name="wallet_connect_stellar_op_payment">Zahlung</string>
+    <string name="wallet_connect_stellar_op_account_merge">Konto zusammenführen (sendet gesamtes Guthaben)</string>
+    <string name="wallet_connect_stellar_op_path_payment">Pfadzahlung</string>
+    <string name="wallet_connect_stellar_op_sell_offer">Verkaufsangebot</string>
+    <string name="wallet_connect_stellar_op_buy_offer">Kaufangebot</string>
+    <string name="wallet_connect_stellar_op_set_options">Kontoeinstellungen ändern</string>
+    <string name="wallet_connect_stellar_amount">Betrag</string>
+    <string name="wallet_connect_stellar_max_sent">Maximal gesendet</string>
+    <string name="wallet_connect_stellar_min_received">Mindestens erhalten</string>
+    <string name="wallet_connect_stellar_received">Erhalten</string>
+    <string name="wallet_connect_stellar_asset">Asset</string>
+    <string name="wallet_connect_stellar_asset_issuer">Asset-Herausgeber</string>
+    <string name="wallet_connect_stellar_trust_limit">Vertrauenslimit</string>
+    <string name="wallet_connect_stellar_selling">Verkauf</string>
+    <string name="wallet_connect_stellar_buying">Kauf</string>
+    <string name="wallet_connect_stellar_source_account">Quellkonto</string>
+    <string name="wallet_connect_stellar_signer">Unterzeichner</string>
+    <string name="wallet_connect_stellar_signer_weight">Gewicht des Unterzeichners</string>
+    <string name="wallet_connect_stellar_master_key_weight">Gewicht des Hauptschlüssels</string>
+    <string name="wallet_connect_stellar_low_threshold">Niedriger Schwellenwert</string>
+    <string name="wallet_connect_stellar_medium_threshold">Mittlerer Schwellenwert</string>
+    <string name="wallet_connect_stellar_high_threshold">Hoher Schwellenwert</string>
+    <string name="wallet_connect_stellar_set_flags">Flags setzen</string>
+    <string name="wallet_connect_stellar_clear_flags">Flags löschen</string>
+    <string name="wallet_connect_stellar_home_domain">Home-Domain</string>
+    <string name="wallet_connect_stellar_inflation_destination">Inflationsziel</string>
+    <string name="wallet_connect_stellar_set_options_title">Änderung der Kontokontrolle</string>
+    <string name="wallet_connect_stellar_set_options">Diese Anfrage ändert die Unterzeichner, Schwellenwerte oder Flags Ihres Kontos. Wenn Sie sie bestätigen, kann jemand anderes die Kontrolle über Ihr Konto erhalten. Fahren Sie nur fort, wenn Sie dieser App voll vertrauen.</string>
+    <string name="wallet_connect_stellar_account_merge_title">Kontoschließung</string>
+    <string name="wallet_connect_stellar_account_merge">Diese Anfrage schließt Ihr Stellar-Konto und sendet das gesamte Guthaben an eine andere Adresse. Fahren Sie nur fort, wenn Sie dieser App voll vertrauen.</string>
+    <string name="wallet_connect_stellar_unreadable_operation_title">Nicht lesbarer Vorgang</string>
+    <string name="wallet_connect_stellar_unreadable_operation">Diese Anfrage enthält einen Vorgang (%1$s), dessen Wirkung diese Wallet nicht anzeigen kann. Fahren Sie nur fort, wenn Sie dieser App voll vertrauen.</string>
+    <string name="wallet_connect_stellar_foreign_source">Diese Transaktion gehört zu einem anderen Konto als Ihre aktive Wallet.</string>
 </resources>
