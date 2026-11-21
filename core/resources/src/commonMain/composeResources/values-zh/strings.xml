@@ -2074,7 +2074,7 @@
     <string name="auth_info_successful">成功</string>
     <string name="auth_info_unsuccessful">失败</string>
     <string name="auth_info_duress_mode">(胁迫模式)</string>
-    <string name="auth_info_entrance_to">进入 %s</string>
+    <string name="auth_info_entrance_to">进入 %1$s</string>
     <string name="auth_info_seconds_ago">(%d秒前)</string>
     <string name="auth_info_minutes_ago">(%d分钟前)</string>
     <string name="auth_info_hours_ago">(%d小时前)</string>
@@ -2596,6 +2596,19 @@
     <string name="desktop_password_save_failed">无法保存密码，请重试</string>
     <string name="tron_controlled_by_others_title">其他人可能控制此账户</string>
     <string name="tron_controlled_by_others_warning">此账户的权限已被更改：其他密钥可能控制该账户。您转入的资金可能在未经您同意的情况下被提取。仅当您知道这些密钥属于谁时才向其充值。</string>
+    <string name="login_logging_selfie_unsuccessful_shared">此开关对这台电脑上的所有钱包通用</string>
+    <string name="desktop_journal_password_title">日志密码</string>
+    <string name="desktop_journal_password_set_description">设置一个用于保护登录日志的密码。它必须与用于解锁钱包的密码不同</string>
+    <string name="desktop_journal_password_access_description">输入日志密码以打开登录日志</string>
+    <string name="desktop_journal_password_disable_description">输入日志密码以将其关闭</string>
+    <string name="desktop_delete_contacts_password_title">删除联系人密码</string>
+    <string name="desktop_delete_contacts_password_set_description">在解锁界面输入此密码会立即从这台电脑上删除您的地址簿。它必须与您的其他密码不同</string>
+    <string name="desktop_delete_contacts_password_disable_description">输入删除联系人密码以将其关闭</string>
+    <string name="desktop_delete_contacts_terms_warning">设置此密码即表示您明白其用途：保护您的隐私。在解锁界面输入它会立即且不可恢复地删除这台电脑上保存的加密地址簿。地址簿仅保存在本地，没有备份就无法恢复。</string>
+    <string-array name="desktop_delete_contacts_terms">
+        <item>我明白此密码用于立即删除加密地址簿。</item>
+        <item>我明白输入此密码后地址簿将被删除，没有备份就无法恢复。</item>
+    </string-array>
 
     <!-- WalletConnect Stellar -->
     <string name="wallet_connect_stellar_op_payment">付款</string>

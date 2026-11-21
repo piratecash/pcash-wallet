@@ -52,6 +52,26 @@ import cash.p.terminal.core.adapters.zcash.session.DesktopZcashBlockDownloadPoli
 import cash.p.terminal.core.adapters.zcash.session.ZcashBlockDownloadPolicy
 import cash.p.terminal.core.adapters.zcash.session.ZcashDbKeyProvider
 import cash.p.terminal.shared.desktop.vault.DesktopZcashDbKeyProvider
+import cash.p.terminal.shared.desktop.vault.VaultLoginEvents
+import cash.p.terminal.shared.desktop.journal.DesktopLoggingSettings
+import cash.p.terminal.shared.desktop.journal.DesktopLoginJournal
+import cash.p.terminal.shared.desktop.journal.DesktopLoginCameraAccess
+import cash.p.terminal.shared.desktop.journal.DesktopLoginJournalSecrets
+import cash.p.terminal.shared.desktop.journal.DesktopLoginPhotoExporter
+import cash.p.terminal.shared.desktop.journal.DesktopPremiumPlatformSettings
+import cash.p.terminal.shared.desktop.journal.DesktopLoginRecordRepository
+import cash.p.terminal.shared.desktop.journal.DesktopSelfieCamera
+import cash.p.terminal.shared.desktop.journal.FailedAttemptRecorder
+import cash.p.terminal.shared.desktop.journal.JournalQueue
+import cash.p.terminal.shared.desktop.journal.SelfieCamera
+import cash.p.terminal.feature.logging.photo.LoginPhotoExporter
+import cash.p.terminal.feature.logging.photo.LoginPhotoSource
+import cash.p.terminal.feature.logging.settings.LoginCameraAccess
+import cash.p.terminal.modules.premium.settings.PremiumPlatformSettings
+import cash.p.terminal.feature.logging.settings.LoginJournalSecrets
+import cash.p.terminal.modules.contacts.ContactsRepository
+import io.horizontalsystems.core.ILoggingSettings
+import io.horizontalsystems.core.ILoginRecordRepository
 import cash.p.terminal.wallet.FallbackAddressProvider
 import cash.p.terminal.core.storage.AccountsStorage
 import cash.p.terminal.core.storage.StorageRouter
@@ -204,6 +224,24 @@ internal val desktopWalletModule = module {
     single<AddressResolutionConfig> { DesktopAddressResolutionConfig }
     single<IThirdKeyboard> { DesktopThirdKeyboard }
     singleOf(::DesktopBeamResetMarker) bind BeamResetMarker::class
+    singleOf(::JournalQueue)
+    singleOf(::DesktopSelfieCamera) bind SelfieCamera::class
+    singleOf(::FailedAttemptRecorder)
+    singleOf(::DesktopLoginRecordRepository) binds arrayOf(ILoginRecordRepository::class, LoginPhotoSource::class)
+    singleOf(::DesktopLoggingSettings) bind ILoggingSettings::class
+    singleOf(::DesktopLoginJournalSecrets) bind LoginJournalSecrets::class
+    singleOf(::DesktopLoginCameraAccess) bind LoginCameraAccess::class
+    singleOf(::DesktopLoginPhotoExporter) bind LoginPhotoExporter::class
+    singleOf(::DesktopPremiumPlatformSettings) bind PremiumPlatformSettings::class
+    single {
+        // Lazy: premium and contacts read the storage, which opens only at the first unlock.
+        DesktopLoginJournal(
+            get(), get(),
+            lazy { get<CheckPremiumUseCase>() },
+            lazy { get<ContactsRepository>() },
+            get(), get(), get(), get(),
+        )
+    } bind VaultLoginEvents::class
     singleOf(::DesktopWalletPages) binds
         arrayOf(AppPages::class, WalletPages::class, WalletPlatformPages::class, WalletSendPages::class)
     singleOf(::DesktopSecretActionAuthorizer) bind SecretActionAuthorizer::class

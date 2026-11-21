@@ -2081,7 +2081,7 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="auth_info_successful">Erfolgreich</string>
     <string name="auth_info_unsuccessful">Nicht erfolgreich</string>
     <string name="auth_info_duress_mode">(Zwangsmodus)</string>
-    <string name="auth_info_entrance_to">Zugang zum %s</string>
+    <string name="auth_info_entrance_to">Zugang zum %1$s</string>
     <string name="auth_info_seconds_ago">(vor %d Sek)</string>
     <string name="auth_info_minutes_ago">(vor %d Min)</string>
     <string name="auth_info_hours_ago">(vor %d Std)</string>
@@ -2617,6 +2617,19 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="desktop_password_save_failed">Das Passwort konnte nicht gespeichert werden. Bitte versuchen Sie es erneut</string>
     <string name="tron_controlled_by_others_title">Andere können dieses Konto kontrollieren</string>
     <string name="tron_controlled_by_others_warning">Die Berechtigungen für dieses Konto wurden geändert: Andere Schlüssel können es möglicherweise kontrollieren. Gelder, die Sie dorthin senden, können ohne Ihr Zutun abgehoben werden. Laden Sie es nur auf, wenn Sie wissen, wem diese Schlüssel gehören.</string>
+    <string name="login_logging_selfie_unsuccessful_shared">Dieser Schalter gilt für alle Wallets auf diesem Computer</string>
+    <string name="desktop_journal_password_title">Journal-Passwort</string>
+    <string name="desktop_journal_password_set_description">Legen Sie ein Passwort fest, das das Anmeldejournal schützt. Es muss sich von den Passwörtern unterscheiden, mit denen Ihre Wallets entsperrt werden</string>
+    <string name="desktop_journal_password_access_description">Geben Sie das Journal-Passwort ein, um das Anmeldejournal zu öffnen</string>
+    <string name="desktop_journal_password_disable_description">Geben Sie das Journal-Passwort ein, um es auszuschalten</string>
+    <string name="desktop_delete_contacts_password_title">Passwort zum Löschen der Kontakte</string>
+    <string name="desktop_delete_contacts_password_set_description">Die Eingabe dieses Passworts auf dem Entsperrbildschirm löscht Ihr Adressbuch sofort von diesem Computer. Es muss sich von Ihren anderen Passwörtern unterscheiden</string>
+    <string name="desktop_delete_contacts_password_disable_description">Geben Sie das Passwort zum Löschen der Kontakte ein, um es auszuschalten</string>
+    <string name="desktop_delete_contacts_terms_warning">Mit dem Festlegen dieses Passworts bestätigen Sie, dass Sie seinen Zweck verstehen: den Schutz Ihrer Privatsphäre. Die Eingabe auf dem Entsperrbildschirm löscht das auf diesem Computer gespeicherte Krypto-Adressbuch sofort und unwiderruflich. Das Adressbuch wird nur lokal gespeichert und kann ohne Backup nicht wiederhergestellt werden.</string>
+    <string-array name="desktop_delete_contacts_terms">
+        <item>Ich verstehe, dass dieses Passwort dazu dient, das Krypto-Adressbuch sofort zu löschen.</item>
+        <item>Ich verstehe, dass das Adressbuch nach Eingabe dieses Passworts gelöscht wird und ohne Backup nicht wiederhergestellt werden kann.</item>
+    </string-array>
 
     <!-- WalletConnect Stellar -->
     <string name="wallet_connect_stellar_op_payment">Zahlung</string>

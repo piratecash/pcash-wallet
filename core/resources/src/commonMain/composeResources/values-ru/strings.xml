@@ -2305,7 +2305,7 @@
     <string name="auth_info_successful">Успешно</string>
     <string name="auth_info_unsuccessful">Неуспешно</string>
     <string name="auth_info_duress_mode">(Режим принуждения)</string>
-    <string name="auth_info_entrance_to">Вход в %s</string>
+    <string name="auth_info_entrance_to">Вход в %1$s</string>
     <string name="auth_info_seconds_ago">(%d сек назад)</string>
     <string name="auth_info_minutes_ago">(%d мин назад)</string>
     <string name="auth_info_hours_ago">(%d ч назад)</string>
@@ -2823,6 +2823,19 @@
     <string name="desktop_password_save_failed">Не удалось сохранить пароль. Попробуйте ещё раз</string>
     <string name="tron_controlled_by_others_title">Аккаунтом могут управлять другие</string>
     <string name="tron_controlled_by_others_warning">Права на этот аккаунт изменены: им могут управлять другие ключи. Средства, которые вы на него переведёте, могут вывести без вашего участия. Пополняйте его, только если знаете, чьи это ключи.</string>
+    <string name="login_logging_selfie_unsuccessful_shared">Этот переключатель общий для всех кошельков на этом компьютере</string>
+    <string name="desktop_journal_password_title">Пароль журнала</string>
+    <string name="desktop_journal_password_set_description">Задайте пароль, который защищает журнал входов. Он должен отличаться от паролей, которыми открываются ваши кошельки</string>
+    <string name="desktop_journal_password_access_description">Введите пароль журнала, чтобы открыть журнал входов</string>
+    <string name="desktop_journal_password_disable_description">Введите пароль журнала, чтобы отключить его</string>
+    <string name="desktop_delete_contacts_password_title">Пароль удаления контактов</string>
+    <string name="desktop_delete_contacts_password_set_description">Ввод этого пароля на экране разблокировки сразу удаляет вашу адресную книгу с этого компьютера. Он должен отличаться от ваших остальных паролей</string>
+    <string name="desktop_delete_contacts_password_disable_description">Введите пароль удаления контактов, чтобы отключить его</string>
+    <string name="desktop_delete_contacts_terms_warning">Задавая этот пароль, вы подтверждаете, что понимаете его назначение: защиту вашей приватности. Ввод пароля на экране разблокировки немедленно и безвозвратно удаляет крипто-адресную книгу, хранящуюся на этом компьютере. Адресная книга хранится только локально и без резервной копии не восстанавливается.</string>
+    <string-array name="desktop_delete_contacts_terms">
+        <item>Я понимаю, что этот пароль нужен для немедленного удаления крипто-адресной книги.</item>
+        <item>Я понимаю, что после ввода этого пароля адресная книга будет удалена и без резервной копии её нельзя восстановить.</item>
+    </string-array>
 
     <!-- WalletConnect Stellar -->
     <string name="wallet_connect_stellar_op_payment">Платёж</string>

@@ -27,6 +27,9 @@ class PasswordVaultTest {
     private val file by lazy { File(folder.root, "vault.bin") }
     private val crypto = CountingCrypto()
     private val vault by lazy { PasswordVault(file, lightParams, crypto) }
+    private val tagsFile by lazy { File(folder.root, "actions") }
+    private val erasePassword = "erase contacts".toCharArray()
+    private val tagged by lazy { PasswordVault(file, lightParams, crypto, tagsFile) }
 
     private class CountingCrypto : VaultCrypto by DefaultVaultCrypto {
         var derivations = 0
@@ -531,7 +534,101 @@ class PasswordVaultTest {
         assertEquals(UnlockResult.WrongPassword, defaultVault.unlock(otherPassword))
     }
 
+    @Test
+    fun unlock_erasePassword_returnsEraseContactsOnlyForThatPassword() {
+        tagged.create(password)
+        tagged.setEraseTag(erasePassword, 3)
+
+        assertEquals(UnlockResult.EraseContacts, tagged.unlock(erasePassword))
+        assertEquals(UnlockResult.WrongPassword, tagged.unlock(otherPassword))
+        assertTrue(tagged.unlock(password) is UnlockResult.Success)
+    }
+
+    @Test
+    fun unlock_erasePassword_derivesOnceAndTriesAllEnvelopes() {
+        tagged.create(password)
+        tagged.setEraseTag(erasePassword, 3)
+        crypto.reset()
+
+        tagged.unlock(erasePassword)
+
+        assertEquals(1, crypto.derivations)
+        assertEquals(32, crypto.attempts)
+    }
+
+    @Test
+    fun unlock_envelopePasswordWithEqualTag_returnsSuccess() {
+        val root = (tagged.create(password) as CreateResult.Created).session.envelopeIndex
+        tagged.setEraseTag(password, 0)
+
+        assertEquals(root, (tagged.unlock(password) as UnlockResult.Success).session.envelopeIndex)
+    }
+
+    @Test
+    fun clearEraseTag_setTag_unlockReturnsWrongPasswordAndOtherSlotsStillMatch() {
+        tagged.create(password)
+        tagged.setEraseTag(erasePassword, 3)
+        tagged.setEraseTag(otherPassword, 4)
+
+        tagged.clearEraseTag(3)
+
+        assertEquals(UnlockResult.WrongPassword, tagged.unlock(erasePassword))
+        assertEquals(UnlockResult.EraseContacts, tagged.unlock(otherPassword))
+        assertEquals(EraseTags.FILE_SIZE, tagsFile.length().toInt())
+    }
+
+    @Test
+    fun matchesEraseTag_setSlot_trueOnlyForThatSlotAndPassword() {
+        tagged.create(password)
+        tagged.setEraseTag(erasePassword, 3)
+
+        assertTrue(tagged.matchesEraseTag(erasePassword, 3))
+        assertFalse(tagged.matchesEraseTag(erasePassword, 4))
+        assertFalse(tagged.matchesEraseTag(otherPassword, 3))
+    }
+
+    @Test
+    fun unlock_missingTagsFileOrNoTagsFile_returnsWrongPassword() {
+        tagged.create(password)
+
+        assertEquals(UnlockResult.WrongPassword, tagged.unlock(erasePassword))
+        tagged.setEraseTag(erasePassword, 3)
+        assertEquals(UnlockResult.WrongPassword, vault.unlock(erasePassword))
+    }
+
+    @Test
+    fun opensAny_erasePassword_returnsTrue() {
+        tagged.create(password)
+        tagged.setEraseTag(erasePassword, 3)
+
+        assertTrue(tagged.opensAny(erasePassword))
+    }
+
+    @Test
+    fun ensureEraseTags_missingFile_createsFixedSizeFileWithoutAnyTag() {
+        tagged.create(password)
+
+        tagged.ensureEraseTags()
+
+        assertEquals(EraseTags.FILE_SIZE, tagsFile.length().toInt())
+        assertEquals(UnlockResult.WrongPassword, tagged.unlock(erasePassword))
+    }
+
+    @Test
+    fun setEraseTag_invalidSlotOrNoTagsFileOrNoVault_throwsAndWritesNothing() {
+        assertThrows(IOException::class.java) { tagged.setEraseTag(erasePassword, 0) }
+        tagged.create(password)
+
+        assertThrows(IllegalArgumentException::class.java) { tagged.setEraseTag(erasePassword, 24) }
+        assertThrows(IllegalArgumentException::class.java) { tagged.clearEraseTag(-1) }
+        assertThrows(IllegalStateException::class.java) { vault.setEraseTag(erasePassword, 0) }
+        assertFalse(tagsFile.exists())
+    }
+
     private fun created(): CreateResult.Created = vault.create(password) as CreateResult.Created
+
+    private fun PasswordVault.setEraseTag(password: CharArray, slot: Int) =
+        publishEraseTag(slot, eraseTag(password, slot))
 
     private fun assertAllocation(root: Int, pool: Set<Int>, positions: Int) {
         assertFalse(root in pool)

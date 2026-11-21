@@ -2092,7 +2092,7 @@
     <string name="auth_info_successful">موفق</string>
     <string name="auth_info_unsuccessful">ناموفق</string>
     <string name="auth_info_duress_mode">(حالت اجبار)</string>
-    <string name="auth_info_entrance_to">ورود به %s</string>
+    <string name="auth_info_entrance_to">ورود به %1$s</string>
     <string name="auth_info_seconds_ago">(%d ثانیه قبل)</string>
     <string name="auth_info_minutes_ago">(%d دقیقه قبل)</string>
     <string name="auth_info_hours_ago">(%d ساعت قبل)</string>
@@ -2629,6 +2629,19 @@
     <string name="desktop_password_save_failed">ذخیره رمز عبور ممکن نشد. لطفاً دوباره تلاش کنید</string>
     <string name="tron_controlled_by_others_title">ممکن است دیگران این حساب را کنترل کنند</string>
     <string name="tron_controlled_by_others_warning">مجوزهای این حساب تغییر کرده است: ممکن است کلیدهای دیگری آن را کنترل کنند. وجوهی که به آن ارسال می‌کنید ممکن است بدون دخالت شما برداشت شوند. فقط در صورتی آن را شارژ کنید که بدانید این کلیدها متعلق به چه کسی است.</string>
+    <string name="login_logging_selfie_unsuccessful_shared">این کلید برای همه کیف‌پول‌های این رایانه مشترک است</string>
+    <string name="desktop_journal_password_title">گذرواژه گزارش</string>
+    <string name="desktop_journal_password_set_description">گذرواژه‌ای تعیین کنید که از گزارش ورودها محافظت می‌کند. این گذرواژه باید با گذرواژه‌هایی که کیف‌پول‌های شما را باز می‌کنند متفاوت باشد</string>
+    <string name="desktop_journal_password_access_description">برای باز کردن گزارش ورودها، گذرواژه گزارش را وارد کنید</string>
+    <string name="desktop_journal_password_disable_description">برای خاموش کردن آن، گذرواژه گزارش را وارد کنید</string>
+    <string name="desktop_delete_contacts_password_title">گذرواژه حذف مخاطبین</string>
+    <string name="desktop_delete_contacts_password_set_description">وارد کردن این گذرواژه در صفحه قفل‌گشایی، دفترچه آدرس شما را فوراً از این رایانه حذف می‌کند. این گذرواژه باید با گذرواژه‌های دیگر شما متفاوت باشد</string>
+    <string name="desktop_delete_contacts_password_disable_description">برای خاموش کردن آن، گذرواژه حذف مخاطبین را وارد کنید</string>
+    <string name="desktop_delete_contacts_terms_warning">با تعیین این گذرواژه تأیید می‌کنید که هدف آن را می‌دانید: محافظت از حریم خصوصی شما. وارد کردن آن در صفحه قفل‌گشایی، دفترچه آدرس رمزارز ذخیره‌شده در این رایانه را فوراً و بازگشت‌ناپذیر حذف می‌کند. دفترچه آدرس فقط به‌صورت محلی ذخیره می‌شود و بدون نسخه پشتیبان قابل بازیابی نیست.</string>
+    <string-array name="desktop_delete_contacts_terms">
+        <item>می‌دانم که این گذرواژه برای حذف فوری دفترچه آدرس رمزارز استفاده می‌شود.</item>
+        <item>می‌دانم که پس از وارد کردن این گذرواژه، دفترچه آدرس حذف می‌شود و بدون نسخه پشتیبان قابل بازیابی نیست.</item>
+    </string-array>
 
     <!-- WalletConnect Stellar -->
     <string name="wallet_connect_stellar_op_payment">پرداخت</string>

@@ -2081,7 +2081,7 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="auth_info_successful">Exitoso</string>
     <string name="auth_info_unsuccessful">No exitoso</string>
     <string name="auth_info_duress_mode">(Modo coacción)</string>
-    <string name="auth_info_entrance_to">Entrada al %s</string>
+    <string name="auth_info_entrance_to">Entrada al %1$s</string>
     <string name="auth_info_seconds_ago">(hace %d seg)</string>
     <string name="auth_info_minutes_ago">(hace %d min)</string>
     <string name="auth_info_hours_ago">(hace %d horas)</string>
@@ -2630,6 +2630,19 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="desktop_password_save_failed">No se pudo guardar la contraseña. Inténtalo de nuevo</string>
     <string name="tron_controlled_by_others_title">Otros pueden controlar esta cuenta</string>
     <string name="tron_controlled_by_others_warning">Los permisos de esta cuenta han cambiado: otras claves pueden controlarla. Los fondos que envíe a ella podrían retirarse sin su participación. Recárguela solo si sabe de quién son esas claves.</string>
+    <string name="login_logging_selfie_unsuccessful_shared">Este interruptor es común a todas las billeteras de este ordenador</string>
+    <string name="desktop_journal_password_title">Contraseña del registro</string>
+    <string name="desktop_journal_password_set_description">Establezca una contraseña que proteja el registro de inicios de sesión. Debe ser distinta de las contraseñas que desbloquean sus billeteras</string>
+    <string name="desktop_journal_password_access_description">Introduzca la contraseña del registro para abrir el registro de inicios de sesión</string>
+    <string name="desktop_journal_password_disable_description">Introduzca la contraseña del registro para desactivarla</string>
+    <string name="desktop_delete_contacts_password_title">Contraseña para eliminar contactos</string>
+    <string name="desktop_delete_contacts_password_set_description">Al introducir esta contraseña en la pantalla de desbloqueo, su libreta de direcciones se elimina de inmediato de este ordenador. Debe ser distinta de sus otras contraseñas</string>
+    <string name="desktop_delete_contacts_password_disable_description">Introduzca la contraseña para eliminar contactos para desactivarla</string>
+    <string name="desktop_delete_contacts_terms_warning">Al establecer esta contraseña confirma que entiende su finalidad: proteger su privacidad. Introducirla en la pantalla de desbloqueo elimina de inmediato y de forma irreversible la libreta de direcciones cripto guardada en este ordenador. La libreta de direcciones se guarda solo de forma local y no se puede recuperar sin una copia de seguridad.</string>
+    <string-array name="desktop_delete_contacts_terms">
+        <item>Entiendo que esta contraseña sirve para eliminar de inmediato la libreta de direcciones cripto.</item>
+        <item>Entiendo que, tras introducir esta contraseña, la libreta de direcciones se eliminará y no podrá recuperarse sin una copia de seguridad.</item>
+    </string-array>
 
     <!-- WalletConnect Stellar -->
     <string name="wallet_connect_stellar_op_payment">Pago</string>

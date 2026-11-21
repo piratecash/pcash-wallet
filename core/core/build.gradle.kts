@@ -55,9 +55,6 @@ dependencies {
 
     implementation(libs.androidx.material3.android)
 
-    // Paging (for ILoginRecordRepository interface)
-    api(libs.paging.runtime)
-
     implementation(libs.appcompat)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.android.core.ktx)

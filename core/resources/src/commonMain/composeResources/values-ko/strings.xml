@@ -2083,7 +2083,7 @@
     <string name="auth_info_successful">성공</string>
     <string name="auth_info_unsuccessful">실패</string>
     <string name="auth_info_duress_mode">(강압 모드)</string>
-    <string name="auth_info_entrance_to">%s 접속</string>
+    <string name="auth_info_entrance_to">%1$s 접속</string>
     <string name="auth_info_seconds_ago">(%d초 전)</string>
     <string name="auth_info_minutes_ago">(%d분 전)</string>
     <string name="auth_info_hours_ago">(%d시간 전)</string>
@@ -2605,6 +2605,19 @@
     <string name="desktop_password_save_failed">비밀번호를 저장할 수 없습니다. 다시 시도하세요</string>
     <string name="tron_controlled_by_others_title">다른 사람이 이 계정을 제어할 수 있습니다</string>
     <string name="tron_controlled_by_others_warning">이 계정의 권한이 변경되어 다른 키가 이 계정을 제어할 수 있습니다. 이 계정으로 보낸 자금은 회원님의 동의 없이 인출될 수 있습니다. 이 키가 누구의 것인지 아는 경우에만 입금하세요.</string>
+    <string name="login_logging_selfie_unsuccessful_shared">이 스위치는 이 컴퓨터의 모든 지갑에 공통으로 적용됩니다</string>
+    <string name="desktop_journal_password_title">기록 비밀번호</string>
+    <string name="desktop_journal_password_set_description">로그인 기록을 보호하는 비밀번호를 설정하세요. 지갑을 잠금 해제하는 비밀번호와 달라야 합니다</string>
+    <string name="desktop_journal_password_access_description">로그인 기록을 열려면 기록 비밀번호를 입력하세요</string>
+    <string name="desktop_journal_password_disable_description">기록 비밀번호를 끄려면 입력하세요</string>
+    <string name="desktop_delete_contacts_password_title">연락처 삭제 비밀번호</string>
+    <string name="desktop_delete_contacts_password_set_description">잠금 해제 화면에서 이 비밀번호를 입력하면 이 컴퓨터의 주소록이 즉시 삭제됩니다. 다른 비밀번호와 달라야 합니다</string>
+    <string name="desktop_delete_contacts_password_disable_description">연락처 삭제 비밀번호를 끄려면 입력하세요</string>
+    <string name="desktop_delete_contacts_terms_warning">이 비밀번호를 설정하면 그 목적, 즉 개인정보 보호를 위한 것임을 이해했다고 확인하는 것입니다. 잠금 해제 화면에서 이 비밀번호를 입력하면 이 컴퓨터에 저장된 암호화폐 주소록이 즉시 영구적으로 삭제됩니다. 주소록은 로컬에만 저장되며 백업 없이는 복구할 수 없습니다.</string>
+    <string-array name="desktop_delete_contacts_terms">
+        <item>이 비밀번호가 암호화폐 주소록을 즉시 삭제하는 데 쓰인다는 것을 이해합니다.</item>
+        <item>이 비밀번호를 입력하면 주소록이 삭제되며 백업 없이는 복구할 수 없다는 것을 이해합니다.</item>
+    </string-array>
 
     <!-- WalletConnect Stellar -->
     <string name="wallet_connect_stellar_op_payment">결제</string>

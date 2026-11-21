@@ -2451,7 +2451,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="auth_info_successful">Successful</string>
     <string name="auth_info_unsuccessful">Unsuccessful</string>
     <string name="auth_info_duress_mode">(Duress Mode)</string>
-    <string name="auth_info_entrance_to">Entrance to the %s</string>
+    <string name="auth_info_entrance_to">Entrance to the %1$s</string>
     <string name="auth_info_seconds_ago">(%d sec ago)</string>
     <string name="auth_info_minutes_ago">(%d min ago)</string>
     <string name="auth_info_hours_ago">(%d hours ago)</string>
@@ -3045,6 +3045,19 @@ Proceed only if you\u0027re sure.</string>
     <string name="desktop_password_save_failed">Could not save the password. Please try again</string>
     <string name="tron_controlled_by_others_title">Others may control this account</string>
     <string name="tron_controlled_by_others_warning">The permissions on this account have been changed: other keys may control it. Funds you send to it can be withdrawn without your involvement. Top it up only if you know whose keys these are.</string>
+    <string name="login_logging_selfie_unsuccessful_shared">This switch is shared by all wallets on this computer</string>
+    <string name="desktop_journal_password_title">Journal password</string>
+    <string name="desktop_journal_password_set_description">Set a password that protects the login journal. It must differ from the passwords that unlock your wallets</string>
+    <string name="desktop_journal_password_access_description">Enter the journal password to open the login journal</string>
+    <string name="desktop_journal_password_disable_description">Enter the journal password to turn it off</string>
+    <string name="desktop_delete_contacts_password_title">Delete contacts password</string>
+    <string name="desktop_delete_contacts_password_set_description">Entering this password on the unlock screen immediately deletes your address book from this computer. It must differ from your other passwords</string>
+    <string name="desktop_delete_contacts_password_disable_description">Enter the delete contacts password to turn it off</string>
+    <string name="desktop_delete_contacts_terms_warning">By setting this password you confirm that you understand its purpose: protecting your privacy. Entering it on the unlock screen immediately and irreversibly deletes the crypto-address book stored on this computer. The address book is stored only locally and cannot be restored without a backup.</string>
+    <string-array name="desktop_delete_contacts_terms">
+        <item>I understand that this password is used to immediately delete the crypto-address book.</item>
+        <item>I understand that after entering this password the address book will be deleted and cannot be restored without a backup copy.</item>
+    </string-array>
 
     <!-- WalletConnect Stellar -->
     <string name="wallet_connect_stellar_op_payment">Payment</string>
