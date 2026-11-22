@@ -679,7 +679,35 @@
     <string name="unsupported_address">Endereço não suportado</string>
     <string name="unexpected_error">Unexpected error</string>
     <string name="unsupported_token">Token não suportado</string>
-    <string name="zec_transparent_used">Ao criar a troca, é utilizado um endereço t temporário: %s. Ele é fornecido ao provedor de troca e é necessário para o reembolso caso a troca não seja concluída. O uso de um endereço t pode levar à desanonimização parcial da transação.</string>
+    <string name="zec_refund_plate">Para o reembolso é usado o endereço t temporário %1$s.</string>
+    <string name="zec_refund_address_title">Endereço temporário de reembolso</string>
+    <string name="zec_refund_notice_direct">Para este endereço, %1$s devolverá os ZEC se a troca não for concluída. O endereço é transparente: é visível na blockchain.</string>
+    <string name="zec_refund_notice_via_pcash">Para este endereço, %1$s devolverá os ZEC através do servidor P.CASH se a troca não for concluída. O endereço é transparente: é visível na blockchain.</string>
+    <string name="zec_refund_notice_restore">Cada troca recebe um novo endereço. Após restaurar apenas com a frase-semente, os endereços podem repetir-se e o reembolso pode não ser encontrado automaticamente. Para evitar isto, faça uma cópia de segurança. Um reembolso em falta é encontrado pela pesquisa de endereços nas definições de ZEC.</string>
+    <string name="zec_refund_address_copy">Copiar endereço</string>
+    <string name="zec_refund_address_explorer">Ver no explorador</string>
+    <string name="zec_refund_address_error">Não foi possível obter o endereço de reembolso</string>
+    <string name="zec_address_search_title">Pesquisa de endereços</string>
+    <plurals name="zec_address_search_addresses">
+        <item quantity="one">%1$s endereço</item>
+        <item quantity="other">%1$s endereços</item>
+    </plurals>
+    <string name="zec_address_search_running">em curso · %1$d%</string>
+    <string name="zec_address_search_description">Encontra reembolsos de fornecedores de swap para endereços temporários que não aparecem após restaurar a partir da frase-semente.</string>
+    <string name="zec_address_search_info">Encontra reembolsos de fornecedores de swap para endereços temporários que a carteira não vê após restaurar apenas a partir da frase-semente. Após restaurar a partir de uma cópia de segurança, a pesquisa não é necessária.\n\nA carteira continua a verificar sozinha os endereços onde algo foi encontrado. Os endereços vazios não são guardados. Se um reembolso chegou depois da data da verificação, toque em «%1$s».</string>
+    <string name="zec_address_search_checked">Verificados</string>
+    <string name="zec_address_search_more">Verificar mais</string>
+    <plurals name="zec_address_search_total">
+        <item quantity="one">No total será verificado %1$s endereço.</item>
+        <item quantity="other">No total serão verificados %1$s endereços.</item>
+    </plurals>
+    <string name="zec_address_search_long">A pesquisa demorará cerca de %1$d min.</string>
+    <string name="zec_address_search_start">Iniciar pesquisa</string>
+    <string name="zec_address_search_check_all_again">Verificar tudo de novo</string>
+    <string name="zec_address_search_progress">Verificados %1$s de %2$s</string>
+    <string name="zec_address_search_found">Endereços com operações encontrados</string>
+    <string name="zec_address_search_hint">Pode fechar: a pesquisa continua, mesmo depois de reiniciar a aplicação.</string>
+    <string name="zec_address_search_stop">Parar</string>
     <string name="swap_yifi_memo_unsupported">O fornecedor de swap exige uma memo de depósito que não pode ser enviada a partir desta rede. Escolha outro fornecedor.</string>
     <string name="swap_provider_order_failed">O fornecedor não conseguiu criar o swap. Atualize a cotação ou volte e escolha outro fornecedor.</string>
     <!-- Swap Settings -->

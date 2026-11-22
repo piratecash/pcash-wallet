@@ -675,7 +675,33 @@
     <string name="unsupported_address">不支持的地址</string>
     <string name="unexpected_error">Unexpected error</string>
     <string name="unsupported_token">不支持的代币</string>
-    <string name="zec_transparent_used">在创建兑换时会使用临时 t 地址：%s。该地址会提供给兑换服务提供商，如果兑换未完成，则需要用于退款。使用 t 地址可能会导致交易部分去匿名化。</string>
+    <string name="zec_refund_plate">退款使用临时 t 地址 %1$s。</string>
+    <string name="zec_refund_address_title">临时退款地址</string>
+    <string name="zec_refund_notice_direct">如果兑换未成功，%1$s 会将 ZEC 退回到此地址。该地址是透明地址，可在区块链上查看。</string>
+    <string name="zec_refund_notice_via_pcash">如果兑换未成功，%1$s 会通过 P.CASH 服务器将 ZEC 退回到此地址。该地址是透明地址，可在区块链上查看。</string>
+    <string name="zec_refund_notice_restore">每次兑换都会获得新地址。仅通过助记词恢复后，地址可能重复，退款可能无法自动找到。为避免这种情况，请做好备份。丢失的退款可通过 ZEC 设置中的地址搜索找回。</string>
+    <string name="zec_refund_address_copy">复制地址</string>
+    <string name="zec_refund_address_explorer">在浏览器中查看</string>
+    <string name="zec_refund_address_error">无法获取退款地址</string>
+    <string name="zec_address_search_title">地址搜索</string>
+    <plurals name="zec_address_search_addresses">
+        <item quantity="other">%1$s 个地址</item>
+    </plurals>
+    <string name="zec_address_search_running">进行中 · %1$d%</string>
+    <string name="zec_address_search_description">查找兑换服务商退回到临时地址、但用助记词恢复后看不到的退款。</string>
+    <string name="zec_address_search_info">查找兑换服务商退回到临时地址的退款：仅用助记词恢复后，钱包看不到这些地址。从备份恢复后无需搜索。\n\n发现交易的地址，之后由钱包自动检查。空地址不会被记住。如果退款在检查日期之后到账，请点击“%1$s”。</string>
+    <string name="zec_address_search_checked">已检查</string>
+    <string name="zec_address_search_more">再检查</string>
+    <plurals name="zec_address_search_total">
+        <item quantity="other">共将检查 %1$s 个地址。</item>
+    </plurals>
+    <string name="zec_address_search_long">搜索大约需要 %1$d 分钟。</string>
+    <string name="zec_address_search_start">开始搜索</string>
+    <string name="zec_address_search_check_all_again">全部重新检查</string>
+    <string name="zec_address_search_progress">已检查 %1$s / %2$s</string>
+    <string name="zec_address_search_found">找到有交易的地址</string>
+    <string name="zec_address_search_hint">可以关闭：搜索会继续，应用重启后也会继续。</string>
+    <string name="zec_address_search_stop">停止</string>
     <string name="swap_yifi_memo_unsupported">兑换提供商要求提供存款备注（memo），但该备注无法从此网络发送。请选择其他提供商。</string>
     <string name="swap_provider_order_failed">提供商未能创建兑换。请刷新报价，或返回选择其他提供商。</string>
     <!-- Swap Settings -->

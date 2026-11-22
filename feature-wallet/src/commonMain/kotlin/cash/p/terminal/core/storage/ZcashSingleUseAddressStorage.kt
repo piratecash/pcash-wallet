@@ -14,9 +14,9 @@ class ZcashSingleUseAddressStorage(
         dao(address.accountId)?.insert(address)
     }
 
-    suspend fun getNextAddress(accountId: String): ZcashSingleUseAddress? =
+    suspend fun getUnsentAddress(accountId: String): ZcashSingleUseAddress? =
         withContext(dispatcherProvider.io) {
-            dao(accountId)?.getNextUnusedAddress(accountId)
+            dao(accountId)?.getUnsentAddress(accountId)
         }
 
     suspend fun incrementUseCount(accountId: String, address: String) =

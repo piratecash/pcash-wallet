@@ -30,6 +30,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -89,6 +90,7 @@ import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.HsImage
 import cash.p.terminal.ui_compose.components.MenuItemTimeoutIndicator
 import cash.p.terminal.ui_compose.components.TextImportantError
+import cash.p.terminal.ui_compose.components.ButtonSecondaryDefault
 import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_grey
@@ -161,6 +163,8 @@ import cash.p.terminal.resources.swap_estimated_amount_warning
 import cash.p.terminal.resources.swap_no_enabled_providers
 import cash.p.terminal.resources.swap_no_providers_for_this_amount
 import cash.p.terminal.resources.swap_out_of_min_amount
+import cash.p.terminal.resources.Button_Retry
+import cash.p.terminal.resources.zec_refund_address_error
 import io.horizontalsystems.core.IAppNumberFormatter
 import cash.p.terminal.ui_compose.components.rememberHudMessenger
 
@@ -491,6 +495,7 @@ private fun SwapMainScreen(
                 timeRemainingProgress = { viewModel.timeRemainingProgress },
                 switchPairs = viewModel::onSwitchPairs,
                 refreshQuote = viewModel::reQuote,
+                retryRefundAddress = viewModel::onRetryRefundAddress,
                 proceed = { navigation.slideFromRight(buildNextPage(viewModel.uiState)) },
                 toggleBalance = {
                     hud.vibrate()
@@ -541,6 +546,8 @@ private class SwapScreenController(
     fun openSettings() = navigation.openSettings()
     val refreshQuote: () -> Unit
         get() = operations.refreshQuote
+    val retryRefundAddress: () -> Unit
+        get() = operations.retryRefundAddress
     fun proceed() = operations.proceed()
     fun toggleBalance() = operations.toggleBalance()
 
@@ -567,6 +574,7 @@ private data class SwapOperationsController(
     val timeRemainingProgress: () -> Float?,
     val switchPairs: () -> Unit,
     val refreshQuote: () -> Unit,
+    val retryRefundAddress: () -> Unit,
     val proceed: () -> Unit,
     val toggleBalance: () -> Unit,
     val executeAction: (ISwapProviderAction) -> Unit,
@@ -654,7 +662,7 @@ private fun SwapScreenContent(
         SwapFeeInfo(uiState, controller)
         VSpacer(height = 12.dp)
         SwapQuoteInfo(uiState, controller, navigation)
-        SwapWarnings(uiState)
+        SwapWarnings(uiState, controller.retryRefundAddress)
         VSpacer(height = 32.dp)
     }
 }
@@ -680,7 +688,7 @@ private fun SwapStepButton(
         SwapStep.Proceed -> ButtonPrimaryYellow(
             modifier = swapButtonModifier(),
             title = stringResource(Res.string.Swap_Proceed),
-            enabled = !uiState.insufficientFeeBalance,
+            enabled = uiState.canProceed,
             onClick = controller::proceed,
         )
     }
@@ -768,15 +776,23 @@ private fun SwapQuoteInfo(
 }
 
 @Composable
-private fun SwapWarnings(uiState: SwapUiState) {
+private fun SwapWarnings(uiState: SwapUiState, onRetryRefundAddress: () -> Unit) {
     Column {
-        uiState.warningMessage?.let {
+        uiState.refundNotice?.let { notice ->
+            var sheetOpened by remember { mutableStateOf(false) }
             VSpacer(height = 12.dp)
-            TextImportantWarning(
+            ZcashRefundPlate(
+                address = notice.address,
+                onInfoClick = { sheetOpened = true },
                 modifier = Modifier.padding(horizontal = 16.dp),
-                text = it.getString(),
-                icon = Res.drawable.ic_attention_20,
             )
+            if (sheetOpened) {
+                ZcashRefundAddressSheet(notice = notice, onDismiss = { sheetOpened = false })
+            }
+        }
+        if (uiState.refundAddressError) {
+            VSpacer(height = 12.dp)
+            RefundAddressErrorRow(onRetryRefundAddress)
         }
         if (uiState.tronAccountControlledByOthers) {
             VSpacer(height = 12.dp)
@@ -800,6 +816,26 @@ private fun SwapWarnings(uiState: SwapUiState) {
             )
         }
         SwapStepWarning(uiState)
+    }
+}
+
+@Composable
+private fun RefundAddressErrorRow(onRetry: () -> Unit) {
+    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+        TextImportantError(
+            text = stringResource(Res.string.zec_refund_address_error),
+            icon = Res.drawable.ic_attention_20,
+        )
+        VSpacer(height = 12.dp)
+        ButtonSecondaryDefault(title = stringResource(Res.string.Button_Retry), onClick = onRetry)
+    }
+}
+
+@Preview
+@Composable
+private fun RefundAddressErrorRowPreview() {
+    ComposeAppTheme {
+        RefundAddressErrorRow(onRetry = {})
     }
 }
 

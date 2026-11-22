@@ -144,6 +144,7 @@ class ZcashAdapter(
     private val offlineModeManager: OfflineModeManager by inject(OfflineModeManager::class.java)
     private val uptimeProvider: UptimeProvider by inject(UptimeProvider::class.java)
     private val accountManager: IAccountManager by inject(IAccountManager::class.java)
+    private val transparentIndexStore: ZcashTransparentIndexStore by inject(ZcashTransparentIndexStore::class.java)
 
     private val adapterStateUpdatedSubject: PublishSubject<Unit> = PublishSubject.create()
     private val lastBlockUpdatedSubject: PublishSubject<Unit> = PublishSubject.create()
@@ -191,8 +192,8 @@ class ZcashAdapter(
 
     /**
      * Only the transparent spec risks reuse: shielded and unified addresses are meant to be shown
-     * again. A failed discovery or a failed selector call both fall back to [receiveAddress], since
-     * the address already on screen must not be replaced by an error page.
+     * again. A failed discovery, index preparation or selector call falls back to [receiveAddress],
+     * since the address already on screen must not be replaced by an error page.
      */
     override suspend fun freshReceiveAddress(): String {
         if (addressSpecTyped != AddressSpecType.Transparent) return super.freshReceiveAddress()
@@ -200,11 +201,14 @@ class ZcashAdapter(
         // not reopen the session [subscribeToBackground] released — park until it may be held.
         backgroundManager.stateFlow.first { mayHoldSession() }
         acquireSession()
-        discoverCurrentEpoch()
         return try {
+            // Before the floor is read: preparation is what sets it after a restore.
+            transparentIndexStore.prepare(sessionOrThrow())
+            discoverCurrentEpoch()
             val found = transparentAddressMutex.withLock {
                 val excluded = singleUseAddressManager.getAllAddresses()
-                requireWallet { zcash, id -> zcash.nextUnusedTransparentAddress(id, excluded) }
+                val floor = transparentIndexStore.recreatedThrough(wallet.account.id)
+                requireWallet { zcash, id -> zcash.nextUnusedTransparentAddress(id, excluded, floor) }
             }?.takeIf { it.certified }
             discoveryState.lastSelectorError = null
             found?.address ?: receiveAddress
@@ -230,6 +234,7 @@ class ZcashAdapter(
             sessionOrThrow().discoverForEpoch(epoch)
             val laterEpoch = backgroundManager.foregroundEpoch.value
             if (laterEpoch > epoch) sessionOrThrow().discoverForEpoch(laterEpoch)
+            transparentIndexStore.raiseFromHistory(sessionOrThrow())
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
@@ -913,15 +918,22 @@ class ZcashAdapter(
     }
 
     override suspend fun generateOneTimeAddress(): String? = try {
+        // Rows recreated after a restore must exist first, or the SDK would hand out an issued index again.
+        transparentIndexStore.prepare(sessionOrThrow())
         transparentAddressMutex.withLock {
             val address = requireWallet { zcash, id -> zcash.nextTransparentAddress(id) }
-            address?.also { singleUseAddressManager.saveNewAddress(it) }
-        } ?: singleUseAddressManager.getNextAddress()
+            address?.also { issued ->
+                // The index first: an unsent row is reused after a restart, so the backup must already cover it.
+                requireWallet { zcash, id -> zcash.transparentAddressIndex(id, issued) }
+                    ?.let { transparentIndexStore.raise(wallet.account.id, it) }
+                singleUseAddressManager.saveNewAddress(issued)
+            }
+        }
     } catch (error: CancellationException) {
         throw error
     } catch (error: Throwable) {
         zcashLogger.w { "Single-use transparent address failed error=${error.zcashErrorName}" }
-        singleUseAddressManager.getNextAddress()
+        null
     }
 
     // endregion

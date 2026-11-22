@@ -290,12 +290,14 @@ import cash.p.terminal.modules.coin.overview.TokenWalletActions
 import cash.p.terminal.modules.displayoptions.DisplayOptionsViewModel
 import cash.p.terminal.modules.managewallets.ManageWalletsTokenWalletActions
 import cash.p.terminal.core.adapters.zcash.ZcashSingleUseAddressManager
+import cash.p.terminal.core.adapters.zcash.ZcashTransparentIndexStore
 import cash.p.terminal.core.adapters.zcash.server.ZcashServerProber
 import cash.p.terminal.core.adapters.zcash.server.ZcashServerProberImpl
 import cash.p.terminal.core.adapters.zcash.server.ZcashServerSelector
 import cash.p.terminal.core.adapters.zcash.session.ZcashDatabaseFailureReporter
 import cash.p.terminal.core.adapters.zcash.session.ZcashDatabaseFiles
 import cash.p.terminal.core.adapters.zcash.session.ZcashSessionManager
+import cash.p.terminal.core.adapters.zcash.session.ZcashAddressSearch
 import cash.p.terminal.core.adapters.zcash.session.ZcashSyncScheduler
 import cash.p.terminal.core.adapters.zcash.session.ZcashWalletOpener
 import cash.p.terminal.core.adapters.zcash.session.ZcashWalletOpenerImpl
@@ -383,6 +385,8 @@ val featureWalletModule = module {
     singleOf(::ZcashSyncScheduler)
     singleOf(::ZcashSessionManager)
     singleOf(::ZcashSingleUseAddressStorage)
+    singleOf(::ZcashTransparentIndexStore)
+    singleOf(::ZcashAddressSearch)
     factory { (accountId: String) -> ZcashSingleUseAddressManager(storage = get(), accountId = accountId) }
     factory<LogsDao> { get<StorageRouter>().sessionLevel.logsDao() }
     singleOf(::UserLevelLogScope) bind LogScope::class

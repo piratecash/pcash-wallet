@@ -676,7 +676,39 @@
     <string name="unsupported_address">Адрес не поддерживается</string>
     <string name="unexpected_error">Непредвиденная ошибка</string>
     <string name="unsupported_token">Токен не поддерживается</string>
-    <string name="zec_transparent_used">При создании обмена используется временный t-адрес: %s. Он передаётся обменному провайдеру и нужен для возврата средств, если обмен не будет завершён. Использование t-адреса может привести к частичной деанонимизации транзакции.</string>
+    <string name="zec_refund_plate">Для возврата используется временный t-адрес %1$s.</string>
+    <string name="zec_refund_address_title">Временный адрес для возврата</string>
+    <string name="zec_refund_notice_direct">На этот адрес %1$s вернёт ZEC, если обмен не пройдёт. Адрес прозрачный: его видно в блокчейне.</string>
+    <string name="zec_refund_notice_via_pcash">На этот адрес %1$s через сервер P.CASH вернёт ZEC, если обмен не пройдёт. Адрес прозрачный: его видно в блокчейне.</string>
+    <string name="zec_refund_notice_restore">Каждый обмен получает новый адрес. После восстановления только по сид-фразе адреса могут повториться, а возврат не найтись сам. Чтобы этого не было, сделайте резервную копию. Пропавший возврат найдёт поиск адресов в настройках ZEC.</string>
+    <string name="zec_refund_address_copy">Скопировать адрес</string>
+    <string name="zec_refund_address_explorer">Посмотреть в эксплорере</string>
+    <string name="zec_refund_address_error">Не удалось получить адрес для возврата</string>
+    <string name="zec_address_search_title">Поиск адресов</string>
+    <plurals name="zec_address_search_addresses">
+        <item quantity="one">%1$s адрес</item>
+        <item quantity="few">%1$s адреса</item>
+        <item quantity="many">%1$s адресов</item>
+        <item quantity="other">%1$s адреса</item>
+    </plurals>
+    <string name="zec_address_search_running">идёт · %1$d%</string>
+    <string name="zec_address_search_description">Найдёт возвраты от обменников на временные адреса, если после восстановления из сид-фразы их не видно.</string>
+    <string name="zec_address_search_info">Находит возвраты от обменников на временные адреса, которые кошелёк не видит после восстановления только по сид-фразе. После восстановления из резервной копии поиск не нужен.\n\nАдреса, на которых что-то нашлось, кошелёк дальше проверяет сам. Пустые адреса не запоминаются. Если возврат пришёл позже даты проверки, нажмите «%1$s».</string>
+    <string name="zec_address_search_checked">Проверено</string>
+    <string name="zec_address_search_more">Проверить ещё</string>
+    <plurals name="zec_address_search_total">
+        <item quantity="one">Всего будет проверен %1$s адрес.</item>
+        <item quantity="few">Всего будет проверено %1$s адреса.</item>
+        <item quantity="many">Всего будет проверено %1$s адресов.</item>
+        <item quantity="other">Всего будет проверено %1$s адреса.</item>
+    </plurals>
+    <string name="zec_address_search_long">Поиск займёт около %1$d мин.</string>
+    <string name="zec_address_search_start">Начать поиск</string>
+    <string name="zec_address_search_check_all_again">Проверить всё заново</string>
+    <string name="zec_address_search_progress">Проверено %1$s из %2$s</string>
+    <string name="zec_address_search_found">Найдено адресов с операциями</string>
+    <string name="zec_address_search_hint">Можно закрыть: поиск продолжится, в том числе после перезапуска приложения.</string>
+    <string name="zec_address_search_stop">Остановить</string>
     <string name="swap_yifi_memo_unsupported">Провайдер свопа требует memo для депозита, которое нельзя отправить из этой сети. Выберите другого провайдера.</string>
     <string name="swap_provider_order_failed">Провайдер не смог создать своп. Обновите предложение или вернитесь и выберите другого провайдера.</string>
     <!-- Swap Settings -->

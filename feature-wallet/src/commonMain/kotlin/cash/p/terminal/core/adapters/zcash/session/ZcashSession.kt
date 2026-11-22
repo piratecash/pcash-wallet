@@ -120,7 +120,7 @@ class ZcashSession internal constructor(
     val dbAccountId: Int,
     networkPaused: Boolean,
     dispatcherProvider: DispatcherProvider,
-    private val supportsTransparent: Boolean,
+    internal val supportsTransparent: Boolean,
     /**
      * False for a pristine account: its database already holds every address it ever issued, so
      * only the steady walk is owed.
@@ -169,6 +169,11 @@ class ZcashSession internal constructor(
 
     /** Touched only by the sync pass; passes never overlap. */
     private var networkFailureStreak = 0
+
+    private val transparentIndexGate = Mutex()
+
+    @Volatile
+    private var transparentIndexPrepared = false
 
     /**
      * Sync status and the local snapshot have one publication point. Consumers that react to
@@ -307,6 +312,16 @@ class ZcashSession internal constructor(
         throw e
     } catch (e: Throwable) {
         throw NotBroadcastException(e)
+    }
+
+    /** Runs [prepare] once per session; a failed run is not remembered, so the next caller retries it. */
+    internal suspend fun prepareTransparentIndexOnce(prepare: suspend (ZcashWallet) -> Unit) {
+        if (!supportsTransparent || transparentIndexPrepared) return
+        transparentIndexGate.withLock {
+            if (transparentIndexPrepared) return
+            check(withOperation(prepare) is ZcashSessionResult.Success) { "Zcash wallet session is unavailable" }
+            transparentIndexPrepared = true
+        }
     }
 
     /**

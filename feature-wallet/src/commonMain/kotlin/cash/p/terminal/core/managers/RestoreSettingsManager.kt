@@ -189,6 +189,8 @@ class RestoreSettingsManager(
                     else -> null
                 }
             }
+
+            RestoreSettingType.ZcashTransparentIssueIndex -> null
         }
     }
 
@@ -255,7 +257,11 @@ enum class MoneroSpentReconciliationState(
 
 enum class RestoreSettingType {
     @SerializedName("birthday_height")
-    BirthdayHeight;
+    BirthdayHeight,
+
+    /** Highest receive-scope transparent index handed out for a swap; backed up, never prompted for. */
+    @SerializedName("zcash_transparent_issue_index")
+    ZcashTransparentIssueIndex;
 
     companion object {
         private val map = values().associateBy(RestoreSettingType::name)
