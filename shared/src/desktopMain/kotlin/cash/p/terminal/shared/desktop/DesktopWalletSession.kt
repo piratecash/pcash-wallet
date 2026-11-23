@@ -5,6 +5,7 @@ import cash.p.terminal.core.StorageLockedException
 import cash.p.terminal.core.managers.AmlStatusManager
 import cash.p.terminal.core.managers.BitcoinKitDatabaseManager
 import cash.p.terminal.core.managers.OfflineModeManager
+import cash.p.terminal.core.managers.TonConnectManager
 import cash.p.terminal.core.managers.TransactionAdapterManager
 import cash.p.terminal.core.managers.WalletServicesStarter
 import cash.p.terminal.modules.contacts.ContactsRepository
@@ -112,7 +113,10 @@ class DesktopWalletSession(
         }
     }
 
-    private suspend fun startWalletServices() = whileSessionOpen { walletServicesStarter.value.start() }
+    private suspend fun startWalletServices() = whileSessionOpen {
+        walletServicesStarter.value.start()
+        accountHolders.startServices()
+    }
 
     private inline fun whileSessionOpen(block: () -> Unit) {
         try {
@@ -145,6 +149,7 @@ class DesktopWalletAccountHolders(
     private val offlineModeManager: Lazy<OfflineModeManager>,
     private val bitcoinKitDatabaseManager: Lazy<BitcoinKitDatabaseManager>,
     private val amlStatusManager: Lazy<AmlStatusManager>,
+    private val tonConnectManager: Lazy<TonConnectManager>,
     private val logGate: DesktopLogGate,
 ) {
     /** Until the release ends the kits above still log, and the router already points to the level below. */
@@ -157,10 +162,16 @@ class DesktopWalletAccountHolders(
         transactionAdapterManager.value.awaitReleased(keptAccountIds)
         offlineModeManager.value.retainAccounts(keptAccountIds)
         bitcoinKitDatabaseManager.value.retainAccounts(keptAccountIds)
+        tonConnectManager.value.retainAccounts(keptAccountIds)
     }
 
     /** A narrowing that fails before any release leaves no one to end it. */
-    fun onSessionClosed() = logGate.reset()
+    suspend fun onSessionClosed() {
+        logGate.reset()
+        if (tonConnectManager.isInitialized()) tonConnectManager.value.retainAccounts(emptySet())
+    }
+
+    fun startServices() = tonConnectManager.value.start()
 
     suspend fun onSessionOpened() = offlineModeManager.value.reload()
 

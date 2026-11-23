@@ -9,6 +9,9 @@ import com.tangem.common.CompletionResult
 import com.tangem.crypto.hdWallet.DerivationPath
 import com.tangem.operations.sign.SignData
 import com.tangem.operations.sign.SignResponse
+import io.horizontalsystems.bitcoincore.messages.IStandardMessageSigner
+import io.horizontalsystems.bitcoincore.messages.StandardMessage
+import io.horizontalsystems.bitcoincore.models.PublicKey
 import io.horizontalsystems.bitcoincore.models.Transaction
 import io.horizontalsystems.bitcoincore.models.TransactionOutput
 import io.horizontalsystems.bitcoincore.network.Network
@@ -21,11 +24,12 @@ import io.horizontalsystems.bitcoincore.transactions.model.DataToSign
 import io.horizontalsystems.bitcoincore.transactions.scripts.ScriptType
 import io.horizontalsystems.bitcoincore.utils.Utils
 import io.horizontalsystems.hdwalletkit.ECDSASignature
+import io.horizontalsystems.hdwalletkit.ECKey
 import org.koin.java.KoinJavaComponent.inject
 
 class HardwareWalletEcdaSigner(
     private val hardwarePublicKey: HardwarePublicKey
-) : IInputSigner, IEcdsaInputBatchSigner {
+) : IInputSigner, IEcdsaInputBatchSigner, IStandardMessageSigner {
     private val logger = Logger.withTag("HardwareWalletSigner")
 
     private val signHashesTransactionUseCase: SignHashesTransactionUseCase by inject(
@@ -69,35 +73,44 @@ class HardwareWalletEcdaSigner(
             isWitness = prevOutput.scriptType.isWitness || network.sigHashForked
         ) + byteArrayOf(network.sigHashValue, 0, 0, 0)
 
-        val hashToSign = Utils.doubleDigest(txContent)
-        val changeSegment = if (publicKey.external) "0" else "1"
-        val addressIndexSegment = publicKey.index.toString()
-        val fullDerivationPathString =
-            "${hardwarePublicKey.derivationPath}/$changeSegment/$addressIndexSegment"
-        logger.d { "sigScriptEcdsaData $fullDerivationPathString" }
+        val finalSignature = signHash(Utils.doubleDigest(txContent), publicKey).encodeToDER() + network.sigHashValue
+        return when (prevOutput.scriptType) {
+            ScriptType.P2PK -> listOf(finalSignature)
+            else -> listOf(finalSignature, publicKey.publicKey)
+        }
+    }
+
+    override suspend fun signStandardMessage(publicKey: PublicKey, scriptType: ScriptType, message: String): ByteArray {
+        val hash = ECKey.messageHash(message)
+        val compactSignature = signHash(hash, publicKey).toCompactSignature()
+        return StandardMessage.signature(hash, compactSignature, publicKey.publicKey, scriptType)
+    }
+
+    private suspend fun signHash(hash: ByteArray, publicKey: PublicKey): ECDSASignature {
+        val derivationPath = derivationPath(publicKey)
+        logger.d { "signHash ${derivationPath.rawPath}" }
         val signResponse: CompletionResult<SignResponse> = signHashesTransactionUseCase(
-            hashes = arrayOf(hashToSign),
+            hashes = arrayOf(hash),
             walletPublicKey = hardwarePublicKey.publicKey,
-            derivationPath = DerivationPath(fullDerivationPathString)
+            derivationPath = derivationPath
         )
-        when (signResponse) {
+        return when (signResponse) {
             is CompletionResult.Success -> {
                 val rawSignatureFromTangem = signResponse.data.signatures.firstOrNull()
                     ?: throw Error("No signature returned from signing operation")
-                val rBytes = rawSignatureFromTangem.copyOfRange(0, 32)
-                val sBytes = rawSignatureFromTangem.copyOfRange(32, 64)
-                val derSignatureFromTangem = ECDSASignature.fromCompact(rBytes + sBytes)
-                    .canonicalise()
-                    .encodeToDER()
-                val finalSignature = derSignatureFromTangem + network.sigHashValue
-                return when (prevOutput.scriptType) {
-                    ScriptType.P2PK -> listOf(finalSignature)
-                    else -> listOf(finalSignature, publicKey.publicKey)
-                }
+                rawSignatureFromTangem.toCanonicalSignature()
             }
 
             is CompletionResult.Failure -> throw signResponse.error
         }
+    }
+
+    private fun ByteArray.toCanonicalSignature(): ECDSASignature =
+        ECDSASignature.fromCompact(copyOfRange(0, 64)).canonicalise()
+
+    private fun derivationPath(publicKey: PublicKey): DerivationPath {
+        val changeSegment = if (publicKey.external) "0" else "1"
+        return DerivationPath("${hardwarePublicKey.derivationPath}/$changeSegment/${publicKey.index}")
     }
 
     override suspend fun prepareDataForEcdsaSigning(mutableTransaction: MutableTransaction): List<DataToSign> {
@@ -141,16 +154,10 @@ class HardwareWalletEcdaSigner(
 
         // Prepare SignData for each input with its derivation path
         val signDataList = data.map { dataToSign ->
-            val publicKey = dataToSign.publicKey
-            val changeSegment = if (publicKey.external) "0" else "1"
-            val addressIndexSegment = publicKey.index.toString()
-            val fullDerivationPathString =
-                "${hardwarePublicKey.derivationPath}/$changeSegment/$addressIndexSegment"
-
             SignData(
-                derivationPath = DerivationPath(fullDerivationPathString),
+                derivationPath = derivationPath(dataToSign.publicKey),
                 hash = dataToSign.data,
-                publicKey = publicKey.publicKey
+                publicKey = dataToSign.publicKey.publicKey
             )
         }
 
@@ -169,13 +176,7 @@ class HardwareWalletEcdaSigner(
                 }
 
                 data.zip(responses).map { (dataToSign, response) ->
-                    val rawSignature = response.signature
-                    val rBytes = rawSignature.copyOfRange(0, 32)
-                    val sBytes = rawSignature.copyOfRange(32, 64)
-                    val derSignature = ECDSASignature.fromCompact(rBytes + sBytes)
-                        .canonicalise()
-                        .encodeToDER()
-                    val finalSignature = derSignature + network.sigHashValue
+                    val finalSignature = response.signature.toCanonicalSignature().encodeToDER() + network.sigHashValue
 
                     when (dataToSign.scriptType) {
                         ScriptType.P2PK -> listOf(finalSignature)

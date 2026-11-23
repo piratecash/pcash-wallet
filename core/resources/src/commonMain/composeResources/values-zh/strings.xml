@@ -552,6 +552,8 @@
     <string name="TonConnect_NewConnect">新连接</string>
     <string name="TonConnect_Error_InvalidUrl">无效的URL地址</string>
     <string name="ton_connect_request_expired">确认时间已过期。请在网站上重新操作。</string>
+    <string name="ton_connect_unknown_action_warning">应用无法识别此操作。确认前请检查下方的金额和地址。</string>
+    <string name="ton_connect_action_unknown">未知</string>
     <string name="TonConnect_Unnamed">未命名</string>
     <string name="TonConnect_Wallet">钱包</string>
     <string name="TonConnect_ChooseWallet">选择钱包</string>
@@ -2000,6 +2002,8 @@
     <string name="accruals">Accruals</string>
     <string name="payouts">Payouts</string>
     <string name="how_my_income_grows">我的收入如何增长</string>
+    <string name="staking_chart_mode_both">两者</string>
+    <string name="staking_chart_no_fiat_estimate">无 %1$s 估值</string>
     <string name="payouts_history">Payouts History</string>
     <string name="pos_calculator">POS Calculator</string>
     <string name="pos_calculator_pirate_description">Calculation of profitability mining PirateCash staking in the pool.</string>
@@ -2527,6 +2531,7 @@
     <string name="nft_burn_body">%1$s 将被发送到销毁地址，并从钱包中永久消失。此操作无法撤销。</string>
     <string name="nft_burn_domain_body">域名将被发送到销毁地址，您将失去它。发往 %1$s 的转账将不再到达您的钱包。此操作无法撤销。</string>
     <string name="nft_burn_address">销毁地址</string>
+    <string name="nft_address">NFT 地址</string>
     <string name="nft_burn_confirm">销毁</string>
     <string name="nft_trap_transfer_title">NFT 转移不会成功</string>
     <string name="nft_trap_transfer_body">我们在发送前检查了交易。此 NFT 的合约不会将其转给接收方，并会扣下附带的 %1$s。垃圾 NFT 就是这样运作的。</string>
@@ -2609,6 +2614,26 @@
         <item>我明白此密码用于立即删除加密地址簿。</item>
         <item>我明白输入此密码后地址簿将被删除，没有备份就无法恢复。</item>
     </string-array>
+    <string name="sign_message_title">签名消息</string>
+    <string name="sign_message_intro">签名可以证明该地址属于您。交易所在您添加提现地址时会要求提供签名。签名不会授予对您资金的任何访问权限。</string>
+    <string name="sign_message_message">消息</string>
+    <string name="sign_message_hint">粘贴或扫描交易所网站上的文本</string>
+    <string name="sign_message_format">签名格式</string>
+    <string name="sign_message_format_standard">标准</string>
+    <string name="sign_message_format_standard_description">大多数交易所支持</string>
+    <string name="sign_message_format_bip322_description">新标准，也适用于 Taproot</string>
+    <string name="sign_message_format_info">标准是经典的比特币消息签名，几乎所有交易所和钱包都支持。BIP-322 是较新的格式，也支持 Taproot 地址。请选择交易所要求的格式。</string>
+    <string name="sign_message_taproot_only">Taproot 地址仅支持 BIP-322。</string>
+    <string name="sign_message_trezor_taproot">Trezor 无法为 Taproot 地址签名消息。请使用其他类型的比特币地址，例如 Native SegWit。</string>
+    <string name="sign_message_select_address_hint">请选择您在交易所填写的地址。</string>
+    <string name="sign_message_current_receive_address">当前收款地址</string>
+    <string name="sign_message_used">已使用</string>
+    <string name="sign_message_signature">签名</string>
+    <string name="sign_message_result_intro">复制签名并粘贴到交易所网站上。</string>
+    <string name="sign_message_details">详情</string>
+    <string name="sign_message_details_format">格式</string>
+    <string name="sign_message_not_ready">钱包仍在加载，请稍后重试。</string>
+    <string name="sign_message_failed">无法签名消息</string>
 
     <!-- WalletConnect Stellar -->
     <string name="wallet_connect_stellar_op_payment">付款</string>

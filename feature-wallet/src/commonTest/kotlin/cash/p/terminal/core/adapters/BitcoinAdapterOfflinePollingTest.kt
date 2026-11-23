@@ -115,6 +115,7 @@ class BitcoinAdapterOfflinePollingTest {
         syncMode = BitcoinCore.SyncMode.Full(),
         backgroundManager = backgroundManager,
         wallet = wallet,
+        dispatcherProvider = mockk(relaxed = true),
     )
 
     private companion object {

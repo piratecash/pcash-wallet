@@ -12,13 +12,16 @@ import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.entities.UsedAddress
 import io.horizontalsystems.bitcoincore.BitcoinCore
+import io.horizontalsystems.bitcoincore.messages.MessageSignatureFormat
 import io.horizontalsystems.bitcoincore.models.BalanceInfo
 import io.horizontalsystems.bitcoincore.models.BlockInfo
 import io.horizontalsystems.bitcoincore.models.TransactionInfo
 import io.horizontalsystems.bitcoinkit.BitcoinKit
 import io.horizontalsystems.bitcoinkit.BitcoinKit.NetworkType
+import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.IBackgroundManager
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import io.horizontalsystems.core.entities.BlockchainType
 
 class BitcoinAdapter(
@@ -26,6 +29,7 @@ class BitcoinAdapter(
     syncMode: BitcoinCore.SyncMode,
     backgroundManager: IBackgroundManager,
     wallet: Wallet,
+    private val dispatcherProvider: DispatcherProvider,
     feeRateProvider: IFeeRateProvider? = null
 ) : BitcoinBaseAdapter(
     kit, syncMode, backgroundManager, wallet, DISPLAY_CONFIRMATIONS_THRESHOLD, feeRateProvider = feeRateProvider
@@ -37,12 +41,14 @@ class BitcoinAdapter(
         backgroundManager: IBackgroundManager,
         derivation: TokenType.Derivation,
         environment: BitcoinKitEnvironment,
+        dispatcherProvider: DispatcherProvider,
         feeRateProvider: IFeeRateProvider? = null
     ) : this(
         kit = createKit(wallet, syncMode, derivation, environment),
         syncMode = syncMode,
         backgroundManager = backgroundManager,
         wallet = wallet,
+        dispatcherProvider = dispatcherProvider,
         feeRateProvider = feeRateProvider
     )
 
@@ -107,6 +113,9 @@ class BitcoinAdapter(
                 "https://blockchair.com/bitcoin/address/${it.address}"
             )
         }
+
+    suspend fun signMessage(address: String, message: String, format: MessageSignatureFormat): String =
+        withContext(dispatcherProvider.io) { kit.signMessage(address, message, format) }
 
     companion object {
         private const val KIT_CONFIRMATIONS_THRESHOLD = 1

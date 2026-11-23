@@ -108,7 +108,7 @@ internal class VaultSlots(
         }
     }
 
-    companion object {
+    internal companion object {
         /** An empty journal after VACUUM, measured on SQLCipher: a real journal is never smaller. */
         const val JOURNAL_MIN_PAGES = 6
         /** A real journal is trimmed to this size; noise past it would mark a free slot. */
@@ -116,8 +116,8 @@ internal class VaultSlots(
         private const val LOCK_SUFFIX = ".lck"
         private val TRANSIENT_SUFFIXES = listOf("-wal", "-shm", "-journal")
         const val PAGE_SIZE = 4096
-        private const val MIN_PAGES = 8
-        private const val MAX_PAGES = 4096
+        const val MIN_PAGES = 8
+        const val MAX_PAGES = 4096
         private val OWNER_FILE: Set<PosixFilePermission> = PosixFilePermissions.fromString("rw-------")
         private val OWNER_DIRECTORY: Set<PosixFilePermission> = PosixFilePermissions.fromString("rwx------")
     }

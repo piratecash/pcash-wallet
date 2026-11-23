@@ -556,6 +556,8 @@
     <string name="TonConnect_NewConnect">اتصال جدید</string>
     <string name="TonConnect_Error_InvalidUrl">آدرس URL نامعتبر</string>
     <string name="ton_connect_request_expired">مهلت تأیید به پایان رسیده است. عملیات را در وب‌سایت تکرار کنید.</string>
+    <string name="ton_connect_unknown_action_warning">برنامه نتوانست این عملیات را تشخیص دهد. پیش از تأیید، مبالغ و نشانی‌های زیر را بررسی کنید.</string>
+    <string name="ton_connect_action_unknown">نامشخص</string>
     <string name="TonConnect_Unnamed">بدون نام</string>
     <string name="TonConnect_Wallet">کیف پول</string>
     <string name="TonConnect_ChooseWallet">انتخاب کیف پول</string>
@@ -2016,6 +2018,8 @@
     <string name="accruals">Accruals</string>
     <string name="payouts">Payouts</string>
     <string name="how_my_income_grows">درآمد من چگونه رشد می‌کند</string>
+    <string name="staking_chart_mode_both">هر دو</string>
+    <string name="staking_chart_no_fiat_estimate">بدون برآورد به %1$s</string>
     <string name="payouts_history">Payouts History</string>
     <string name="pos_calculator">POS Calculator</string>
     <string name="pos_calculator_pirate_description">Calculation of profitability mining PirateCash staking in the pool.</string>
@@ -2555,6 +2559,7 @@
     <string name="nft_burn_body">%1$s به آدرس سوزاندن ارسال می‌شود و برای همیشه از کیف پول حذف می‌شود. این کار قابل بازگشت نیست.</string>
     <string name="nft_burn_domain_body">دامنه به آدرس سوزاندن ارسال می‌شود و آن را از دست می‌دهید. انتقال‌ها به %1$s دیگر به کیف پول شما نمی‌رسند. این کار قابل بازگشت نیست.</string>
     <string name="nft_burn_address">آدرس سوزاندن</string>
+    <string name="nft_address">نشانی NFT</string>
     <string name="nft_burn_confirm">سوزاندن</string>
     <string name="nft_trap_transfer_title">انتقال NFT انجام نمی‌شود</string>
     <string name="nft_trap_transfer_body">تراکنش را پیش از ارسال بررسی کردیم. قرارداد این NFT آن را به گیرنده منتقل نمی‌کند و %1$s پیوست‌شده را برای خود نگه می‌دارد. NFTهای اسپم این‌گونه کار می‌کنند.</string>
@@ -2642,6 +2647,26 @@
         <item>می‌دانم که این گذرواژه برای حذف فوری دفترچه آدرس رمزارز استفاده می‌شود.</item>
         <item>می‌دانم که پس از وارد کردن این گذرواژه، دفترچه آدرس حذف می‌شود و بدون نسخه پشتیبان قابل بازیابی نیست.</item>
     </string-array>
+    <string name="sign_message_title">امضای پیام</string>
+    <string name="sign_message_intro">امضا ثابت می‌کند که آدرس متعلق به شماست. صرافی‌ها هنگام افزودن آدرس برداشت آن را درخواست می‌کنند. امضا هیچ دسترسی به دارایی‌های شما نمی‌دهد.</string>
+    <string name="sign_message_message">پیام</string>
+    <string name="sign_message_hint">متن را از وب‌سایت صرافی جای‌گذاری یا اسکن کنید</string>
+    <string name="sign_message_format">قالب امضا</string>
+    <string name="sign_message_format_standard">استاندارد</string>
+    <string name="sign_message_format_standard_description">مورد پذیرش بیشتر صرافی‌ها</string>
+    <string name="sign_message_format_bip322_description">استاندارد جدید، برای Taproot هم کار می‌کند</string>
+    <string name="sign_message_format_info">استاندارد، امضای کلاسیک پیام بیت‌کوین است که تقریباً همه صرافی‌ها و کیف‌پول‌ها آن را می‌پذیرند. BIP-322 قالب جدیدتری است که از آدرس‌های Taproot هم پشتیبانی می‌کند. قالبی را انتخاب کنید که صرافی درخواست می‌کند.</string>
+    <string name="sign_message_taproot_only">برای آدرس‌های Taproot فقط BIP-322 در دسترس است.</string>
+    <string name="sign_message_trezor_taproot">Trezor نمی‌تواند برای آدرس‌های Taproot پیام امضا کند. از آدرس بیت‌کوین نوع دیگری، مثلاً Native SegWit، استفاده کنید.</string>
+    <string name="sign_message_select_address_hint">آدرسی را که در صرافی وارد کرده‌اید انتخاب کنید.</string>
+    <string name="sign_message_current_receive_address">آدرس دریافت فعلی</string>
+    <string name="sign_message_used">استفاده‌شده</string>
+    <string name="sign_message_signature">امضا</string>
+    <string name="sign_message_result_intro">امضا را کپی کنید و در وب‌سایت صرافی جای‌گذاری کنید.</string>
+    <string name="sign_message_details">جزئیات</string>
+    <string name="sign_message_details_format">قالب</string>
+    <string name="sign_message_not_ready">کیف پول هنوز در حال بارگذاری است. چند لحظه دیگر دوباره تلاش کنید.</string>
+    <string name="sign_message_failed">امضای پیام ممکن نشد</string>
 
     <!-- WalletConnect Stellar -->
     <string name="wallet_connect_stellar_op_payment">پرداخت</string>

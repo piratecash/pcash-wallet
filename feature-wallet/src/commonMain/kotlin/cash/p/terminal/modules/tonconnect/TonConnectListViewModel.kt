@@ -1,0 +1,100 @@
+package cash.p.terminal.modules.tonconnect
+
+import androidx.lifecycle.viewModelScope
+import cash.p.terminal.core.managers.TonConnectManager
+import cash.p.terminal.core.managers.TonConnectWalletId
+import cash.p.terminal.wallet.IAccountManager
+import cash.p.terminal.wallet.entities.TonWalletVersion
+import com.tonapps.wallet.data.tonconnect.entities.DAppEntity
+import io.horizontalsystems.core.ViewModelUiState
+import io.horizontalsystems.tonkit.tonconnect.TonConnectKit
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+
+class TonConnectListViewModel(
+    accountManager: IAccountManager,
+    private val tonConnectManager: TonConnectManager,
+) : ViewModelUiState<TonConnectListUiState>() {
+
+    private var dapps: Map<String, List<TonConnectSession>> = emptyMap()
+    private var dAppRequestUri: String? = null
+    private var error: Throwable? = null
+
+    private val accountNamesById = accountManager.accounts.associate { it.id to it.name }
+
+    override fun createState() = TonConnectListUiState(
+        dapps = dapps,
+        dAppRequestUri = dAppRequestUri,
+        error = error
+    )
+
+    init {
+        viewModelScope.launch {
+            tonConnectManager.start()
+            tonConnectManager.dApps.collect {
+                dapps = it.map(::session).groupBy { session ->
+                    accountNamesById.getOrDefault(session.accountId, session.accountId)
+                }
+                emitState()
+            }
+        }
+    }
+
+    private fun session(dapp: DAppEntity): TonConnectSession {
+        val walletId = TonConnectWalletId.parse(dapp.walletId)
+        return TonConnectSession(dapp, walletId.accountId, walletId.version.sessionLabel)
+    }
+
+    fun setConnectionUri(v: String) {
+        error = null
+
+        try {
+            TonConnectKit.readData(v)
+            dAppRequestUri = v
+        } catch (e: Throwable) {
+            error = e
+        }
+        emitState()
+    }
+
+    fun onDappRequestHandled() {
+        dAppRequestUri = null
+        emitState()
+    }
+
+    fun onErrorHandled() {
+        error = null
+        emitState()
+    }
+
+    fun disconnect(dapp: DAppEntity) {
+        viewModelScope.launch(Dispatchers.Default + CoroutineExceptionHandler { _, error ->
+            this.error = error
+            emitState()
+        }) {
+            tonConnectManager.disconnect(dapp)
+        }
+    }
+
+}
+
+
+/** V4R2 sessions stay unlabelled, as they were before W5 support. */
+private val TonWalletVersion.sessionLabel: String?
+    get() = when (this) {
+        TonWalletVersion.V4R2 -> null
+        TonWalletVersion.W5 -> title
+    }
+
+data class TonConnectSession(
+    val dapp: DAppEntity,
+    val accountId: String,
+    val walletVersionLabel: String?,
+)
+
+data class TonConnectListUiState(
+    val dapps: Map<String, List<TonConnectSession>>,
+    val dAppRequestUri: String?,
+    val error: Throwable?
+)
