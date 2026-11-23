@@ -25,6 +25,9 @@ interface BalanceSettingsStorage {
 
     /** Entries are `accountId:version`. */
     var dismissedNftVersionHints: Set<String>
+
+    /** Entries are `blockchainUid|collectionAddress`. */
+    var trustedNftCollections: Set<String>
 }
 
 interface TransactionSettingsStorage {

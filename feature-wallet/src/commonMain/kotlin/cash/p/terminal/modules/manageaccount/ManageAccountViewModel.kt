@@ -21,6 +21,7 @@ import cash.p.terminal.wallet.SeedAccountType
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.canBeDuplicated
+import cash.p.terminal.wallet.normalizedAccountName
 import cash.p.terminal.wallet.entities.TokenType
 import io.horizontalsystems.core.entities.BlockchainType
 import kotlinx.coroutines.channels.Channel
@@ -109,7 +110,7 @@ class ManageAccountViewModel(
     }
 
     fun onChange(name: String) {
-        newName = name.trim().replace("\n", " ")
+        newName = name.normalizedAccountName()
         val canSave = newName != account.name && newName.isNotEmpty()
         viewState = viewState.copy(
             canSave = canSave,

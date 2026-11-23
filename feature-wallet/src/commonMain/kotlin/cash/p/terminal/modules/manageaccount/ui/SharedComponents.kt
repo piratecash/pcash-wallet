@@ -71,17 +71,24 @@ import cash.p.terminal.resources.ic_attention_24
 import cash.p.terminal.resources.ic_key_phrase_20
 import cash.p.terminal.resources.tap_to_show_qr_code
 
-/** Copies a secret and confirms it with the standard "Copied" HUD. */
+/** Copies text and confirms it with the standard "Copied" HUD. */
 @Composable
-fun rememberCopyWithHud(): (String) -> Unit {
+fun rememberCopyWithHud(): (String) -> Unit = rememberHudCopy(IClipboardManager::copyText)
+
+/** Same for a recovery phrase or private key: a sensitive clip that is cleared after a minute. */
+@Composable
+fun rememberCopySecretWithHud(): (String) -> Unit = rememberHudCopy(IClipboardManager::copySecret)
+
+@Composable
+private fun rememberHudCopy(copy: IClipboardManager.(String) -> Unit): (String) -> Unit {
     // No Koin graph in @Preview, so skip the clipboard lookup there.
     if (LocalInspectionMode.current) return {}
     val clipboardManager = koinInject<IClipboardManager>()
     val hudMessenger = rememberHudMessenger()
     val copiedText = stringResource(Res.string.Hud_Text_Copied)
-    return remember(clipboardManager, hudMessenger, copiedText) {
+    return remember(clipboardManager, hudMessenger, copiedText, copy) {
         { text ->
-            clipboardManager.copyText(text)
+            clipboardManager.copy(text)
             hudMessenger.showSuccess(copiedText)
         }
     }

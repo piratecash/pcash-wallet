@@ -26,6 +26,7 @@ import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead2_leah
+import cash.p.terminal.ui.compose.components.coinIconPlate
 import cash.p.terminal.wallet.Token
 import io.horizontalsystems.chartview.rememberAsyncImagePainterWithFallback
 import io.horizontalsystems.core.entities.BlockchainType
@@ -63,6 +64,7 @@ fun ConfiguredTokenInfoBottomSheet(
     ) {
         BottomSheetHeaderMultiline(
             iconPainter = uiState.iconSource.painter(),
+            iconPlate = true,
             title = uiState.title,
             subtitle = uiState.subtitle,
             onCloseClick = {
@@ -152,7 +154,7 @@ private fun ContractInfo(tokenInfoType: ConfiguredTokenInfoType.Contract) {
             modifier = Modifier.padding(horizontal = 16.dp)
         ) {
             Image(
-                modifier = Modifier.size(32.dp),
+                modifier = Modifier.size(32.dp).coinIconPlate(),
                 painter = rememberAsyncImagePainterWithFallback(
                     model = tokenInfoType.platformImageUrl,
                     error = painterResource(Res.drawable.ic_platform_placeholder_32)

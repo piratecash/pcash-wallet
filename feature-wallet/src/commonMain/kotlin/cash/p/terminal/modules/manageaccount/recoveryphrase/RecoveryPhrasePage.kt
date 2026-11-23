@@ -34,7 +34,7 @@ import cash.p.terminal.resources.Info_Title
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.ic_info_24
 import cash.p.terminal.strings.helpers.TranslatableString
-import cash.p.terminal.modules.manageaccount.ui.rememberCopyWithHud
+import cash.p.terminal.modules.manageaccount.ui.rememberCopySecretWithHud
 import cash.p.terminal.ui_compose.components.rememberHudMessenger
 import cash.p.terminal.ui_compose.AnnotatedResourceString
 import cash.p.terminal.ui_compose.components.AppBar
@@ -88,7 +88,7 @@ private fun RecoveryPhraseScreen(
     val viewModel =
         koinViewModel<RecoveryPhraseViewModel> { parametersOf(account, recoveryPhraseType) }
 
-    val copyWithHud = rememberCopyWithHud()
+    val copyWithHud = rememberCopySecretWithHud()
     val hudMessenger = rememberHudMessenger()
     val qrGenerationErrorText = stringResource(Res.string.RecoveryPhrase_QrGenerationError)
     val titleResId = if (recoveryPhraseType == RecoveryPhrasePage.RecoveryPhraseType.Monero) {

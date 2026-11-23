@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import cash.p.terminal.core.HSCaution
 import cash.p.terminal.core.HardwareWalletSupport
 import cash.p.terminal.core.ISendTonAdapter
 import cash.p.terminal.core.getKoinInstance
@@ -34,6 +35,8 @@ import cash.p.terminal.modules.send.ton.SendTonFeeService
 import cash.p.terminal.modules.send.ton.TonFeeQuote
 import cash.p.terminal.modules.xrate.XRateService
 import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.nft_trap_transfer_body
+import cash.p.terminal.resources.nft_trap_transfer_title
 import cash.p.terminal.resources.not_enough_ton_for_fee
 import cash.p.terminal.resources.send_memo_too_long
 import cash.p.terminal.strings.helpers.TranslatableString
@@ -163,7 +166,12 @@ class NftTransferViewModel(
         val contact = contactsRepository
             .getContactsFiltered(BlockchainType.Ton, addressQuery = recipient.hex)
             .firstOrNull()
-        return NftTransferConfirmationData(recipient, quote.memo, quote.fee, contact)
+        val trapCaution = if (quote.nftNotTransferred) {
+            nftTrapCaution(Res.string.nft_trap_transfer_title, Res.string.nft_trap_transfer_body, wallet.token)
+        } else {
+            null
+        }
+        return NftTransferConfirmationData(recipient, quote.memo, quote.fee, contact, trapCaution)
     }
 
     public override fun getEstimatedFee(): BigDecimal? = currentQuote?.fee
@@ -261,11 +269,13 @@ data class NftTransferUiState(
     val insufficientBalance: TranslatableString?,
 )
 
+/** [trapCaution] is set when the emulation shows the NFT would not reach the recipient. */
 data class NftTransferConfirmationData(
     val address: Address,
     val comment: String?,
     val fee: BigDecimal,
     val contact: Contact?,
+    val trapCaution: HSCaution?,
 )
 
 class NftTransferViewModelFactory(

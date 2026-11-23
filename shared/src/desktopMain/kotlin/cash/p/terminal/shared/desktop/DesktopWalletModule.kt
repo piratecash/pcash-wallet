@@ -38,6 +38,8 @@ import cash.p.terminal.core.managers.TronHardwareSigners
 import cash.p.terminal.core.managers.EvmKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.EvmSyncSourceManager
 import cash.p.terminal.core.managers.KitPlatformContexts
+import cash.p.terminal.core.managers.TonConnectManager
+import cash.p.terminal.core.managers.TonConnectStorage
 import cash.p.terminal.core.managers.KitStorageNaming
 import cash.p.terminal.core.managers.SolanaKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.SolanaRpcSourceManager
@@ -48,6 +50,8 @@ import cash.p.terminal.core.managers.TrezorAttachments
 import cash.p.terminal.core.providers.AddressResolutionConfig
 import cash.p.terminal.core.providers.ZcashFallbackAddressProvider
 import cash.p.terminal.core.NonFatalReporter
+import cash.p.terminal.core.adapters.zcash.session.DesktopZcashBlockDownloadPolicy
+import cash.p.terminal.core.adapters.zcash.session.ZcashBlockDownloadPolicy
 import cash.p.terminal.core.adapters.zcash.session.ZcashDbKeyProvider
 import cash.p.terminal.shared.desktop.vault.DesktopZcashDbKeyProvider
 import cash.p.terminal.wallet.FallbackAddressProvider
@@ -175,7 +179,20 @@ internal val desktopWalletModule = module {
             lazy { get<OfflineModeManager>() },
             lazy { get<BitcoinKitDatabaseManager>() },
             lazy { get<AmlStatusManager>() },
+            lazy { get<TonConnectManager>() },
             get(),
+        )
+    }
+    singleOf(::DesktopTonConnectStorage) bind TonConnectStorage::class
+    single {
+        TonConnectManager(
+            adapterFactory = get(),
+            appName = "P.cash Wallet",
+            appVersion = get<DesktopAppVersion>().name,
+            storage = get(),
+            accountManager = get(),
+            router = get(),
+            dispatcherProvider = get(),
         )
     }
     singleOf(::DesktopLogGate)
@@ -215,7 +232,7 @@ internal val desktopWalletModule = module {
     single<BalanceHideOnFlipHandler> { DesktopBalanceHideOnFlipHandler }
     single<HardwareWalletKeyProvisioner> { DesktopNoHardwareKeyProvisioner }
     single<ScanToAddUseCase> { DesktopNoHardwareScanToAdd }
-    single<BalancePlatformActions> { DesktopBalancePlatformActions }
+    singleOf(::DesktopBalancePlatformActions) bind BalancePlatformActions::class
     singleOf(::DesktopSystemInfoManager) bind ISystemInfoManager::class
     singleOf(::DesktopStatusReportBuildInfo) bind StatusReportBuildInfo::class
     singleOf(::DesktopStatusReportExporter) bind StatusReportExporter::class
@@ -235,6 +252,7 @@ internal val desktopWalletModule = module {
     singleOf(::DesktopSolanaKitDatabaseKeyProvider) bind SolanaKitDatabaseKeyProvider::class
     singleOf(::DesktopStellarKitDatabaseKeyProvider) bind StellarKitDatabaseKeyProvider::class
     singleOf(::DesktopZcashDbKeyProvider) bind ZcashDbKeyProvider::class
+    singleOf(::DesktopZcashBlockDownloadPolicy) bind ZcashBlockDownloadPolicy::class
     singleOf(::DesktopBeamKitDatabaseKeyProvider) bind BeamKitDatabaseKeyProvider::class
     single<NonFatalReporter> { DesktopNonFatalReporter }
     single<TorSyncState> { DesktopTorSyncState }

@@ -1,13 +1,10 @@
 package cash.p.terminal.ui.compose.components
 
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import cash.p.terminal.core.iconPlaceholder
 import cash.p.terminal.ui_compose.components.HsImage
-import cash.p.terminal.ui_compose.components.HsImageCircle
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.alternativeImageUrl
 import cash.p.terminal.wallet.entities.Coin
@@ -23,7 +20,7 @@ fun CoinImage(
     url = coin?.imageUrl,
     alternativeUrl = coin?.alternativeImageUrl,
     placeholder = coin?.imagePlaceholder,
-    modifier = modifier.clip(CircleShape),
+    modifier = modifier.coinIconPlate(),
     colorFilter = colorFilter
 )
 
@@ -32,10 +29,10 @@ fun CoinImage(
     token: Token?,
     modifier: Modifier,
     colorFilter: ColorFilter? = null
-) = HsImageCircle(
-    modifier,
-    token?.coin?.imageUrl,
-    token?.coin?.alternativeImageUrl,
-    token?.iconPlaceholder,
-    colorFilter
+) = HsImage(
+    url = token?.coin?.imageUrl,
+    alternativeUrl = token?.coin?.alternativeImageUrl,
+    placeholder = token?.iconPlaceholder,
+    modifier = modifier.coinIconPlate(),
+    colorFilter = colorFilter
 )

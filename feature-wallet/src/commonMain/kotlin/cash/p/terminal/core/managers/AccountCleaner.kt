@@ -5,6 +5,7 @@ import cash.p.terminal.domain.usecase.ClearZCashWalletDataUseCase
 import cash.p.terminal.wallet.IAccountCleaner
 import cash.p.terminal.wallet.AccountDeletionPreflight
 import cash.p.terminal.wallet.IAccountManager
+import cash.p.terminal.wallet.IAccountsStorage
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.Token
@@ -31,6 +32,7 @@ class AccountCleaner(
     private val thorchainKitManagers: ThorchainKitManagers,
     private val evmBlockchainManager: EvmBlockchainManager,
     private val deletionPreflight: AccountDeletionPreflight,
+    private val accountsStorage: IAccountsStorage,
 ) : IAccountCleaner {
 
     /** Storage rows go last: their failure must reach the caller without skipping the wipes above. */
@@ -95,7 +97,8 @@ class AccountCleaner(
         when (blockchainType) {
             is BlockchainType.Zcash -> clearZCashWalletDataUseCase.invoke(accountId)
             is BlockchainType.Monero -> {
-                accountManager.account(accountId)?.let {
+                // A tombstoned account is no longer in the live cache.
+                (accountManager.account(accountId) ?: accountsStorage.loadAccount(accountId))?.let {
                     removeMoneroWalletFilesUseCase(it)
                     router.account(it.id)?.moneroFileDao()?.deleteAssociatedRecord(it.id)
                 }

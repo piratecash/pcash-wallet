@@ -8,8 +8,13 @@
 //   2. Every class in r8-critical-classes.txt must still be present under its original name.
 //      That catches a rename or a package move that rule 1 cannot see, because the rule keeps
 //      matching its other neighbours.
+//   3. No navigation page may be merged into another page. HSNavigation finds pages by runtime
+//      class, so a merged page answers lookups meant for its host.
 
 def minifiedVariants = ['Qa', 'Release']
+
+// Every page overrides HSPage.GetContent(HSNavigation); its mapping line names the page.
+def pageMethodMarker = 'GetContent(cash.p.terminal.navigation.HSNavigation'
 
 def ruleFilesFor = { String variant ->
     def files = [file('proguard-rules.pro')]
@@ -83,20 +88,46 @@ minifiedVariants.each { variant ->
 
             def originalNames = new HashSet<String>()
             def renamedClasses = new HashMap<String, String>()
+            def pages = new HashSet<String>()
+            def foreignPageMethods = new HashSet<List<String>>()
+            def currentClass = null
             mappingFile.eachLine('UTF-8') { line ->
-                if (line.isEmpty() || line.startsWith(' ') || line.startsWith('\t') || line.startsWith('#')) return
+                if (line.isEmpty() || line.startsWith('#')) return
+                if (line.startsWith(' ') || line.startsWith('\t')) {
+                    def marker = line.indexOf(pageMethodMarker)
+                    if (currentClass == null || marker < 1) return
+                    def separator = line.charAt(marker - 1)
+                    if (separator == ' ' as char) {
+                        pages.add(currentClass)
+                    } else if (separator == '.' as char) {
+                        def owner = line.substring(0, marker - 1).tokenize(' ').last()
+                        if (owner != currentClass) foreignPageMethods << [owner, currentClass]
+                    }
+                    return
+                }
                 def arrow = line.indexOf(' -> ')
-                if (arrow < 0) return
+                if (arrow < 0) {
+                    currentClass = null
+                    return
+                }
                 def original = line.substring(0, arrow)
                 def obfuscated = line.substring(arrow + 4)
                 if (obfuscated.endsWith(':')) {
                     obfuscated = obfuscated.substring(0, obfuscated.length() - 1)
                 }
+                currentClass = original
                 originalNames.add(original)
                 if (original != obfuscated) {
                     renamedClasses.put(original, obfuscated)
                 }
             }
+
+            // An owner without a class line of its own lives on only inside its host: merged. Pages
+            // R8 stripped show up solely in the synthetic compose block, which is not a page.
+            def mergedPages = foreignPageMethods
+                    .findAll { !originalNames.contains(it[0]) && pages.contains(it[1]) }
+                    .collect { "  ${it[0]} merged into ${it[1]}".toString() }
+                    .sort()
 
             def checkedPatterns = 0
             def unmatchedRules = []
@@ -127,7 +158,7 @@ minifiedVariants.each { variant ->
                 }
             }
 
-            if (!unmatchedRules.isEmpty() || !brokenClasses.isEmpty()) {
+            if (!unmatchedRules.isEmpty() || !brokenClasses.isEmpty() || !mergedPages.isEmpty() || pages.isEmpty()) {
                 def report = new StringBuilder("R8 keep rules are not doing what they claim.\n")
                 if (!unmatchedRules.isEmpty()) {
                     report.append("\nRules that protect nothing (wrong package, or the class is gone):\n")
@@ -138,11 +169,20 @@ minifiedVariants.each { variant ->
                     report.append(" (see app/r8-critical-classes.txt):\n")
                     report.append(brokenClasses.join('\n')).append('\n')
                 }
+                if (!mergedPages.isEmpty()) {
+                    report.append("\nPages merged into another page, so navigation confuses them")
+                    report.append(" (see core/navigation/consumer-rules.pro):\n")
+                    report.append(mergedPages.join('\n')).append('\n')
+                }
+                if (pages.isEmpty()) {
+                    report.append("\nNo page found by '${pageMethodMarker}': HSPage.GetContent changed,")
+                    report.append(" update pageMethodMarker or the page check protects nothing.\n")
+                }
                 throw new GradleException(report.toString())
             }
 
             logger.lifecycle("R8 verification (${variantName}): ${checkedPatterns} keep patterns match, " +
-                    "${checkedClasses} critical classes keep their names")
+                    "${checkedClasses} critical classes keep their names, ${pages.size()} pages unmerged")
         }
     }
 

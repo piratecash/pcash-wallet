@@ -15,6 +15,8 @@ import cash.p.terminal.modules.send.register
 import cash.p.terminal.modules.xrate.XRateService
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.insufficient_balance_required_available
+import cash.p.terminal.resources.nft_trap_burn_body
+import cash.p.terminal.resources.nft_trap_burn_title
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
 import cash.p.terminal.wallet.AdapterState
@@ -52,6 +54,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -185,6 +188,25 @@ class NftBurnViewModelTest {
         advanceUntilIdle()
 
         coVerify(exactly = 0) { adapter.sendNftTransfer(any(), any(), any()) }
+    }
+
+    @Test
+    fun uiState_trapEstimate_trapCautionAndBurnStillAllowed() = runTest(dispatcher) {
+        coEvery { adapter.estimateNftTransferFee(any(), any(), any()) } returns
+            TonFeeEstimate(BigDecimal("0.01"), BigDecimal("0.05"), nftNotTransferred = true)
+        val viewModel = createViewModel()
+
+        val caution = viewModel.uiState.trapCaution
+        assertEquals(Res.string.nft_trap_burn_title, (caution?.s as TranslatableString.ResString).id)
+        assertEquals(Res.string.nft_trap_burn_body, (caution.description as TranslatableString.ResString).id)
+        assertTrue(viewModel.uiState.canBurn)
+    }
+
+    @Test
+    fun uiState_regularEstimate_noTrapCaution() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+
+        assertNull(viewModel.uiState.trapCaution)
     }
 
     @Test

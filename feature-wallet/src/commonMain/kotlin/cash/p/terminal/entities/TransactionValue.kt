@@ -1,6 +1,7 @@
 package cash.p.terminal.entities
 
 import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.icon_24_nft_placeholder
 import cash.p.terminal.resources.the_open_network_jetton
 import cash.p.terminal.wallet.alternativeImageUrl
 import cash.p.terminal.core.iconPlaceholder
@@ -135,14 +136,15 @@ sealed interface TransactionValue {
         val mintAddress: String,
         val value: BigDecimal,
         val tokenName: String?,
-        val tokenSymbol: String?
+        val tokenSymbol: String?,
+        val imageUrl: String? = null,
     ) : TransactionValue {
         override val coinUid: String = ""
         override val coin: Coin? = null
         override val badge: String? = null
-        override val coinIconUrl = null
+        override val coinIconUrl = imageUrl
         override val alternativeCoinIconUrl = null
-        override val coinIconPlaceholder: DrawableResource? = null
+        override val coinIconPlaceholder: DrawableResource = Res.drawable.icon_24_nft_placeholder
         override val fullName: String
             get() = "${tokenName ?: ""} #$mintAddress"
         override val coinCode: String
