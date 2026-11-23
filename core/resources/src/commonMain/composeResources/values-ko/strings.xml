@@ -556,6 +556,8 @@
     <string name="TonConnect_NewConnect">새 연결</string>
     <string name="TonConnect_Error_InvalidUrl">잘못된 URL 주소</string>
     <string name="ton_connect_request_expired">확인 시간이 만료되었습니다. 웹사이트에서 작업을 다시 진행해 주세요.</string>
+    <string name="ton_connect_unknown_action_warning">앱이 이 작업을 인식하지 못했습니다. 확인하기 전에 아래 금액과 주소를 확인하세요.</string>
+    <string name="ton_connect_action_unknown">알 수 없음</string>
     <string name="TonConnect_Unnamed">이름 없음</string>
     <string name="TonConnect_Wallet">지갑</string>
     <string name="TonConnect_ChooseWallet">지갑 선택</string>
@@ -2009,6 +2011,8 @@
     <string name="accruals">Accruals</string>
     <string name="payouts">Payouts</string>
     <string name="how_my_income_grows">내 수익은 어떻게 성장하나요</string>
+    <string name="staking_chart_mode_both">둘 다</string>
+    <string name="staking_chart_no_fiat_estimate">%1$s 추정치 없음</string>
     <string name="payouts_history">Payouts History</string>
     <string name="pos_calculator">POS Calculator</string>
     <string name="pos_calculator_pirate_description">Calculation of profitability mining PirateCash staking in the pool.</string>
@@ -2536,6 +2540,7 @@
     <string name="nft_burn_body">%1$s이(가) 소각 주소로 전송되어 지갑에서 영구히 사라집니다. 되돌릴 수 없습니다.</string>
     <string name="nft_burn_domain_body">도메인이 소각 주소로 전송되어 잃게 됩니다. %1$s(으)로의 송금이 더 이상 지갑에 도착하지 않습니다. 되돌릴 수 없습니다.</string>
     <string name="nft_burn_address">소각 주소</string>
+    <string name="nft_address">NFT 주소</string>
     <string name="nft_burn_confirm">소각</string>
     <string name="nft_trap_transfer_title">NFT 전송이 완료되지 않습니다</string>
     <string name="nft_trap_transfer_body">보내기 전에 거래를 확인했습니다. 이 NFT의 컨트랙트는 NFT를 받는 사람에게 넘기지 않고 첨부된 %1$s을(를) 가져갑니다. 스팸 NFT가 이렇게 작동합니다.</string>
@@ -2605,6 +2610,26 @@
     <string name="desktop_password_save_failed">비밀번호를 저장할 수 없습니다. 다시 시도하세요</string>
     <string name="tron_controlled_by_others_title">다른 사람이 이 계정을 제어할 수 있습니다</string>
     <string name="tron_controlled_by_others_warning">이 계정의 권한이 변경되어 다른 키가 이 계정을 제어할 수 있습니다. 이 계정으로 보낸 자금은 회원님의 동의 없이 인출될 수 있습니다. 이 키가 누구의 것인지 아는 경우에만 입금하세요.</string>
+    <string name="sign_message_title">메시지 서명</string>
+    <string name="sign_message_intro">서명은 주소가 본인 소유임을 증명합니다. 거래소에서 출금 주소를 추가할 때 요구합니다. 서명으로는 자금에 접근할 수 없습니다.</string>
+    <string name="sign_message_message">메시지</string>
+    <string name="sign_message_hint">거래소 웹사이트의 텍스트를 붙여넣거나 스캔하세요</string>
+    <string name="sign_message_format">서명 형식</string>
+    <string name="sign_message_format_standard">표준</string>
+    <string name="sign_message_format_standard_description">대부분의 거래소에서 지원</string>
+    <string name="sign_message_format_bip322_description">새로운 표준, Taproot에서도 작동</string>
+    <string name="sign_message_format_info">표준은 거의 모든 거래소와 지갑에서 지원하는 기존 Bitcoin 메시지 서명 방식입니다. BIP-322는 Taproot 주소도 지원하는 새로운 형식입니다. 거래소에서 요구하는 형식을 선택하세요.</string>
+    <string name="sign_message_taproot_only">Taproot 주소에는 BIP-322만 사용할 수 있습니다.</string>
+    <string name="sign_message_trezor_taproot">Trezor는 Taproot 주소로 메시지에 서명할 수 없습니다. Native SegWit 등 다른 유형의 Bitcoin 주소를 사용하세요.</string>
+    <string name="sign_message_select_address_hint">거래소에 입력한 주소를 선택하세요.</string>
+    <string name="sign_message_current_receive_address">현재 수신 주소</string>
+    <string name="sign_message_used">사용됨</string>
+    <string name="sign_message_signature">서명</string>
+    <string name="sign_message_result_intro">서명을 복사하여 거래소 웹사이트에 붙여넣으세요.</string>
+    <string name="sign_message_details">세부 정보</string>
+    <string name="sign_message_details_format">형식</string>
+    <string name="sign_message_not_ready">지갑을 아직 불러오는 중입니다. 잠시 후 다시 시도하세요.</string>
+    <string name="sign_message_failed">메시지에 서명하지 못했습니다</string>
 
     <!-- WalletConnect Stellar -->
     <string name="wallet_connect_stellar_op_payment">결제</string>

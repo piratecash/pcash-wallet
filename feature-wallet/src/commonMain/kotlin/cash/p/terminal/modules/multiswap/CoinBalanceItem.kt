@@ -8,4 +8,8 @@ data class CoinBalanceItem(
     val token: Token,
     val balance: BigDecimal?,
     val fiatBalanceValue: CurrencyValue?,
+    val balanceText: String? = null,
+    val fiatBalanceText: String? = null,
+    val balanceHidden: Boolean = false,
+    val balanceClickToggles: Boolean = false,
 )

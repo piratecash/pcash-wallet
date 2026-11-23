@@ -6,9 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation3.runtime.NavBackStack
 import cash.p.terminal.core.ILocalStorage
-import cash.p.terminal.core.managers.DAppRequest
 import cash.p.terminal.core.managers.DefaultUserManager
-import cash.p.terminal.core.managers.TonConnectManager
 import cash.p.terminal.modules.calculator.domain.CalculatorModeService
 import cash.p.terminal.modules.walletconnect.WCDelegate
 import cash.p.terminal.navigation.HSPage
@@ -23,11 +21,7 @@ import io.horizontalsystems.core.IPinComponent
 import io.horizontalsystems.core.ISystemInfoManager
 import io.horizontalsystems.core.entities.AutoDeletePeriod
 import io.horizontalsystems.core.security.KeyStoreValidationError
-import io.horizontalsystems.tonkit.models.SignTransaction
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
@@ -44,7 +38,6 @@ class MainActivityViewModel(
     private val dispatcherProvider: DispatcherProvider,
     pinComponent: IPinComponent,
     private val keyStoreManager: IKeyStoreManager,
-    private val tonConnectManager: TonConnectManager,
     private val loginRecordRepository: ILoginRecordRepository,
 ) : ViewModel() {
 
@@ -57,14 +50,6 @@ class MainActivityViewModel(
     val navigateToMainLiveData = MutableLiveData(false)
     val wcEvent = MutableLiveData<Wallet.Model?>()
 
-    private val _tcSendRequest = MutableSharedFlow<SignTransaction?>(
-        replay = 1,
-        extraBufferCapacity = 1
-    )
-    val tcSendRequest: SharedFlow<SignTransaction?> = _tcSendRequest.asSharedFlow()
-
-
-    val tcDappRequest = MutableLiveData<DAppRequest?>()
     val intentLiveData = MutableLiveData<Intent?>()
 
     init {
@@ -87,16 +72,6 @@ class MainActivityViewModel(
         viewModelScope.launch {
             WCDelegate.walletEvents.collect {
                 wcEvent.postValue(it)
-            }
-        }
-        viewModelScope.launch {
-            tonConnectManager.sendRequestFlow.collect {
-                _tcSendRequest.emit(it)
-            }
-        }
-        viewModelScope.launch {
-            tonConnectManager.dappRequestFlow.collect {
-                tcDappRequest.postValue(it)
             }
         }
     }
@@ -136,16 +111,8 @@ class MainActivityViewModel(
         intentLiveData.postValue(null)
     }
 
-    fun onTcDappRequestHandled() {
-        tcDappRequest.postValue(null)
-    }
-
     fun onWcEventHandled() {
         wcEvent.postValue(null)
-    }
-
-    fun onTcSendRequestHandled() {
-        _tcSendRequest.tryEmit(null)
     }
 
     fun validate() {

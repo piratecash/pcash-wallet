@@ -369,6 +369,7 @@ class AdapterFactory(
                             backgroundManager = backgroundManager,
                             derivation = tokenType.derivation,
                             environment = bitcoinKitEnvironment(wallet),
+                            dispatcherProvider = dispatcherProvider,
                             feeRateProvider = BitcoinFeeRateProvider(feeRateProvider)
                         )
                     }
