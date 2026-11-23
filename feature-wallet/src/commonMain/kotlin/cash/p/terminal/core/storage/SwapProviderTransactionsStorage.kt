@@ -63,6 +63,9 @@ class SwapProviderTransactionsStorage(
         )
     }.newestFirst(limit)
 
+    fun getAllAcrossAccounts(): List<SwapProviderTransaction> =
+        router.acrossAccounts { swapProviderTransactionsDao().getAllRows() }
+
     fun getAllUnfinishedByAccount(
         accountId: String,
         statusesExcluded: List<String>,

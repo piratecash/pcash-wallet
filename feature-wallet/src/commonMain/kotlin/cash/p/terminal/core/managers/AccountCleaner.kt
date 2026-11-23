@@ -2,6 +2,8 @@ package cash.p.terminal.core.managers
 
 import cash.p.terminal.core.storage.StorageRouter
 import cash.p.terminal.domain.usecase.ClearZCashWalletDataUseCase
+import cash.p.terminal.wallet.Account
+import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountCleaner
 import cash.p.terminal.wallet.AccountDeletionPreflight
 import cash.p.terminal.wallet.IAccountManager
@@ -67,7 +69,13 @@ class AccountCleaner(
         }
 
         if (isWalletActive(accountId, token)) return
-        clearWalletData(accountId, token.blockchainType, accountDeleted = false)
+        if (token.blockchainType != BlockchainType.Monero) {
+            return clearWalletData(accountId, token.blockchainType, accountDeleted = false)
+        }
+
+        val account = liveOrStoredAccount(accountId) ?: return
+        // Only its device can recreate a device wallet: RescanMoneroUseCase applies its height instead.
+        if (account.type !is AccountType.HardwareDevice) clearMoneroWalletData(account)
     }
 
     /**
@@ -99,16 +107,18 @@ class AccountCleaner(
         when (blockchainType) {
             is BlockchainType.Zcash ->
                 clearZCashWalletDataUseCase.invoke(accountId, eraseIssuedAddresses = accountDeleted)
-            is BlockchainType.Monero -> {
-                // A tombstoned account is no longer in the live cache.
-                (accountManager.account(accountId) ?: accountsStorage.loadAccount(accountId))?.let {
-                    removeMoneroWalletFilesUseCase(it)
-                    router.account(it.id)?.moneroFileDao()?.deleteAssociatedRecord(it.id)
-                }
-            }
-
+            is BlockchainType.Monero -> liveOrStoredAccount(accountId)?.let { clearMoneroWalletData(it) }
             else -> Unit
         }
+    }
+
+    // A tombstoned account is no longer in the live cache.
+    private fun liveOrStoredAccount(accountId: String): Account? =
+        accountManager.account(accountId) ?: accountsStorage.loadAccount(accountId)
+
+    private suspend fun clearMoneroWalletData(account: Account) {
+        removeMoneroWalletFilesUseCase(account)
+        router.account(account.id)?.moneroFileDao()?.deleteAssociatedRecord(account.id)
     }
 
     private fun isWalletActive(accountId: String, token: Token): Boolean {

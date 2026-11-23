@@ -60,6 +60,9 @@ import cash.p.terminal.modules.transactions.AmlStatus
 import cash.p.terminal.modules.transactions.Filter
 import cash.p.terminal.modules.transactions.FilterTransactionType
 import cash.p.terminal.modules.transactions.SearchScanState
+import cash.p.terminal.modules.transactions.forQuery
+import cash.p.terminal.modules.transactions.pausedCountText
+import cash.p.terminal.modules.transactions.showsOnlySpinner
 import cash.p.terminal.modules.transactions.TransactionItem
 import cash.p.terminal.modules.transactions.TransactionSearchController
 import cash.p.terminal.modules.transactions.TransactionViewItem
@@ -71,9 +74,9 @@ import cash.p.terminal.modules.transactions.withClearedAmlStatus
 import cash.p.terminal.modules.transactions.withUpdatedAmlStatus
 import cash.p.terminal.premium.domain.PremiumSettings
 import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.hardware_connect_device_to_sync
 import cash.p.terminal.resources.token_balance_need_native_coin_body
 import cash.p.terminal.resources.token_balance_need_native_coin_title
-import cash.p.terminal.resources.trezor_connect_failed
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.AdapterState
@@ -169,7 +172,7 @@ class TokenBalanceViewModel(
 
     private val searchController = TransactionSearchController(viewModelScope, this)
     private var appliedSearchQuery = ""
-    private var searchScanning = false
+    private var searchScanState: SearchScanState = SearchScanState.Idle
 
     private var balanceViewItem: BalanceViewItem? = null
     private var transactions: Map<String, List<TransactionViewItem>>? = null
@@ -487,7 +490,7 @@ class TokenBalanceViewModel(
 
         appliedSearchQuery = query
         transactions = if (appliedSearchQuery.isEmpty()) null else emptyMap()
-        searchScanning = appliedSearchQuery.isNotEmpty()
+        searchScanState = SearchScanState.Scanning.forQuery(appliedSearchQuery)
         // Reopen the "please wait" window (see updateTransactions()) so the reload to the full list can't flash empty.
         if (appliedSearchQuery.isEmpty()) syncing = true
         emitState()
@@ -575,11 +578,12 @@ class TokenBalanceViewModel(
         } else emptyList(),
         searchActive = searchController.searchActive,
         searchQuery = searchController.searchQuery,
-        searchScanning = searchScanning,
-        searchEmptyResult = appliedSearchQuery.isNotEmpty() && !searchScanning && transactions?.values?.flatten()
-            .isNullOrEmpty(),
+        searchScanning = searchScanState == SearchScanState.Scanning,
+        searchPausedCount = searchScanState.pausedCountText(numberFormatter),
+        searchEmptyResult = isFinalSearchEmptyResult(),
         offlineSince = offlineSince,
         moneroHardwareWallet = moneroHardwareWallet,
+        moneroLedgerWallet = wallet.account.type is AccountType.LedgerDevice,
         moneroSpendReadiness = moneroSpendReadiness,
         moneroKeyImageSyncInProgress = moneroKeyImageSyncInProgress,
         moneroKeyImageSyncError = moneroKeyImageSyncError,
@@ -723,7 +727,7 @@ class TokenBalanceViewModel(
 
             MoneroSpendReadiness.ReconciliationFailed -> {
                 moneroKeyImageSyncInProgress = false
-                moneroKeyImageSyncError = Res.string.trezor_connect_failed
+                moneroKeyImageSyncError = Res.string.hardware_connect_device_to_sync
             }
 
             else -> Unit
@@ -822,15 +826,20 @@ class TokenBalanceViewModel(
             ?.let { numberFormatter.formatCoinShort(it, wallet.coin.code, wallet.decimal) }
     }
 
+    // Scanning or paused, an empty list is not the final "no results".
+    private fun isFinalSearchEmptyResult(): Boolean = appliedSearchQuery.isNotEmpty() &&
+        searchScanState != SearchScanState.Scanning &&
+        searchScanState !is SearchScanState.Paused &&
+        transactions?.values?.flatten().isNullOrEmpty()
+
     private suspend fun updateTransactions(items: List<TransactionItem>, scanState: SearchScanState) {
-        // While a search scan runs, show only the spinner - a search batch has a single terminal (Finished) emission.
-        if (appliedSearchQuery.isNotEmpty() && scanState == SearchScanState.Scanning) {
+        if (scanState.showsOnlySpinner(appliedSearchQuery, transactions)) {
             transactions = emptyMap()
-            searchScanning = true
+            searchScanState = SearchScanState.Scanning
             emitState()
             return
         }
-        searchScanning = false
+        searchScanState = scanState.forQuery(appliedSearchQuery)
 
         // Skip the initial empty emission from transactionRecordRepository.set() while
         // still syncing. Once syncing finishes, allow empty items through so coins with
@@ -921,6 +930,8 @@ class TokenBalanceViewModel(
     fun onBottomReached() {
         transactionsService.loadNext()
     }
+
+    fun searchFurther() = transactionsService.searchFurther()
 
     fun willShow(viewItem: TransactionViewItem) {
         transactionsService.fetchRateIfNeeded(viewItem.uid)

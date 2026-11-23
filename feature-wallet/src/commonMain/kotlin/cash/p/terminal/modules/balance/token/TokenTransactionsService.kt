@@ -7,6 +7,8 @@ import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.modules.transactions.FilterTransactionType
 import cash.p.terminal.modules.transactions.HistoricalRateKey
 import cash.p.terminal.modules.transactions.ITransactionRecordRepository
+import cash.p.terminal.modules.transactions.RecordsBatch
+import cash.p.terminal.modules.transactions.SearchPaging
 import cash.p.terminal.modules.transactions.SearchScanState
 import cash.p.terminal.modules.transactions.TransactionItem
 import cash.p.terminal.modules.transactions.TransactionSyncStateRepository
@@ -58,11 +60,11 @@ class TokenTransactionsService(
     private val recordsLoadFailureLock = Any()
     private var recordsLoadFailure: RecordsLoadFailure? = null
     val syncingFlow: StateFlow<Boolean> = transactionSyncStateRepository.syncingFlow
-    private val _searchScanStateFlow = MutableStateFlow(SearchScanState.Idle)
+    private val _searchScanStateFlow = MutableStateFlow<SearchScanState>(SearchScanState.Idle)
     val searchScanStateFlow: StateFlow<SearchScanState> = _searchScanStateFlow.asStateFlow()
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
-    private var lastHiddenOnlyLoadKey: String? = null
+    private val searchPaging = SearchPaging()
     private var emptyBatchFallbackJob: Job? = null
 
     @Volatile
@@ -87,12 +89,7 @@ class TokenTransactionsService(
     fun start() {
         coroutineScope.launch {
             transactionRecordRepository.itemsFlow.collect {
-                handleUpdatedRecords(
-                    transactionRecords = it.records,
-                    searchCompleted = it.searchCompleted,
-                    searchExhausted = it.searchExhausted,
-                    loadFailed = it.loadFailed,
-                )
+                handleUpdatedRecords(it)
             }
         }
         coroutineScope.launch {
@@ -143,7 +140,7 @@ class TokenTransactionsService(
     }
 
     private fun handleInitialization() {
-        lastHiddenOnlyLoadKey = null
+        searchPaging.reset()
         transactionSyncStateRepository.setTransactionWallets(listOf(transactionWallet))
         val loadedType = selectedTransactionType
         val loadedSearchQuery = searchQuery
@@ -245,7 +242,7 @@ class TokenTransactionsService(
         searchQuery = query
         serviceVersion++
         dropToLoading()
-        lastHiddenOnlyLoadKey = null
+        searchPaging.reset()
         _searchScanStateFlow.value = if (query != null) SearchScanState.Scanning else SearchScanState.Idle
         _transactionItems.value = emptyList()
         if (initialized) {
@@ -317,16 +314,12 @@ class TokenTransactionsService(
         }
     }
 
-    private suspend fun handleUpdatedRecords(
-        transactionRecords: List<TransactionRecord>,
-        searchCompleted: Boolean,
-        searchExhausted: Boolean,
-        loadFailed: Boolean,
-    ) {
+    private suspend fun handleUpdatedRecords(batch: RecordsBatch) {
+        val transactionRecords = batch.records
         // A source did not answer, so this empty batch is not a verdict about the wallet: keep the
         // published items and report the failure. The pending initial clear is consumed here so a
         // later successful empty batch still takes the normal path and releases the screen.
-        if (loadFailed) {
+        if (batch.loadFailed) {
             initialClearPending = false
             emptyBatchFallbackJob?.cancel()
             setRecordsLoadFailure(RecordsLoadFailure.RepositoryRead)
@@ -341,7 +334,7 @@ class TokenTransactionsService(
         // instead of leaving the UI stuck on the scanning spinner.
         if (initialClearPending) {
             initialClearPending = false
-            if (transactionRecords.isEmpty() && !searchCompleted) {
+            if (transactionRecords.isEmpty() && !batch.searchCompleted) {
                 scheduleEmptyBatchFallback()
                 return
             }
@@ -358,24 +351,40 @@ class TokenTransactionsService(
             currentItems.none { it.record == record }
         }
 
-        if (newRecords.isNotEmpty() && newRecords.all { spamManager.shouldHide(it) }) {
-            markRecordsLoaded()
-            handleAllSpamPage(newRecords, searchCompleted, searchExhausted, capturedVersion)
+        if (batch.searchCompleted) {
+            // A search batch is the whole current result list, so it replaces the published one.
+            val state = searchPaging.searchStateFor(newRecords, batch, spamManager::shouldHide)
+            searchPaging.publishInOrder(state, { setSearchState(it, capturedVersion) }) {
+                publishRecords(transactionRecords, capturedVersion)
+                markRecordsLoaded()
+            }
+            if (state == SearchScanState.Scanning) loadNext()
             return
         }
 
-        lastHiddenOnlyLoadKey = null
+        val action = searchPaging.actionFor(newRecords, spamManager::shouldHide)
+        if (action != SearchPaging.Action.Publish) {
+            markRecordsLoaded()
+            if (action == SearchPaging.Action.LoadNext) loadNext()
+            return
+        }
 
         publishRecords(transactionRecords, capturedVersion)
 
         // Mark loaded only after the items are published, so a consumer that observes
         // syncing flip to false always sees the new list — never an empty intermediate state.
         markRecordsLoaded()
-        // A search batch is always the terminal answer for its requested page; flip out of
-        // Scanning so the UI shows the (possibly empty) results instead of a spinner.
-        if (searchCompleted && capturedVersion == serviceVersion) {
-            _searchScanStateFlow.value = SearchScanState.Finished
-        }
+    }
+
+    private fun setSearchState(state: SearchScanState, capturedVersion: Int) {
+        if (capturedVersion == serviceVersion) _searchScanStateFlow.value = state
+    }
+
+    /** Scans the next auto-scan window after the search paused. */
+    fun searchFurther() {
+        searchPaging.openNextWindow()
+        _searchScanStateFlow.value = SearchScanState.Scanning
+        loadNext()
     }
 
     private suspend fun publishRecords(
@@ -402,29 +411,6 @@ class TokenTransactionsService(
                     existingItem.withUpdatedListData(record = record)
                 }
             }
-        }
-    }
-
-    /**
-     * An all-spam page never contains a real match. Page deeper while the repository reports the
-     * scan is not yet exhausted (deduplicated via [lastHiddenOnlyLoadKey] so a repeated identical
-     * page doesn't re-trigger [loadNext]); once exhausted, this all-spam page is the final answer.
-     */
-    private fun handleAllSpamPage(
-        newRecords: List<TransactionRecord>,
-        searchCompleted: Boolean,
-        searchExhausted: Boolean,
-        capturedVersion: Int,
-    ) {
-        val canPageDeeper = !searchCompleted || !searchExhausted
-        if (canPageDeeper) {
-            val hiddenOnlyLoadKey = newRecords.joinToString(separator = "|") { it.uid }
-            if (lastHiddenOnlyLoadKey != hiddenOnlyLoadKey) {
-                lastHiddenOnlyLoadKey = hiddenOnlyLoadKey
-                loadNext()
-            }
-        } else if (capturedVersion == serviceVersion) {
-            _searchScanStateFlow.value = SearchScanState.Finished
         }
     }
 
@@ -457,7 +443,9 @@ class TokenTransactionsService(
         transactionRecordRepository.reload()
     }
 
+    // A paused search reads nothing more until searchFurther().
     fun loadNext() {
+        if (_searchScanStateFlow.value is SearchScanState.Paused) return
         coroutineScope.launch {
             transactionRecordRepository.loadNext()
         }

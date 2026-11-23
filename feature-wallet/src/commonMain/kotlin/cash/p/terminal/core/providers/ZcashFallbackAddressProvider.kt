@@ -23,6 +23,6 @@ class ZcashFallbackAddressProvider(private val deriver: ZcashAddressDeriver) : F
             else -> return null
         }
         val key = wallet.zcashKey() ?: return null
-        return spec.selectZcashReceiver(deriver.addresses(key))
+        return spec.selectZcashReceiver(deriver.addresses(key), wallet.account.type)
     }
 }

@@ -1,5 +1,6 @@
 package cash.p.terminal.modules.send.zcash
 
+import cash.p.terminal.core.HSCaution
 import cash.p.terminal.core.ISendZcashAdapter
 import cash.p.terminal.core.ZcashFeeEstimate
 import cash.p.terminal.modules.amount.SendAmountService
@@ -20,7 +21,16 @@ import java.math.BigDecimal
 /** Fee and maximum of the send being composed, as the SDK would plan them right now. */
 class ZcashSendFeeQuote(private val adapter: ISendZcashAdapter) {
 
-    data class Quote(val fee: BigDecimal, val isCurrent: Boolean, val insufficientBalance: Boolean = false)
+    data class Quote(
+        val fee: BigDecimal,
+        val isCurrent: Boolean,
+        val insufficientBalance: Boolean = false,
+        val refusal: Exception? = null,
+    ) {
+        /** Why the send would be refused, as its plan already shows; null when it would go through. */
+        val planCaution: HSCaution?
+            get() = if (insufficientBalance) zcashInsufficientBalanceCaution() else refusal?.let(::zcashSendCaution)
+    }
 
     private data class Request(val amount: BigDecimal?, val address: String?, val memo: String)
 
@@ -70,6 +80,7 @@ class ZcashSendFeeQuote(private val adapter: ISendZcashAdapter) {
                         is ZcashFeeEstimate.Planned -> Quote(estimate.fee, isCurrent = true)
                         ZcashFeeEstimate.InsufficientBalance ->
                             Quote(adapterFee, isCurrent = true, insufficientBalance = true)
+                        is ZcashFeeEstimate.Refused -> Quote(adapterFee, isCurrent = true, refusal = estimate.reason)
                         ZcashFeeEstimate.Unavailable -> null
                     }
                 }

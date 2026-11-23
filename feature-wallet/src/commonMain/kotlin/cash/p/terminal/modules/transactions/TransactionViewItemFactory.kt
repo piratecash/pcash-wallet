@@ -4,20 +4,15 @@ import org.jetbrains.compose.resources.StringResource
 import cash.p.beam.BeamTransactionDirection
 import cash.p.terminal.entities.transactionrecords.beam.BeamTransactionRecord
 import cash.p.terminal.core.TransactionSettingsStorage
-import cash.p.terminal.core.adapters.BitcoinReplacementRegistry
 import cash.p.terminal.core.managers.BalanceHiddenManager
 import cash.p.terminal.core.managers.AddressMetadataManager
 import cash.p.terminal.core.managers.PoisonAddressManager
-import cash.p.terminal.core.managers.localizedEvmMethodLabel
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
 import cash.p.terminal.core.usecase.RelinkSwapToReplacementUseCase
-import cash.p.terminal.core.utils.IncomingTransaction
 import cash.p.terminal.core.utils.SwapTransactionMatcher
 import cash.p.terminal.entities.SwapProviderTransaction
 import cash.p.terminal.entities.TransactionValue
 import cash.p.terminal.entities.transactionrecords.PendingTransactionRecord
-import cash.p.terminal.entities.transactionrecords.LiquidityOperation
-import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
 import cash.p.terminal.entities.transactionrecords.evm.EvmTransactionRecord
@@ -43,61 +38,26 @@ import cash.p.terminal.ui_compose.ColorName
 import cash.p.terminal.ui_compose.ColoredValue
 import cash.p.terminal.ui_compose.amountColor
 import cash.p.terminal.wallet.MarketKitWrapper
-import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.alternativeImageUrl
 import cash.p.terminal.wallet.coinImageUrl
 import io.horizontalsystems.core.IAppNumberFormatter
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.entities.CurrencyValue
 import io.horizontalsystems.core.helpers.DateHelper
-import io.horizontalsystems.tronkit.models.Contract
-import io.horizontalsystems.tronkit.models.Transaction
 import java.math.BigDecimal
 import java.util.Date
 import java.util.concurrent.ConcurrentHashMap
 import org.koin.java.KoinJavaComponent.inject
 import org.jetbrains.compose.resources.DrawableResource
 import cash.p.terminal.resources.Transaction_Unlimited_CoinCode
-import cash.p.terminal.resources.Transactions_Approve
-import cash.p.terminal.resources.Transactions_Burn
-import cash.p.terminal.resources.Transactions_ChangeTrust
-import cash.p.terminal.resources.Transactions_ContractCall
-import cash.p.terminal.resources.Transactions_ContractCreation
-import cash.p.terminal.resources.Transactions_ContractDeploy
-import cash.p.terminal.resources.Transactions_ExternalContractCall
-import cash.p.terminal.resources.Transactions_Failed
 import cash.p.terminal.resources.Transactions_From
-import cash.p.terminal.resources.Transactions_Mint
 import cash.p.terminal.resources.Transactions_Multiple
-import cash.p.terminal.resources.Transactions_Receive
-import cash.p.terminal.resources.Transactions_Send
-import cash.p.terminal.resources.Transactions_StellarTransaction
-import cash.p.terminal.resources.Transactions_Swap
 import cash.p.terminal.resources.Transactions_To
-import cash.p.terminal.resources.Transactions_TonTransaction
-import cash.p.terminal.resources.Transactions_Unknown
 import cash.p.terminal.resources.Transactions_Unknown_Description
 import cash.p.terminal.resources.ic_migrate_24
-import cash.p.terminal.resources.transaction_pending_title
-import cash.p.terminal.resources.transaction_swap_status_confirming
-import cash.p.terminal.resources.transaction_swap_status_created_or_wait_user
-import cash.p.terminal.resources.transaction_swap_status_exchanging
-import cash.p.terminal.resources.transaction_swap_status_new
-import cash.p.terminal.resources.transaction_swap_status_refunded
-import cash.p.terminal.resources.transaction_swap_status_sending
-import cash.p.terminal.resources.transaction_swap_status_unknown
-import cash.p.terminal.resources.transaction_swap_status_verifying
-import cash.p.terminal.resources.transaction_swap_status_waiting
 import cash.p.terminal.resources.transactions_account_delegated_to
-import cash.p.terminal.resources.transactions_account_delegation
-import cash.p.terminal.resources.transactions_account_delegation_revoke
 import cash.p.terminal.resources.transactions_account_delegation_warning_short
-import cash.p.terminal.resources.transactions_migrate
 import cash.p.terminal.resources.transactions_migrate_to_ironwood
-import cash.p.terminal.resources.transactions_swap_failed
-
-private val TransactionRecord.mainCoinToken: Token?
-    get() = (mainValue as? TransactionValue.CoinValue)?.token
 
 class TransactionViewItemFactory(
     private val addressMetadataManager: AddressMetadataManager,
@@ -115,7 +75,10 @@ class TransactionViewItemFactory(
         val matchedSwapStatus: String?,
     )
 
-    private val replacementRegistry: BitcoinReplacementRegistry by inject(BitcoinReplacementRegistry::class.java)
+    private val swapProviderRecordResolver = SwapProviderRecordResolver(
+        swapProviderTransactionsStorage,
+        swapTransactionMatcher
+    )
     private val relinkSwapToReplacement: RelinkSwapToReplacementUseCase
             by inject(RelinkSwapToReplacementUseCase::class.java)
 
@@ -185,14 +148,6 @@ class TransactionViewItemFactory(
         cache[transactionItem.record.uid] = mapOf(cacheKey to transactionViewItem)
 
         return transactionViewItem
-    }
-
-    private fun TransactionRecord.isSwap() = when (transactionRecordType) {
-        TransactionRecordType.EVM_SWAP,
-        TransactionRecordType.EVM_UNKNOWN_SWAP -> true
-
-        else -> this is TonTransactionRecord &&
-                actions.singleOrNull()?.type is TonTransactionRecord.Action.Type.Swap
     }
 
     private fun singleValueIconType(
@@ -333,18 +288,13 @@ class TransactionViewItemFactory(
         transactionItem: TransactionItem,
         progress: Float?,
         icon: TransactionViewItem.Icon?,
-        matchedSwap: SwapProviderTransaction? = null
     ): TransactionViewItem = when (record.transactionRecordType) {
         TransactionRecordType.EVM_APPROVE ->
             createViewItemFromApproveTransactionRecord(
-                uid = record.uid,
+                transactionItem = transactionItem,
                 value = record.value!!,
                 spender = record.spender!!,
-                blockchainType = record.blockchainType,
-                timestamp = record.timestamp,
-                currencyValue = transactionItem.currencyValue,
                 progress = progress,
-                spam = record.spam,
                 icon = icon
             )
 
@@ -354,17 +304,12 @@ class TransactionViewItemFactory(
                 outgoingEvents = record.outgoingEvents!!
             )
             createViewItemFromContractCallTransactionRecord(
-                uid = record.uid,
+                transactionItem = transactionItem,
                 incomingValues = incomingValues,
                 outgoingValues = outgoingValues,
-                method = record.liquidityOperation?.let { Translator.getString(it.title) } ?: record.method,
                 contractAddress = record.contractAddress!!,
-                blockchainType = record.blockchainType,
-                timestamp = record.timestamp,
-                currencyValue = transactionItem.currencyValue,
                 progress = progress,
                 icon = icon,
-                spam = record.spam
             ).let { viewItem ->
                 if (record.liquidityOperation == null) {
                     viewItem
@@ -381,39 +326,17 @@ class TransactionViewItemFactory(
 
         TransactionRecordType.EVM_EXTERNAL_CONTRACT_CALL -> {
             val incomingEvents = checkNotNull(record.incomingEvents)
+            val outgoingEvents = checkNotNull(record.outgoingEvents)
             val (incomingValues, outgoingValues) = EvmTransactionRecord.combined(
                 incomingEvents = incomingEvents,
-                outgoingEvents = checkNotNull(record.outgoingEvents)
+                outgoingEvents = outgoingEvents
             )
-            val transactionViewItem = if (outgoingValues.isEmpty() && incomingValues.isNotEmpty()) {
-                // Use matchedSwap if provided, otherwise fall back to DB lookup
-                val swap = matchedSwap ?: incomingValues.firstOrNull()?.let { firstIncomingValue ->
-                    getSwapProviderTransactionForIncoming(
-                        recordUid = transactionItem.record.uid,
-                        amount = firstIncomingValue.decimalValue,
-                        timestamp = record.timestamp,
-                        addressesTo = incomingEvents.firstOrNull()?.addressForIncomingAddress?.let(::listOf),
-                        token = (firstIncomingValue as? TransactionValue.CoinValue)?.token ?: record.token
-                    )
-                }
-                swap?.let {
-                    createViewItemFromUserSwapProviderRecord(
-                        transaction = it,
-                        recordUid = transactionItem.record.uid,
-                        timestamp = record.timestamp,
-                        direct = false,
-                        onChainProgress = progress,
-                    )
-                }
-            } else {
-                null
-            }
-            transactionViewItem ?: createViewItemFromExternalContractCallTransactionRecord(
+            createViewItemFromExternalContractCallTransactionRecord(
                 transactionItem = transactionItem,
                 incomingValues = incomingValues,
                 outgoingValues = outgoingValues,
                 incomingEvents = incomingEvents,
-                outgoingEvents = checkNotNull(record.outgoingEvents),
+                outgoingEvents = outgoingEvents,
                 progress = progress,
                 icon = icon
             )
@@ -426,41 +349,21 @@ class TransactionViewItemFactory(
         )
 
         TransactionRecordType.EVM_INCOMING ->
-            tryConvertToUserSwapProviderViewItemSwap(
+            createViewItemFromEvmIncomingTransactionRecord(
                 transactionItem = transactionItem,
-                token = record.token,
-                isIncoming = true,
-                matchedSwap = matchedSwap,
-                onChainProgress = progress,
-            ) ?: createViewItemFromEvmIncomingTransactionRecord(
-                uid = record.uid,
                 value = record.value!!,
                 from = record.from!!,
-                blockchainType = record.blockchainType,
-                timestamp = record.timestamp,
-                currencyValue = transactionItem.currencyValue,
                 progress = progress,
-                spam = record.spam,
                 icon = icon
             )
 
         TransactionRecordType.EVM_OUTGOING ->
-            tryConvertToUserSwapProviderViewItemSwap(
+            createViewItemFromEvmOutgoingTransactionRecord(
                 transactionItem = transactionItem,
-                token = record.mainCoinToken,
-                isIncoming = false,
-                matchedSwap = matchedSwap,
-                onChainProgress = progress,
-            ) ?: createViewItemFromEvmOutgoingTransactionRecord(
-                uid = record.uid,
                 value = record.value!!,
                 to = record.to?.firstOrNull()!!,
-                blockchainType = record.blockchainType,
-                timestamp = record.timestamp,
                 sentToSelf = record.sentToSelf,
-                currencyValue = transactionItem.currencyValue,
                 progress = progress,
-                spam = record.spam,
                 icon = icon
             )
 
@@ -478,6 +381,7 @@ class TransactionViewItemFactory(
 
         TransactionRecordType.EVM -> createViewItemFromEvmTransactionRecord(
             uid = record.uid,
+            title = record.listTitle(),
             timestamp = record.timestamp,
             blockchainType = record.blockchainType,
             progress = progress,
@@ -509,24 +413,21 @@ class TransactionViewItemFactory(
 
         val lastBlockTimestamp = transactionItem.lastBlockInfo?.timestamp
 
-        return when (record) {
+        return userSwapProviderViewItem(transactionItem, matchedSwap, progress) ?: when (record) {
             is EvmTransactionRecord -> createViewItemFromEvmTransactionRecord(
                 record = record,
                 transactionItem = transactionItem,
                 progress = progress,
                 icon = icon,
-                matchedSwap = matchedSwap
             )
 
             is BitcoinTransactionRecord ->
                 createViewItemFromBitcoinTransactionRecord(
-                    transactionItem = transactionItem,
                     record = record,
                     currencyValue = transactionItem.currencyValue,
                     progress = progress,
                     lastBlockTimestamp = lastBlockTimestamp,
                     icon = icon,
-                    matchedSwap = matchedSwap
                 )
 
             is SolanaTransactionRecord -> createViewItemFromSolanaTransactionRecord(
@@ -534,108 +435,58 @@ class TransactionViewItemFactory(
                 transactionItem = transactionItem,
                 progress = progress,
                 icon = icon,
-                matchedSwap = matchedSwap
             )
 
             is TronTransactionRecord -> createViewItemFromTronTransactionRecord(
                 transactionItem = transactionItem,
-                baseToken = record.token,
-                uid = record.uid,
                 value = record.value,
                 sentToSelf = record.sentToSelf,
                 to = record.to?.firstOrNull(),
                 from = record.from,
                 spender = record.spender,
-                blockchainType = record.blockchainType,
-                timestamp = record.timestamp,
-                transaction = record.transaction,
                 progress = progress,
-                spam = record.spam,
-                method = record.method,
                 contractAddress = record.contractAddress,
                 incomingEvents = record.incomingEvents,
                 outgoingEvents = record.outgoingEvents,
                 icon = icon,
-                matchedSwap = matchedSwap
             )
 
-            is TonTransactionRecord -> {
-                // An NFT quantity of 1 would otherwise match a provider swap of 1 TON.
-                tryConvertToUserSwapProviderViewItemSwap(
-                    transactionItem = transactionItem,
-                    token = record.token.takeUnless { record.isNftOnly },
-                    isIncoming = record.actions.singleOrNull()?.type is TonTransactionRecord.Action.Type.Receive,
-                    matchedSwap = matchedSwap,
-                    onChainProgress = progress,
-                ) ?: createViewItemFromTonTransactionRecord(
-                    icon = icon,
-                    record = record,
-                    currencyValue = transactionItem.currencyValue,
-                    progress = progress
-                )
-            }
+            is TonTransactionRecord -> createViewItemFromTonTransactionRecord(
+                icon = icon,
+                record = record,
+                currencyValue = transactionItem.currencyValue,
+                progress = progress
+            )
 
-            is StellarTransactionRecord -> {
-                tryConvertToUserSwapProviderViewItemSwap(
-                    transactionItem = transactionItem,
-                    token = record.token,
-                    isIncoming = record.type is StellarTransactionRecord.Type.Receive,
-                    matchedSwap = matchedSwap,
-                    onChainProgress = progress,
-                ) ?: createViewItemFromStellarTransactionRecord(
-                    icon = icon,
-                    record = record,
-                    currencyValue = transactionItem.currencyValue
-                )
-            }
+            is StellarTransactionRecord -> createViewItemFromStellarTransactionRecord(
+                icon = icon,
+                record = record,
+                currencyValue = transactionItem.currencyValue
+            )
 
-            is ThorchainTransactionRecord -> {
-                tryConvertToUserSwapProviderViewItemSwap(
-                    transactionItem = transactionItem,
-                    token = record.token,
-                    isIncoming = record.type is ThorchainTransactionRecord.Type.Incoming,
-                    matchedSwap = matchedSwap,
-                    onChainProgress = progress,
-                ) ?: createViewItemFromThorchainTransactionRecord(
-                    record = record,
-                    currencyValue = transactionItem.currencyValue,
-                    progress = progress,
-                    icon = icon
-                )
-            }
+            is ThorchainTransactionRecord -> createViewItemFromThorchainTransactionRecord(
+                record = record,
+                currencyValue = transactionItem.currencyValue,
+                progress = progress,
+                icon = icon
+            )
 
             is BeamTransactionRecord -> createViewItemFromBeamTransactionRecord(
                 record, transactionItem.currencyValue, progress, icon
             )
 
-            is MoneroTransactionRecord -> {
-                tryConvertToUserSwapProviderViewItemSwap(
-                    transactionItem = transactionItem,
-                    token = record.token,
-                    isIncoming = record.transactionRecordType == TransactionRecordType.MONERO_INCOMING,
-                    matchedSwap = matchedSwap,
-                    onChainProgress = progress,
-                ) ?: createViewItemFromMoneroTransactionRecord(
-                    record = record,
-                    transactionItem = transactionItem,
-                    progress = progress,
-                    icon = icon
-                )
-            }
+            is MoneroTransactionRecord -> createViewItemFromMoneroTransactionRecord(
+                record = record,
+                transactionItem = transactionItem,
+                progress = progress,
+                icon = icon
+            )
 
-            is PendingTransactionRecord -> {
-                tryConvertToUserSwapProviderViewItemSwap(
-                    transactionItem = transactionItem,
-                    token = record.token,
-                    isIncoming = false, // Pending transactions are always outgoing
-                    matchedSwap = matchedSwap,
-                    onChainProgress = progress,
-                ) ?: createViewItemFromPendingTransactionRecord(
-                    record = record,
-                    icon = icon,
-                    currencyValue = transactionItem.currencyValue
-                )
-            }
+            is PendingTransactionRecord -> createViewItemFromPendingTransactionRecord(
+                record = record,
+                icon = icon,
+                currencyValue = transactionItem.currencyValue
+            )
 
             else -> throw IllegalArgumentException("Undefined record type ${record.javaClass.name}")
         }
@@ -655,7 +506,7 @@ class TransactionViewItemFactory(
         return TransactionViewItem(
             uid = record.uid,
             progress = progress,
-            title = Translator.getString(record.directionTitle),
+            title = record.listTitle(),
             // The status is already carried by the progress ring, so the subtitle names the other
             // party instead; mapped() resolves a contact or label and otherwise shortens the token.
             subtitle = record.counterparty?.let {
@@ -733,7 +584,7 @@ class TransactionViewItemFactory(
         return TransactionViewItem(
             uid = record.uid,
             progress = progress,
-            title = Translator.getString(Res.string.Transactions_Receive),
+            title = record.listTitle(),
             subtitle = subtitle,
             primaryValue = primaryValue,
             secondaryValue = secondaryValue,
@@ -771,7 +622,7 @@ class TransactionViewItemFactory(
         return TransactionViewItem(
             uid = record.uid,
             progress = progress,
-            title = Translator.getString(Res.string.Transactions_Send),
+            title = record.listTitle(),
             subtitle = subtitle,
             primaryValue = primaryValue,
             secondaryValue = secondaryValue,
@@ -785,7 +636,6 @@ class TransactionViewItemFactory(
     }
 
     private fun createTonLiquidityViewItem(
-        operation: LiquidityOperation,
         icon: TransactionViewItem.Icon?,
         record: TonTransactionRecord,
         currencyValue: CurrencyValue?,
@@ -797,7 +647,7 @@ class TransactionViewItemFactory(
         return TransactionViewItem(
             uid = record.uid,
             progress = progress,
-            title = Translator.getString(operation.title),
+            title = record.listTitle(),
             subtitle = record.liquidityProtocol ?: Translator.getString(Res.string.Transactions_Multiple),
             primaryValue = primaryValue,
             secondaryValue = secondaryValue,
@@ -814,11 +664,10 @@ class TransactionViewItemFactory(
         currencyValue: CurrencyValue?,
         progress: Float?,
     ): TransactionViewItem {
-        record.liquidityOperation?.let {
-            return createTonLiquidityViewItem(it, icon, record, currencyValue, progress)
+        if (record.liquidityOperation != null) {
+            return createTonLiquidityViewItem(icon, record, currencyValue, progress)
         }
 
-        val title: String
         val subtitle: String?
         val primaryValue: ColoredValue?
         var secondaryValue = currencyValue?.let {
@@ -833,7 +682,6 @@ class TransactionViewItemFactory(
         if (action != null) {
             when (val actionType = action.type) {
                 is TonTransactionRecord.Action.Type.Send -> {
-                    title = Translator.getString(Res.string.Transactions_Send)
                     subtitle = Translator.getString(
                         Res.string.Transactions_To,
                         mapped(actionType.to, record.blockchainType)
@@ -847,7 +695,6 @@ class TransactionViewItemFactory(
                 }
 
                 is TonTransactionRecord.Action.Type.Receive -> {
-                    title = Translator.getString(Res.string.Transactions_Receive)
                     subtitle = Translator.getString(
                         Res.string.Transactions_From,
                         mapped(actionType.from, record.blockchainType)
@@ -858,7 +705,6 @@ class TransactionViewItemFactory(
                 }
 
                 is TonTransactionRecord.Action.Type.Unsupported -> {
-                    title = Translator.getString(Res.string.Transactions_TonTransaction)
                     subtitle = actionType.type
                     primaryValue = null
                     secondaryValue = null
@@ -868,7 +714,6 @@ class TransactionViewItemFactory(
                 }
 
                 is TonTransactionRecord.Action.Type.LiquidityDeposit -> {
-                    title = Translator.getString(Res.string.Transactions_TonTransaction)
                     subtitle = actionType.protocol.orEmpty()
                     primaryValue = null
                     secondaryValue = null
@@ -877,36 +722,30 @@ class TransactionViewItemFactory(
 
                 is TonTransactionRecord.Action.Type.Burn -> {
                     iconX = singleValueIconType(actionType.value)
-                    title = Translator.getString(Res.string.Transactions_Burn)
                     subtitle = actionType.value.fullName
                     primaryValue = getColoredValue(actionType.value, ColorName.Lucian)
                 }
 
                 is TonTransactionRecord.Action.Type.ContractCall -> {
                     iconX = TransactionViewItem.Icon.Platform.fromBlockchainType(record.blockchainType)
-                    title = Translator.getString(Res.string.Transactions_ContractCall)
                     subtitle = actionType.address.shorten()
                     primaryValue = getColoredValue(actionType.value, ColorName.Lucian)
                 }
 
                 is TonTransactionRecord.Action.Type.ContractDeploy -> {
                     iconX = TransactionViewItem.Icon.Platform.fromBlockchainType(record.blockchainType)
-                    title = Translator.getString(Res.string.Transactions_ContractDeploy)
                     subtitle = actionType.interfaces.joinToString()
                     primaryValue = null
                 }
 
                 is TonTransactionRecord.Action.Type.Mint -> {
                     iconX = singleValueIconType(actionType.value)
-                    title = Translator.getString(Res.string.Transactions_Mint)
                     subtitle = actionType.value.fullName
                     primaryValue = getColoredValue(actionType.value, ColorName.Remus)
                 }
 
                 is TonTransactionRecord.Action.Type.Swap -> {
                     iconX = doubleValueIconType(actionType.valueOut, actionType.valueIn)
-                    title =
-                        Translator.getString(getSwapTitleStringRes(icon is TransactionViewItem.Icon.Failed))
                     subtitle = actionType.routerName ?: actionType.routerAddress.shorten()
                     primaryValue = getColoredValue(actionType.valueOut, ColorName.Remus)
                     secondaryValue = getColoredValue(actionType.valueIn, ColorName.Lucian)
@@ -914,7 +753,6 @@ class TransactionViewItemFactory(
             }
         } else {
             iconX = TransactionViewItem.Icon.Platform.fromBlockchainType(record.blockchainType)
-            title = Translator.getString(Res.string.Transactions_TonTransaction)
             subtitle = Translator.getString(Res.string.Transactions_Multiple)
             primaryValue = null
         }
@@ -922,7 +760,7 @@ class TransactionViewItemFactory(
         return TransactionViewItem(
             uid = record.uid,
             progress = null,
-            title = title,
+            title = record.listTitle(),
             subtitle = subtitle,
             primaryValue = primaryValue,
             secondaryValue = secondaryValue,
@@ -941,7 +779,6 @@ class TransactionViewItemFactory(
     ): TransactionViewItem {
 
         val iconX: TransactionViewItem.Icon
-        val title: String
         val subtitle: String
         val primaryValue: ColoredValue?
         var secondaryValue = currencyValue?.let {
@@ -951,7 +788,6 @@ class TransactionViewItemFactory(
 
         when (val recordType = record.type) {
             is StellarTransactionRecord.Type.Send -> {
-                title = Translator.getString(Res.string.Transactions_Send)
                 subtitle = Translator.getString(
                     Res.string.Transactions_To,
                     mapped(recordType.to, record.blockchainType)
@@ -970,7 +806,6 @@ class TransactionViewItemFactory(
             }
 
             is StellarTransactionRecord.Type.Receive -> {
-                title = Translator.getString(Res.string.Transactions_Receive)
                 subtitle = Translator.getString(
                     Res.string.Transactions_From,
                     mapped(recordType.from, record.blockchainType)
@@ -981,7 +816,6 @@ class TransactionViewItemFactory(
             }
 
             is StellarTransactionRecord.Type.ChangeTrust -> {
-                title = Translator.getString(Res.string.Transactions_ChangeTrust)
                 subtitle = recordType.trustee.shorten()
                 primaryValue = getColoredValue(recordType.value, ColorName.Primary, true)
                 iconX = singleValueIconType(recordType.value)
@@ -989,7 +823,6 @@ class TransactionViewItemFactory(
 
             is StellarTransactionRecord.Type.Unsupported -> {
                 iconX = TransactionViewItem.Icon.Platform.fromBlockchainType(record.blockchainType)
-                title = Translator.getString(Res.string.Transactions_StellarTransaction)
                 subtitle = recordType.type
                 primaryValue = null
                 secondaryValue = null
@@ -999,7 +832,7 @@ class TransactionViewItemFactory(
         return TransactionViewItem(
             uid = record.uid,
             progress = null,
-            title = title,
+            title = record.listTitle(),
             subtitle = subtitle,
             primaryValue = primaryValue,
             secondaryValue = secondaryValue,
@@ -1017,12 +850,10 @@ class TransactionViewItemFactory(
         progress: Float?,
         icon: TransactionViewItem.Icon?
     ): TransactionViewItem {
-        val title: String
         val subtitle: String
         val primaryValue: ColoredValue
         when (val type = record.type) {
             is ThorchainTransactionRecord.Type.Incoming -> {
-                title = Translator.getString(Res.string.Transactions_Receive)
                 subtitle = type.from?.let {
                     Translator.getString(Res.string.Transactions_From, mapped(it, record.blockchainType))
                 } ?: "---"
@@ -1030,7 +861,6 @@ class TransactionViewItemFactory(
             }
 
             is ThorchainTransactionRecord.Type.Outgoing -> {
-                title = Translator.getString(Res.string.Transactions_Send)
                 subtitle = type.to?.let {
                     Translator.getString(Res.string.Transactions_To, mapped(it, record.blockchainType))
                 } ?: "---"
@@ -1045,7 +875,7 @@ class TransactionViewItemFactory(
         return TransactionViewItem(
             uid = record.uid,
             progress = progress,
-            title = title,
+            title = record.listTitle(),
             subtitle = subtitle,
             primaryValue = primaryValue,
             secondaryValue = currencyValue?.let { getColoredValue(it, ColorName.Secondary) },
@@ -1075,7 +905,7 @@ class TransactionViewItemFactory(
         return TransactionViewItem(
             uid = record.uid,
             progress = progress,
-            title = Translator.getString(Res.string.Transactions_Unknown),
+            title = record.listTitle(),
             subtitle = Translator.getString(Res.string.Transactions_Unknown_Description),
             primaryValue = primaryValue,
             secondaryValue = secondaryValue,
@@ -1108,7 +938,7 @@ class TransactionViewItemFactory(
         return TransactionViewItem(
             uid = record.uid,
             progress = progress,
-            title = Translator.getString(Res.string.Transactions_Send),
+            title = record.listTitle(),
             subtitle = record.to?.let { to ->
                 Translator.getString(
                     Res.string.Transactions_To,
@@ -1131,39 +961,23 @@ class TransactionViewItemFactory(
         transactionItem: TransactionItem,
         progress: Float?,
         icon: TransactionViewItem.Icon.Failed?,
-        matchedSwap: SwapProviderTransaction? = null
     ): TransactionViewItem {
         return when (record.transactionRecordType) {
-            TransactionRecordType.SOLANA_INCOMING -> {
-                tryConvertToUserSwapProviderViewItemSwap(
-                    transactionItem = transactionItem,
-                    token = record.mainCoinToken,
-                    isIncoming = true,
-                    matchedSwap = matchedSwap,
-                    onChainProgress = progress,
-                ) ?: createViewItemFromSolanaIncomingTransactionRecord(
-                    record = record,
-                    currencyValue = transactionItem.currencyValue,
-                    progress = progress,
-                    icon = icon
-                )
-            }
-
-            TransactionRecordType.SOLANA_OUTGOING -> {
-                tryConvertToUserSwapProviderViewItemSwap(
-                    transactionItem = transactionItem,
-                    token = record.token,
-                    isIncoming = false,
-                    matchedSwap = matchedSwap,
-                    onChainProgress = progress,
-                ) ?: createViewItemFromSolanaOutgoingTransactionRecord(
+            TransactionRecordType.SOLANA_INCOMING ->
+                createViewItemFromSolanaIncomingTransactionRecord(
                     record = record,
                     currencyValue = transactionItem.currencyValue,
                     progress = progress,
                     icon = icon
                 )
 
-            }
+            TransactionRecordType.SOLANA_OUTGOING ->
+                createViewItemFromSolanaOutgoingTransactionRecord(
+                    record = record,
+                    currencyValue = transactionItem.currencyValue,
+                    progress = progress,
+                    icon = icon
+                )
 
             TransactionRecordType.SOLANA_UNKNOWN ->
                 createViewItemFromSolanaUnknownTransactionRecord(
@@ -1190,7 +1004,7 @@ class TransactionViewItemFactory(
         return TransactionViewItem(
             uid = record.uid,
             progress = progress,
-            title = Translator.getString(Res.string.Transactions_Receive),
+            title = record.listTitle(),
             subtitle = record.from?.let { from ->
                 Translator.getString(
                     Res.string.Transactions_From,
@@ -1216,7 +1030,6 @@ class TransactionViewItemFactory(
         progress: Float?,
         icon: TransactionViewItem.Icon?
     ): TransactionViewItem {
-        val isFailed = icon is TransactionViewItem.Icon.Failed
         val primaryValue = record.valueOut?.let {
             getColoredValue(it, amountColor(incoming = true, sentToThirdParty = record.recipient != null))
         }
@@ -1225,7 +1038,7 @@ class TransactionViewItemFactory(
         return TransactionViewItem(
             uid = record.uid,
             progress = progress,
-            title = Translator.getString(getSwapTitleStringRes(isFailed)),
+            title = record.listTitle(),
             subtitle = mapped(record.exchangeAddress!!, record.blockchainType),
             primaryValue = primaryValue,
             secondaryValue = secondaryValue,
@@ -1242,14 +1055,13 @@ class TransactionViewItemFactory(
         progress: Float?,
         icon: TransactionViewItem.Icon?
     ): TransactionViewItem {
-        val isFailed = icon is TransactionViewItem.Icon.Failed
         val primaryValue = record.valueOut?.let { getColoredValue(it, ColorName.Remus) }
         val secondaryValue = record.valueIn?.let { getColoredValue(it, ColorName.Lucian) }
 
         return TransactionViewItem(
             uid = record.uid,
             progress = progress,
-            title = Translator.getString(getSwapTitleStringRes(isFailed)),
+            title = record.listTitle(),
             subtitle = mapped(record.exchangeAddress!!, record.blockchainType),
             primaryValue = primaryValue,
             secondaryValue = secondaryValue,
@@ -1263,8 +1075,8 @@ class TransactionViewItemFactory(
 
     private fun createViewItemFromSimpleTronTransactionRecord(
         uid: String,
+        title: String,
         timestamp: Long,
-        contract: Contract?,
         progress: Float?,
         spam: Boolean,
         icon: TransactionViewItem.Icon?
@@ -1272,7 +1084,7 @@ class TransactionViewItemFactory(
         return TransactionViewItem(
             uid = uid,
             progress = progress,
-            title = contract?.label ?: Translator.getString(Res.string.Transactions_Unknown),
+            title = title,
             subtitle = Translator.getString(Res.string.Transactions_Unknown_Description),
             primaryValue = null,
             secondaryValue = null,
@@ -1285,6 +1097,7 @@ class TransactionViewItemFactory(
 
     private fun createViewItemFromEvmTransactionRecord(
         uid: String,
+        title: String,
         timestamp: Long,
         blockchainType: BlockchainType,
         progress: Float?,
@@ -1294,7 +1107,7 @@ class TransactionViewItemFactory(
         return TransactionViewItem(
             uid = uid,
             progress = progress,
-            title = Translator.getString(Res.string.Transactions_Unknown),
+            title = title,
             subtitle = Translator.getString(Res.string.Transactions_Unknown_Description),
             primaryValue = null,
             secondaryValue = null,
@@ -1306,37 +1119,34 @@ class TransactionViewItemFactory(
     }
 
     private fun createViewItemFromEvmOutgoingTransactionRecord(
-        uid: String,
+        transactionItem: TransactionItem,
         value: TransactionValue,
         to: String,
-        blockchainType: BlockchainType,
-        timestamp: Long,
         sentToSelf: Boolean,
-        currencyValue: CurrencyValue?,
         progress: Float?,
-        spam: Boolean,
         icon: TransactionViewItem.Icon?
     ): TransactionViewItem {
+        val record = transactionItem.record
         val primaryValue = if (sentToSelf) {
             ColoredValue(getCoinString(value, true), ColorName.Primary)
         } else {
             getColoredValue(value, ColorName.Lucian)
         }
 
-        val secondaryValue = singleValueSecondaryValue(value, currencyValue)
+        val secondaryValue = singleValueSecondaryValue(value, transactionItem.currencyValue)
 
         return TransactionViewItem(
-            uid = uid,
+            uid = record.uid,
             progress = progress,
-            title = Translator.getString(Res.string.Transactions_Send),
-            subtitle = Translator.getString(Res.string.Transactions_To, mapped(to, blockchainType)),
+            title = record.listTitle(),
+            subtitle = Translator.getString(Res.string.Transactions_To, mapped(to, record.blockchainType)),
             primaryValue = primaryValue,
             secondaryValue = secondaryValue,
             showAmount = showAmount,
-            date = Date(timestamp * 1000),
-            formattedTime = formatTime(timestamp),
+            date = Date(record.timestamp * 1000),
+            formattedTime = formatTime(record.timestamp),
             sentToSelf = sentToSelf,
-            spam = spam,
+            spam = record.spam,
             icon = icon ?: singleValueIconType(value)
         )
     }
@@ -1347,9 +1157,6 @@ class TransactionViewItemFactory(
             else -> ColorName.Primary
         }
     }
-
-    private fun getSwapTitleStringRes(isFailed: Boolean): StringResource =
-        if (isFailed) Res.string.transactions_swap_failed else Res.string.Transactions_Swap
 
     private fun tonTransferColoredValue(value: TransactionValue, color: ColorName): ColoredValue =
         if (value is TransactionValue.NftValue) ColoredValue(value.coinCode, color) else getColoredValue(value, color)
@@ -1374,35 +1181,32 @@ class TransactionViewItemFactory(
         }
 
     private fun createViewItemFromEvmIncomingTransactionRecord(
-        uid: String,
+        transactionItem: TransactionItem,
         value: TransactionValue,
         from: String,
-        blockchainType: BlockchainType,
-        timestamp: Long,
-        currencyValue: CurrencyValue?,
         progress: Float?,
-        spam: Boolean,
         icon: TransactionViewItem.Icon?
     ): TransactionViewItem {
+        val record = transactionItem.record
         val primaryValue = getColoredValue(value, ColorName.Remus)
-        val secondaryValue = currencyValue?.let {
+        val secondaryValue = transactionItem.currencyValue?.let {
             getColoredValue(it, ColorName.Secondary)
         }
 
         return TransactionViewItem(
-            uid = uid,
+            uid = record.uid,
             progress = progress,
-            title = Translator.getString(Res.string.Transactions_Receive),
+            title = record.listTitle(),
             subtitle = Translator.getString(
                 Res.string.Transactions_From,
-                mapped(from, blockchainType)
+                mapped(from, record.blockchainType)
             ),
             primaryValue = primaryValue,
             secondaryValue = secondaryValue,
             showAmount = showAmount,
-            date = Date(timestamp * 1000),
-            formattedTime = formatTime(timestamp),
-            spam = spam,
+            date = Date(record.timestamp * 1000),
+            formattedTime = formatTime(record.timestamp),
+            spam = record.spam,
             icon = icon ?: singleValueIconType(value)
         )
     }
@@ -1415,7 +1219,7 @@ class TransactionViewItemFactory(
         return TransactionViewItem(
             uid = record.uid,
             progress = progress,
-            title = Translator.getString(Res.string.Transactions_ContractCreation),
+            title = record.listTitle(),
             subtitle = "---",
             primaryValue = null,
             secondaryValue = null,
@@ -1433,14 +1237,11 @@ class TransactionViewItemFactory(
     ): TransactionViewItem {
         val delegatedTo = checkNotNull(record.delegatedTo)
 
-        val title: String
         val subtitle: String
         var statusValue: ColoredValue? = null
         if (record.delegationRevoked) {
-            title = Translator.getString(Res.string.transactions_account_delegation_revoke)
             subtitle = "---"
         } else {
-            title = Translator.getString(Res.string.transactions_account_delegation)
             subtitle = Translator.getString(
                 Res.string.transactions_account_delegated_to,
                 mapped(delegatedTo, record.blockchainType)
@@ -1456,7 +1257,7 @@ class TransactionViewItemFactory(
         return TransactionViewItem(
             uid = record.uid,
             progress = progress,
-            title = title,
+            title = record.listTitle(),
             subtitle = subtitle,
             primaryValue = null,
             secondaryValue = null,
@@ -1469,37 +1270,31 @@ class TransactionViewItemFactory(
     }
 
     private fun createViewItemFromContractCallTransactionRecord(
-        uid: String,
+        transactionItem: TransactionItem,
         incomingValues: List<TransactionValue>,
         outgoingValues: List<TransactionValue>,
-        method: String?,
         contractAddress: String,
-        blockchainType: BlockchainType,
-        timestamp: Long,
-        currencyValue: CurrencyValue?,
         progress: Float?,
-        spam: Boolean,
         icon: TransactionViewItem.Icon?
     ): TransactionViewItem {
+        val record = transactionItem.record
         val (primaryValue: ColoredValue?, secondaryValue: ColoredValue?) = getValues(
             incomingValues,
             outgoingValues,
-            currencyValue
+            transactionItem.currencyValue
         )
-        val title = method?.let(::localizedEvmMethodLabel) ?: Translator.getString(Res.string.Transactions_ContractCall)
-
         return TransactionViewItem(
-            uid = uid,
+            uid = record.uid,
             progress = progress,
-            title = title,
-            subtitle = mapped(contractAddress, blockchainType),
+            title = record.listTitle(),
+            subtitle = mapped(contractAddress, record.blockchainType),
             primaryValue = primaryValue,
             secondaryValue = secondaryValue,
             showAmount = showAmount,
-            date = Date(timestamp * 1000),
-            formattedTime = formatTime(timestamp),
-            spam = spam,
-            icon = icon ?: iconType(blockchainType, incomingValues, outgoingValues)
+            date = Date(record.timestamp * 1000),
+            formattedTime = formatTime(record.timestamp),
+            spam = record.spam,
+            icon = icon ?: iconType(record.blockchainType, incomingValues, outgoingValues)
         )
     }
 
@@ -1534,20 +1329,20 @@ class TransactionViewItemFactory(
             transactionItem.currencyValue
         )
 
-        val (title, subTitle) = when {
-            outgoingValues.isEmpty() -> Translator.getString(Res.string.Transactions_Receive) to
-                    counterpartySubtitle(incomingEvents, Res.string.Transactions_From, blockchainType)
+        val subTitle = when {
+            outgoingValues.isEmpty() ->
+                counterpartySubtitle(incomingEvents, Res.string.Transactions_From, blockchainType)
 
-            incomingValues.isEmpty() -> Translator.getString(Res.string.Transactions_Send) to
-                    counterpartySubtitle(outgoingEvents, Res.string.Transactions_To, blockchainType)
+            incomingValues.isEmpty() ->
+                counterpartySubtitle(outgoingEvents, Res.string.Transactions_To, blockchainType)
 
-            else -> Translator.getString(Res.string.Transactions_ExternalContractCall) to "---"
+            else -> "---"
         }
 
         return TransactionViewItem(
             uid = record.uid,
             progress = progress,
-            title = title,
+            title = record.listTitle(),
             subtitle = subTitle,
             primaryValue = primaryValue,
             secondaryValue = secondaryValue,
@@ -1560,21 +1355,13 @@ class TransactionViewItemFactory(
     }
 
     private fun createViewItemFromBitcoinTransactionRecord(
-        transactionItem: TransactionItem,
         record: BitcoinTransactionRecord,
         currencyValue: CurrencyValue?,
         progress: Float?,
         lastBlockTimestamp: Long?,
         icon: TransactionViewItem.Icon?,
-        matchedSwap: SwapProviderTransaction? = null
     ): TransactionViewItem {
-        return tryConvertToUserSwapProviderViewItemSwap(
-            transactionItem = transactionItem,
-            token = record.token,
-            isIncoming = record.transactionRecordType == TransactionRecordType.BITCOIN_INCOMING,
-            matchedSwap = matchedSwap,
-            onChainProgress = progress,
-        ) ?: if (record.transactionRecordType == TransactionRecordType.BITCOIN_INCOMING) {
+        return if (record.transactionRecordType == TransactionRecordType.BITCOIN_INCOMING) {
             createViewItemFromBitcoinIncomingTransactionRecord(
                 record = record,
                 currencyValue = currencyValue,
@@ -1595,15 +1382,9 @@ class TransactionViewItemFactory(
 
     // The swap may still sit on another member of the chain this visible record won.
     private suspend fun relinkReplacementChainSwap(record: BitcoinTransactionRecord): SwapProviderTransaction? {
-        if (record.replacementChainUids.isEmpty() || record.replacedByHash != null) return null
-        if (record.transactionRecordType == TransactionRecordType.BITCOIN_INCOMING) return null
-        val chain = replacementRegistry.chainOf(
-            record.source.account.id,
-            record.token.blockchainType.uid,
-            record.transactionHash
-        ) ?: return null
+        val chain = swapProviderRecordResolver.replacementChainOf(record) ?: return null
         return relinkSwapToReplacement.relink(
-            candidateUids = record.replacementChainUids + record.uid,
+            candidateUids = record.replacementCandidateUids,
             chainHashes = chain.hashes,
             toUid = record.uid,
             toHash = record.transactionHash,
@@ -1650,13 +1431,7 @@ class TransactionViewItemFactory(
         return TransactionViewItem(
             uid = record.uid,
             progress = progress,
-            title = Translator.getString(
-                if (record.isIronwoodMigration) {
-                    Res.string.transactions_migrate
-                } else {
-                    Res.string.Transactions_Send
-                }
-            ),
+            title = record.listTitle(),
             subtitle = subtitle,
             primaryValue = primaryValue,
             secondaryValue = secondaryValue,
@@ -1704,7 +1479,7 @@ class TransactionViewItemFactory(
         return TransactionViewItem(
             uid = record.uid,
             progress = progress,
-            title = Translator.getString(Res.string.Transactions_Receive),
+            title = record.listTitle(),
             subtitle = subtitle,
             primaryValue = primaryValue,
             secondaryValue = secondaryValue,
@@ -1719,75 +1494,20 @@ class TransactionViewItemFactory(
         )
     }
 
-    private fun tryConvertToUserSwapProviderViewItemSwap(
+    private fun userSwapProviderViewItem(
         transactionItem: TransactionItem,
-        token: Token?,
-        isIncoming: Boolean,
-        onChainProgress: Float?,
-        matchedSwap: SwapProviderTransaction? = null,
+        matchedSwap: SwapProviderTransaction?,
+        progress: Float?,
     ): TransactionViewItem? {
-        if (token == null) return null
-
-        // If matchedSwap is provided by ViewModel, use it directly (no DB lookup)
-        val swap = matchedSwap ?: if (isIncoming) {
-            // First check if already matched by incomingRecordUid (fast lookup)
-            getSwapProviderTransactionForIncoming(
-                recordUid = transactionItem.record.uid,
-                amount = transactionItem.record.mainValue?.decimalValue,
-                timestamp = transactionItem.record.timestamp,
-                addressesTo = transactionItem.record.to,
-                token = token
-            )
-        } else {
-            val outgoingRecordUid = outgoingRecordUidForSwapMatching(transactionItem)
-            outgoingRecordUid?.let(swapProviderTransactionsStorage::getByOutgoingRecordUid)
-                ?: swapProviderTransactionsStorage.getByTokenIn(
-                    token = (transactionItem.record.mainValue as? TransactionValue.CoinValue)?.token ?: token,
-                    amountIn = transactionItem.record.mainValue?.decimalValue?.abs(),
-                    timestamp = transactionItem.record.timestamp * 1000
-                )?.also { foundSwap ->
-                    if (outgoingRecordUid != null && foundSwap.outgoingRecordUid != outgoingRecordUid) {
-                        swapProviderTransactionsStorage.setOutgoingRecordUid(
-                            date = foundSwap.date,
-                            outgoingRecordUid = outgoingRecordUid
-                        )
-                    }
-                }
-        }
-
-        return swap?.let {
-            createViewItemFromUserSwapProviderRecord(
-                transaction = it,
-                recordUid = transactionItem.record.uid,
-                timestamp = transactionItem.record.timestamp,
-                direct = !isIncoming,
-                onChainProgress = onChainProgress.takeIf { isIncoming },
-            )
-        }
-    }
-
-    private fun outgoingRecordUidForSwapMatching(transactionItem: TransactionItem): String? {
-        return when (val record = transactionItem.record) {
-            is PendingTransactionRecord -> record.transactionHash.takeIf { it.isNotBlank() }
-            else -> record.uid
-        }
-    }
-
-    private fun getSwapProviderTransactionForIncoming(
-        recordUid: String,
-        amount: BigDecimal?,
-        timestamp: Long,
-        addressesTo: List<String>?,
-        token: Token
-    ): SwapProviderTransaction? {
-        val incomingTransaction = IncomingTransaction(
-            uid = recordUid,
-            amount = amount?.abs(),
-            timestamp = timestamp * 1000,
-            token = token,
-            addresses = addressesTo,
+        val record = transactionItem.record
+        val resolved = swapProviderRecordResolver.findAndLink(record, matchedSwap) ?: return null
+        return createViewItemFromUserSwapProviderRecord(
+            transaction = resolved.swap,
+            recordUid = record.uid,
+            timestamp = record.timestamp,
+            direct = !resolved.isIncoming,
+            onChainProgress = progress.takeIf { resolved.isIncoming },
         )
-        return swapTransactionMatcher.findMatchingSwap(incomingTransaction)
     }
 
     private fun syncReceivedAt(swap: SwapProviderTransaction, recordUid: String, timestampSeconds: Long) {
@@ -1843,24 +1563,6 @@ class TransactionViewItemFactory(
         val payoutConfirmationProgress = onChainProgress.takeIf {
             !direct && providerStatus == TransactionStatusEnum.FINISHED
         }
-        val displayStatus = if (payoutConfirmationProgress != null) {
-            TransactionStatusEnum.CONFIRMING
-        } else {
-            providerStatus
-        }
-        val titleStringRes = when (displayStatus) {
-            TransactionStatusEnum.NEW -> Res.string.transaction_swap_status_new
-            TransactionStatusEnum.WAITING -> Res.string.transaction_swap_status_waiting
-            TransactionStatusEnum.CONFIRMING -> Res.string.transaction_swap_status_confirming
-            TransactionStatusEnum.EXCHANGING -> Res.string.transaction_swap_status_exchanging
-            TransactionStatusEnum.SENDING -> Res.string.transaction_swap_status_sending
-            TransactionStatusEnum.FINISHED -> Res.string.Transactions_Swap
-            TransactionStatusEnum.FAILED -> Res.string.Transactions_Failed
-            TransactionStatusEnum.REFUNDED -> Res.string.transaction_swap_status_refunded
-            TransactionStatusEnum.VERIFYING -> Res.string.transaction_swap_status_verifying
-            TransactionStatusEnum.CREATED_OR_WAIT_USER -> Res.string.transaction_swap_status_created_or_wait_user
-            TransactionStatusEnum.UNKNOWN -> Res.string.transaction_swap_status_unknown
-        }
         val transactionStatusUrl = transaction.toStatusUrl()
 
         return TransactionViewItem(
@@ -1870,7 +1572,7 @@ class TransactionViewItemFactory(
             } else {
                 (providerStatus.ordinal + 1) * (1f / (TransactionStatusEnum.FINISHED.ordinal + 1))
             },
-            title = Translator.getString(titleStringRes),
+            title = transaction.displayStatus(payoutConfirmationProgress != null).listTitle(),
             subtitle = unstoppableProviderTitles.swapProviderDisplayTitle(
                 transaction.provider,
                 transaction.subProviderId,
@@ -1907,35 +1609,23 @@ class TransactionViewItemFactory(
 
     private fun createViewItemFromTronTransactionRecord(
         transactionItem: TransactionItem,
-        baseToken: Token?,
-        uid: String,
         value: TransactionValue?,
         sentToSelf: Boolean,
         from: String?,
         to: String?,
         spender: String?,
-        blockchainType: BlockchainType,
-        transaction: Transaction,
-        timestamp: Long,
         progress: Float?,
-        spam: Boolean,
-        method: String?,
         contractAddress: String?,
         incomingEvents: List<TransferEvent>?,
         outgoingEvents: List<TransferEvent>?,
         icon: TransactionViewItem.Icon?,
-        matchedSwap: SwapProviderTransaction? = null
     ): TransactionViewItem = when (transactionItem.record.transactionRecordType) {
         TransactionRecordType.TRON_APPROVE ->
             createViewItemFromApproveTransactionRecord(
-                uid = uid,
+                transactionItem = transactionItem,
                 value = value!!,
                 spender = spender!!,
-                blockchainType = blockchainType,
-                timestamp = timestamp,
-                currencyValue = transactionItem.currencyValue,
                 progress = progress,
-                spam = spam,
                 icon = icon
             )
 
@@ -1946,17 +1636,12 @@ class TransactionViewItemFactory(
                 outgoingEvents!!
             )
             createViewItemFromContractCallTransactionRecord(
-                uid = uid,
+                transactionItem = transactionItem,
                 incomingValues = incomingValues,
                 outgoingValues = outgoingValues,
-                method = method,
                 contractAddress = contractAddress!!,
-                blockchainType = blockchainType,
-                timestamp = timestamp,
-                currencyValue = transactionItem.currencyValue,
                 progress = progress,
                 icon = icon,
-                spam = spam
             )
         }
 
@@ -1965,31 +1650,7 @@ class TransactionViewItemFactory(
                 incomingEvents!!,
                 outgoingEvents!!
             )
-            val transactionViewItem =
-                if (outgoingValues.isEmpty() && incomingValues.isNotEmpty() && baseToken != null) {
-                    // Use matchedSwap if provided, otherwise fall back to DB lookup
-                    val swap = matchedSwap ?: incomingValues.firstOrNull()?.let { firstIncomingValue ->
-                        getSwapProviderTransactionForIncoming(
-                            recordUid = transactionItem.record.uid,
-                            amount = firstIncomingValue.decimalValue,
-                            timestamp = timestamp,
-                            addressesTo = incomingEvents.firstOrNull()?.addressForIncomingAddress?.let(::listOf),
-                            token = (firstIncomingValue as? TransactionValue.CoinValue)?.token ?: baseToken
-                        )
-                    }
-                    swap?.let {
-                        createViewItemFromUserSwapProviderRecord(
-                            transaction = it,
-                            recordUid = transactionItem.record.uid,
-                            timestamp = timestamp,
-                            direct = false,
-                            onChainProgress = progress,
-                        )
-                    }
-                } else {
-                    null
-                }
-            transactionViewItem ?: createViewItemFromExternalContractCallTransactionRecord(
+            createViewItemFromExternalContractCallTransactionRecord(
                 transactionItem = transactionItem,
                 incomingValues = incomingValues,
                 outgoingValues = outgoingValues,
@@ -2000,54 +1661,32 @@ class TransactionViewItemFactory(
             )
         }
 
-        TransactionRecordType.TRON_INCOMING -> {
-            tryConvertToUserSwapProviderViewItemSwap(
+        TransactionRecordType.TRON_INCOMING ->
+            createViewItemFromEvmIncomingTransactionRecord(
                 transactionItem = transactionItem,
-                token = baseToken,
-                isIncoming = true,
-                matchedSwap = matchedSwap,
-                onChainProgress = progress,
-            ) ?: createViewItemFromEvmIncomingTransactionRecord(
-                uid = uid,
                 value = value!!,
                 from = from!!,
-                blockchainType = blockchainType,
-                timestamp = timestamp,
-                currencyValue = transactionItem.currencyValue,
                 progress = progress,
-                spam = spam,
                 icon = icon
             )
-        }
 
-        TransactionRecordType.TRON_OUTGOING -> {
-            tryConvertToUserSwapProviderViewItemSwap(
+        TransactionRecordType.TRON_OUTGOING ->
+            createViewItemFromEvmOutgoingTransactionRecord(
                 transactionItem = transactionItem,
-                token = baseToken,
-                isIncoming = false,
-                matchedSwap = matchedSwap,
-                onChainProgress = progress,
-            ) ?: createViewItemFromEvmOutgoingTransactionRecord(
-                uid = uid,
                 value = value!!,
                 to = to!!,
-                blockchainType = blockchainType,
-                timestamp = timestamp,
                 sentToSelf = sentToSelf,
-                currencyValue = transactionItem.currencyValue,
                 progress = progress,
                 icon = icon,
-                spam = spam
             )
-        }
 
         TransactionRecordType.TRON -> {
             createViewItemFromSimpleTronTransactionRecord(
-                uid = uid,
-                timestamp = timestamp,
-                contract = transaction.contract,
+                uid = transactionItem.record.uid,
+                title = transactionItem.record.listTitle(),
+                timestamp = transactionItem.record.timestamp,
                 progress = progress,
-                spam = spam,
+                spam = transactionItem.record.spam,
                 icon = icon
             )
         }
@@ -2056,16 +1695,13 @@ class TransactionViewItemFactory(
     }
 
     private fun createViewItemFromApproveTransactionRecord(
-        uid: String,
+        transactionItem: TransactionItem,
         value: TransactionValue,
         spender: String,
-        blockchainType: BlockchainType,
-        timestamp: Long,
-        currencyValue: CurrencyValue?,
         progress: Float?,
-        spam: Boolean,
         icon: TransactionViewItem.Icon?
     ): TransactionViewItem {
+        val record = transactionItem.record
         val primaryValueText: String
         val secondaryValueText: String?
 
@@ -2077,23 +1713,23 @@ class TransactionViewItemFactory(
             )
         } else {
             primaryValueText = getCoinString(value, hideSign = true)
-            secondaryValueText = currencyValue?.let { getCurrencyString(it) }
+            secondaryValueText = transactionItem.currencyValue?.let { getCurrencyString(it) }
         }
 
         val primaryValue = ColoredValue(primaryValueText, ColorName.Primary)
         val secondaryValue = secondaryValueText?.let { ColoredValue(it, ColorName.Secondary) }
 
         return TransactionViewItem(
-            uid = uid,
+            uid = record.uid,
             progress = progress,
-            title = Translator.getString(Res.string.Transactions_Approve),
-            subtitle = mapped(spender, blockchainType),
+            title = record.listTitle(),
+            subtitle = mapped(spender, record.blockchainType),
             primaryValue = primaryValue,
             secondaryValue = secondaryValue,
             showAmount = showAmount,
-            date = Date(timestamp * 1000),
-            formattedTime = formatTime(timestamp),
-            spam = spam,
+            date = Date(record.timestamp * 1000),
+            formattedTime = formatTime(record.timestamp),
+            spam = record.spam,
             icon = icon ?: singleValueIconType(value)
         )
     }
@@ -2265,7 +1901,7 @@ class TransactionViewItemFactory(
         return TransactionViewItem(
             uid = record.uid,
             progress = 0.15f,
-            title = Translator.getString(Res.string.transaction_pending_title),
+            title = record.listTitle(),
             subtitle = subtitle,
             primaryValue = getColoredValue(
                 record.mainValue,

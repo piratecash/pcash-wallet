@@ -297,7 +297,7 @@ class TonConnectManagerTest {
 
     @Test
     fun dApps_beforeKitOpen_emitsEmptyThenKitDApps() = runTest(dispatcher) {
-        val dApp = mockk<DAppEntity>()
+        val dApp = dApp(VISIBLE_ID)
         every { kit.getDApps() } returns flowOf(listOf(dApp))
         val manager = createManager()
         val emitted = mutableListOf<List<DAppEntity>>()
@@ -309,6 +309,32 @@ class TonConnectManagerTest {
 
         assertEquals(emptyList(), emitted.first())
         assertEquals(listOf(dApp), emitted.last())
+    }
+
+    @Test
+    fun dApps_sessionOfAccountOutsideLevel_isHidden() = runTest(dispatcher) {
+        val v4r2 = dApp(VISIBLE_ID)
+        val w5 = dApp("$VISIBLE_ID-w5")
+        every { kit.getDApps() } returns flowOf(listOf(v4r2, w5, dApp(HIDDEN_ID), dApp("$HIDDEN_ID-w5")))
+
+        assertEquals(listOf(v4r2, w5), openKitAndCollectDApps())
+    }
+
+    @Test
+    fun dApps_noLevelLoaded_emitsEmptyList() = runTest(dispatcher) {
+        visibleAccounts.clear()
+        every { kit.getDApps() } returns flowOf(listOf(dApp(VISIBLE_ID)))
+
+        assertEquals(emptyList(), openKitAndCollectDApps())
+    }
+
+    private suspend fun TestScope.openKitAndCollectDApps(): List<DAppEntity> {
+        val manager = createManager()
+        val emitted = mutableListOf<List<DAppEntity>>()
+        backgroundScope.launch { manager.dApps.toList(emitted) }
+        manager.getManifest(VISIBLE_ID, MANIFEST_URL)
+        runCurrent()
+        return emitted.last()
     }
 
     @Test

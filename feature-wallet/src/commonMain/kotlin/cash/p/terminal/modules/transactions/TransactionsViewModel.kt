@@ -35,6 +35,7 @@ import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.badge
 import cash.p.terminal.wallet.managers.TransactionDisplayLevel
 import io.horizontalsystems.core.DispatcherProvider
+import io.horizontalsystems.core.IAppNumberFormatter
 import io.horizontalsystems.core.ViewModelUiState
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
@@ -101,6 +102,7 @@ class TransactionsViewModel(
     private val adapterManager: IAdapterManager,
     private val swapProviderTransactionsStorage: SwapProviderTransactionsStorage,
     private val contactsRepository: ContactsRepository,
+    private val numberFormatter: IAppNumberFormatter,
     private val dispatcherProvider: DispatcherProvider,
 ) : ViewModelUiState<TransactionsUiState>(), TransactionSearchController.Host {
 
@@ -140,7 +142,7 @@ class TransactionsViewModel(
     private var currentBlockchain: Blockchain? = null
     private var currentContact: Contact? = null
     private var appliedSearchQuery = ""
-    private var searchScanning = false
+    private var searchScanState: SearchScanState = SearchScanState.Idle
     private var amlPromoAlertEnabled = premiumSettings.getAmlCheckShowAlert()
 
     private val searchController = TransactionSearchController(viewModelScope, this)
@@ -206,7 +208,7 @@ class TransactionsViewModel(
                         cachedConvertedItems = emptyList()
                         viewState = ViewState.Loading
                         transactions = null
-                        searchScanning = false
+                        searchScanState = SearchScanState.Idle
                         transactionListBaseId = null
                         awaitingAdaptersAfterSwitch = true
                         service.cancelPendingLoads()
@@ -370,7 +372,7 @@ class TransactionsViewModel(
         transactionListId = newTransactionListId
         filterVersion++
         cachedConvertedItems = emptyList()
-        searchScanning = appliedSearchQuery.isNotEmpty()
+        searchScanState = SearchScanState.Scanning.forQuery(appliedSearchQuery)
         viewState = if (appliedSearchQuery.isEmpty()) ViewState.Loading else ViewState.Success
         transactions = if (appliedSearchQuery.isEmpty()) null else emptyMap()
         emitState()
@@ -416,13 +418,11 @@ class TransactionsViewModel(
             awaitingAdaptersAfterSwitch = false
         }
 
-        // While a search scan runs, show only the spinner — never stale/intermediate items.
-        // Search has a single terminal emission (Finished); there is nothing to show before it.
-        if (appliedSearchQuery.isNotEmpty() && scanState == SearchScanState.Scanning) {
+        if (scanState.showsOnlySpinner(appliedSearchQuery, transactions)) {
             refreshViewItemsJob?.cancel()
             cachedConvertedItems = emptyList()
             transactions = emptyMap()
-            searchScanning = true
+            searchScanState = SearchScanState.Scanning
             viewState = ViewState.Success
             emitState()
             return
@@ -474,7 +474,7 @@ class TransactionsViewModel(
 
         transactions = filtered.groupBy { it.formattedDate }
         if (scanState != null) {
-            searchScanning = appliedSearchQuery.isNotEmpty() && scanState == SearchScanState.Scanning
+            searchScanState = scanState.forQuery(appliedSearchQuery)
         }
         viewState = ViewState.Success
         emitState()
@@ -526,7 +526,8 @@ class TransactionsViewModel(
         balanceHidden = balanceHiddenManager.balanceHidden,
         searchActive = searchController.searchActive,
         searchQuery = searchController.searchQuery,
-        searchScanning = searchScanning,
+        searchScanning = searchScanState == SearchScanState.Scanning,
+        searchPausedCount = searchScanState.pausedCountText(numberFormatter),
     )
 
     private suspend fun handleUpdatedWallets(wallets: List<Wallet>) {
@@ -562,6 +563,8 @@ class TransactionsViewModel(
     fun onBottomReached() {
         service.loadNext()
     }
+
+    fun searchFurther() = service.searchFurther()
 
     fun willShow(viewItem: TransactionViewItem) {
         service.fetchRateIfNeeded(viewItem.uid)

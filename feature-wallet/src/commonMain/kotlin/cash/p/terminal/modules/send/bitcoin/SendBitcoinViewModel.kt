@@ -24,6 +24,7 @@ import cash.p.terminal.entities.OfflineSignedTransactionDraft
 import cash.p.terminal.entities.PendingTransactionDraft
 import cash.p.terminal.core.providers.SharedAppConfig
 import cash.p.terminal.entities.Address
+import cash.p.terminal.ledger.ui.ledgerErrorMessageOrNull
 import cash.p.terminal.modules.contacts.ContactsRepository
 import cash.p.terminal.modules.memo.fitsMemoBytes
 import cash.p.terminal.modules.send.SendConfirmationData
@@ -45,6 +46,8 @@ import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IBalanceAdapter
 import cash.p.terminal.wallet.Wallet
 import io.horizontalsystems.core.collectWith
+import cash.p.terminal.wallet.hardware.HardwareCancelledException
+import cash.p.terminal.modules.send.isHardwareWalletCancelled
 import io.horizontalsystems.bitcoincore.storage.UnspentOutputInfo
 import io.horizontalsystems.bitcoincore.storage.UtxoFilters
 import cash.p.terminal.modules.send.BaseSendViewModel
@@ -118,7 +121,7 @@ class SendBitcoinViewModel(
         repository = offlineSignedTransactionRepository,
         cautionFactory = ::createCaution,
         isSilentCancellation = {
-            HardwareWalletSupport.isReportedBySdk(it) || HardwareWalletSupport.isUserCancellation(it)
+            HardwareWalletSupport.isReportedBySdk(it) || it is HardwareCancelledException
         },
     )
 
@@ -274,7 +277,7 @@ class SendBitcoinViewModel(
     }
 
     fun onEnterLockTimeInterval(lockTimeInterval: LockTimeInterval?) {
-        pluginService.setLockTimeInterval(lockTimeInterval.takeIf { isAdvancedSettingsAvailable })
+        pluginService.setLockTimeInterval(lockTimeInterval.takeIf { isAdvancedSettingsAvailable && isLockTimeEnabled })
     }
 
     fun updateCustomUnspentOutputs(customUnspentOutputs: List<UnspentOutputInfo>) {
@@ -461,7 +464,7 @@ class SendBitcoinViewModel(
             completeSuccessfulSend(request.address, transactionHash, logger)
         } catch (e: Throwable) {
             pendingTxId?.let { pendingRegistrar.deleteFailed(it) }
-            if (HardwareWalletSupport.isUserCancellation(e)) {
+            if (e.isHardwareWalletCancelled()) {
                 sendResult = null
                 logger.info("user cancelled")
                 return@withContext
@@ -539,7 +542,7 @@ class SendBitcoinViewModel(
     private fun createCaution(error: Throwable) = when (error) {
         is UnknownHostException -> HSCaution(TranslatableString.ResString(Res.string.Hud_Text_NoInternet))
         is LocalizedException -> HSCaution(TranslatableString.ResString(error.errorTextRes))
-        else -> HSCaution(TranslatableString.PlainString(error.message ?: ""))
+        else -> HSCaution(TranslatableString.PlainString(ledgerErrorMessageOrNull(error) ?: error.message.orEmpty()))
     }
 
 }

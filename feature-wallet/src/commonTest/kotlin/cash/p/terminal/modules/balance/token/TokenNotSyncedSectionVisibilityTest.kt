@@ -123,11 +123,27 @@ class TokenNotSyncedSectionVisibilityTest {
     }
 
     @Test
+    fun transactionsPlaceholder_searchPaused_returnsSearchPausedNotSearchEmpty() {
+        assertEquals(
+            TransactionsPlaceholder.SearchPaused,
+            transactionsPlaceholder(
+                searchScanning = false,
+                searchPaused = true,
+                searchEmptyResult = false,
+                loadFailed = false,
+                syncing = false,
+                transactionsKnown = true,
+            )
+        )
+    }
+
+    @Test
     fun transactionsPlaceholder_loadFailedAndEmpty_returnsNone() {
         assertEquals(
             TransactionsPlaceholder.None,
             transactionsPlaceholder(
                 searchScanning = false,
+                searchPaused = false,
                 searchEmptyResult = false,
                 loadFailed = true,
                 syncing = false,
@@ -142,6 +158,7 @@ class TokenNotSyncedSectionVisibilityTest {
             TransactionsPlaceholder.None,
             transactionsPlaceholder(
                 searchScanning = false,
+                searchPaused = false,
                 searchEmptyResult = false,
                 loadFailed = true,
                 syncing = true,
@@ -156,6 +173,7 @@ class TokenNotSyncedSectionVisibilityTest {
             TransactionsPlaceholder.None,
             transactionsPlaceholder(
                 searchScanning = true,
+                searchPaused = false,
                 searchEmptyResult = false,
                 loadFailed = true,
                 syncing = false,
@@ -170,6 +188,7 @@ class TokenNotSyncedSectionVisibilityTest {
             TransactionsPlaceholder.SearchInProgress,
             transactionsPlaceholder(
                 searchScanning = true,
+                searchPaused = false,
                 searchEmptyResult = false,
                 loadFailed = false,
                 syncing = false,
@@ -184,6 +203,7 @@ class TokenNotSyncedSectionVisibilityTest {
             TransactionsPlaceholder.SearchEmpty,
             transactionsPlaceholder(
                 searchScanning = false,
+                searchPaused = false,
                 searchEmptyResult = true,
                 loadFailed = false,
                 syncing = false,
@@ -198,6 +218,7 @@ class TokenNotSyncedSectionVisibilityTest {
             TransactionsPlaceholder.WaitForSync,
             transactionsPlaceholder(
                 searchScanning = false,
+                searchPaused = false,
                 searchEmptyResult = false,
                 loadFailed = false,
                 syncing = true,
@@ -212,6 +233,7 @@ class TokenNotSyncedSectionVisibilityTest {
             TransactionsPlaceholder.WaitForSync,
             transactionsPlaceholder(
                 searchScanning = false,
+                searchPaused = false,
                 searchEmptyResult = false,
                 loadFailed = false,
                 syncing = false,
@@ -226,6 +248,7 @@ class TokenNotSyncedSectionVisibilityTest {
             TransactionsPlaceholder.EmptyList,
             transactionsPlaceholder(
                 searchScanning = false,
+                searchPaused = false,
                 searchEmptyResult = false,
                 loadFailed = false,
                 syncing = false,

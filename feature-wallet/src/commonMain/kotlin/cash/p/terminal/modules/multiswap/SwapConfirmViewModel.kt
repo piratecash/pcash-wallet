@@ -36,6 +36,7 @@ import cash.p.terminal.modules.multiswap.sendtransaction.services.SendTransactio
 import cash.p.terminal.modules.multiswap.sendtransaction.SwapTransactionServiceFactory
 import cash.p.terminal.modules.multiswap.ui.DataField
 import cash.p.terminal.modules.send.BaseSendViewModel
+import cash.p.terminal.modules.send.hardwareWalletErrorMessage
 import cash.p.terminal.modules.send.hardwareWalletUserMessageRes
 import cash.p.terminal.modules.send.SendModule
 import cash.p.terminal.modules.send.SendResult
@@ -60,7 +61,6 @@ import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import co.touchlab.kermit.Logger
-import com.piratecash.monero.signer.HardwareWalletOperationException
 import io.horizontalsystems.bitcoincore.managers.SendValueErrors
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.DispatcherProvider
@@ -482,7 +482,8 @@ class SwapConfirmViewModel(
         when (val hardwareError = error.toHardwareWalletError()) {
             // A user cancel is handled before; this is any other error reported by the card SDK.
             HardwareWalletError.Cancelled -> Translator.getString(Res.string.swap_card_scan_failed)
-            is HardwareWalletError.Failed -> Translator.getString(hardwareError.messageRes)
+            is HardwareWalletError.Failed -> hardwareError.message
+
             null -> {
                 logger.e(error) { "fetchFinalQuote error" }
                 Translator.getString(Res.string.unexpected_error)
@@ -605,7 +606,7 @@ class SwapConfirmViewModel(
                     // A cancel on the device, or any other Tangem error, just resets the state.
                     HardwareWalletError.Cancelled -> null
                     is HardwareWalletError.Failed ->
-                        SendResult.Failed(HSCaution(TranslatableString.ResString(hardwareError.messageRes)))
+                        SendResult.Failed(HSCaution(TranslatableString.PlainString(hardwareError.message)))
                     null -> SendResult.Failed(sendFailureCaution(t))
                 }
             }
@@ -621,14 +622,12 @@ class SwapConfirmViewModel(
 
     private sealed interface HardwareWalletError {
         data object Cancelled : HardwareWalletError
-        class Failed(val messageRes: StringResource) : HardwareWalletError
+        class Failed(val message: String) : HardwareWalletError
     }
 
     private fun Throwable.toHardwareWalletError(): HardwareWalletError? = when {
         isHardwareWalletCancelled() || HardwareWalletSupport.isReportedBySdk(this) -> HardwareWalletError.Cancelled
-        this is HardwareWalletOperationException || HardwareWalletSupport.isSigningFailure(this) ->
-            HardwareWalletError.Failed(hardwareWalletUserMessageRes())
-        else -> null
+        else -> hardwareWalletErrorMessage()?.let(HardwareWalletError::Failed)
     }
 
     private suspend fun handleMultiSwapCompletion(result: SendTransactionResult) {
