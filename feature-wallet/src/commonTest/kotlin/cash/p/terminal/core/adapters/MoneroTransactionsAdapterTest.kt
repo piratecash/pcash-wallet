@@ -1,6 +1,7 @@
 package cash.p.terminal.core.adapters
 
 import cash.p.terminal.core.managers.MoneroKitWrapper
+import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.modules.transactions.FilterTransactionType
 import cash.p.terminal.modules.transactions.TimestampRange
 import cash.p.terminal.wallet.Account
@@ -25,6 +26,7 @@ class MoneroTransactionsAdapterTest {
     private val adapter = MoneroTransactionsAdapter(
         kitWrapper,
         TransactionSource(blockchain, mockk<Account>(relaxed = true), null),
+        mockk<OfflineModeManager>(relaxed = true),
     )
 
     @Test
