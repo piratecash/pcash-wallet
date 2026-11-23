@@ -188,7 +188,7 @@
     <ID>CyclomaticComplexMethod:TokenBalanceScreen.kt$@Composable private fun TokenBalanceHeader( balanceViewItem: BalanceViewItem, uiState: TokenBalanceModule.TokenBalanceUiState, secondaryValue: DeemedValue&lt;String&gt;, onStackingClicked: () -&gt; Unit, onClickSubtitle: () -&gt; Unit, onToggleBalanceVisibility: () -&gt; Unit, onSendClick: () -&gt; Unit, onReceiveClick: () -&gt; Unit, onSwapClick: () -&gt; Unit, onShieldClick: () -&gt; Unit, onSyncErrorClick: (BalanceViewItem) -&gt; Unit, onDismissNetworkFeeWarning: () -&gt; Unit, isShowShieldFunds: Boolean )</ID>
     <ID>CyclomaticComplexMethod:TonConnectNewScreen.kt$@Composable fun TonConnectNewScreen( navigation: HSNavigation, uri: String, onResult: (Boolean) -&gt; Unit, )</ID>
     <ID>CyclomaticComplexMethod:TonConnectSendRequestViewModel.kt$TonConnectSendRequestViewModel$private suspend fun prepareEnv()</ID>
-    <ID>CyclomaticComplexMethod:TonTransactionConverter.kt$TonTransactionConverter$private fun getActionType(action: Action): TonTransactionRecord.Action.Type</ID>
+    <ID>CyclomaticComplexMethod:TonTransactionConverter.kt$TonTransactionConverter$private fun getActionType(action: Action, nftItems: Map&lt;String, NftItemRecord&gt;): TonTransactionRecord.Action.Type</ID>
     <ID>CyclomaticComplexMethod:TransactionInfoPage.kt$@Composable fun TransactionInfoSection( section: List&lt;TransactionInfoViewItem&gt;, navigation: HSNavigation, onSensitiveValueClick: () -&gt; Unit, getRawTransaction: () -&gt; String?, hideSensitiveInfo: Boolean, onAmlInfoClick: () -&gt; Unit = {}, onPendingStatusTap: (() -&gt; Unit)? = null, onAmlRiskClick: (List&lt;String&gt;, AmlStatus) -&gt; Unit = { _, _ -&gt; }, )</ID>
     <ID>CyclomaticComplexMethod:TransactionInfoViewItemFactory.kt$TransactionInfoViewItemFactory$fun getViewItemSections(transactionItem: TransactionInfoItem): List&lt;List&lt;TransactionInfoViewItem&gt;&gt;</ID>
     <ID>CyclomaticComplexMethod:TransactionViewItemFactory.kt$TransactionViewItemFactory$private fun convertToViewItem( transactionItem: TransactionItem, matchedSwap: SwapProviderTransaction? = null ): TransactionViewItem</ID>
@@ -385,7 +385,7 @@
     <ID>LongMethod:TonConnectSendRequestScreen.kt$@Composable fun TonConnectSendRequestScreen( navigation: HSNavigation, viewModel: TonConnectSendRequestViewModel, )</ID>
     <ID>LongMethod:TonConnectSendRequestViewModel.kt$TonConnectSendRequestViewModel$private suspend fun prepareEnv()</ID>
     <ID>LongMethod:TonHelper.kt$TonHelper$fun getViewItemsForAction( action: TonTransactionRecord.Action, rates: Map&lt;String, CurrencyValue&gt;, blockchainType: BlockchainType, hideAmount: Boolean, showCopyWarning: Boolean = false, ): List&lt;TransactionInfoViewItem&gt;</ID>
-    <ID>LongMethod:TonTransactionConverter.kt$TonTransactionConverter$private fun getActionType(action: Action): TonTransactionRecord.Action.Type</ID>
+    <ID>LongMethod:TonTransactionConverter.kt$TonTransactionConverter$private fun getActionType(action: Action, nftItems: Map&lt;String, NftItemRecord&gt;): TonTransactionRecord.Action.Type</ID>
     <ID>LongMethod:TransactionAdapterWrapperTest.kt$TransactionAdapterWrapperTest$@Test fun get_groupedWalletRealOutgoingDifferentToken_pendingRemainsVisible()</ID>
     <ID>LongMethod:TransactionAdapterWrapperTest.kt$TransactionAdapterWrapperTest$@Test fun setContact_immediatelyFollowedByGet_doesNotReturnStaleCache()</ID>
     <ID>LongMethod:TransactionInfoCells.kt$@Composable fun TransactionInfoStatusCell( status: TransactionStatus, navigation: HSNavigation, onPendingTap: (() -&gt; Unit)? = null )</ID>
@@ -810,7 +810,7 @@
     <ID>ReturnCount:DeniableEncryptionManager.kt$DeniableEncryptionManager$fun extractMessageFromBytes(container: ByteArray, password: String): ByteArray?</ID>
     <ID>ReturnCount:SyncPendingMultiSwapUseCase.kt$SyncPendingMultiSwapUseCase$private suspend fun findSwapProviderTransaction( providerTransactionId: String?, transactionId: String?, providerId: String, sideOut: SwapSide, amountOut: BigDecimal?, accountId: String, legStartTime: Long, ): SwapProviderTransaction?</ID>
     <ID>ReturnCount:TonConnectSendRequestViewModel.kt$TonConnectSendRequestViewModel$private suspend fun prepareEnv()</ID>
-    <ID>ReturnCount:TonTransactionConverter.kt$TonTransactionConverter$private fun getActionType(action: Action): TonTransactionRecord.Action.Type</ID>
+    <ID>ReturnCount:TonTransactionConverter.kt$TonTransactionConverter$private fun getActionType(action: Action, nftItems: Map&lt;String, NftItemRecord&gt;): TonTransactionRecord.Action.Type</ID>
     <ID>SpreadOperator:AdapterExceptions.kt$(errorTextRes, *formatArgs)</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:ActivateTokenViewModel.kt$ActivateTokenViewModel.Factory$IllegalArgumentException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:BaseThorChainProvider.kt$BaseThorChainProvider$IllegalArgumentException()</ID>

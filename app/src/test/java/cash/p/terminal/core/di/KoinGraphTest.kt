@@ -13,6 +13,7 @@ import cash.p.terminal.modules.balance.token.TokenBalanceService
 import cash.p.terminal.modules.balance.token.TokenBalanceViewModel
 import cash.p.terminal.modules.balance.token.TokenTransactionsService
 import cash.p.terminal.modules.balance.token.creationblock.CreationBlockViewModel
+import cash.p.terminal.modules.signmessage.SignMessageViewModel
 import cash.p.terminal.modules.transactions.SelectContactViewModel
 import cash.p.terminal.modules.receive.viewmodels.DerivationSelectViewModel
 import cash.p.terminal.modules.receive.viewmodels.BchAddressTypeSelectViewModel
@@ -451,6 +452,7 @@ class KoinGraphTest : KoinTest {
         definition<OfflineModeToggleViewModel>(Wallet::class),
         definition<TokenBalanceViewModel>(Wallet::class),
         definition<CreationBlockViewModel>(Wallet::class),
+        definition<SignMessageViewModel>(Wallet::class),
         definition<ReceiveAddressViewModel>(Wallet::class),
         definition<ReceiveMoneroViewModel>(Wallet::class),
         definition<ReceiveStellarAssetViewModel>(Wallet::class),

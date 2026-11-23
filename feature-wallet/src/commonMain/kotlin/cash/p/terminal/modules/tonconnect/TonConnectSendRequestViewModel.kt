@@ -7,6 +7,9 @@ import cash.p.terminal.core.managers.TonConnectWalletId
 import cash.p.terminal.core.managers.TonKitManager
 import cash.p.terminal.core.managers.TonKitWrapper
 import cash.p.terminal.core.managers.toTonWalletFullAccess
+import cash.p.terminal.core.storage.NftItemStorage
+import cash.p.terminal.entities.NftItemRecord
+import cash.p.terminal.entities.TransactionValue
 import cash.p.terminal.wallet.IHardwarePublicKeyStorage
 import cash.p.terminal.entities.transactionrecords.ton.TonTransactionRecord
 import cash.p.terminal.modules.offline.OfflineOperationGate
@@ -27,6 +30,7 @@ import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.Translator
 import io.horizontalsystems.core.ViewModelUiState
 import io.horizontalsystems.core.entities.BlockchainType
+import io.horizontalsystems.tonkit.Address
 import io.horizontalsystems.tonkit.core.TonWallet
 import io.horizontalsystems.tonkit.models.Event
 import io.horizontalsystems.tonkit.models.SignTransaction
@@ -47,6 +51,7 @@ class TonConnectSendRequestViewModel(
     private val hardwarePublicKeyStorage: IHardwarePublicKeyStorage,
     private val offlineOperationGate: OfflineOperationGate,
     private val coinManager: ICoinManager,
+    private val nftItemStorage: NftItemStorage,
 ) : ViewModelUiState<TonConnectSendRequestUiState>() {
 
     private val sendRequestEntity = signTransaction.request
@@ -54,6 +59,8 @@ class TonConnectSendRequestViewModel(
     private val logger = Logger.withTag("TonConnectSendRequestViewModel")
     private val transactionSigner = tonConnectManager.transactionSigner
     private var tonTransactionRecord: TonTransactionRecord? = null
+    private var riskValues: List<TransactionValue> = emptyList()
+    private var requestMessages: List<TonConnectRequestMessage> = emptyList()
 
     private var tonWallet: TonWallet.FullAccess? = null
     private var tonKitWrapper: TonKitWrapper? = null
@@ -67,6 +74,8 @@ class TonConnectSendRequestViewModel(
 
     override fun createState() = TonConnectSendRequestUiState(
         tonTransactionRecord = tonTransactionRecord,
+        riskValues = riskValues,
+        requestMessages = requestMessages,
         error = error,
         // The record is set last: a state taken mid-preparation must not offer Confirm before the details show.
         confirmEnabled = tonTransactionRecord != null && error == null && !deadlinePassed && requestScopeOpen(),
@@ -225,10 +234,8 @@ class TonConnectSendRequestViewModel(
             }
         }
 
-        val tonEvent = try {
-            val event = transactionSigner.getDetails(sendRequestEntity, tonWallet)
-            tonEvent = event
-            event
+        val details = try {
+            transactionSigner.getDetails(sendRequestEntity, tonWallet).also { tonEvent = it.event }
         } catch (e: Exception) {
             error = TonConnectSendRequestError.InvalidData("Failed to get details")
             responseBadRequest(sendRequestEntity)
@@ -248,7 +255,23 @@ class TonConnectSendRequestViewModel(
             transactionSource
         )
 
-        tonTransactionRecord = tonTransactionConverter?.createTransactionRecord(tonEvent)
+        tonTransactionConverter ?: return
+        val nftItems = nftItems(account.id, details.risk.nfts)
+        val preview = tonTransactionConverter.requestPreview(details, sendRequestEntity.messages, nftItems)
+        riskValues = preview.riskValues
+        requestMessages = preview.requestMessages
+        tonTransactionRecord = preview.record
+    }
+
+    /** Names and images only decorate the rows: a failed lookup must not block the request. */
+    private suspend fun nftItems(accountId: String, nfts: List<Address>): Map<String, NftItemRecord> = try {
+        nftItemStorage.items(accountId, nfts.map { it.toUserFriendly(bounceable = true) })
+            .associateBy { it.address }
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        logger.w(e) { "NFT lookup failed" }
+        emptyMap()
     }
 
     /**
@@ -377,10 +400,21 @@ sealed class TonConnectSendRequestError : Error() {
     }
 }
 
+data class TonConnectRequestMessage(val address: String, val value: TransactionValue)
+
+/** [riskValues]: jettons and NFTs the emulation takes from the wallet that no recognized action shows. */
+data class TonConnectRequestPreview(
+    val record: TonTransactionRecord,
+    val requestMessages: List<TonConnectRequestMessage>,
+    val riskValues: List<TransactionValue>,
+)
+
 data class TonConnectSendRequestUiState(
     val tonTransactionRecord: TonTransactionRecord?,
     val error: TonConnectSendRequestError?,
     val confirmEnabled: Boolean,
     val rejectEnabled: Boolean,
-    val success: Boolean = false
+    val success: Boolean = false,
+    val riskValues: List<TransactionValue> = emptyList(),
+    val requestMessages: List<TonConnectRequestMessage> = emptyList(),
 )

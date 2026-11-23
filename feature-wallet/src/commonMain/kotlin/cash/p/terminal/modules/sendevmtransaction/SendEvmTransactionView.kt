@@ -49,6 +49,11 @@ import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.CoinPlatforms_Native
 import cash.p.terminal.resources.Hud_Text_Copied
 import cash.p.terminal.resources.Send_Confirmation_Nonce
+import cash.p.terminal.resources.ic_attention_20
+import cash.p.terminal.ui_compose.components.TextImportantError
+import cash.p.terminal.ui_compose.components.TextImportantWarning
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation3.runtime.NavBackStack
 
 @Composable
 fun SendEvmTransactionView(
@@ -116,7 +121,15 @@ private fun NonceView(nonceViewModel: SendEvmNonceViewModel) {
 
 @Composable
 fun SectionView(viewItems: List<ViewItem>, navigation: HSNavigation) {
-    CellUniversalLawrenceSection(viewItems) { item ->
+    val (alerts, rows) = viewItems.partition { it is ViewItem.Alert }
+    alerts.forEachIndexed { index, alert ->
+        if (index > 0) VSpacer(12.dp)
+        AlertView(alert as ViewItem.Alert)
+    }
+    if (rows.isEmpty()) return
+    if (alerts.isNotEmpty()) VSpacer(12.dp)
+
+    CellUniversalLawrenceSection(rows) { item ->
         when (item) {
             is ViewItem.Subhead -> Subhead(item)
             is ViewItem.Value -> TitleValue(item)
@@ -145,6 +158,35 @@ fun SectionView(viewItems: List<ViewItem>, navigation: HSNavigation) {
             is ViewItem.Fee -> DataFieldFee(
                 item.networkFee.primary.getFormattedPlain() ?: "---",
                 item.networkFee.secondary?.getFormattedPlain() ?: "---"
+            )
+            is ViewItem.Alert -> Unit // drawn above the card
+        }
+    }
+}
+
+@Composable
+private fun AlertView(item: ViewItem.Alert) {
+    val modifier = Modifier.padding(horizontal = 16.dp)
+    if (item.critical) {
+        TextImportantError(modifier = modifier, text = item.text, title = item.title, icon = Res.drawable.ic_attention_20)
+    } else {
+        TextImportantWarning(modifier = modifier, text = item.text, title = item.title, icon = Res.drawable.ic_attention_20)
+    }
+}
+
+@Preview
+@Composable
+private fun SectionViewAlertsPreview() {
+    ComposeAppTheme {
+        Column {
+            SectionView(
+                viewItems = listOf(
+                    ViewItem.Alert("Account closure", "This request closes your Stellar account.", critical = true),
+                    ViewItem.Alert("Unreadable operation", "This request contains an operation (ManageData).", critical = false),
+                    ViewItem.Value("Operation Type", "Payment", ValueType.Regular),
+                    ViewItem.Value("Amount", "12.5 XLM", ValueType.Outgoing),
+                ),
+                navigation = HSNavigation(NavBackStack()),
             )
         }
     }

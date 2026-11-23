@@ -7,11 +7,13 @@ import cash.p.terminal.trezorkit.client.TrezorBtcSignResult
 import cash.p.terminal.trezorkit.client.TrezorBtcSignTx
 import cash.p.terminal.trezorkit.client.TrezorClientSession
 import cash.p.terminal.trezorkit.client.TrezorInputScriptType
+import cash.p.terminal.trezorkit.client.TrezorMessageSignature
 import cash.p.terminal.trezorkit.client.TrezorOutputScriptType
 import cash.p.terminal.trezorkit.client.TrezorPrevTx
 import io.horizontalsystems.bitcoincore.extensions.toHexString
 import io.horizontalsystems.bitcoincore.extensions.toReversedHex
 import io.horizontalsystems.bitcoincore.io.BitcoinOutput
+import io.horizontalsystems.bitcoincore.messages.MessageSignError
 import io.horizontalsystems.bitcoincore.models.Address
 import io.horizontalsystems.bitcoincore.models.PublicKey
 import io.horizontalsystems.bitcoincore.models.Transaction
@@ -23,6 +25,7 @@ import io.horizontalsystems.bitcoincore.storage.InputToSign
 import io.horizontalsystems.bitcoincore.transactions.builder.MutableTransaction
 import io.horizontalsystems.bitcoincore.transactions.scripts.OP_RETURN
 import io.horizontalsystems.bitcoincore.transactions.scripts.ScriptType
+import io.horizontalsystems.hdwalletkit.ECKey
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -30,9 +33,11 @@ import io.mockk.slot
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.util.Base64
 
 class TrezorBtcSignerTest {
 
@@ -347,6 +352,45 @@ class TrezorBtcSignerTest {
             TransactionOutput(value = value, index = 0, script = byteArrayOf(), type = scriptType)
         return InputToSign(txInput, prevOutput, publicKey(external, index))
     }
+
+    @Test
+    fun signStandardMessage_deviceSignsWithRequestedKey_sendsPathAndScriptTypeAndReturnsHeader() = runBlocking {
+        val message = " Ich bestätige\n"
+        val messageSlot = slot<ByteArray>()
+        val pathSlot = slot<List<Int>>()
+        val trezorSignature = Base64.getDecoder().decode(messageKey.signMessage(message))
+        coEvery {
+            session.signBitcoinMessage(
+                any(),
+                capture(pathSlot),
+                capture(messageSlot),
+                TrezorInputScriptType.SPENDWITNESS,
+            )
+        } returns TrezorMessageSignature(trezorSignature, "bc1q")
+
+        val signature = signer().signStandardMessage(messageKeyPublicKey(), ScriptType.P2WPKH, message)
+
+        assertEquals(listOf(hardened(84), hardened(0), hardened(0), 1, 7), pathSlot.captured)
+        assertArrayEquals(message.encodeToByteArray(), messageSlot.captured)
+        assertTrue((signature[0].toInt() and 0xFF) in 39..42)
+        assertArrayEquals(trezorSignature.copyOfRange(1, 65), signature.copyOfRange(1, 65))
+    }
+
+    @Test
+    fun signStandardMessage_deviceSignsWithOtherKey_throwsSignatureMismatch() = runBlocking {
+        val otherKey = ECKey.fromPrivate(ByteArray(32) { 2 })
+        coEvery { session.signBitcoinMessage(any(), any(), any(), any()) } returns
+            TrezorMessageSignature(Base64.getDecoder().decode(otherKey.signMessage("hello")), "bc1q")
+
+        assertThrows(MessageSignError.SignatureMismatch::class.java) {
+            runBlocking { signer().signStandardMessage(messageKeyPublicKey(), ScriptType.P2WPKH, "hello") }
+        }
+        Unit
+    }
+
+    private val messageKey = ECKey.fromPrivate(ByteArray(32) { 1 })
+
+    private fun messageKeyPublicKey() = publicKey(external = false, index = 7).apply { publicKey = messageKey.pubKey }
 
     private fun publicKey(external: Boolean, index: Int) = PublicKey().apply {
         this.external = external

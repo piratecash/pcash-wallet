@@ -16,13 +16,13 @@ import androidx.glance.GlanceModifier
 import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.action.ActionParameters
-import androidx.glance.action.actionParametersOf
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.CircularProgressIndicator
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
+import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.lazy.LazyColumn
 import androidx.glance.appwidget.lazy.items
@@ -50,6 +50,7 @@ import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import cash.p.terminal.R
 import cash.p.terminal.core.App
+import cash.p.terminal.modules.main.MainActivity
 import io.horizontalsystems.core.entities.Value
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
@@ -146,10 +147,15 @@ class MarketWidget : GlanceAppWidget() {
                                             R.drawable.widget_list_item_background,
                                             AppWidgetTheme.colors.borderDivider
                                         )
+                                        // Only start-activity actions work in a list: the others need the
+                                        // Glance trampolines removed in AndroidManifest.xml.
                                         .clickable(
-                                            actionRunCallback<OpenDeepLinkAction>(
-                                                actionParametersOf(
-                                                    OpenDeepLinkAction.uriKey to deeplinkUri.toString()
+                                            actionStartActivity(
+                                                Intent(
+                                                    Intent.ACTION_VIEW,
+                                                    deeplinkUri,
+                                                    context,
+                                                    MainActivity::class.java
                                                 )
                                             )
                                         )
@@ -349,24 +355,5 @@ class UpdateMarketAction : ActionCallback {
         parameters: ActionParameters
     ) {
         MarketWidgetWorker.enqueueRefresh(context, glanceId)
-    }
-}
-
-class OpenDeepLinkAction : ActionCallback {
-    companion object {
-        val uriKey = ActionParameters.Key<String>("deeplink_uri")
-    }
-
-    override suspend fun onAction(
-        context: Context,
-        glanceId: GlanceId,
-        parameters: ActionParameters
-    ) {
-        val uri = parameters[uriKey] ?: return
-        val intent = Intent(Intent.ACTION_VIEW, uri.toUri()).apply {
-            setPackage(context.packageName)
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        }
-        context.startActivity(intent)
     }
 }
