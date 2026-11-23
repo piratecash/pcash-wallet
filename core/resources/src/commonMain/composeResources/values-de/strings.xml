@@ -2007,6 +2007,8 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="accruals">Accruals</string>
     <string name="payouts">Payouts</string>
     <string name="how_my_income_grows">Wie mein Einkommen wächst</string>
+    <string name="staking_chart_mode_both">Beide</string>
+    <string name="staking_chart_no_fiat_estimate">Keine Schätzung in %1$s</string>
     <string name="payouts_history">Payouts History</string>
     <string name="pos_calculator">POS Calculator</string>
     <string name="pos_calculator_pirate_description">Calculation of profitability mining PirateCash staking in the pool.</string>

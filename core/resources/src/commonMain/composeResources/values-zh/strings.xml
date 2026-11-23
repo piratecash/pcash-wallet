@@ -2002,6 +2002,8 @@
     <string name="accruals">Accruals</string>
     <string name="payouts">Payouts</string>
     <string name="how_my_income_grows">我的收入如何增长</string>
+    <string name="staking_chart_mode_both">两者</string>
+    <string name="staking_chart_no_fiat_estimate">无 %1$s 估值</string>
     <string name="payouts_history">Payouts History</string>
     <string name="pos_calculator">POS Calculator</string>
     <string name="pos_calculator_pirate_description">Calculation of profitability mining PirateCash staking in the pool.</string>

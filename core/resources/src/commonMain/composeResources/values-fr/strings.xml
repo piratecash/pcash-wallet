@@ -2013,6 +2013,8 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="accruals">Accruals</string>
     <string name="payouts">Payouts</string>
     <string name="how_my_income_grows">Comment mes revenus augmentent</string>
+    <string name="staking_chart_mode_both">Les deux</string>
+    <string name="staking_chart_no_fiat_estimate">Pas d’estimation en %1$s</string>
     <string name="payouts_history">Payouts History</string>
     <string name="pos_calculator">POS Calculator</string>
     <string name="pos_calculator_pirate_description">Calculation of profitability mining PirateCash staking in the pool.</string>

@@ -4,9 +4,11 @@ import android.content.res.Configuration
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import cash.p.terminal.featureStacking.ui.StakingChartDisplayMode
 import cash.p.terminal.featureStacking.ui.entities.PayoutViewItem
 import cash.p.terminal.network.pirate.domain.enity.PayoutType
 import cash.p.terminal.premium.domain.usecase.PremiumType
+import cash.p.terminal.ui_compose.components.TabItem
 import cash.p.terminal.ui_compose.entities.SectionItemPosition
 import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
@@ -66,6 +68,12 @@ private fun PirateCoinScreenContentPreview() {
                 )
             },
             onSelectChartInterval = {},
+            displayModeTabs = listOf(
+                TabItem("PIRATE", true, StakingChartDisplayMode.COINS),
+                TabItem("USD", false, StakingChartDisplayMode.FIAT),
+                TabItem("Both", false, StakingChartDisplayMode.BOTH),
+            ),
+            onSelectDisplayMode = {},
             onCalculatorClicked = {},
             onToggleBalanceVisibility = {}
         )
