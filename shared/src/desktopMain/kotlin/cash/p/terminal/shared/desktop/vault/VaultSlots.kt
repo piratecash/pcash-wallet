@@ -88,13 +88,13 @@ internal class VaultSlots(
         }
     }
 
-    private companion object {
-        const val LOCK_SUFFIX = ".lck"
-        val TRANSIENT_SUFFIXES = listOf("-wal", "-shm", "-journal")
-        const val PAGE_SIZE = 4096
+    internal companion object {
+        private const val LOCK_SUFFIX = ".lck"
+        private val TRANSIENT_SUFFIXES = listOf("-wal", "-shm", "-journal")
+        private const val PAGE_SIZE = 4096
         const val MIN_PAGES = 8
         const val MAX_PAGES = 4096
-        val OWNER_FILE: Set<PosixFilePermission> = PosixFilePermissions.fromString("rw-------")
-        val OWNER_DIRECTORY: Set<PosixFilePermission> = PosixFilePermissions.fromString("rwx------")
+        private val OWNER_FILE: Set<PosixFilePermission> = PosixFilePermissions.fromString("rw-------")
+        private val OWNER_DIRECTORY: Set<PosixFilePermission> = PosixFilePermissions.fromString("rwx------")
     }
 }

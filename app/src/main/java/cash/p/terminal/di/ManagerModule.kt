@@ -134,6 +134,8 @@ import cash.p.terminal.core.managers.AndroidStellarKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.SystemInfoManager
 import cash.p.terminal.core.managers.TonConnectDatabaseKeyProvider
 import cash.p.terminal.core.managers.TonConnectManager
+import cash.p.terminal.core.managers.TonConnectStorage
+import cash.p.terminal.core.managers.AndroidTonConnectStorage
 import cash.p.terminal.core.managers.TonKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.AndroidTonKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.TorManager
@@ -387,6 +389,7 @@ val managerModule = module {
     singleOf(::AndroidStellarKitDatabaseKeyProvider) bind StellarKitDatabaseKeyProvider::class
     singleOf(::AndroidTonKitDatabaseKeyProvider) bind TonKitDatabaseKeyProvider::class
     singleOf(::TonConnectDatabaseKeyProvider)
+    singleOf(::AndroidTonConnectStorage) bind TonConnectStorage::class
     single { MarketApiConfig(AppConfigProvider.marketApiBaseUrl, MarketApiConfig.API_KEY) }
     factoryOf(::RemoveMoneroWalletFilesUseCase) bind IRemoveMoneroWalletFilesUseCase::class
     singleOf(::GetTonAddressUseCaseImpl) bind GetTonAddressUseCase::class
@@ -413,7 +416,7 @@ val managerModule = module {
     single {
         WCManager(accountManager = get(), dispatcherProvider = get()).also {
             it.addWcHandler(WCHandlerEvm(get(), get()))
-            it.addWcHandler(WCHandlerStellar(get()))
+            it.addWcHandler(WCHandlerStellar(get(), get()))
         }
     }
     singleOf(::WCSessionManager)
@@ -498,11 +501,10 @@ val managerModule = module {
     } bind BeamKitDatabaseKeyProvider::class
     single {
         TonConnectManager(
-            context = get(),
             adapterFactory = get(),
             appName = "P.cash Wallet",
             appVersion = AppConfigProvider.appVersion,
-            databaseKeyProvider = get(),
+            storage = get(),
             accountManager = get(),
             router = get(),
             dispatcherProvider = get(),

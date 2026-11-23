@@ -64,9 +64,9 @@ class VaultFilesShapeTest {
         }
 
         assertTrue(sizes.all { (_, size) -> size > 0 && size % PAGE_SIZE == 0L }, "$sizes")
-        val realMax = sizes.filter { it.first == rootSlot }.maxOf { it.second }
-        val freeMin = sizes.filter { it.first != rootSlot }.minOf { it.second }
-        assertTrue(freeMin <= realMax, "free slots all larger than a real one: $sizes")
+        // The real slot must be a size the noise of a free slot can take, or its size alone marks it as real.
+        val realPages = sizes.filter { it.first == rootSlot }.maxOf { it.second } / PAGE_SIZE
+        assertTrue(realPages in VaultSlots.MIN_PAGES..VaultSlots.MAX_PAGES, "real slot of $realPages pages: $sizes")
     }
 
     @Test

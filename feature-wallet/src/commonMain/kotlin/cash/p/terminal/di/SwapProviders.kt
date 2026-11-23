@@ -107,7 +107,8 @@ val swapProvidersModule = module {
         SwapSelectCoinViewModel(
             otherSelectedToken = otherSelectedToken,
             activeAccount = activeAccount,
-            dispatcherProvider = get()
+            dispatcherProvider = get(),
+            balanceHiddenManager = get(),
         )
     }
 }
