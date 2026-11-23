@@ -8,7 +8,6 @@ import com.reown.walletkit.client.WalletKit
 import io.horizontalsystems.core.IPinComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 
 class AndroidBalancePlatformActions(
     private val tonConnectManager: TonConnectManager,
@@ -34,10 +33,7 @@ class AndroidBalancePlatformActions(
             true
         }
 
-        text.startsWith("tc://") -> {
-            scope.launch { tonConnectManager.handle(text, false) }
-            true
-        }
+        tonConnectManager.openConnectionLink(text, scope) -> true
 
         else -> false
     }

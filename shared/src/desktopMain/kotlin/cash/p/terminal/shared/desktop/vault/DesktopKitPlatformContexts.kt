@@ -18,6 +18,9 @@ class DesktopKitPlatformContexts(
 ) : KitPlatformContexts, KitStorageNaming by DesktopKitStorageNaming(files, vault) {
     override fun ethereum(accountId: String) = EthereumPlatformContext(kitDirectory(accountId, "ethereum"))
     override fun ton(accountId: String) = TonPlatformContext(kitDirectory(accountId, "ton"))
+
+    /** Its own directory: a decoy directory holds one SQLCipher namespace lock, and TON Connect has its own. */
+    fun tonConnect(accountId: String) = TonPlatformContext(kitDirectory(accountId, "ton-connect"))
     override fun tron(accountId: String) = TronPlatformContext(kitDirectory(accountId, "tron"))
     override fun solana(accountId: String) = SolanaPlatformContext(kitDirectory(accountId, "solana"))
     override fun stellar(accountId: String) = StellarPlatformContext(kitDirectory(accountId, "stellar"))

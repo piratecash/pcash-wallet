@@ -18,6 +18,9 @@ import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.WalletFactory
 import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenType
+import co.touchlab.kermit.LogWriter
+import co.touchlab.kermit.Logger
+import co.touchlab.kermit.Severity
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.ethereumkit.core.signer.Signer
@@ -27,15 +30,17 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import java.io.File
+import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.io.path.createTempDirectory
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.test.fail
+import kotlin.time.TimeSource
 
 /** The desktop wallet services over the real graph; the EVM network stays paused, so no kit goes online. */
 class DesktopWalletAdaptersTest {
@@ -45,8 +50,18 @@ class DesktopWalletAdaptersTest {
     private val adapterManager: IAdapterManager get() = graph.koin.get()
     private val ethereumKits: File get() = File(graph.koin.get<DesktopVaultFiles>().kitsDirectory, "ethereum")
 
+    private val previousLogWriters = Logger.config.logWriterList
+    private val errors = CopyOnWriteArrayList<String>().also { errors ->
+        Logger.setLogWriters(previousLogWriters + object : LogWriter() {
+            override fun log(severity: Severity, message: String, tag: String, throwable: Throwable?) {
+                if (severity >= Severity.Error) errors += "$tag: $message $throwable"
+            }
+        })
+    }
+
     @AfterTest
     fun tearDown() = runBlocking<Unit> {
+        Logger.setLogWriters(previousLogWriters)
         graph.stop()
         graph.dataDirectory.deleteRecursively()
     }
@@ -59,7 +74,7 @@ class DesktopWalletAdaptersTest {
 
         graph.activeWallets.value = listOf(ethereum, bitcoin)
 
-        assertNotNull(adapterManager.awaitAdapterForWallet<IBalanceAdapter>(ethereum, ADAPTER_TIMEOUT_MS))
+        awaitAdapter(ethereum)
         assertNull(adapterManager.getAdapterForWallet<IAdapter>(bitcoin))
     }
 
@@ -68,7 +83,7 @@ class DesktopWalletAdaptersTest {
         val account = createWithOfflineEthereumAccount()
         val ethereum = wallet(ETHEREUM, account)
         graph.activeWallets.value = listOf(ethereum)
-        adapterManager.awaitAdapterForWallet<IBalanceAdapter>(ethereum, ADAPTER_TIMEOUT_MS)
+        awaitAdapter(ethereum)
 
         val address = adapterManager.getReceiveAdapterForWallet(ethereum)?.receiveAddress
 
@@ -82,7 +97,7 @@ class DesktopWalletAdaptersTest {
         val account = createWithOfflineEthereumAccount()
         val ethereum = wallet(ETHEREUM, account)
         graph.activeWallets.value = listOf(ethereum)
-        assertNotNull(adapterManager.awaitAdapterForWallet<IBalanceAdapter>(ethereum, ADAPTER_TIMEOUT_MS))
+        awaitAdapter(ethereum)
         val files = graph.koin.get<DesktopVaultFiles>()
         graph.checkPremiumUseCase.stopWarmUp()
 
@@ -108,8 +123,8 @@ class DesktopWalletAdaptersTest {
         val ethereum = wallet(ETHEREUM, account)
         val otherEthereum = wallet(ETHEREUM, other)
         graph.activeWallets.value = listOf(ethereum, otherEthereum)
-        assertNotNull(adapterManager.awaitAdapterForWallet<IBalanceAdapter>(ethereum, ADAPTER_TIMEOUT_MS))
-        assertNotNull(adapterManager.awaitAdapterForWallet<IBalanceAdapter>(otherEthereum, ADAPTER_TIMEOUT_MS))
+        awaitAdapter(ethereum)
+        awaitAdapter(otherEthereum)
         val directory = accountDirectory(account)
         val otherDirectory = accountDirectory(other)
         val otherFiles = otherDirectory.walkTopDown().filter(File::isFile).toList()
@@ -125,6 +140,17 @@ class DesktopWalletAdaptersTest {
         assertFalse(directory.exists(), "the directory of the deleted account stayed")
         assertTrue(otherFiles.all(File::exists), "files of another account: ${otherFiles.filterNot(File::exists)}")
         assertContentEquals(otherKey, graph.vault.openSession()?.kitKey(other.id, "evm")?.bytes)
+    }
+
+    /** A CI timeout here was never reproduced locally: the message records the state it timed out in. */
+    private suspend fun awaitAdapter(wallet: Wallet): IBalanceAdapter {
+        val started = TimeSource.Monotonic.markNow()
+        return adapterManager.awaitAdapterForWallet<IBalanceAdapter>(wallet, ADAPTER_TIMEOUT_MS) ?: fail(
+            "no adapter for ${wallet.token.coin.code} after ${started.elapsedNow()}; " +
+                "initializing=${adapterManager.initializationInProgressFlow.value}, " +
+                "now=${adapterManager.getAdapterForWallet<IAdapter>(wallet)}, " +
+                "errors=$errors"
+        )
     }
 
     /** Offline before any adapter exists, so the EVM kit never starts its sync. */

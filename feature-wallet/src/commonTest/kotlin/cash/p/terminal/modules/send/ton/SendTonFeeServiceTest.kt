@@ -68,6 +68,20 @@ class SendTonFeeServiceTest {
         coVerify(exactly = 0) { adapter.estimateFee(any(), any(), any()) }
     }
 
+    @Test
+    fun estimateFee_nftNotTransferred_quoteCarriesFlag() = runBlocking {
+        coEvery { adapter.estimateNftTransferFee(NFT, address, null) } returns estimate.copy(nftNotTransferred = true)
+
+        SendTonFeeService(NftTransferFeeEstimator(adapter, NFT)).use { nftService ->
+            nftService.setTonAddress(address)
+            nftService.setAmount(ATTACHED)
+
+            val state = awaitState(nftService) { it.feeStatus is FeeStatus.Success && !it.inProgress }
+
+            assertEquals(true, state.quote?.nftNotTransferred)
+        }
+    }
+
     private suspend fun awaitState(
         target: SendTonFeeService = service,
         predicate: (SendTonFeeService.State) -> Boolean,

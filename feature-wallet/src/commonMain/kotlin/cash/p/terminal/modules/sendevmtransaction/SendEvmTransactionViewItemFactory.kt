@@ -505,6 +505,7 @@ sealed class ViewItem {
     class TokenItem(val token: Token) : ViewItem()
     class ContactItem(val contact: Contact) : ViewItem()
     class Fee(val networkFee: SendModule.AmountData) : ViewItem()
+    class Alert(val title: String, val text: String, val critical: Boolean) : ViewItem()
 }
 
 data class AmountValues(val coinAmount: String, val fiatAmount: String?)

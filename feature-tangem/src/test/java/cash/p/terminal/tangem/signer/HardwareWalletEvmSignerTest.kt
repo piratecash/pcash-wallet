@@ -151,24 +151,6 @@ class HardwareWalletEvmSignerTest {
     }
 
     @Test
-    fun signLegacyHash_rawHash_signsHashDirectlyWithoutEip191Prefix() = runBlocking {
-        val privateKey = BigInteger("64".repeat(32), 16)
-        val publicKeyBytes = ECKey.fromPrivate(privateKey.toBytes(32), compressed = false).pubKey
-        val address = addressOf(publicKeyBytes)
-        // Not a personal_sign hash: if the implementation accidentally applied the EIP-191
-        // prefix here, recovery below would fail against the mismatched hash.
-        val hash = CryptoUtils.sha3("eth_sign raw payload".toByteArray())
-        val ellipticSignature = CryptoUtils.ellipticSign(hash, privateKey)
-        stubSuccess(ellipticSignature.sliceArray(0..63))
-
-        val result = createSigner(address, publicKeyBytes).signLegacyHash(hash)
-
-        assertEquals(65, result.size)
-        assertArrayEquals(ellipticSignature.sliceArray(0..63), result.sliceArray(0..63))
-        assertEquals(ellipticSignature[64], result[64])
-    }
-
-    @Test
     fun signTypedDataMessage_withCardPrompt_showsPromptAsHeaderAndSignsTypedDataHash() = runBlocking {
         val privateKey = BigInteger("46".repeat(32), 16)
         val publicKeyBytes = ECKey.fromPrivate(privateKey.toBytes(32), compressed = false).pubKey

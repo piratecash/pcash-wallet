@@ -24,6 +24,7 @@ class WCActionStellarSignAndSubmitXdr(
     private val paramsJsonStr: String,
     private val peerName: String,
     private val stellarKit: StellarKit,
+    private val walletAddress: String?,
 ) : AbstractWCAction() {
 
     private val gson = GsonBuilder().create()
@@ -67,7 +68,7 @@ class WCActionStellarSignAndSubmitXdr(
     override fun createState(): WCActionState {
         val transaction = stellarKit.getTransaction(xdr)
 
-        var sectionViewItems = WCStellarHelper.getTransactionViewItems(transaction, xdr, peerName)
+        var sectionViewItems = WCStellarHelper.getTransactionViewItems(transaction, xdr, peerName, walletAddress)
         sendTransactionState.networkFee?.let { networkFee ->
             sectionViewItems += SectionViewItem(
                 listOf(ViewItem.Fee(networkFee))

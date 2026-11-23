@@ -33,6 +33,7 @@ import cash.p.terminal.core.managers.SolanaKitManager
 import cash.p.terminal.core.managers.StellarKitManager
 import cash.p.terminal.core.managers.ThorchainKitManagers
 import cash.p.terminal.core.managers.TonKitManager
+import cash.p.terminal.core.managers.TonConnectManager
 import cash.p.terminal.core.managers.TransactionAdapterManager
 import cash.p.terminal.core.managers.TronKitManager
 import cash.p.terminal.core.managers.UserDeletedWalletManager
@@ -387,6 +388,8 @@ import cash.p.terminal.modules.send.address.EnterAddressValidator
 import cash.p.terminal.core.address.AddressCheckManager
 import cash.p.terminal.modules.sendevmtransaction.SendEvmTransactionViewItemFactory
 import cash.p.terminal.modules.address.AddressViewModel as SendAddressViewModel
+import cash.p.terminal.modules.tonconnect.TonConnectSendRequestViewModel
+import io.horizontalsystems.tonkit.models.SignTransaction
 
 class DesktopKoinGraphTest {
 
@@ -423,6 +426,7 @@ class DesktopKoinGraphTest {
                 definition<EvmNetworkViewModel>(Blockchain::class),
                 definition<AddRpcViewModel>(Blockchain::class),
                 definition<SwapSelectCoinViewModel>(Token::class, Account::class),
+                definition<TonConnectSendRequestViewModel>(SignTransaction::class),
                 *marketInjections(),
                 *coinPageInjections(),
                 *walletPageInjections(),
@@ -719,7 +723,6 @@ class DesktopKoinGraphTest {
             MoneroHardwareGateway::class,
             TrezorAttachments::class,
             AddressLabelManager::class,
-            BalancePlatformActions::class,
             ChartIndicatorManager::class,
             CoinManager::class,
             CryptoCompareProvider::class,
@@ -759,6 +762,8 @@ class DesktopKoinGraphTest {
 
         val lookedUpAfterTheFirstUnlock = listOf(
             CheckPremiumUseCase::class,
+            BalancePlatformActions::class,
+            TonConnectManager::class,
             IAdapterManager::class,
             TransactionAdapterManager::class,
             WalletServicesStarter::class,

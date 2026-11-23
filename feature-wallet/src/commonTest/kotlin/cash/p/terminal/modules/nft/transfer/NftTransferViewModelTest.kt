@@ -26,6 +26,8 @@ import cash.p.terminal.modules.send.ton.TonFeeQuote
 import cash.p.terminal.modules.xrate.XRateService
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.insufficient_balance_required_available
+import cash.p.terminal.resources.nft_trap_transfer_body
+import cash.p.terminal.resources.nft_trap_transfer_title
 import cash.p.terminal.resources.not_enough_ton_for_fee
 import cash.p.terminal.resources.swap_insufficient_fee_balance
 import cash.p.terminal.strings.helpers.TranslatableString
@@ -566,6 +568,27 @@ class NftTransferViewModelTest {
         assertEquals(recipient.hex, data?.address?.hex)
     }
 
+    @Test
+    fun confirmationData_trapQuote_carriesTrapCautionAndKeepsSendAllowed() = runTest(dispatcher) {
+        val viewModel = readyViewModel()
+        publishQuote(nftNotTransferred = true)
+        advanceUntilIdle()
+
+        val caution = viewModel.confirmationData()?.trapCaution
+
+        assertEquals(Res.string.nft_trap_transfer_title, (caution?.s as TranslatableString.ResString).id)
+        assertEquals(Res.string.nft_trap_transfer_body, (caution.description as TranslatableString.ResString).id)
+        assertTrue(viewModel.canContinue)
+    }
+
+    @Test
+    fun confirmationData_regularQuote_noTrapCaution() = runTest(dispatcher) {
+        val viewModel = readyViewModel()
+
+        assertNull(viewModel.confirmationData()?.trapCaution)
+        assertNotNull(viewModel.confirmationData())
+    }
+
     private fun TestScope.readyViewModel(
         entered: Address = recipient,
         quoted: FriendlyAddress = tonAddress,
@@ -620,11 +643,15 @@ class NftTransferViewModelTest {
         assertTrue(viewModel.canContinue)
     }
 
-    private fun publishQuote(memo: String? = null, address: FriendlyAddress = tonAddress) {
+    private fun publishQuote(
+        memo: String? = null,
+        address: FriendlyAddress = tonAddress,
+        nftNotTransferred: Boolean = false,
+    ) {
         feeFlow.value = SendTonFeeService.State(
             feeStatus = FeeStatus.Success(BigDecimal("0.01"), BigDecimal("0.06")),
             inProgress = false,
-            quote = TonFeeQuote(BigDecimal("0.01"), NFT_TRANSFER_ATTACHED, address, memo),
+            quote = TonFeeQuote(BigDecimal("0.01"), NFT_TRANSFER_ATTACHED, address, memo, nftNotTransferred),
         )
     }
 
