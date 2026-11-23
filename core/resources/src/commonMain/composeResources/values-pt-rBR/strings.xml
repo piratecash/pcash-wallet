@@ -588,6 +588,8 @@
     <string name="TonConnect_NewConnect">Nova conexão</string>
     <string name="TonConnect_Error_InvalidUrl">Endereço URL inválido</string>
     <string name="ton_connect_request_expired">O tempo para confirmar expirou. Repita a operação no site.</string>
+    <string name="ton_connect_unknown_action_warning">O app não conseguiu reconhecer esta ação. Confira os valores e os endereços abaixo antes de confirmar.</string>
+    <string name="ton_connect_action_unknown">Desconhecida</string>
     <string name="TonConnect_Unnamed">Sem nome</string>
     <string name="TonConnect_Wallet">Carteira</string>
     <string name="TonConnect_ChooseWallet">Escolher carteira</string>
@@ -2047,6 +2049,8 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="accruals">Accruals</string>
     <string name="payouts">Payouts</string>
     <string name="how_my_income_grows">Como minha renda cresce</string>
+    <string name="staking_chart_mode_both">Ambos</string>
+    <string name="staking_chart_no_fiat_estimate">Sem estimativa em %1$s</string>
     <string name="payouts_history">Payouts History</string>
     <string name="pos_calculator">POS Calculator</string>
     <string name="pos_calculator_pirate_description">Calculation of profitability mining PirateCash staking in the pool.</string>
@@ -2597,6 +2601,7 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="nft_burn_body">%1$s será enviado para o endereço de queima e sumirá da carteira para sempre. Isso não pode ser desfeito.</string>
     <string name="nft_burn_domain_body">O domínio será enviado para o endereço de queima e você o perderá. As transferências para %1$s deixarão de chegar à sua carteira. Isso não pode ser desfeito.</string>
     <string name="nft_burn_address">Endereço de queima</string>
+    <string name="nft_address">Endereço do NFT</string>
     <string name="nft_burn_confirm">Queimar</string>
     <string name="nft_trap_transfer_title">A transferência do NFT não vai acontecer</string>
     <string name="nft_trap_transfer_body">Verificamos a transação antes do envio. O contrato deste NFT não vai entregá-lo ao destinatário e vai ficar com os %1$s anexados. É assim que funcionam os NFTs de spam.</string>
@@ -2675,6 +2680,26 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="desktop_password_save_failed">Não foi possível salvar a senha. Tente novamente</string>
     <string name="tron_controlled_by_others_title">Outras pessoas podem controlar esta conta</string>
     <string name="tron_controlled_by_others_warning">As permissões desta conta foram alteradas: outras chaves podem controlá-la. Os fundos que você enviar para ela podem ser sacados sem a sua participação. Deposite nela apenas se você souber de quem são essas chaves.</string>
+    <string name="sign_message_title">Assinar mensagem</string>
+    <string name="sign_message_intro">A assinatura prova que o endereço pertence a você. As corretoras pedem isso quando você adiciona um endereço de saque. Ela não dá acesso aos seus fundos.</string>
+    <string name="sign_message_message">Mensagem</string>
+    <string name="sign_message_hint">Cole ou escaneie o texto do site da corretora</string>
+    <string name="sign_message_format">Formato da assinatura</string>
+    <string name="sign_message_format_standard">Padrão</string>
+    <string name="sign_message_format_standard_description">Aceito pela maioria das corretoras</string>
+    <string name="sign_message_format_bip322_description">Novo padrão, também funciona para Taproot</string>
+    <string name="sign_message_format_info">Padrão é a mensagem assinada clássica do Bitcoin, aceita por quase todas as corretoras e carteiras. BIP-322 é um formato mais novo que também suporta endereços Taproot. Escolha o que a corretora pedir.</string>
+    <string name="sign_message_taproot_only">Para endereços Taproot, só o BIP-322 está disponível.</string>
+    <string name="sign_message_trezor_taproot">A Trezor não assina mensagens para endereços Taproot. Use um endereço Bitcoin de outro tipo, por exemplo Native SegWit.</string>
+    <string name="sign_message_select_address_hint">Escolha o endereço que você informou à corretora.</string>
+    <string name="sign_message_current_receive_address">Endereço de recebimento atual</string>
+    <string name="sign_message_used">Usados</string>
+    <string name="sign_message_signature">Assinatura</string>
+    <string name="sign_message_result_intro">Copie a assinatura e cole no site da corretora.</string>
+    <string name="sign_message_details">Detalhes</string>
+    <string name="sign_message_details_format">Formato</string>
+    <string name="sign_message_not_ready">A carteira ainda está carregando. Tente novamente em alguns segundos.</string>
+    <string name="sign_message_failed">Não foi possível assinar a mensagem</string>
 
     <!-- WalletConnect Stellar -->
     <string name="wallet_connect_stellar_op_payment">Pagamento</string>

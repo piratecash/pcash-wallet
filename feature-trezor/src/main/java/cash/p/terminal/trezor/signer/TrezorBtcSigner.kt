@@ -17,6 +17,8 @@ import io.horizontalsystems.bitcoincore.extensions.hexToByteArray
 import io.horizontalsystems.bitcoincore.extensions.toHexString
 import io.horizontalsystems.bitcoincore.extensions.toReversedHex
 import io.horizontalsystems.bitcoincore.io.BitcoinInputMarkable
+import io.horizontalsystems.bitcoincore.messages.IStandardMessageSigner
+import io.horizontalsystems.bitcoincore.messages.StandardMessage
 import io.horizontalsystems.bitcoincore.models.PublicKey
 import io.horizontalsystems.bitcoincore.models.Transaction
 import io.horizontalsystems.bitcoincore.models.TransactionOutput
@@ -31,12 +33,13 @@ import io.horizontalsystems.bitcoincore.transactions.builder.MutableTransaction
 import io.horizontalsystems.bitcoincore.transactions.builder.SignedTransactionData
 import io.horizontalsystems.bitcoincore.transactions.scripts.OP_RETURN
 import io.horizontalsystems.bitcoincore.transactions.scripts.ScriptType
+import io.horizontalsystems.hdwalletkit.ECKey
 
 class TrezorBtcSigner(
     private val coin: String,
     private val derivationPath: String,
     private val trezorClient: ITrezorClient
-) : IInputSigner, ISchnorrInputSigner, IFullTransactionSigner {
+) : IInputSigner, ISchnorrInputSigner, IFullTransactionSigner, IStandardMessageSigner {
 
     private var transactionSerializer: BaseTransactionSerializer? = null
     private var network: Network? = null
@@ -73,6 +76,15 @@ class TrezorBtcSigner(
             serializedTx = result.serializedTx.toHexString(),
             signatures = result.signatures.map { it.toHexString() }
         )
+    }
+
+    // Recovering the key from the device's r||s proves it signed with the requested address's key.
+    override suspend fun signStandardMessage(publicKey: PublicKey, scriptType: ScriptType, message: String): ByteArray {
+        val result = trezorClient.connect {
+            signBitcoinMessage(coin, addressPath(publicKey), message.encodeToByteArray(), inputScriptType(scriptType))
+        }
+        val compactSignature = result.signature.copyOfRange(1, STANDARD_SIGNATURE_SIZE)
+        return StandardMessage.signature(ECKey.messageHash(message), compactSignature, publicKey.publicKey, scriptType)
     }
 
     private fun InputToSign.toTrezorInput() = TrezorBtcInput(
@@ -199,4 +211,7 @@ class TrezorBtcSigner(
         index: Int
     ): List<ByteArray> = throw UnsupportedOperationException("Use signFullTransaction")
 
+    private companion object {
+        const val STANDARD_SIGNATURE_SIZE = 65
+    }
 }

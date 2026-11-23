@@ -715,6 +715,8 @@ Proceed only if you\u0027re sure.</string>
     <string name="TonConnect_NewConnect">New Connection</string>
     <string name="TonConnect_Error_InvalidUrl">Invalid URL Address</string>
     <string name="ton_connect_request_expired">The time to confirm has expired. Repeat the operation on the website.</string>
+    <string name="ton_connect_unknown_action_warning">The app could not recognize this action. Check the amounts and addresses below before confirming.</string>
+    <string name="ton_connect_action_unknown">Unknown</string>
     <string name="TonConnect_Unnamed">Unnamed</string>
     <string name="TonConnect_Url" translatable="false">URL</string>
     <string name="TonConnect_Wallet">Wallet</string>
@@ -2403,6 +2405,8 @@ Proceed only if you\u0027re sure.</string>
     <string name="accruals">Accruals</string>
     <string name="payouts">Payouts</string>
     <string name="how_my_income_grows">How my income grows</string>
+    <string name="staking_chart_mode_both">Both</string>
+    <string name="staking_chart_no_fiat_estimate">No estimate in %1$s</string>
     <string name="payouts_history">Payouts History</string>
     <string name="pos_calculator">POS Calculator</string>
     <string name="pos_calculator_pirate_description">Calculation of profitability mining PirateCash staking in the pool.</string>
@@ -3007,6 +3011,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="nft_burn_body">%1$s will be sent to the burn address and will disappear from your wallet forever. This cannot be undone.</string>
     <string name="nft_burn_domain_body">The domain will be sent to the burn address and you will lose it. Transfers to %1$s will no longer reach your wallet. This cannot be undone.</string>
     <string name="nft_burn_address">Burn address</string>
+    <string name="nft_address">NFT address</string>
     <string name="nft_burn_confirm">Burn</string>
     <string name="nft_trap_transfer_title">This NFT transfer won\u0027t go through</string>
     <string name="nft_trap_transfer_body">We checked the transaction before sending. This NFT\u0027s contract will not pass it to the recipient and will keep the attached %1$s. This is how spam NFTs work.</string>
@@ -3081,6 +3086,27 @@ Proceed only if you\u0027re sure.</string>
     <string name="desktop_password_save_failed">Could not save the password. Please try again</string>
     <string name="tron_controlled_by_others_title">Others may control this account</string>
     <string name="tron_controlled_by_others_warning">The permissions on this account have been changed: other keys may control it. Funds you send to it can be withdrawn without your involvement. Top it up only if you know whose keys these are.</string>
+    <string name="sign_message_title">Sign Message</string>
+    <string name="sign_message_intro">The signature proves that the address belongs to you. Exchanges ask for it when you add a withdrawal address. It gives no access to your funds.</string>
+    <string name="sign_message_message">Message</string>
+    <string name="sign_message_hint">Paste or scan the text from the exchange website</string>
+    <string name="sign_message_format">Signature Format</string>
+    <string name="sign_message_format_standard">Standard</string>
+    <string name="sign_message_format_standard_description">Accepted by most exchanges</string>
+    <string name="sign_message_format_bip322_description">New standard, also works for Taproot</string>
+    <string name="sign_message_format_info">Standard is the classic Bitcoin signed message that almost every exchange and wallet accepts. BIP-322 is a newer format that also supports Taproot addresses. Choose the one the exchange asks for.</string>
+    <string name="sign_message_taproot_only">Only BIP-322 is available for Taproot addresses.</string>
+    <string name="sign_message_trezor_taproot">Trezor cannot sign messages for Taproot addresses. Use a Bitcoin address of another type, for example Native SegWit.</string>
+    <string name="sign_message_select_address_hint">Choose the address you provided to the exchange.</string>
+    <string name="sign_message_current_receive_address">Current Receive Address</string>
+    <string name="sign_message_used">Used</string>
+    <string name="sign_message_signature">Signature</string>
+    <string name="sign_message_result_intro">Copy the signature and paste it on the exchange website.</string>
+    <string name="sign_message_details">Details</string>
+    <string name="sign_message_details_format">Format</string>
+    <string name="sign_message_not_ready">The wallet is still loading. Try again in a moment.</string>
+    <string name="sign_message_failed">Could not sign the message</string>
+    <string name="sign_message_format_bip322" translatable="false">BIP-322</string>
 
     <!-- WalletConnect Stellar -->
     <string name="wallet_connect_stellar_op_payment">Payment</string>

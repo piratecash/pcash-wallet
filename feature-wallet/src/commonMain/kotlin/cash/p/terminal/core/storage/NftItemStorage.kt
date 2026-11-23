@@ -12,6 +12,9 @@ class NftItemStorage(private val router: StorageRouter) {
     fun observe(accountId: String, ownerAddresses: List<String>): Flow<List<NftItemRecord>> =
         dao(accountId)?.observe(accountId, ownerAddresses) ?: flowOf(emptyList())
 
+    suspend fun items(accountId: String, addresses: List<String>): List<NftItemRecord> =
+        if (addresses.isEmpty()) emptyList() else dao(accountId)?.items(accountId, addresses).orEmpty()
+
     suspend fun replace(
         accountId: String,
         blockchainType: BlockchainType,

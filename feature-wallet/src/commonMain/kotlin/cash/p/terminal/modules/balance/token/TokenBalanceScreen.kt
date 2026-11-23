@@ -69,6 +69,7 @@ import cash.p.terminal.modules.balance.BackupRequiredError
 import cash.p.terminal.modules.balance.BalanceViewItem
 import cash.p.terminal.modules.balance.BalanceViewModel
 import cash.p.terminal.modules.balance.ui.FlipHiddenBalanceInfoHost
+import cash.p.terminal.modules.balance.ui.HideBalanceToggle
 import cash.p.terminal.modules.blockchainstatus.BlockchainStatusButton
 import cash.p.terminal.modules.blockchainstatus.BlockchainStatusPage
 import cash.p.terminal.modules.coin.CoinPage
@@ -120,7 +121,6 @@ import cash.p.terminal.resources.Transactions_WaitForSync
 import cash.p.terminal.resources.aml_promo_dismiss_hud
 import cash.p.terminal.resources.balance_swap_backup_required_description
 import cash.p.terminal.resources.balance_zcash_migration_required
-import cash.p.terminal.resources.hide_balance
 import cash.p.terminal.resources.ic_arrow_down_left_24
 import cash.p.terminal.resources.ic_arrow_up_right_24
 import cash.p.terminal.resources.ic_attention_20
@@ -129,8 +129,6 @@ import cash.p.terminal.resources.ic_attention_red_24
 import cash.p.terminal.resources.ic_chart_24
 import cash.p.terminal.resources.ic_clock
 import cash.p.terminal.resources.ic_coins_stacking
-import cash.p.terminal.resources.ic_eye_20
-import cash.p.terminal.resources.ic_eye_off
 import cash.p.terminal.resources.ic_info_20
 import cash.p.terminal.resources.ic_manage_2_24
 import cash.p.terminal.resources.ic_outgoingraw
@@ -813,28 +811,13 @@ private fun HideBalanceSearchRow(
             .padding(start = 16.dp, end = 4.dp, top = 12.dp, bottom = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier.clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = {
-                    onToggleBalanceVisibility()
-                    hud.vibrate()
-                }
-            ),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            subhead2_grey(text = stringResource(Res.string.hide_balance))
-            HSpacer(8.dp)
-            Icon(
-                painter = painterResource(
-                    if (hideBalance) Res.drawable.ic_eye_off else Res.drawable.ic_eye_20
-                ),
-                contentDescription = null,
-                tint = ComposeAppTheme.colors.iconSecondary,
-                modifier = Modifier.size(20.dp)
-            )
-        }
+        HideBalanceToggle(
+            hidden = hideBalance,
+            onToggle = {
+                onToggleBalanceVisibility()
+                hud.vibrate()
+            }
+        )
         Spacer(modifier = Modifier.weight(1f))
         HsIconButton(onClick = onSearchClick) {
             Icon(

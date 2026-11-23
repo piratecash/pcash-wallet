@@ -7,6 +7,7 @@ import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.managers.AmlStatusManager
 import cash.p.terminal.core.managers.BitcoinKitDatabaseManager
 import cash.p.terminal.core.managers.OfflineModeManager
+import cash.p.terminal.core.managers.TonConnectManager
 import cash.p.terminal.core.managers.TransactionAdapterManager
 import cash.p.terminal.core.managers.WalletServicesStarter
 import cash.p.terminal.premium.domain.usecase.CheckPremiumUseCase
@@ -55,6 +56,8 @@ class DesktopWalletSessionTest {
     private val lazyCheckPremiumUseCase = lazy { checkPremiumUseCase }
     private val adapterManager = mockk<IAdapterManager>(relaxed = true)
     private val lazyAdapterManager = lazy { adapterManager }
+    private val tonConnectManager = mockk<TonConnectManager>(relaxed = true)
+    private val lazyTonConnectManager = lazy { tonConnectManager }
     private val logGate = DesktopLogGate()
     private val logsDao = mockk<LogsDao>(relaxed = true)
     private val logs = GatedLogsDao(logsDao, logGate)
@@ -155,6 +158,46 @@ class DesktopWalletSessionTest {
         vaultState.value = unlocked()
 
         coVerify(exactly = 1) { walletServicesStarter.start() }
+    }
+
+    @Test
+    fun start_firstUnlock_startsTonConnectOnce() = runTest {
+        startSession()
+
+        vaultState.value = unlocked()
+        vaultState.value = DesktopVaultState.Locked
+        vaultState.value = unlocked()
+
+        verify(exactly = 1) { tonConnectManager.start() }
+    }
+
+    @Test
+    fun awaitReleased_servicesStarted_closesTonConnectOfTheDroppedAccounts() = runTest {
+        val session = startSession()
+        vaultState.value = unlocked()
+
+        session.awaitReleased(setOf(KEPT_ACCOUNT))
+
+        coVerify(exactly = 1) { tonConnectManager.retainAccounts(setOf(KEPT_ACCOUNT)) }
+    }
+
+    @Test
+    fun onSessionClosing_tonConnectBuilt_closesEveryKit() = runTest {
+        val session = startSession()
+        vaultState.value = unlocked()
+
+        session.onSessionClosing()
+
+        coVerify(exactly = 1) { tonConnectManager.retainAccounts(emptySet()) }
+    }
+
+    @Test
+    fun onSessionClosing_beforeAnyUnlock_neverBuildsTonConnect() = runTest {
+        val session = startSession()
+
+        session.onSessionClosing()
+
+        assertFalse(lazyTonConnectManager.isInitialized())
     }
 
     @Test
@@ -289,6 +332,7 @@ class DesktopWalletSessionTest {
                 offlineModeManager = lazy { offlineModeManager },
                 bitcoinKitDatabaseManager = lazy { mockk<BitcoinKitDatabaseManager>(relaxed = true) },
                 amlStatusManager = lazy { mockk<AmlStatusManager>(relaxed = true) },
+                tonConnectManager = lazyTonConnectManager,
                 logGate = logGate,
             ),
             dispatcherProvider = TestDispatcherProvider(dispatcher, backgroundScope),
@@ -296,6 +340,7 @@ class DesktopWalletSessionTest {
     }
 
     private companion object {
+        const val KEPT_ACCOUNT = "kept-account"
         val LOG_ENTRY = LogEntry(date = 1, level = 4, actionId = "upper-account", message = "stopping")
     }
 

@@ -584,6 +584,8 @@
     <string name="TonConnect_NewConnect">Nouvelle connexion</string>
     <string name="TonConnect_Error_InvalidUrl">Adresse URL invalide</string>
     <string name="ton_connect_request_expired">Le temps de confirmation est écoulé. Refaites cette opération sur le site.</string>
+    <string name="ton_connect_unknown_action_warning">L\'application n\'a pas pu reconnaître cette action. Vérifiez les montants et les adresses ci-dessous avant de confirmer.</string>
+    <string name="ton_connect_action_unknown">Inconnue</string>
     <string name="TonConnect_Unnamed">Sans nom</string>
     <string name="TonConnect_Wallet">Portefeuille</string>
     <string name="TonConnect_ChooseWallet">Choisir un portefeuille</string>
@@ -2045,6 +2047,8 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="accruals">Accruals</string>
     <string name="payouts">Payouts</string>
     <string name="how_my_income_grows">Comment mes revenus augmentent</string>
+    <string name="staking_chart_mode_both">Les deux</string>
+    <string name="staking_chart_no_fiat_estimate">Pas d’estimation en %1$s</string>
     <string name="payouts_history">Payouts History</string>
     <string name="pos_calculator">POS Calculator</string>
     <string name="pos_calculator_pirate_description">Calculation of profitability mining PirateCash staking in the pool.</string>
@@ -2595,6 +2599,7 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="nft_burn_body">%1$s sera envoyé à l\u0027adresse de destruction et disparaîtra définitivement du portefeuille. Cette action est irréversible.</string>
     <string name="nft_burn_domain_body">Le domaine sera envoyé à l\u0027adresse de destruction et vous le perdrez. Les transferts vers %1$s n\u0027arriveront plus sur votre portefeuille. Cette action est irréversible.</string>
     <string name="nft_burn_address">Adresse de destruction</string>
+    <string name="nft_address">Adresse du NFT</string>
     <string name="nft_burn_confirm">Brûler</string>
     <string name="nft_trap_transfer_title">Le transfert du NFT n\u0027aboutira pas</string>
     <string name="nft_trap_transfer_body">Nous avons vérifié la transaction avant l\u0027envoi. Le contrat de ce NFT ne le transmettra pas au destinataire et gardera les %1$s joints. C\u0027est ainsi que fonctionnent les NFT de spam.</string>
@@ -2673,6 +2678,26 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="desktop_password_save_failed">Impossible d\u0027enregistrer le mot de passe. Veuillez réessayer</string>
     <string name="tron_controlled_by_others_title">D\'autres personnes peuvent contrôler ce compte</string>
     <string name="tron_controlled_by_others_warning">Les autorisations de ce compte ont été modifiées : d\'autres clés peuvent le contrôler. Les fonds que vous y envoyez peuvent être retirés sans votre intervention. N\'y déposez des fonds que si vous savez à qui appartiennent ces clés.</string>
+    <string name="sign_message_title">Signer un message</string>
+    <string name="sign_message_intro">La signature prouve que l\'adresse vous appartient. Les plateformes d\'échange la demandent lorsque vous ajoutez une adresse de retrait. Elle ne donne aucun accès à vos fonds.</string>
+    <string name="sign_message_message">Message</string>
+    <string name="sign_message_hint">Collez ou scannez le texte du site de la plateforme</string>
+    <string name="sign_message_format">Format de signature</string>
+    <string name="sign_message_format_standard">Standard</string>
+    <string name="sign_message_format_standard_description">Accepté par la plupart des plateformes</string>
+    <string name="sign_message_format_bip322_description">Nouveau standard, fonctionne aussi pour Taproot</string>
+    <string name="sign_message_format_info">Standard est le message signé Bitcoin classique, accepté par presque toutes les plateformes et tous les portefeuilles. BIP-322 est un format plus récent qui prend aussi en charge les adresses Taproot. Choisissez celui que demande la plateforme.</string>
+    <string name="sign_message_taproot_only">Seul BIP-322 est disponible pour les adresses Taproot.</string>
+    <string name="sign_message_trezor_taproot">Trezor ne peut pas signer de messages pour les adresses Taproot. Utilisez une adresse Bitcoin d\'un autre type, par exemple Native SegWit.</string>
+    <string name="sign_message_select_address_hint">Choisissez l\'adresse que vous avez indiquée à la plateforme.</string>
+    <string name="sign_message_current_receive_address">Adresse de réception actuelle</string>
+    <string name="sign_message_used">Utilisées</string>
+    <string name="sign_message_signature">Signature</string>
+    <string name="sign_message_result_intro">Copiez la signature et collez-la sur le site de la plateforme.</string>
+    <string name="sign_message_details">Détails</string>
+    <string name="sign_message_details_format">Format</string>
+    <string name="sign_message_not_ready">Le portefeuille est encore en cours de chargement. Réessayez dans un instant.</string>
+    <string name="sign_message_failed">Impossible de signer le message</string>
 
     <!-- WalletConnect Stellar -->
     <string name="wallet_connect_stellar_op_payment">Paiement</string>

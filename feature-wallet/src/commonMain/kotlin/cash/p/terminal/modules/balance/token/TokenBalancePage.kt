@@ -16,6 +16,7 @@ import cash.p.terminal.modules.balance.token.addresspoisoning.AddressPoisoningVi
 import cash.p.terminal.modules.balance.token.addresspoisoning.AddressPoisoningViewScreen
 import cash.p.terminal.modules.balance.token.creationblock.CreationBlockScreen
 import cash.p.terminal.modules.balance.token.creationblock.CreationBlockViewModel
+import cash.p.terminal.modules.signmessage.SignMessagePage
 import cash.p.terminal.modules.nft.NftCollectionPage
 import cash.p.terminal.modules.nft.NftCollectionSource
 import cash.p.terminal.modules.nft.NftCollectionsViewModel
@@ -171,6 +172,7 @@ class AssetSettingsPage(val wallet: Wallet) : HSPage() {
         val creationBlockVisible = wallet.token.blockchainType == BlockchainType.Monero ||
             (wallet.token.blockchainType == BlockchainType.Zcash &&
                 (wallet.account.origin == AccountOrigin.Restored || wallet.account.isHardwareWalletAccount))
+        val signMessageVisible = wallet.token.blockchainType == BlockchainType.Bitcoin && !wallet.account.isWatchAccount
         val getRestoreHeight = remember { getKoinInstance<GetRestoreHeightForWalletUseCase>() }
         val currentHeightText by produceState<String?>(null, wallet, creationBlockVisible) {
             value = if (creationBlockVisible) getRestoreHeight(wallet)?.toString() else null
@@ -198,6 +200,7 @@ class AssetSettingsPage(val wallet: Wallet) : HSPage() {
             creationBlockVisible = creationBlockVisible,
             currentHeightText = currentHeightText,
             onCreationBlockClick = { navigation.slideFromRight(CreationBlockPage(wallet)) },
+            onSignMessageClick = { navigation.slideFromRight(SignMessagePage(wallet)) }.takeIf { signMessageVisible },
         )
     }
 }
