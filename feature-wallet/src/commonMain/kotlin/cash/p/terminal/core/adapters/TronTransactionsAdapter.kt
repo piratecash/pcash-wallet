@@ -5,6 +5,7 @@ import cash.p.terminal.core.managers.TronKitWrapper
 import cash.p.terminal.entities.LastBlockInfo
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.modules.transactions.FilterTransactionType
+import cash.p.terminal.modules.transactions.TimestampRange
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.TokenType
@@ -18,6 +19,8 @@ import io.reactivex.Flowable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.rx2.asFlowable
+
+private const val MILLIS_IN_SECOND = 1000L
 
 class TronTransactionsAdapter(
     val tronKitWrapper: TronKitWrapper,
@@ -47,16 +50,26 @@ class TronTransactionsAdapter(
     override val transactionsStateUpdatedFlowable: Flowable<Unit>
         get() = tronKit.syncStateFlow.asFlowable().map {}
 
+    override suspend fun getOldestTransactionTimestamp(
+        token: Token?,
+        transactionType: FilterTransactionType,
+        address: String?,
+    ): Long? = tronKit.getOldestTransactionTimestamp(getFilters(token, transactionType, address))
+        ?.let { it / MILLIS_IN_SECOND }
+
     override suspend fun getTransactions(
         from: TransactionRecord?,
         token: Token?,
         limit: Int,
         transactionType: FilterTransactionType,
         address: String?,
+        period: TimestampRange?,
     ): List<TransactionRecord> = tronKit.getFullTransactionsBefore(
         getFilters(token, transactionType, address),
         from?.transactionHash?.hexStringToByteArray(),
-        limit
+        limit,
+        period?.since?.let { it * MILLIS_IN_SECOND },
+        period?.until?.let { it * MILLIS_IN_SECOND },
     ).map {
         transactionConverter.transactionRecord(it)
     }

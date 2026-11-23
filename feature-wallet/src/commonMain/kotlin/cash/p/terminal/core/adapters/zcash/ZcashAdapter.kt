@@ -42,6 +42,7 @@ import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
 import cash.p.terminal.modules.transactions.FilterTransactionType
+import cash.p.terminal.modules.transactions.TimestampRange
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.Swap_ErrorInsufficientBalance
 import cash.p.terminal.resources.send_trezor_zcash_firmware_required
@@ -1040,12 +1041,19 @@ class ZcashAdapter(
         limit: Int,
         transactionType: FilterTransactionType,
         address: String?,
+        period: TimestampRange?,
     ): List<TransactionRecord> {
         val fromParams = from?.let { Triple(it.transactionHash, it.timestamp, it.transactionIndex) }
         return transactionsProvider
-            .getTransactions(fromParams, transactionType, address, limit)
+            .getTransactions(fromParams, transactionType, address, limit, period)
             .map(::getTransactionRecord)
     }
+
+    override suspend fun getOldestTransactionTimestamp(
+        token: Token?,
+        transactionType: FilterTransactionType,
+        address: String?,
+    ): Long? = transactionsProvider.oldestTimestamp(transactionType, address)
 
     override fun getTransactionRecordsFlow(
         token: Token?,

@@ -23,8 +23,8 @@ import io.horizontalsystems.sqlcipher.room.InsufficientDatabaseMigrationSpaceExc
 import io.horizontalsystems.tonkit.core.TonKit
 import io.horizontalsystems.tonkit.core.TonWallet
 import io.horizontalsystems.tonkit.core.TransactionSigner
-import io.horizontalsystems.tonkit.models.Event
 import io.horizontalsystems.tonkit.models.SignTransaction
+import io.horizontalsystems.tonkit.models.TransactionDetails
 import io.horizontalsystems.tonkit.tonconnect.TonConnectKit
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -409,7 +409,7 @@ class TonConnectSendRequestViewModelTest {
     @Test
     fun reject_duringPreparation_deadlineDoesNotReportBadRequest() = testScope.runTest {
         stubPreparableRequest()
-        val details = CompletableDeferred<Event>()
+        val details = CompletableDeferred<TransactionDetails>()
         coEvery { transactionSigner.getDetails(any(), any<TonWallet.FullAccess>()) } coAnswers { details.await() }
         val viewModel = createViewModel()
         runCurrent()

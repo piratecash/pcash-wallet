@@ -73,6 +73,14 @@ class TokenBalancePage(val input: Wallet) : HSPage() {
         val showAllTransactions = secretActionAuthorizer.rememberHiddenTransactionsAuthorization(navigation) {
             viewModel.showAllTransactions(true)
         }
+        val showAllThenCalendar = secretActionAuthorizer.rememberHiddenTransactionsAuthorization(navigation) {
+            viewModel.showAllTransactions(true)
+            viewModel.onCalendarClick()
+        }
+        val showAllThenSearch = secretActionAuthorizer.rememberHiddenTransactionsAuthorization(navigation) {
+            viewModel.showAllTransactions(true)
+            viewModel.onSearchClick()
+        }
 
         OfflineModeErrorEffect(offlineModeToggleViewModel)
 
@@ -101,6 +109,8 @@ class TokenBalancePage(val input: Wallet) : HSPage() {
             refreshing = viewModel.refreshing,
             onSettingsClick = { navigation.slideFromRight(AssetSettingsPage(input)) },
             onGoOnline = offlineModeToggleViewModel::goOnline,
+            onHiddenCalendarClick = showAllThenCalendar,
+            onHiddenSearchClick = showAllThenSearch,
             nftSection = nftViewModel?.let { { NftSection(it, navigation) } },
         )
     }

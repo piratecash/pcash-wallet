@@ -528,7 +528,7 @@
     <ID>VariableNaming:TorControl.kt$TorControl$private val MAX_BOOTSTRAP_CHECK_TRIES = 60</ID>
     <ID>ViewModelForwarding:IntroActivity.kt$StaticContent(viewModel, pagerState, closeActivity, pageCount)</ID>
     <ID>ViewModelForwarding:MainPage.kt$MainScreen( transactionsViewModel = transactionsViewModel, navigation = navigation, intentLiveData = intent, intentHandled = intentHandled )</ID>
-    <ID>ViewModelForwarding:MainPage.kt$TransactionsScreen( navigation = navigation, paddingValues = paddingValues, viewModel = transactionsViewModel, onShowAllTransactionsClicked = showAllTransactions )</ID>
+    <ID>ViewModelForwarding:MainPage.kt$TransactionsScreen( navigation = navigation, paddingValues = paddingValues, viewModel = transactionsViewModel, onShowAllTransactionsClicked = showAllTransactions, onHiddenCalendarClick = showAllThenCalendar, onHiddenSearchClick = showAllThenSearch, )</ID>
     <ID>ViewModelForwarding:SecuritySettingsPage.kt$DuressPasscodeBlock( securitySettingsViewModel, navigation )</ID>
     <ID>ViewModelForwarding:SecuritySettingsPage.kt$PasscodeBlock( securitySettingsViewModel, navigation )</ID>
     <ID>ViewModelForwarding:SecuritySettingsPage.kt$TorBlock( torViewModel, showAppRestartAlert, )</ID>

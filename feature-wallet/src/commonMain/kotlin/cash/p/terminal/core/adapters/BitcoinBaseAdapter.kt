@@ -28,6 +28,7 @@ import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
 import cash.p.terminal.modules.transactions.FilterTransactionType
+import cash.p.terminal.modules.transactions.TimestampRange
 import cash.p.terminal.modules.transactions.TransactionLockInfo
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.send_trezor_time_lock_not_supported
@@ -80,6 +81,7 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.rx2.await
+import kotlinx.coroutines.rx2.awaitSingleOrNull
 import org.koin.java.KoinJavaComponent.get
 import org.koin.java.KoinJavaComponent.inject
 import java.math.BigDecimal
@@ -331,14 +333,29 @@ abstract class BitcoinBaseAdapter(
         }
     }
 
+    override suspend fun getOldestTransactionTimestamp(
+        token: Token?,
+        transactionType: FilterTransactionType,
+        address: String?,
+    ): Long? {
+        if (address != null) return null
+        val filter = try {
+            getBitcoinTransactionTypeFilter(transactionType)
+        } catch (e: UnsupportedFilterException) {
+            return null
+        }
+        return kit.oldestTransactionTimestamp(filter).awaitSingleOrNull()
+    }
+
     override suspend fun getTransactions(
         from: TransactionRecord?,
         token: Token?,
         limit: Int,
         transactionType: FilterTransactionType,
         address: String?,
+        period: TimestampRange?,
     ) = when (address) {
-        null -> getTransactionsAsync(from, limit, transactionType)
+        null -> getTransactionsAsync(from, limit, transactionType, period)
         else -> emptyList<TransactionRecord>()
     }
 
@@ -347,7 +364,8 @@ abstract class BitcoinBaseAdapter(
     private suspend fun getTransactionsAsync(
         from: TransactionRecord?,
         limit: Int,
-        transactionType: FilterTransactionType
+        transactionType: FilterTransactionType,
+        period: TimestampRange?,
     ): List<TransactionRecord> {
         val filter = try {
             getBitcoinTransactionTypeFilter(transactionType)
@@ -358,7 +376,9 @@ abstract class BitcoinBaseAdapter(
         var cursorUid = from?.uid
         do {
             val count = limit - visible.size
-            val page = kit.transactions(cursorUid, filter, count).map { it.map(::transactionRecord) }.await()
+            val page = kit.transactions(cursorUid, filter, count, period?.since, period?.until)
+                .map { it.map(::transactionRecord) }
+                .await()
             visible += page.filter { it.replacedByHash == null }
             cursorUid = page.lastOrNull()?.uid
         } while (visible.size < limit && page.size == count)

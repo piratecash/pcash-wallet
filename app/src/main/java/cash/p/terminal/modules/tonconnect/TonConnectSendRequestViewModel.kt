@@ -235,10 +235,8 @@ class TonConnectSendRequestViewModel(
             }
         }
 
-        val tonEvent = try {
-            val event = transactionSigner.getDetails(sendRequestEntity, tonWallet)
-            tonEvent = event
-            event
+        val details = try {
+            transactionSigner.getDetails(sendRequestEntity, tonWallet).also { tonEvent = it.event }
         } catch (e: Exception) {
             error = TonConnectSendRequestError.InvalidData("Failed to get details")
             responseBadRequest(sendRequestEntity)
@@ -258,7 +256,7 @@ class TonConnectSendRequestViewModel(
             transactionSource
         )
 
-        tonTransactionRecord = tonTransactionConverter?.createTransactionRecord(tonEvent)
+        tonTransactionRecord = tonTransactionConverter?.createTransactionRecord(details.event)
     }
 
     /**

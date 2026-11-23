@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.java.KoinJavaComponent.inject
+import java.time.ZoneId
 
 sealed interface SearchScanState {
     data object Idle : SearchScanState
@@ -64,6 +65,9 @@ class TransactionsService(
     private val _searchScanStateFlow = MutableStateFlow<SearchScanState>(SearchScanState.Idle)
     val searchScanStateFlow: StateFlow<SearchScanState> = _searchScanStateFlow.asStateFlow()
 
+    private val _historyExhaustedFlow = MutableStateFlow(false)
+    val historyExhaustedFlow: StateFlow<Boolean> = _historyExhaustedFlow.asStateFlow()
+
     val syncingFlow: StateFlow<Boolean> get() = transactionSyncStateRepository.syncingFlow
 
     @Volatile
@@ -102,6 +106,7 @@ class TransactionsService(
         blockchain: Blockchain?,
         contact: Contact?,
         searchQuery: String? = null,
+        period: TransactionPeriod? = null,
     ) {
         // Phase 1: apply state, learn whether a reload is needed — no emission, no load yet.
         val willReload = transactionRecordRepository.set(
@@ -111,6 +116,7 @@ class TransactionsService(
             blockchain,
             contact,
             searchQuery,
+            period?.timestampRange(ZoneId.systemDefault()),
         )
 
         if (willReload) {
@@ -120,6 +126,7 @@ class TransactionsService(
             searchPaging.reset()
             _searchScanStateFlow.value =
                 if (searchQuery != null) SearchScanState.Scanning else SearchScanState.Idle
+            _historyExhaustedFlow.value = false
             _transactionItems.value = emptyList()
             transactionRecordRepository.reloadItems()
         }
@@ -189,6 +196,8 @@ class TransactionsService(
         if (capturedVersion != serviceVersion) {
             return
         }
+
+        _historyExhaustedFlow.value = batch.historyExhausted
 
         val currentItems = _transactionItems.value
         val newRecords = transactionRecords.filter { record ->
@@ -260,9 +269,12 @@ class TransactionsService(
         // from updating stale items after account switch.
         // The VM guards against the resulting Loading → Success(empty) flash.
         _searchScanStateFlow.value = SearchScanState.Idle
+        _historyExhaustedFlow.value = false
         _transactionItems.value = emptyList()
         transactionRecordRepository.cancelPendingLoads()
     }
+
+    suspend fun oldestTimestamp(): Long? = transactionRecordRepository.oldestTimestamp()
 
     fun reload() {
         coroutineScope.launch {
