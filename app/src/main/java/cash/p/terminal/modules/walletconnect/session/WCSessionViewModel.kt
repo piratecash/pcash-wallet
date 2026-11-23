@@ -6,6 +6,8 @@ import cash.p.terminal.core.managers.ConnectivityManager
 import cash.p.terminal.modules.walletconnect.WCDelegate
 import cash.p.terminal.modules.walletconnect.WCManager
 import cash.p.terminal.modules.walletconnect.WCSessionManager
+import cash.p.terminal.modules.walletconnect.WCVerifyAlert
+import cash.p.terminal.modules.walletconnect.toAlert
 import cash.p.terminal.modules.walletconnect.WCSessionManager.RequestDataError.NoSuitableAccount
 import cash.p.terminal.modules.walletconnect.WCSessionManager.RequestDataError.NoSuitableEvmKit
 import cash.p.terminal.modules.walletconnect.WCSessionManager.RequestDataError.RequestNotFoundError
@@ -46,6 +48,7 @@ class WCSessionViewModel(
     private var showError: String? = null
     private var status: Status? = null
     private var pendingRequests = listOf<WCRequestViewItem>()
+    private var verifyAlert: WCVerifyAlert? = null
 
     override fun createState() = WCSessionUiState(
         peerMeta = peerMeta,
@@ -56,6 +59,7 @@ class WCSessionViewModel(
         showError = showError,
         status = status,
         pendingRequests = pendingRequests,
+        verifyAlert = verifyAlert,
     )
 
     private var sessionServiceState: WCSessionServiceState = WCSessionServiceState.Idle
@@ -171,7 +175,7 @@ class WCSessionViewModel(
                 sessionServiceState = Ready
             }
         } else {
-            WCDelegate.sessionProposalEvent?.let { (sessionProposal, _) ->
+            WCDelegate.sessionProposalEvent?.let { (sessionProposal, verifyContext) ->
                 peerMeta = PeerMetaItem(
                     sessionProposal.name,
                     sessionProposal.url,
@@ -180,6 +184,7 @@ class WCSessionViewModel(
                     account?.name,
                 )
                 proposal = sessionProposal
+                verifyAlert = verifyContext.toAlert(reportUnverified = true)
 
                 sessionServiceState = try {
                     wcManager.validate(sessionProposal.requiredNamespaces)

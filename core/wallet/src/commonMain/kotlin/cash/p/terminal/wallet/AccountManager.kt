@@ -8,12 +8,14 @@ import io.horizontalsystems.core.DispatcherProvider
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.subjects.PublishSubject
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.concurrent.atomic.AtomicReference
 
@@ -198,21 +200,38 @@ class AccountManager(
         }
     }
 
-    override suspend fun delete(id: String) = withContext(dispatcherProvider.io) {
-        deletionPreflight.ensureCanDelete(listOf(id))
-        val accountToDelete = storage.loadAccount(id)
-        try {
-            storage.delete(id)
-        } catch (error: Exception) {
-            throw AccountDeletionBlockedException(error)
+    override suspend fun delete(id: String) {
+        withContext(dispatcherProvider.io) {
+            deletionPreflight.ensureCanDelete(listOf(id))
+            val accountToDelete = storage.loadAccount(id)
+            try {
+                storage.delete(id)
+            } catch (error: Exception) {
+                throw AccountDeletionBlockedException(error)
+            }
+            // Before the active-account switch retires the deleted account's adapters.
+            deletionPreflight.fenceDeleted(listOf(id))
+            removeFromSession(id)
+            dispatcherProvider.applicationScope.launch { cleanupDeleted(id, accountToDelete) }
         }
-        deletionPreflight.cleanupDeleted(listOf(id))
-        accountToDelete?.let { account ->
-            getMoneroWalletFilesNameUseCase(account)
-        }?.also { walletFiles ->
-            removeMoneroWalletFilesUseCase(walletFiles)
-        }
+    }
 
+    // The tombstone is durable, so DeletedAccountsCleanup finishes whatever fails here on the next start.
+    private suspend fun cleanupDeleted(id: String, account: Account?) {
+        try {
+            deletionPreflight.cleanupDeleted(listOf(id))
+            val walletFiles = account?.let { getMoneroWalletFilesNameUseCase(it) } ?: return
+            if (!removeMoneroWalletFilesUseCase(walletFiles)) {
+                logger.w { "Monero wallet files remain; retried on next start" }
+            }
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Exception) {
+            logger.w { "Deleted account cleanup deferred to next start: ${error.javaClass.simpleName}" }
+        }
+    }
+
+    private fun removeFromSession(id: String) {
         cache.updateAndGet { state ->
             if (id in state.accounts) state.copy(accounts = LinkedHashMap(state.accounts).apply { remove(id) }) else state
         }

@@ -7,6 +7,8 @@ import cash.p.terminal.core.managers.AddressMetadataManager
 import cash.p.terminal.core.managers.BalanceHiddenManager
 import cash.p.terminal.core.managers.PoisonAddressManager
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
+import cash.p.terminal.entities.NftItemRecord
+import cash.p.terminal.entities.NftTrust
 import cash.p.terminal.entities.SwapProviderTransaction
 import cash.p.terminal.entities.TransactionValue
 import cash.p.terminal.entities.transactionrecords.LiquidityOperation
@@ -14,6 +16,7 @@ import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.ton.TonTransactionRecord
 import cash.p.terminal.modules.balance.token.addresspoisoning.AddressPoisoningViewMode
 import cash.p.terminal.modules.contacts.ContactsRepository
+import cash.p.terminal.modules.tonconnect.TonConnectRequestPreview
 import cash.p.terminal.modules.multiswap.providers.AndroidUnstoppableProviderTitles
 import cash.p.terminal.modules.transactions.TransactionItem
 import cash.p.terminal.modules.transactions.TransactionViewItemFactory
@@ -29,12 +32,14 @@ import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.entities.TonWalletVersion
 import cash.p.terminal.wallet.meta
 import cash.p.terminal.wallet.transaction.TransactionSource
+import com.tonapps.wallet.data.core.entity.RawMessageEntity
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.helpers.DateHelper
 import io.horizontalsystems.tonkit.Address
 import io.horizontalsystems.tonkit.models.AccountAddress
 import io.horizontalsystems.tonkit.models.Action
+import io.horizontalsystems.tonkit.models.EmulationRisk
 import io.horizontalsystems.tonkit.models.Event
 import io.horizontalsystems.tonkit.models.Jetton
 import io.horizontalsystems.tonkit.models.JettonBurn
@@ -45,6 +50,7 @@ import io.horizontalsystems.tonkit.models.LiquidityDeposit
 import io.horizontalsystems.tonkit.models.NftTransfer
 import io.horizontalsystems.tonkit.models.SmartContractExec
 import io.horizontalsystems.tonkit.models.TonTransfer
+import io.horizontalsystems.tonkit.models.TransactionDetails
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -469,6 +475,187 @@ class TonTransactionConverterTest {
         assertEquals(emptyList(), outgoing)
     }
 
+    @Test
+    fun requestPreview_nftTransferWithExcessBack_hidesExcessAndChargesRealFee() {
+        val preview = preview(
+            event(-50_580_000L, nftTransfer(own, other), refund(49_660_000L)),
+            listOf(message(50_000_000L, address = ITEM_FRIENDLY)),
+        )
+
+        assertIs<TonTransactionRecord.Action.Type.Send>(preview.record.actions.single().type)
+        assertEquals(0, BigDecimal("0.00092").compareTo(preview.record.fee.decimalValue))
+    }
+
+    @Test
+    fun requestPreview_refundOfContractCall_nettedAgainstCallAndFeeStaysGas() {
+        val preview = preview(
+            event(-10_000_000L, contractCall(1_000_000_000L), refund(990_000_000L)),
+            listOf(message(1_000_000_000L, address = ITEM_FRIENDLY)),
+        )
+
+        val call = assertIs<TonTransactionRecord.Action.Type.ContractCall>(preview.record.actions.single().type)
+        assertEquals(0, BigDecimal("-0.01").compareTo(call.value.decimalValue))
+        assertEquals(0, BigDecimal("0.01").compareTo(preview.record.fee.decimalValue))
+    }
+
+    @Test
+    fun requestPreview_returnLargerThanPaid_staysVisible() {
+        val preview = preview(
+            event(-10_000_000L, refund(1_500_000_000L)),
+            listOf(message(1_000_000_000L, address = ITEM_FRIENDLY)),
+        )
+
+        assertIs<TonTransactionRecord.Action.Type.Receive>(preview.record.actions.single().type)
+        assertEquals(0, BigDecimal("0.01").compareTo(preview.record.fee.decimalValue))
+    }
+
+    @Test
+    fun requestPreview_returnsAboveWhatWasPaid_onlyFirstFolded() {
+        val preview = preview(
+            event(-1_010_000_000L, refund(750_000_000L), refund(750_000_000L)),
+            listOf(message(1_000_000_000L, address = ITEM_FRIENDLY)),
+        )
+
+        val receive = assertIs<TonTransactionRecord.Action.Type.Receive>(preview.record.actions.single().type)
+        assertEquals(0, BigDecimal("0.75").compareTo(receive.value.decimalValue))
+        assertEquals(0, BigDecimal("0.26").compareTo(preview.record.fee.decimalValue))
+    }
+
+    @Test
+    fun requestPreview_tonSentToSelf_staysSendAndFeeUnchanged() {
+        val preview = preview(
+            event(-10_000_000L, tonTransfer(own, own)),
+            listOf(message(1_000_000_000L, address = v4r2Address.toUserFriendly(bounceable = false))),
+        )
+
+        val send = assertIs<TonTransactionRecord.Action.Type.Send>(preview.record.actions.single().type)
+        assertEquals(true, send.sentToSelf)
+        assertEquals(0, BigDecimal("0.01").compareTo(preview.record.fee.decimalValue))
+    }
+
+    @Test
+    fun requestPreview_riskAlreadyShownByActions_keepsOnlyUnshownAssets() {
+        val renamedUsdt = usdt.copy(name = "Tether USD", symbol = "USD₮")
+        val unknownJetton = usdt.copy(address = Address.parse(OTHER_JETTON_RAW), symbol = "SCAM")
+        val deposit = action(
+            Action.Type.LiquidityDeposit,
+            liquidityDeposit = LiquidityDeposit(
+                protocol = "stonfi",
+                from = own,
+                tokens = listOf(LiquidityDeposit.Token(BigInteger.valueOf(7), renamedUsdt, Address.parse(VAULT_USDT))),
+            ),
+        )
+        val risk = EmulationRisk(
+            jettons = listOf(
+                EmulationRisk.JettonAmount(usdt, BigInteger.TEN),
+                EmulationRisk.JettonAmount(usdt, BigInteger.valueOf(7)),
+                EmulationRisk.JettonAmount(unknownJetton, BigInteger.valueOf(2_000_000L)),
+            ),
+            nfts = listOf(Address.parse(NFT_RAW), Address.parse(OTHER_NFT_RAW)),
+        )
+
+        val preview = preview(
+            event(0L, sendJetton(comment = null), deposit, nftTransfer(own, other)),
+            messages = emptyList(),
+            risk = risk,
+        )
+
+        assertEquals(2, preview.riskValues.size)
+        val jetton = assertIs<TransactionValue.JettonValue>(preview.riskValues[0])
+        assertEquals("SCAM", jetton.coinCode)
+        assertEquals(0, BigDecimal("-2").compareTo(jetton.decimalValue))
+        val nft = assertIs<TransactionValue.NftValue>(preview.riskValues[1])
+        assertEquals(Address.parse(OTHER_NFT_RAW).toUserFriendly(bounceable = true), nft.mintAddress)
+    }
+
+    @Test
+    fun requestPreview_messagesToAddressOfRecognizedAction_keepsAllInOrder() {
+        val unsupported = action(Action.Type.Unknown)
+        val preview = preview(
+            event(0L, contractCall(1L), unsupported),
+            listOf(message(1_000_000_000L, address = ITEM_FRIENDLY), message(2_500_000_000L, address = ITEM_FRIENDLY)),
+        )
+
+        assertEquals(listOf(ITEM_FRIENDLY, ITEM_FRIENDLY), preview.requestMessages.map { it.address })
+        assertEquals(
+            listOf(BigDecimal("-1"), BigDecimal("-2.5")),
+            preview.requestMessages.map { it.value.decimalValue?.stripTrailingZeros() },
+        )
+    }
+
+    @Test
+    fun requestPreview_nftInLocalDb_showsItsNameAndImage() {
+        val nftAddress = Address.parse(NFT_RAW).toUserFriendly(bounceable = true)
+        val risk = EmulationRisk(jettons = emptyList(), nfts = listOf(Address.parse(OTHER_NFT_RAW)))
+
+        val preview = preview(
+            event(0L, nftTransfer(own, other)),
+            messages = emptyList(),
+            risk = risk,
+            nftItems = mapOf(nftAddress to nftRecord(nftAddress)),
+        )
+
+        val sent = assertIs<TonTransactionRecord.Action.Type.Send>(preview.record.actions.single().type).value
+        val known = assertIs<TransactionValue.NftValue>(sent)
+        assertEquals("olegleonov.ton", known.tokenName)
+        assertEquals("https://img/nft.png", known.coinIconUrl)
+        val unknown = assertIs<TransactionValue.NftValue>(preview.riskValues.single())
+        assertNull(unknown.tokenName)
+        assertNull(unknown.coinIconUrl)
+    }
+
+    private fun preview(
+        event: Event,
+        messages: List<RawMessageEntity>,
+        risk: EmulationRisk = EmulationRisk(emptyList(), emptyList()),
+        nftItems: Map<String, NftItemRecord> = emptyMap(),
+    ): TonConnectRequestPreview {
+        val coinManager = mockk<ICoinManager>()
+        every { coinManager.getToken(any()) } returns null
+        return converter(TokenType.Native, v4r2Address, TonWalletVersion.V4R2, coinManager)
+            .requestPreview(TransactionDetails(event, risk), messages, nftItems)
+    }
+
+    private fun event(extra: Long, vararg actions: Action) =
+        Event("e", 1L, 1_715_000_000L, false, true, extra, actions.toList())
+
+    private val item = AccountAddress(Address.parse(ITEM_RAW), name = null, isScam = false, isWallet = false)
+
+    private fun refund(amount: Long) = action(
+        Action.Type.TonTransfer,
+        tonTransfer = TonTransfer(item, own, BigInteger.valueOf(amount), null),
+    )
+
+    private fun contractCall(tonAttached: Long) = action(
+        Action.Type.SmartContract,
+        smartContractExec = SmartContractExec(item, BigInteger.valueOf(tonAttached), "renew", null),
+    )
+
+    private fun nftTransfer(from: AccountAddress, to: AccountAddress) = action(
+        Action.Type.NftTransfer,
+        nftTransfer = NftTransfer(Address.parse(NFT_RAW), from, to, null),
+    )
+
+    private fun nftRecord(address: String) = NftItemRecord(
+        accountId = account.id,
+        blockchainType = BlockchainType.Ton,
+        ownerAddress = v4r2Address.toUserFriendly(bounceable = false),
+        address = address,
+        position = 0,
+        name = "olegleonov.ton",
+        description = null,
+        realOwnerAddress = null,
+        collectionAddress = null,
+        collectionName = null,
+        collectionDescription = null,
+        trust = NftTrust.Whitelist,
+        verified = true,
+        imageUrl = "https://img/nft.png",
+        largeImageUrl = null,
+    )
+
+    private fun message(amount: Long, address: String = RECIPIENT) = RawMessageEntity(address, amount, null, "")
+
     private val own = AccountAddress(v4r2Address, name = null, isScam = false, isWallet = true)
     private val other = AccountAddress(w5Address, name = null, isScam = false, isWallet = false)
     private val usdt = Jetton(Address.parse(USDT_RAW), "Tether", "USDT", 6, null, JettonVerificationType.NONE)
@@ -490,9 +677,10 @@ class TonTransactionConverterTest {
         jettonSwap: JettonSwap? = null,
         smartContractExec: SmartContractExec? = null,
         liquidityDeposit: LiquidityDeposit? = null,
+        nftTransfer: NftTransfer? = null,
     ) = Action(
         type, status, tonTransfer, jettonTransfer, jettonBurn, null, null, jettonSwap, smartContractExec,
-        liquidityDeposit
+        liquidityDeposit, nftTransfer
     )
 
     private fun tonTransfer(from: AccountAddress, to: AccountAddress) = action(
@@ -579,5 +767,10 @@ class TonTransactionConverterTest {
         const val W5_RAW = "0:2222222222222222222222222222222222222222222222222222222222222222"
         const val THIRD_PARTY_RAW = "0:3333333333333333333333333333333333333333333333333333333333333333"
         const val NFT_RAW = "0:4444444444444444444444444444444444444444444444444444444444444444"
+        const val RECIPIENT = "EQBvW8Z5huBkMJYdnfAEM5JqTNkuWX3diqYENkWsIL0XggGG"
+        const val ITEM_RAW = "0:6666666666666666666666666666666666666666666666666666666666666666"
+        const val OTHER_NFT_RAW = "0:7777777777777777777777777777777777777777777777777777777777777777"
+        const val OTHER_JETTON_RAW = "0:8888888888888888888888888888888888888888888888888888888888888888"
+        val ITEM_FRIENDLY: String = Address.parse(ITEM_RAW).toUserFriendly(bounceable = true)
     }
 }

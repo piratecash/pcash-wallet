@@ -6,7 +6,7 @@ import cash.p.terminal.modules.manageaccount.backupconfirmkey.WordCheckScreen
 import cash.p.terminal.modules.manageaccount.recoveryphrase.rememberSafetyRules
 import cash.p.terminal.modules.manageaccount.safetyrules.SafetyRulesModule.SafetyRulesMode
 import cash.p.terminal.modules.manageaccount.safetyrules.SafetyRulesPage
-import cash.p.terminal.modules.manageaccount.ui.rememberCopyWithHud
+import cash.p.terminal.modules.manageaccount.ui.rememberCopySecretWithHud
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpFrom
@@ -73,7 +73,7 @@ class ShamirSharesPage(private val accountId: String) : HSPage(screenshotEnabled
     @Composable
     override fun GetContent(navigation: HSNavigation) {
         val viewModel = navigation.shamirBackupViewModel(accountId)
-        val copyWithHud = rememberCopyWithHud()
+        val copyWithHud = rememberCopySecretWithHud()
         val textShare = rememberTextShare()
         val confirmCopy = navigation.rememberSafetyRules(SafetyRulesMode.COPY_CONFIRM, SafetyRulesPage.Result.RISK_IT) {
             viewModel.uiState.currentSharePhrase?.let(copyWithHud)

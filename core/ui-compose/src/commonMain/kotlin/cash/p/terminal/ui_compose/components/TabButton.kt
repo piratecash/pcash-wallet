@@ -106,12 +106,7 @@ fun TabBox(
                             minHeight = TabDefaults.MinHeight
                         )
                         .height(TabDefaults.MinHeight)
-                        .padding(
-                            PaddingValues(
-                                start = 0.dp,
-                                end = 0.dp,
-                            )
-                        ),
+                        .padding(contentPadding),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
                     content = content

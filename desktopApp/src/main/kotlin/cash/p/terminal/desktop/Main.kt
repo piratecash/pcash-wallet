@@ -23,6 +23,7 @@ import cash.p.terminal.shared.desktop.DesktopAppVersion
 import cash.p.terminal.shared.desktop.DesktopBalanceAutoHide
 import cash.p.terminal.shared.desktop.DesktopForegroundEffect
 import cash.p.terminal.shared.desktop.DesktopLaunchArguments
+import cash.p.terminal.shared.desktop.DesktopTonConnectAttentionEffect
 import cash.p.terminal.shared.desktop.DesktopWalletSession
 import cash.p.terminal.shared.desktop.DesktopWipeCoordinator
 import cash.p.terminal.shared.desktop.WindowCaptureProtectionEffect
@@ -38,6 +39,7 @@ import cash.p.terminal.core.tor.TorSyncState
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.di.marketModule
+import cash.p.zcash.ZcashNativeLibrary
 import co.touchlab.kermit.Logger
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
@@ -45,6 +47,8 @@ import coil3.ImageLoader
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.crossfade
 import coil3.svg.SvgDecoder
+import com.piratecash.monero.MoneroNative
+import io.horizontalsystems.core.DesktopClipboardManager
 import io.horizontalsystems.core.DesktopLanguageManager
 import io.horizontalsystems.dashlibnative.DashjBlsLibrary
 import io.horizontalsystems.ethereumkit.core.EthereumKit
@@ -52,6 +56,7 @@ import io.horizontalsystems.sqlcipher.SqlCipherDriver
 import java.awt.Desktop
 import java.io.File
 import java.util.Locale
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
@@ -67,6 +72,12 @@ import kotlin.system.exitProcess
 private const val APPLICATION_NAME = "P.CASH"
 private const val INSTANCE_LOCK_FILE = ".instance.lock"
 private const val BEAM_NATIVE_PATH_PROPERTY = "beam.sdk.native.path"
+private val NATIVE_DIR_PROPERTIES = listOf(
+    SqlCipherDriver.NATIVE_DIR_PROPERTY,
+    DashjBlsLibrary.NATIVE_DIR_PROPERTY,
+    MoneroNative.NATIVE_DIR_PROPERTY,
+    ZcashNativeLibrary.NATIVE_DIR_PROPERTY,
+)
 
 private val applicationScope = MainScope()
 
@@ -75,9 +86,9 @@ private var instanceLock: SingleInstanceLock? = null
 
 fun main(args: Array<String>) {
     val launchArguments = DesktopLaunchArguments.parse(args)
-    // The packager re-signs natives inside jars, so SQLCipher, BEAM and JNA load their copies from the app resources.
+    // The packager re-signs natives inside jars, so every kit native and JNA load their copies from the app resources.
     System.getProperty("compose.application.resources.dir")?.let {
-        System.setProperty(SqlCipherDriver.NATIVE_DIR_PROPERTY, it)
+        NATIVE_DIR_PROPERTIES.forEach { property -> System.setProperty(property, it) }
         System.setProperty(BEAM_NATIVE_PATH_PROPERTY, File(it, System.mapLibraryName("beam_sdk_kmp")).path)
         System.setProperty("jna.boot.library.path", it)
         System.setProperty("jna.library.path", it)
@@ -132,13 +143,14 @@ fun main(args: Array<String>) {
                 quit()
             }
             DesktopForegroundEffect(windowState.isMinimized)
+            DesktopTonConnectAttentionEffect(windowState)
             WindowCaptureProtectionEffect(window, koin.get())
             ComposeAppTheme(darkTheme = rememberDesktopDarkTheme()) {
                 DesktopRoot(launchArguments.wipeFailed)
             }
         }
     }
-    closeAndExit(vault)
+    closeAndExit(vault, koin.get())
 }
 
 /** macOS Quit (Cmd+Q, menu, Dock) would otherwise exit at once and skip closing the vault. */
@@ -151,7 +163,9 @@ private fun routeSystemQuit(appExit: DesktopAppExit) {
 }
 
 /** After the screens and their ViewModels are gone: a storage closed under them fails what they still run. */
-private fun closeAndExit(vault: DesktopVault) {
+private fun closeAndExit(vault: DesktopVault, clipboard: DesktopClipboardManager) {
+    // Only now no window is left that could copy a secret after the clear.
+    runBlocking(Dispatchers.Main) { clipboard.clearCopiedSecret() }
     try {
         applicationScope.cancel()
         runBlocking { vault.close() }

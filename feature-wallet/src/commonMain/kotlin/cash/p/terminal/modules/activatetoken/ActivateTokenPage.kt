@@ -44,6 +44,7 @@ import cash.p.terminal.ui_compose.components.CellUniversal
 import cash.p.terminal.ui_compose.components.SectionUniversalLawrence
 import cash.p.terminal.ui_compose.components.SnackbarDuration
 import cash.p.terminal.ui_compose.components.rememberHudMessenger
+import cash.p.terminal.ui.compose.components.coinIconPlate
 import io.horizontalsystems.core.Translator
 import kotlinx.coroutines.launch
 import cash.p.terminal.resources.Res
@@ -134,7 +135,7 @@ fun ActivateTokenScreen(
         SectionUniversalLawrence {
             CellUniversal(borderTop = false) {
                 HsImageCircle(
-                    modifier = Modifier.size(32.dp),
+                    modifier = Modifier.size(32.dp).coinIconPlate(),
                     url = token.coin.imageUrl,
                     alternativeUrl = token.coin.alternativeImageUrl,
                     placeholder = token.iconPlaceholder

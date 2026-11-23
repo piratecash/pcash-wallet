@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,6 +26,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -33,6 +36,7 @@ import cash.p.terminal.entities.NftTrust
 import cash.p.terminal.modules.nft.ui.NftSaleBadge
 import cash.p.terminal.resources.Contacts_ActionMore
 import cash.p.terminal.resources.ic_arrow_up_right_24
+import cash.p.terminal.resources.ic_eye_off
 import cash.p.terminal.resources.ic_info_20
 import cash.p.terminal.resources.ic_more_24
 import cash.p.terminal.resources.nft_not_spam
@@ -59,6 +63,10 @@ import cash.p.terminal.resources.Button_Send
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.ic_nft_verified_16
 import cash.p.terminal.resources.nft_about_collection
+import cash.p.terminal.resources.nft_artwork_hidden_reason
+import cash.p.terminal.resources.nft_artwork_hidden_spam
+import cash.p.terminal.resources.nft_artwork_hidden_tap
+import cash.p.terminal.resources.nft_artwork_hidden_title
 import cash.p.terminal.resources.nft_details
 import cash.p.terminal.resources.nft_domain_expires
 import cash.p.terminal.resources.nft_domain_renew
@@ -209,6 +217,41 @@ private fun SpamPlate(onReportSpam: () -> Unit, onNotSpam: () -> Unit) {
 }
 
 @Composable
+private fun ConcealedArtworkReason(trust: NftTrust, modifier: Modifier = Modifier) {
+    val reason =
+        if (trust == NftTrust.Blacklist) Res.string.nft_artwork_hidden_spam else Res.string.nft_artwork_hidden_reason
+    Column(
+        modifier = modifier
+            .padding(16.dp)
+            .background(ComposeAppTheme.colors.backgroundOverlay, RoundedCornerShape(12.dp))
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Icon(
+            painter = painterResource(Res.drawable.ic_eye_off),
+            contentDescription = null,
+            tint = ComposeAppTheme.colors.contentOnColor,
+            modifier = Modifier.size(24.dp),
+        )
+        Text(
+            text = stringResource(Res.string.nft_artwork_hidden_title),
+            style = ComposeAppTheme.typography.subhead1.copy(fontWeight = FontWeight.SemiBold),
+            color = ComposeAppTheme.colors.contentOnColor,
+            textAlign = TextAlign.Center,
+        )
+        listOf(reason, Res.string.nft_artwork_hidden_tap).forEach {
+            Text(
+                text = stringResource(it),
+                style = ComposeAppTheme.typography.caption,
+                color = ComposeAppTheme.colors.contentOnColor,
+                textAlign = TextAlign.Center,
+            )
+        }
+    }
+}
+
+@Composable
 private fun Modifier.nftSection() = padding(horizontal = 16.dp).nftCard()
 
 @Composable
@@ -235,6 +278,7 @@ private fun NftImage(item: NftItemRecord, uiState: NftPreviewUiState, onClick: (
         )
         // An animation cannot be blurred, so a hidden balance or untrusted NFT shows only the concealed artwork.
         if (!uiState.hidden && !uiState.artworkConcealed) uiState.lottieJson?.let { NftLottie(it) }
+        if (uiState.artworkConcealed) ConcealedArtworkReason(uiState.trust, Modifier.align(Alignment.Center))
         if (uiState.onSale) NftSaleBadge(Modifier.align(Alignment.TopEnd).padding(8.dp))
     }
 }
@@ -529,6 +573,14 @@ private fun NftPreviewScreenRenewUrgentOnSalePreview() = PreviewContent(
     availability = NftTransferAvailability.Unavailable(NftTransferUnavailableReason.OnSale),
     domainExpiry = previewExpiry(5),
 )
+
+@Preview
+@Composable
+private fun NftPreviewScreenGraylistPreview() = PreviewContent(hidden = false, trust = NftTrust.Graylist)
+
+@Preview
+@Composable
+private fun NftPreviewScreenSpamPreview() = PreviewContent(hidden = false, trust = NftTrust.Blacklist)
 
 @Preview
 @Composable

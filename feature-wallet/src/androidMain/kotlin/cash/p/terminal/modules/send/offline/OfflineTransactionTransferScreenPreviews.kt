@@ -85,6 +85,7 @@ private object PreviewOfflineSeams : OfflineTransactionFiles, OfflineQrImageSave
 
     override suspend fun save(image: ImageBitmap) = OfflineFileSaveResult.Failed
     override fun copyText(text: String) = Unit
+    override fun copySecret(text: String) = Unit
     override fun getCopiedText() = ""
     override val hasPrimaryClip = false
 }
