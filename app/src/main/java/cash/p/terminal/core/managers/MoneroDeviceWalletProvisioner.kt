@@ -35,7 +35,7 @@ internal class MoneroDeviceWalletProvisioner(
                 return@withLock walletPublicKey
             }
 
-            val baseName = files.baseName(account.id)
+            val baseName = files.baseName(account)
             var attemptStarted = false
             var recordInserted = false
             try {
@@ -61,10 +61,13 @@ internal class MoneroDeviceWalletProvisioner(
                 )
                 recordInserted = true
                 saveRestoreHeight(account, restoreHeight)
-                restoreSettingsManager.saveMoneroSpentReconciliationState(
-                    account,
-                    MoneroSpentReconciliationState.LiveRefreshPending,
-                )
+                // Only Trezor's cold protocol reconciles spent outputs; a Ledger signs as it syncs.
+                if (account.type is AccountType.TrezorDevice) {
+                    restoreSettingsManager.saveMoneroSpentReconciliationState(
+                        account,
+                        MoneroSpentReconciliationState.LiveRefreshPending,
+                    )
+                }
                 identity
             } catch (error: MoneroDeviceWalletOwnershipRetainedException) {
                 throw error
@@ -101,7 +104,7 @@ internal class MoneroDeviceWalletProvisioner(
         if (!files.valid(record.fileName.value)) {
             throw provisioningFailure("Monero device wallet files are incomplete")
         }
-        val walletPublicKey = (account.type as? AccountType.TrezorDevice)
+        val walletPublicKey = (account.type as? AccountType.HardwareDevice)
             ?.walletPublicKey
             .orEmpty()
         if (walletPublicKey.isNotEmpty()) {

@@ -49,6 +49,7 @@ import kotlin.reflect.KClass
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.Deposit_Title
 import cash.p.terminal.resources.ic_attention_24
+import cash.p.terminal.resources.ledger_verify_address
 import cash.p.terminal.resources.monero_show_address_on_trezor
 import cash.p.terminal.resources.monero_update_with_trezor
 import cash.p.terminal.resources.receive_address_badge_new
@@ -205,7 +206,9 @@ private fun MoneroHardwareWalletActions(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 16.dp),
-            title = stringResource(Res.string.monero_show_address_on_trezor),
+            title = stringResource(
+                if (uiState.ledgerWallet) Res.string.ledger_verify_address else Res.string.monero_show_address_on_trezor,
+            ),
             enabled = !uiState.isHardwareOperationInProgress,
             onClick = onDisplayAddress,
         )

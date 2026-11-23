@@ -25,6 +25,8 @@ import cash.p.terminal.modules.send.rememberExistingViewModel
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.modules.send.hardwareWalletErrorMessage
+import cash.p.terminal.modules.send.isHardwareWalletCancelled
 import cash.p.terminal.ui.compose.components.TransactionInfoAddressCell
 import cash.p.terminal.ui.compose.components.TransactionInfoContactCell
 import cash.p.terminal.ui_compose.components.ButtonPrimaryDefault
@@ -46,7 +48,6 @@ import cash.p.terminal.resources.Swap_Approve
 import cash.p.terminal.resources.Swap_Approving
 import cash.p.terminal.ui_compose.components.rememberHudMessenger
 import io.horizontalsystems.core.Translator
-import cash.p.terminal.core.HardwareWalletSupport
 
 class Eip20ApproveConfirmPage(val input: Eip20ApprovePage.Input) : HSPage() {
     @Composable
@@ -137,10 +138,11 @@ private fun Eip20ApproveConfirmButtons(
                             delay(1200)
                             Eip20ApproveConfirmPage.Result(true)
                         } catch (t: Throwable) {
-                            if (HardwareWalletSupport.isUserCancellation(t)) {
+                            if (t.isHardwareWalletCancelled()) {
                                 hud.dismiss()
                             } else {
-                                val msg = (t as? IllegalStateException)?.message ?: t.javaClass.simpleName
+                                val msg = t.hardwareWalletErrorMessage()
+                                    ?: (t as? IllegalStateException)?.message ?: t.javaClass.simpleName
                                 hud.showError(msg)
                             }
                             Eip20ApproveConfirmPage.Result(false)

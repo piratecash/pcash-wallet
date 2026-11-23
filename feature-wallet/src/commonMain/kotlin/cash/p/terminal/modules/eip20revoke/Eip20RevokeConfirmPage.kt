@@ -15,6 +15,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.modules.send.hardwareWalletErrorMessage
+import cash.p.terminal.wallet.hardware.HardwareCancelledException
 import cash.p.terminal.modules.confirm.ConfirmTransactionScreen
 import cash.p.terminal.modules.evmfee.Cautions
 import cash.p.terminal.modules.multiswap.TokenRow
@@ -42,7 +44,6 @@ import cash.p.terminal.resources.Swap_Revoke
 import cash.p.terminal.resources.Swap_Revoking
 import cash.p.terminal.ui_compose.components.rememberHudMessenger
 import io.horizontalsystems.core.Translator
-import cash.p.terminal.core.HardwareWalletSupport
 
 class Eip20RevokeConfirmPage(val input: Input) : HSPage() {
     @Composable
@@ -115,12 +116,12 @@ fun Eip20RevokeScreen(
                                 delay(1200)
                                 Eip20RevokeConfirmPage.Result(true)
                             } catch (t: Throwable) {
-                                if (HardwareWalletSupport.isTrezorCancellation(t)) {
+                                if (t is HardwareCancelledException) {
                                     buttonEnabled = true
                                     return@launch
                                 }
-                                val msg =
-                                    (t as? IllegalStateException)?.message ?: t.javaClass.simpleName
+                                val msg = t.hardwareWalletErrorMessage()
+                                    ?: (t as? IllegalStateException)?.message ?: t.javaClass.simpleName
                                 hud.showError(msg)
                                 Eip20RevokeConfirmPage.Result(false)
                             }
