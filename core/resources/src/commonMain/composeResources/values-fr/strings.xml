@@ -552,6 +552,8 @@
     <string name="TonConnect_NewConnect">Nouvelle connexion</string>
     <string name="TonConnect_Error_InvalidUrl">Adresse URL invalide</string>
     <string name="ton_connect_request_expired">Le temps de confirmation est écoulé. Refaites cette opération sur le site.</string>
+    <string name="ton_connect_unknown_action_warning">L\'application n\'a pas pu reconnaître cette action. Vérifiez les montants et les adresses ci-dessous avant de confirmer.</string>
+    <string name="ton_connect_action_unknown">Inconnue</string>
     <string name="TonConnect_Unnamed">Sans nom</string>
     <string name="TonConnect_Wallet">Portefeuille</string>
     <string name="TonConnect_ChooseWallet">Choisir un portefeuille</string>
@@ -2558,6 +2560,7 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="nft_burn_body">%1$s sera envoyé à l\u0027adresse de destruction et disparaîtra définitivement du portefeuille. Cette action est irréversible.</string>
     <string name="nft_burn_domain_body">Le domaine sera envoyé à l\u0027adresse de destruction et vous le perdrez. Les transferts vers %1$s n\u0027arriveront plus sur votre portefeuille. Cette action est irréversible.</string>
     <string name="nft_burn_address">Adresse de destruction</string>
+    <string name="nft_address">Adresse du NFT</string>
     <string name="nft_burn_confirm">Brûler</string>
     <string name="nft_trap_transfer_title">Le transfert du NFT n\u0027aboutira pas</string>
     <string name="nft_trap_transfer_body">Nous avons vérifié la transaction avant l\u0027envoi. Le contrat de ce NFT ne le transmettra pas au destinataire et gardera les %1$s joints. C\u0027est ainsi que fonctionnent les NFT de spam.</string>

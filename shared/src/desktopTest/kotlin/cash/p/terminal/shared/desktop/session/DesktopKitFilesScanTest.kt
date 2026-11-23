@@ -8,6 +8,7 @@ import cash.p.terminal.core.managers.BeamSessionOwner
 import cash.p.terminal.core.managers.BeamStorageLocator
 import cash.p.terminal.core.managers.KitStorageNaming
 import cash.p.terminal.core.managers.OfflineModeManager
+import cash.p.terminal.core.managers.TonConnectStorage
 import cash.p.terminal.core.storage.StorageRouter
 import cash.p.terminal.core.usecase.MoneroWalletStorage
 import cash.p.terminal.core.usecase.MoneroWalletUseCase
@@ -91,6 +92,7 @@ class DesktopKitFilesScanTest {
 
         KIT_TOKENS.forEach { (_, token) -> adapter(token, first) }
         graph.koin.get<ZcashDatabaseFiles>().databaseDir(first.id).mkdirs()
+        graph.koin.get<TonConnectStorage>().platformContext(first.id)
 
         assertEquals(emptyList(), (allPaths() - outsideBefore).filterNot { it.startsWith(firstDirectory) })
         assertTrue(secondDirectory.walkTopDown().toSet().size < firstDirectory.walkTopDown().toSet().size)

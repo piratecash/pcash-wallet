@@ -551,6 +551,8 @@
     <string name="TonConnect_NewConnect">Nueva conexión</string>
     <string name="TonConnect_Error_InvalidUrl">Dirección URL no válida</string>
     <string name="ton_connect_request_expired">El tiempo para confirmar ha expirado. Repite la operación en el sitio web.</string>
+    <string name="ton_connect_unknown_action_warning">La aplicación no pudo reconocer esta acción. Comprueba los importes y las direcciones de abajo antes de confirmar.</string>
+    <string name="ton_connect_action_unknown">Desconocida</string>
     <string name="TonConnect_Unnamed">Sin nombre</string>
     <string name="TonConnect_Wallet">Billetera</string>
     <string name="TonConnect_ChooseWallet">Elegir billetera</string>
@@ -2552,6 +2554,7 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="nft_burn_body">%1$s se enviará a la dirección de quema y desaparecerá de la billetera para siempre. Esto no se puede deshacer.</string>
     <string name="nft_burn_domain_body">El dominio se enviará a la dirección de quema y lo perderá. Las transferencias a %1$s dejarán de llegar a su billetera. Esto no se puede deshacer.</string>
     <string name="nft_burn_address">Dirección de quema</string>
+    <string name="nft_address">Dirección del NFT</string>
     <string name="nft_burn_confirm">Quemar</string>
     <string name="nft_trap_transfer_title">La transferencia del NFT no se realizará</string>
     <string name="nft_trap_transfer_body">Comprobamos la transacción antes de enviarla. El contrato de este NFT no lo entregará al destinatario y se quedará con los %1$s adjuntos. Así funcionan los NFT de spam.</string>
