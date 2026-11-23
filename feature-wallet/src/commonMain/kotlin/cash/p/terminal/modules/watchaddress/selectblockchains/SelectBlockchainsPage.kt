@@ -41,6 +41,7 @@ import cash.p.terminal.ui_compose.components.HsSwitch
 import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
+import cash.p.terminal.ui.compose.components.coinIconPlate
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.AccountType
 import kotlinx.coroutines.delay
@@ -142,6 +143,7 @@ private fun SelectBlockchainsScreen(
                             modifier = Modifier
                                 .padding(end = 16.dp)
                                 .size(32.dp)
+                                .coinIconPlate()
                         )
                         Column(modifier = Modifier.weight(1f)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {

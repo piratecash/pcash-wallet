@@ -58,7 +58,14 @@ class TonNftProviderTest {
     private val tonKitManager = mockk<TonKitManager> {
         every { startedKitsFlow } returns kits
     }
-    private val provider = TonNftProvider(tonKitManager, TestDispatcherProvider(dispatcher, TestScope(dispatcher)))
+    private val trustedCollections = mockk<NftTrustedCollectionsRepository> {
+        every { isTrusted(any(), any()) } returns false
+    }
+    private val provider = TonNftProvider(
+        tonKitManager,
+        TestDispatcherProvider(dispatcher, TestScope(dispatcher)),
+        trustedCollections,
+    )
 
     @After
     fun tearDown() {
@@ -76,6 +83,19 @@ class TonNftProviderTest {
         )
 
         assertEquals(2, provider.countNfts(mockk(), TonWalletVersion.W5))
+    }
+
+    @Test
+    fun countNfts_blacklistedTrustedCollection_counted() = test {
+        val api = countableApi()
+        val collection = NftCollection(TRUSTED_COLLECTION, "Ours", "")
+        coEvery { api.getAccountNftItems(Address.parse(OWNER), any()) } returns listOf(
+            nft("ours", trust = KitNftTrust.BLACKLIST, collection = collection),
+            nft("bad", trust = KitNftTrust.BLACKLIST),
+        )
+        every { trustedCollections.isTrusted(BlockchainType.Ton, TRUSTED_COLLECTION) } returns true
+
+        assertEquals(1, provider.countNfts(mockk(), TonWalletVersion.W5))
     }
 
     @Test
@@ -542,5 +562,6 @@ class TonNftProviderTest {
         val OWNER: String = Address.parse("0:" + "ab".repeat(32)).toUserFriendly(false)
         val OTHER_OWNER: String = Address.parse("0:" + "cd".repeat(32)).toUserFriendly(false)
         val NFT_ADDRESS: String = Address.parse("0:" + "ef".repeat(32)).toUserFriendly(false)
+        val TRUSTED_COLLECTION: String = Address.parse("0:" + "12".repeat(32)).toUserFriendly(true)
     }
 }

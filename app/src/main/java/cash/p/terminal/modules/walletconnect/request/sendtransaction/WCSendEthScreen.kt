@@ -35,6 +35,9 @@ import io.horizontalsystems.core.logger.AppLogger
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import androidx.compose.foundation.layout.padding
+import cash.p.terminal.modules.walletconnect.WCVerifyAlert
+import cash.p.terminal.modules.walletconnect.WCVerifyAlertCard
 
 @Composable
 fun WCSendEthRequestScreen(
@@ -43,6 +46,7 @@ fun WCSendEthRequestScreen(
     blockchainType: BlockchainType,
     transaction: WalletConnectTransaction,
     peerName: String,
+    verifyAlert: WCVerifyAlert?,
 ) {
     val viewModel = viewModel<WCSendEthereumTransactionRequestViewModel>(
         viewModelStoreOwner = navigation.viewModelStoreOwnerForPage(WCRequestPage::class),
@@ -112,6 +116,7 @@ fun WCSendEthRequestScreen(
             )
         }
     ) {
+        WCVerifyAlertCard(verifyAlert, Modifier.padding(horizontal = 16.dp))
         SendEvmTransactionView(
             navigation,
             uiState.sectionViewItems,

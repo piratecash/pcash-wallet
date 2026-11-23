@@ -28,6 +28,7 @@ import io.horizontalsystems.core.entities.Currency
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.koin.java.KoinJavaComponent.inject
+import io.horizontalsystems.tronkit.models.AccountResources
 import java.math.BigDecimal
 import java.math.RoundingMode
 import cash.p.terminal.core.getKoinInstance
@@ -205,6 +206,7 @@ class SwapViewModel(
             quoteCautions = quoteState.quote?.cautions.orEmpty(),
             tokenOutAction = quoteState.tokenOutAction,
             tronAccountControlledByOthers = tronAccountControlledByOthers,
+            tronResources = balanceState.tronResources,
         )
     }
 
@@ -614,6 +616,7 @@ data class SwapUiState(
     val quoteCautions: List<HSCaution>,
     val tokenOutAction: ISwapProviderAction? = null,
     val tronAccountControlledByOthers: Boolean = false,
+    val tronResources: AccountResources? = null,
 ) {
     private val requestedAmount: BigDecimal?
         get() = when (direction) {

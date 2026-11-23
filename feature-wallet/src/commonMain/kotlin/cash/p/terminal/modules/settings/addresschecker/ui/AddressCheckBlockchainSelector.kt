@@ -25,6 +25,7 @@ import cash.p.terminal.ui_compose.components.CellUniversal
 import cash.p.terminal.ui_compose.components.HsDivider
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_leah
+import cash.p.terminal.ui.compose.components.coinIconPlate
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.IWalletManager
 import coil3.compose.rememberAsyncImagePainter
@@ -96,7 +97,7 @@ private fun BlockchainCell(
                 error = painterResource(Res.drawable.ic_platform_placeholder_32)
             ),
             contentDescription = null,
-            modifier = Modifier.size(32.dp)
+            modifier = Modifier.size(32.dp).coinIconPlate()
         )
         body_leah(
             modifier = Modifier

@@ -129,12 +129,7 @@ abstract class SwapConfirmViewModelTestBase {
             onBufferOverflow = BufferOverflow.DROP_OLDEST
         ).also { it.tryEmit(transactionState) }
         sendTransactionSettings = MutableStateFlow(SendTransactionSettings.Common)
-        val sendTransactionService = serviceOverride ?: mockk<ISendTransactionService<Nothing>>(relaxed = true) {
-            every { hasSettings() } returns false
-            every { mevProtectionAvailable } returns false
-            every { stateFlow } returns ServiceStateFlow(this@SwapConfirmViewModelTestBase.transactionStates.asSharedFlow())
-            every { sendTransactionSettingsFlow } returns this@SwapConfirmViewModelTestBase.sendTransactionSettings
-        }
+        val sendTransactionService = serviceOverride ?: sendTransactionServiceMock()
         val adapterManager = mockk<IAdapterManager>(relaxed = true)
         val assetFiatRateService = mockk<AssetFiatRateService>(relaxed = true)
         val currencyManager = mockk<CurrencyManager> {
@@ -165,6 +160,17 @@ abstract class SwapConfirmViewModelTestBase {
         viewModelStore.register(vm)
         return vm
     }
+
+    /** Wired to the flows of the next [createViewModel] call, so it can be created before it. */
+    protected fun sendTransactionServiceMock(): ISendTransactionService<Nothing> =
+        mockk(relaxed = true) {
+            every { hasSettings() } returns false
+            every { mevProtectionAvailable } returns false
+            every { stateFlow } answers {
+                ServiceStateFlow(this@SwapConfirmViewModelTestBase.transactionStates.asSharedFlow())
+            }
+            every { sendTransactionSettingsFlow } answers { this@SwapConfirmViewModelTestBase.sendTransactionSettings }
+        }
 
     protected fun providerFailingWith(error: Throwable): IMultiSwapProvider =
         mockk<IMultiSwapProvider>(relaxed = true) {

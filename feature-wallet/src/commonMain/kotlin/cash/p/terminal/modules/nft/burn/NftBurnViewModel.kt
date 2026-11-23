@@ -2,15 +2,20 @@ package cash.p.terminal.modules.nft.burn
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cash.p.terminal.core.HSCaution
 import cash.p.terminal.core.nft.owner
 import cash.p.terminal.entities.NftItemRecord
 import cash.p.terminal.modules.nft.NftOwnerWalletResolver
 import cash.p.terminal.modules.nft.operation.NftOperationOutcome
 import cash.p.terminal.modules.nft.operation.TonNftOperationRunner
 import cash.p.terminal.modules.nft.shortNftAddress
+import cash.p.terminal.modules.nft.transfer.nftTrapCaution
 import cash.p.terminal.modules.nft.ui.HIDDEN_NAME
 import cash.p.terminal.modules.offline.OfflineOperationGate
 import cash.p.terminal.modules.xrate.XRateService
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.nft_trap_burn_body
+import cash.p.terminal.resources.nft_trap_burn_title
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
@@ -25,6 +30,7 @@ data class NftBurnUiState(
     val insufficientBalance: TranslatableString?,
     val canBurn: Boolean,
     val outcome: NftOperationOutcome,
+    val trapCaution: HSCaution?,
 )
 
 /** [domain]: the item is a TON DNS domain with this name; [namesRevealed] as in the renewal sheet. */
@@ -64,6 +70,9 @@ class NftBurnViewModel(
                 insufficientBalance = state.insufficientBalance,
                 canBurn = state.canRun,
                 outcome = state.outcome,
+                trapCaution = state.token?.takeIf { state.nftNotTransferred }?.let {
+                    nftTrapCaution(Res.string.nft_trap_burn_title, Res.string.nft_trap_burn_body, it)
+                },
             )
         }
 

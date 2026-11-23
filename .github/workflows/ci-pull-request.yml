@@ -32,6 +32,13 @@ jobs:
         with:
           # Write from every branch: repeated pushes to a feature branch reuse its own outputs.
           cache-read-only: false
+      - name: Cache Robolectric android-all jars
+        # Robolectric downloads them itself, outside Gradle's retries and cache.
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.m2/repository/org/robolectric
+          key: robolectric-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
+          restore-keys: robolectric-${{ runner.os }}-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Run vault tests

@@ -8,13 +8,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.entities.NftItemRecord
 import cash.p.terminal.modules.nft.NftPreviewPage
+import cash.p.terminal.modules.nft.ui.displayName
 import cash.p.terminal.modules.send.SendConfirmationScreen
 import cash.p.terminal.modules.send.fee.NetworkFeeWarningOverlay
 import cash.p.terminal.modules.send.rememberBalanceToggle
 import cash.p.terminal.modules.send.rememberExistingViewModel
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.navigation.ResultLauncher
 import cash.p.terminal.navigation.navigateUpFrom
+import cash.p.terminal.navigation.rememberResultLauncher
+import cash.p.terminal.navigation.slideFromBottom
 import java.math.BigDecimal
 
 class NftTransferConfirmationPage(private val item: NftItemRecord) : HSPage() {
@@ -23,11 +27,14 @@ class NftTransferConfirmationPage(private val item: NftItemRecord) : HSPage() {
     override fun GetContent(navigation: HSNavigation) {
         val viewModel = navigation.rememberExistingViewModel(NftTransferPage::class, NftTransferViewModel::class)
         val data = remember { viewModel?.confirmationData() }
+        val trapWarning = navigation.rememberResultLauncher<NftTrapWarningSheet.Result> {
+            viewModel?.onClickSendWithWarningCheck()
+        }
         if (viewModel == null || data == null) {
             LaunchedEffect(Unit) { navigation.navigateUpFrom(this@NftTransferConfirmationPage) }
             return
         }
-        Confirmation(navigation, viewModel, data)
+        Confirmation(navigation, viewModel, data, trapWarning)
     }
 
     @Composable
@@ -35,8 +42,10 @@ class NftTransferConfirmationPage(private val item: NftItemRecord) : HSPage() {
         navigation: HSNavigation,
         viewModel: NftTransferViewModel,
         data: NftTransferConfirmationData,
+        trapWarning: ResultLauncher<Unit>,
     ) {
         val token = viewModel.wallet.token
+        val trapSheet = NftTrapWarningSheet(item.displayName(hidden = false), nftTrapAttachedText(token))
         val insufficientText = viewModel.uiState.insufficientBalance?.getString()
         SendConfirmationScreen(
             navigation = navigation,
@@ -55,7 +64,11 @@ class NftTransferConfirmationPage(private val item: NftItemRecord) : HSPage() {
             lockTimeInterval = null,
             memo = data.comment,
             rbfEnabled = null,
-            onClickSend = viewModel::onClickSendWithWarningCheck,
+            onClickSend = if (data.trapCaution != null) {
+                { trapWarning.slideFromBottom(trapSheet) }
+            } else {
+                viewModel::onClickSendWithWarningCheck
+            },
             sendEntryPoint = NftPreviewPage::class,
             isSynced = viewModel.isSynced,
             hasAdapterError = viewModel.hasAdapterError,
@@ -72,6 +85,7 @@ class NftTransferConfirmationPage(private val item: NftItemRecord) : HSPage() {
             insufficientFeeText = insufficientText,
             assetContent = { NftAssetRow(item, Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) },
             recipientDomain = data.address.domain,
+            sendCaution = data.trapCaution,
         )
 
         NetworkFeeWarningOverlay(

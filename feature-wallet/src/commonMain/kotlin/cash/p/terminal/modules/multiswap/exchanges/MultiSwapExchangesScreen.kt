@@ -42,6 +42,7 @@ import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_grey
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead2_leah
+import cash.p.terminal.ui.compose.components.coinIconPlate
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.Transactions_Swaps
@@ -183,17 +184,17 @@ private fun CoinIconChain(
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         HsImageCircle(
-            modifier = Modifier.size(24.dp),
+            modifier = Modifier.size(24.dp).coinIconPlate(),
             url = coinIconUrlIn,
         )
         DashSeparator()
         HsImageCircle(
-            modifier = Modifier.size(24.dp),
+            modifier = Modifier.size(24.dp).coinIconPlate(),
             url = coinIconUrlIntermediate,
         )
         DashSeparator()
         HsImageCircle(
-            modifier = Modifier.size(24.dp),
+            modifier = Modifier.size(24.dp).coinIconPlate(),
             url = coinIconUrlOut,
         )
     }
