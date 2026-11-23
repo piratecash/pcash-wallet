@@ -203,6 +203,7 @@ class AdapterLocalDataContractTest : ZcashAdapterTestFixture() {
             syncMode = BitcoinCore.SyncMode.Full(),
             backgroundManager = backgroundManager,
             wallet = WalletFactory.previewWallet(),
+            dispatcherProvider = mockk(relaxed = true),
         )
         clearMocks(kit, answers = false)
 

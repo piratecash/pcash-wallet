@@ -13,6 +13,7 @@ import cash.p.terminal.modules.balance.token.TokenBalanceService
 import cash.p.terminal.modules.balance.token.TokenBalanceViewModel
 import cash.p.terminal.modules.balance.token.TokenTransactionsService
 import cash.p.terminal.modules.balance.token.creationblock.CreationBlockViewModel
+import cash.p.terminal.modules.signmessage.SignMessageViewModel
 import cash.p.terminal.modules.transactions.SelectContactViewModel
 import cash.p.terminal.modules.receive.viewmodels.DerivationSelectViewModel
 import cash.p.terminal.modules.receive.viewmodels.BchAddressTypeSelectViewModel
@@ -232,6 +233,8 @@ import cash.p.terminal.modules.send.address.EnterAddressValidator
 import cash.p.terminal.core.address.AddressCheckManager
 import cash.p.terminal.modules.sendevmtransaction.SendEvmTransactionViewItemFactory
 import cash.p.terminal.modules.address.AddressViewModel as SendAddressViewModel
+import cash.p.terminal.modules.tonconnect.TonConnectSendRequestViewModel
+import io.horizontalsystems.tonkit.models.SignTransaction
 
 class KoinGraphTest : KoinTest {
 
@@ -288,6 +291,7 @@ class KoinGraphTest : KoinTest {
             *coinSubPageInjections(),
             definition<TransactionPollingManager>(List::class),
             definition<VersionChangelogViewModel>(ChangelogRequest::class),
+            definition<TonConnectSendRequestViewModel>(SignTransaction::class),
         )
 
         fullModule.verify(
@@ -448,6 +452,7 @@ class KoinGraphTest : KoinTest {
         definition<OfflineModeToggleViewModel>(Wallet::class),
         definition<TokenBalanceViewModel>(Wallet::class),
         definition<CreationBlockViewModel>(Wallet::class),
+        definition<SignMessageViewModel>(Wallet::class),
         definition<ReceiveAddressViewModel>(Wallet::class),
         definition<ReceiveMoneroViewModel>(Wallet::class),
         definition<ReceiveStellarAssetViewModel>(Wallet::class),

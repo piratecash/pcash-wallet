@@ -36,6 +36,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -48,11 +49,13 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.withContext
 import java.math.BigDecimal
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.beam_receive_regular_alert
@@ -475,6 +478,7 @@ class ReceiveAddressViewModelTest {
     fun setData_publishedWhileTheAdapterIsStillBeingRead_neverPairsSuccessWithAnEmptyAddress() = runTest(dispatcher) {
         // The collector runs on a real worker so it can be held inside the adapter read while Main publishes.
         Dispatchers.setMain(StandardTestDispatcher(dispatcher.scheduler))
+        val worker = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
         every { adapterManager.getReceiveAdapterForWallet(wallet) } returns adapter
         val readingAddress = CountDownLatch(1)
         val releaseRead = CountDownLatch(1)
@@ -491,23 +495,30 @@ class ReceiveAddressViewModelTest {
         val viewModel = ReceiveAddressViewModel(
             wallet = wallet,
             adapterManager = adapterManager,
-            dispatcherProvider = TestDispatcherProvider(Dispatchers.IO, testScope),
+            dispatcherProvider = TestDispatcherProvider(worker, testScope),
         )
         viewModelStore.put("receive-address", viewModel)
 
-        assertTrue(readingAddress.await(5, TimeUnit.SECONDS))
-        runCurrent()
-        val published = viewModel.uiState
-        assertFalse(
-            "success published with an empty address",
-            published.viewState == ViewState.Success && published.address.isEmpty(),
-        )
+        try {
+            assertTrue(readingAddress.await(5, TimeUnit.SECONDS))
+            runCurrent()
+            val published = viewModel.uiState
+            assertFalse(
+                "success published with an empty address",
+                published.viewState == ViewState.Success && published.address.isEmpty(),
+            )
 
-        releaseRead.countDown()
-        assertTrue(childStarted.await(5, TimeUnit.SECONDS))
-        runCurrent()
-        assertEquals(ViewState.Success, viewModel.uiState.viewState)
-        assertEquals(ADAPTER_ADDRESS, viewModel.uiState.address)
+            releaseRead.countDown()
+            assertTrue(childStarted.await(5, TimeUnit.SECONDS))
+            runCurrent()
+            assertEquals(ViewState.Success, viewModel.uiState.viewState)
+            assertEquals(ADAPTER_ADDRESS, viewModel.uiState.address)
+        } finally {
+            // Work left on the worker would reach Main after tearDown resets it and fail the next test.
+            viewModelStore.clear()
+            withContext(worker) {}
+            worker.close()
+        }
     }
 
     @Test

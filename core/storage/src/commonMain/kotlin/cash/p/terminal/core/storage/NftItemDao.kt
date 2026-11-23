@@ -18,6 +18,9 @@ interface NftItemDao {
     )
     fun observe(accountId: String, ownerAddresses: List<String>): Flow<List<NftItemRecord>>
 
+    @Query("SELECT * FROM NftItemRecord WHERE accountId = :accountId AND address IN (:addresses)")
+    suspend fun items(accountId: String, addresses: List<String>): List<NftItemRecord>
+
     @Query(
         "DELETE FROM NftItemRecord " +
             "WHERE accountId = :accountId AND blockchainType = :blockchainType AND ownerAddress = :ownerAddress"

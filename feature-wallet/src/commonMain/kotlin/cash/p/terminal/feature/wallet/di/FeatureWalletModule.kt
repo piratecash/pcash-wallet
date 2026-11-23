@@ -76,6 +76,10 @@ import cash.p.terminal.modules.markdown.MarkdownViewModel
 import cash.p.terminal.modules.nft.NftCollectionsViewModel
 import cash.p.terminal.modules.nft.NftGramHintsViewModel
 import cash.p.terminal.modules.nft.NftPreviewViewModel
+import cash.p.terminal.modules.tonconnect.TonConnectListViewModel
+import cash.p.terminal.modules.tonconnect.TonConnectNewViewModel
+import cash.p.terminal.modules.tonconnect.TonConnectSendRequestViewModel
+import cash.p.terminal.modules.xtransaction.helpers.TransactionInfoHelper
 import cash.p.terminal.modules.nft.manage.NftManageViewModel
 import cash.p.terminal.modules.nft.NftOwnerWalletResolver
 import cash.p.terminal.modules.nft.NftTransferAvailabilityProvider
@@ -289,6 +293,7 @@ import cash.p.terminal.modules.balance.BalanceViewItemFactory
 import cash.p.terminal.modules.balance.balanceViewModel
 import cash.p.terminal.modules.balance.token.addresspoisoning.AddressPoisoningViewModel
 import cash.p.terminal.modules.balance.token.creationblock.CreationBlockViewModel
+import cash.p.terminal.modules.signmessage.SignMessageViewModel
 import cash.p.terminal.modules.balance.token.tokenBalanceViewModel
 import cash.p.terminal.modules.coin.overview.TokenWalletActions
 import cash.p.terminal.modules.displayoptions.DisplayOptionsViewModel
@@ -539,6 +544,12 @@ val featureWalletModule = module {
     viewModel { (url: String) -> MarkdownViewModel(url, get(), get()) }
     viewModel { params -> NftCollectionsViewModel(params.get(), get(), get(), get(), get(), get()) }
     viewModel { params -> NftManageViewModel(params.get(), get(), get(), get(), get()) }
+    viewModelOf(::TonConnectListViewModel)
+    viewModel { params -> TonConnectNewViewModel(params.get(), get(), get(), get(), get(), get()) }
+    viewModel { params ->
+        TonConnectSendRequestViewModel(params.get(), get(), get(), get(), get(), get(), get(), get(), get())
+    }
+    factoryOf(::TransactionInfoHelper)
     viewModel { params -> NftPreviewViewModel(params.get(), params.get(), get(), get(), get(), get(), get()) }
     viewModelOf(::NftDomainRenewalViewModel)
     viewModelOf(::NftGramHintsViewModel)
@@ -725,6 +736,7 @@ val featureWalletModule = module {
         AddressPoisoningViewModel(coinUid, isPirate, blockchainType, get(), get(), get(), get())
     }
     viewModel { (wallet: Wallet) -> CreationBlockViewModel(wallet, get(), get(), get(), get(), get()) }
+    viewModel { (wallet: Wallet) -> SignMessageViewModel(wallet, get()) }
     viewModel { (coinUid: String) -> BchAddressTypeSelectViewModel(coinUid, get()) }
     viewModel { (coinUid: String) -> DerivationSelectViewModel(coinUid, get()) }
     viewModel { (termTitles: Array<String>) -> PassphraseTermsViewModel(termTitles, get()) }

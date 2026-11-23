@@ -99,7 +99,7 @@ fun HsChartLineHeader(
     } else {
         chartHeaderView?.value ?: "--"
     }
-    val mainValueHint = chartHeaderView?.valueHint
+    val mainValueHint = chartHeaderView?.valueHint?.let { if (balanceHidden) "*****" else it }
     val diff = chartHeaderView?.diff
     val date = chartHeaderView?.date
     val extraData = chartHeaderView?.extraData
