@@ -63,6 +63,7 @@ import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.placeholderPainter
 import cash.p.terminal.ui_compose.components.subhead2_grey
+import cash.p.terminal.ui.compose.components.coinIconPlate
 import cash.p.terminal.ui_compose.entities.SectionItemPosition
 import cash.p.terminal.ui_compose.sectionItemBorder
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
@@ -358,6 +359,10 @@ private fun TransactionFooter(
 }
 
 @Composable
+private fun Modifier.transactionIconShape(rectangle: Boolean): Modifier =
+    if (rectangle) clip(RoundedCornerShape(CornerSize(4.dp))) else coinIconPlate()
+
+@Composable
 private fun TransactionIconBox(item: TransactionViewItem) {
     Box(
         modifier = Modifier
@@ -380,7 +385,7 @@ private fun TransactionIconBox(item: TransactionViewItem) {
 
             is TransactionViewItem.Icon.Platform -> {
                 Icon(
-                    modifier = Modifier.size(32.dp),
+                    modifier = Modifier.size(32.dp).coinIconPlate(),
                     painter = icon.iconRes?.let { painterResource(it) }
                         ?: placeholderPainter(Res.drawable.coin_placeholder),
                     tint = ComposeAppTheme.colors.iconPrimary,
@@ -389,12 +394,10 @@ private fun TransactionIconBox(item: TransactionViewItem) {
             }
 
             is TransactionViewItem.Icon.Regular -> {
-                val shape =
-                    if (icon.rectangle) RoundedCornerShape(CornerSize(4.dp)) else CircleShape
                 HsImage(
                     modifier = Modifier
                         .size(32.dp)
-                        .clip(shape),
+                        .transactionIconShape(icon.rectangle),
                     url = icon.url,
                     alternativeUrl = icon.alternativeUrl,
                     placeholder = icon.placeholder
@@ -402,8 +405,6 @@ private fun TransactionIconBox(item: TransactionViewItem) {
             }
 
             is TransactionViewItem.Icon.Double -> {
-                val backShape =
-                    if (icon.back.rectangle) RoundedCornerShape(CornerSize(4.dp)) else CircleShape
                 val frontShape =
                     if (icon.front.rectangle) RoundedCornerShape(CornerSize(4.dp)) else CircleShape
                 HsImage(
@@ -411,7 +412,7 @@ private fun TransactionIconBox(item: TransactionViewItem) {
                         .align(Alignment.TopStart)
                         .padding(top = 4.dp, start = 6.dp)
                         .size(24.dp)
-                        .clip(backShape),
+                        .transactionIconShape(icon.back.rectangle),
                     url = icon.back.url,
                     alternativeUrl = icon.back.alternativeUrl,
                     placeholder = icon.back.placeholder,
@@ -431,7 +432,7 @@ private fun TransactionIconBox(item: TransactionViewItem) {
                         .align(Alignment.BottomEnd)
                         .padding(bottom = 4.dp, end = 6.dp)
                         .size(24.dp)
-                        .clip(frontShape),
+                        .transactionIconShape(icon.front.rectangle),
                     url = icon.front.url,
                     alternativeUrl = icon.front.alternativeUrl,
                     placeholder = icon.front.placeholder,

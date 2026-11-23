@@ -369,6 +369,7 @@ class AdapterFactory(
                             backgroundManager = backgroundManager,
                             derivation = tokenType.derivation,
                             environment = bitcoinKitEnvironment(wallet),
+                            dispatcherProvider = dispatcherProvider,
                             feeRateProvider = BitcoinFeeRateProvider(feeRateProvider)
                         )
                     }
@@ -617,7 +618,7 @@ class AdapterFactory(
             evmLabelManager
         )
 
-        return TronTransactionsAdapter(tronKitWrapper, tronTransactionConverter)
+        return TronTransactionsAdapter(tronKitWrapper, tronTransactionConverter, dispatcherProvider)
     }
 
     suspend fun tonTransactionsAdapter(source: TransactionSource): ITransactionsAdapter? {

@@ -33,6 +33,7 @@ import cash.p.terminal.ui_compose.components.HudHelper
 import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import cash.p.terminal.modules.walletconnect.WCVerifyAlertCard
 
 @Composable
 fun WcRequestScreen(
@@ -100,6 +101,8 @@ fun WcRequestScreen(
                 .fillMaxWidth()
         ) {
             VSpacer(12.dp)
+
+            WCVerifyAlertCard(uiState.verifyAlert, Modifier.padding(horizontal = 16.dp))
 
             uiState.contentItems.forEach { sectionViewItem ->
                 SectionView(

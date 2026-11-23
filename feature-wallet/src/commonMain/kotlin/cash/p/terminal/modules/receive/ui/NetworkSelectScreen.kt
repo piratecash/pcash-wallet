@@ -32,6 +32,7 @@ import cash.p.terminal.ui_compose.components.rememberHudMessenger
 import cash.p.terminal.ui_compose.components.showNotSupportedOnPlatform
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
+import cash.p.terminal.ui.compose.components.coinIconPlate
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.Wallet
@@ -121,7 +122,8 @@ fun NetworkCell(
         Image(
             modifier = Modifier
                 .padding(horizontal = 16.dp)
-                .size(32.dp),
+                .size(32.dp)
+                .coinIconPlate(),
             painter = rememberAsyncImagePainterWithFallback(
                 model = imageUrl,
                 error = painterResource(Res.drawable.ic_platform_placeholder_32)

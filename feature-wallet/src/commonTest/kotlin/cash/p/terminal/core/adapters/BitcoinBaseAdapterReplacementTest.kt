@@ -248,6 +248,7 @@ class BitcoinBaseAdapterReplacementTest {
         syncMode = BitcoinCore.SyncMode.Full(),
         backgroundManager = mockk(relaxed = true),
         wallet = wallet,
+        dispatcherProvider = mockk(relaxed = true),
     )
 
     private fun assertVisibleWithWarning(page: List<TransactionRecord>, uid: String, conflictingHash: String) {

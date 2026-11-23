@@ -239,7 +239,7 @@ abstract class ZcashAdapterTestFixture {
                 ZcashSessionResult.Success(firstArg<suspend (ZcashWallet) -> Any?>()(zcashWallet))
             }
             // The reservation is the session's own concern; the adapter only sees the node's verdict.
-            coEvery { broadcastReserved(any(), any(), any()) } coAnswers {
+            coEvery { broadcastReserved(any(), any(), any(), any()) } coAnswers {
                 ZcashSessionResult.Success(
                     zcashWallet.broadcast(DB_ACCOUNT_ID, firstArg(), secondArg(), thirdArg())
                 )

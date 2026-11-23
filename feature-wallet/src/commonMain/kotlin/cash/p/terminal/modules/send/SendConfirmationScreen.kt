@@ -55,7 +55,6 @@ import cash.p.terminal.ui.compose.components.SectionTitleCell
 import cash.p.terminal.ui.compose.components.TransactionInfoAddressCell
 import cash.p.terminal.ui.compose.components.TransactionInfoContactCell
 import cash.p.terminal.ui.compose.components.TransactionInfoRbfCell
-import cash.p.terminal.ui_compose.components.TextImportantError
 import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.TitleAndValueCell
 import cash.p.terminal.ui_compose.components.body_leah
@@ -88,6 +87,7 @@ import cash.p.terminal.resources.send_confirmation_sync_error_warning
 import cash.p.terminal.resources.send_confirmation_syncing_warning
 import cash.p.terminal.resources.send_failed_offline_prompt_message
 import cash.p.terminal.resources.send_failed_offline_prompt_title
+import cash.p.terminal.core.CautionErrorBlock
 import cash.p.terminal.core.HSCaution
 import cash.p.terminal.core.getKoinInstance
 import io.horizontalsystems.core.IAppNumberFormatter
@@ -303,14 +303,7 @@ fun SendConfirmationScreen(
                         )
                     }
                 }
-                sendCaution?.let { caution ->
-                    val description = caution.getDescription()
-                    TextImportantError(
-                        modifier = Modifier.padding(bottom = 12.dp),
-                        text = description ?: caution.getString(),
-                        title = caution.getString().takeIf { description != null },
-                    )
-                }
+                sendCaution?.let { CautionErrorBlock(it, Modifier.padding(bottom = 12.dp)) }
                 SendButton(
                     modifier = Modifier.fillMaxWidth(),
                     sendResult = sendResult,

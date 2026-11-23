@@ -1,6 +1,7 @@
 package cash.p.terminal.modules.walletconnect
 
 import cash.p.terminal.core.App
+import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.modules.walletconnect.handler.IWCHandler
 import cash.p.terminal.modules.walletconnect.handler.MethodData
 import cash.p.terminal.modules.walletconnect.request.AbstractWCAction
@@ -10,10 +11,14 @@ import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.IAccountManager
 import co.touchlab.kermit.Logger
 import com.reown.walletkit.client.Wallet
+import com.reown.walletkit.client.WalletKit
+import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.entities.BlockchainType
+import kotlinx.coroutines.withContext
 
 class WCManager(
     private val accountManager: IAccountManager,
+    private val dispatcherProvider: DispatcherProvider,
 ) {
     sealed class SupportState {
         object Supported : SupportState()
@@ -27,6 +32,11 @@ class WCManager(
 
     fun addWcHandler(wcHandler: IWCHandler) {
         handlersMap[wcHandler.chainNamespace] = wcHandler
+    }
+
+    fun isUnsupportedMethod(sessionRequest: Wallet.Model.SessionRequest): Boolean {
+        val handler = handlersMap[sessionRequest.chainId?.substringBefore(":")] ?: return false
+        return sessionRequest.request.method !in handler.supportedMethods
     }
 
     fun getMethodData(sessionRequest: Wallet.Model.SessionRequest): MethodData? {
@@ -57,6 +67,11 @@ class WCManager(
             logger.w(e) { "Failed to build action for ${sessionRequest.request.method}" }
             null
         }
+    }
+
+    // Requests only get red alerts: an unverified origin was already accepted when the session was approved.
+    suspend fun getRequestVerifyAlert(requestId: Long): WCVerifyAlert? = withContext(dispatcherProvider.io) {
+        tryOrNull { WalletKit.getVerifyContext(requestId) }?.toAlert(reportUnverified = false)
     }
 
     fun getWalletConnectSupportState(): SupportState {

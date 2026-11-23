@@ -37,6 +37,7 @@ import cash.p.terminal.ui_compose.components.rememberHudMessenger
 import cash.p.terminal.ui_compose.components.showNotSupportedOnPlatform
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
+import cash.p.terminal.ui.compose.components.coinIconPlate
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.DrawableResource
@@ -174,6 +175,7 @@ fun ReceiveCoin(
             modifier = Modifier
                 .padding(end = 16.dp)
                 .size(32.dp)
+                .coinIconPlate()
         )
         Column(
             modifier = Modifier.fillMaxWidth()

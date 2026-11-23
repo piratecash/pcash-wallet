@@ -5,56 +5,22 @@ import io.horizontalsystems.databasenaming.DatabaseNameResolver
 import io.horizontalsystems.tronkit.PlatformContext
 import cash.p.terminal.wallet.entities.BalanceData
 import cash.p.terminal.core.managers.TronKitWrapper
-import cash.p.terminal.core.tryOrNull
 import io.horizontalsystems.tronkit.TronKit
 import io.horizontalsystems.tronkit.models.Address
 import io.horizontalsystems.tronkit.models.Contract
 import io.horizontalsystems.tronkit.network.Network
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import java.math.BigDecimal
 
 class TronAdapter(kitWrapper: TronKitWrapper) : BaseTronAdapter(kitWrapper, decimal) {
 
-    private val coroutineScope = CoroutineScope(Dispatchers.Default)
-    private val _fee = MutableStateFlow(BigDecimal.ZERO)
-    override val fee: StateFlow<BigDecimal> = _fee.asStateFlow()
-    private var networkJob: Job? = null
-
-    // Until the recipient is known (e.g. a swap deposit address) reserve the worst case: activating it.
     override val maxSpendableBalance: BigDecimal
-        get() = maxOf(balanceData.available - activationReserve, BigDecimal.ZERO)
-
-    private val activationReserve: BigDecimal
-        get() = tronKit.accountActivationFees().sumOf { it.feeInSuns }.toBigDecimal().movePointLeft(decimal)
+        get() = maxOf(balanceData.available - fee.value, BigDecimal.ZERO)
 
     // IAdapter
 
     override fun attachLocalData() = Unit
-
-    override fun resumeNetwork() {
-        networkJob = coroutineScope.launch {
-            tronKit.trxBalanceFlow.collect {
-                estimateFeeForMax()
-            }
-        }
-    }
-
-    override fun pauseNetwork() {
-        networkJob?.cancel()
-    }
-
-    override fun stop() {
-        coroutineScope.cancel()
-    }
 
     override suspend fun refresh() {
         // refreshed via TronKitManager
@@ -79,14 +45,6 @@ class TronAdapter(kitWrapper: TronKitWrapper) : BaseTronAdapter(kitWrapper, deci
 
     override fun transferContract(amount: BigDecimal, to: Address): Contract =
         tronKit.transferContract(scaleUp(amount), to)
-
-    private suspend fun estimateFeeForMax() {
-        tryOrNull {
-            val amount = maxOf(balanceData.available, BigDecimal.ONE.movePointLeft(decimal))
-            val fees = estimateFee(amount, tronKit.address)
-            _fee.value = fees.sumOf { it.feeInSuns }.toBigDecimal().movePointLeft(decimal).stripTrailingZeros()
-        }
-    }
 
     private fun convertToAdapterState(syncState: TronKit.SyncState): AdapterState =
         when (syncState) {

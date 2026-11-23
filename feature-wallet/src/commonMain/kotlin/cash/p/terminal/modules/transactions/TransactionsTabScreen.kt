@@ -3,8 +3,6 @@ package cash.p.terminal.modules.transactions
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -16,7 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -30,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import cash.p.terminal.modules.balance.ui.HideBalanceToggle
 import cash.p.terminal.resources.Button_Search
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.Transactions_WaitForSync
@@ -37,16 +35,12 @@ import cash.p.terminal.resources.Transactions_EmptyList
 import cash.p.terminal.resources.Transactions_Title
 import cash.p.terminal.resources.offline_signed_empty
 import cash.p.terminal.resources.offline_signed_title
-import cash.p.terminal.resources.hide_balance
 import cash.p.terminal.resources.aml_promo_dismiss_hud
 import cash.p.terminal.resources.ic_clock
 import cash.p.terminal.resources.ic_outgoingraw
-import cash.p.terminal.resources.ic_eye_off
-import cash.p.terminal.resources.ic_eye_20
 import cash.p.terminal.resources.Transactions_Filter
 import cash.p.terminal.resources.ic_manage_2_24
 import cash.p.terminal.resources.ic_search
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import cash.p.terminal.core.rememberPremiumToggle
@@ -69,7 +63,6 @@ import cash.p.terminal.ui_compose.components.LocalHudMessenger
 import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.components.SnackbarDuration
 import cash.p.terminal.ui_compose.components.subhead1_grey
-import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
@@ -451,28 +444,7 @@ private fun HideBalanceOverlay(
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
-            Row(
-                modifier = Modifier.clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = onToggle
-                ),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                subhead2_grey(
-                    text = stringResource(Res.string.hide_balance),
-                )
-                Spacer(modifier = Modifier.size(8.dp))
-                Icon(
-                    painter = painterResource(
-                        if (balanceHidden) Res.drawable.ic_eye_off
-                        else Res.drawable.ic_eye_20
-                    ),
-                    contentDescription = null,
-                    tint = ComposeAppTheme.colors.iconSecondary,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
+            HideBalanceToggle(hidden = balanceHidden, onToggle = onToggle)
         }
         HorizontalDivider(
             thickness = 1.dp,

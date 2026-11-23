@@ -29,6 +29,7 @@ import cash.p.terminal.ui_compose.components.InfoText
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.subhead2_leah
+import cash.p.terminal.ui.compose.components.coinIconPlate
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.title
 import io.horizontalsystems.chartview.rememberAsyncImagePainterWithFallback
@@ -108,7 +109,7 @@ private fun DonateAddress(
             }
         ) {
             Image(
-                modifier = Modifier.size(32.dp),
+                modifier = Modifier.size(32.dp).coinIconPlate(),
                 painter = rememberAsyncImagePainterWithFallback(
                     model = coinImageUrl,
                     error = painterResource(Res.drawable.ic_platform_placeholder_32)
