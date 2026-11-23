@@ -7,6 +7,9 @@ import cash.p.terminal.core.isBlockedByProvider
 import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.core.managers.isNetworkPaused
 import cash.p.terminal.core.tryOrNull
+import cash.p.terminal.ledger.domain.LedgerNotFoundException
+import cash.p.terminal.ledger.ui.ledgerErrorMessageOrNull
+import cash.p.terminal.ledgerkit.apdu.LedgerException
 import cash.p.terminal.modules.balance.BalanceModule.warningText
 import cash.p.terminal.modules.displayoptions.DisplayDiffOptionType
 import cash.p.terminal.modules.offline.OfflineOperationGate.Companion.availability
@@ -50,6 +53,8 @@ import cash.p.terminal.resources.beam_restore_importing_snapshot
 import cash.p.terminal.resources.beam_restore_resolving_birthday
 import cash.p.terminal.resources.beam_restore_scanning_wallet_outputs
 import cash.p.terminal.resources.beam_restore_validating_snapshot
+import cash.p.terminal.resources.ledger_monero_confirm_view_key
+import cash.p.terminal.resources.ledger_waiting_for_device
 import cash.p.terminal.resources.hardware_connect_device_to_sync
 import cash.p.terminal.resources.balance_sync_error_fixed_source
 import cash.p.terminal.strings.helpers.TranslatableString
@@ -315,6 +320,10 @@ class BalanceViewItemFactory(
                 substatus,
                 state.progress,
             )
+            AdapterState.Substatus.ConfirmViewKeyExport ->
+                return Translator.getString(Res.string.ledger_monero_confirm_view_key)
+            AdapterState.Substatus.WaitingForLedger ->
+                return Translator.getString(Res.string.ledger_waiting_for_device)
             null -> Unit
         }
 
@@ -598,12 +607,17 @@ class BalanceViewItemFactory(
 
     // A hardware Monero wallet syncs only while its device is connected; a node failure is not the device's.
     private fun deviceSyncErrorMessage(error: Throwable?): String? = when {
+        error is HardwareWalletOperationException && error.error == HardwareWalletErrorCode.ViewKeyExportDenied ->
+            Translator.getString(Res.string.ledger_monero_confirm_view_key)
+
         error is HardwareWalletOperationException && error.error == HardwareWalletErrorCode.Network -> null
 
-        error is HardwareWalletOperationException ->
+        error is HardwareWalletOperationException ||
+            error is LedgerNotFoundException ||
+            error is LedgerException.TransportClosed ->
             Translator.getString(Res.string.hardware_connect_device_to_sync)
 
-        else -> null
+        else -> error?.let(::ledgerErrorMessageOrNull)
     }
 
     private fun syncErrorMessage(error: Throwable?, deviceMessage: String?): String? = when {

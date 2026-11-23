@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.os.Build
 import kotlinx.coroutines.channels.awaitClose
@@ -33,6 +32,3 @@ private fun Context.usbDeviceEvents(action: String, vendorId: Int): Flow<Unit> =
     }
     awaitClose { unregisterReceiver(receiver) }
 }
-
-@Suppress("DEPRECATION")
-private fun Intent.usbDevice(): UsbDevice? = getParcelableExtra(UsbManager.EXTRA_DEVICE)

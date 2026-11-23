@@ -8,6 +8,7 @@ import cash.p.terminal.core.managers.MoneroSubaddressInfo
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.trezor_connect_failed
 import cash.p.terminal.wallet.Account
+import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
@@ -52,6 +53,7 @@ class ReceiveMoneroViewModelTest {
 
     private val account = mockk<Account> {
         every { isWatchAccount } returns false
+        every { type } returns AccountType.TrezorDevice("device-id", "T3T1", "2.8.10", "wallet-key")
     }
     private val coin = mockk<Coin> {
         every { code } returns "XMR"

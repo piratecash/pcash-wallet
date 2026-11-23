@@ -2,7 +2,7 @@
 
 ## Русский
 
-Актуальные release notes для поколения `1.x.x` остаются в основных файлах changelog:
+Актуальные release notes для поколения `2.x.x` остаются в основных файлах changelog:
 
 - Русский: [changelog_ru.md](../changelog_ru.md)
 - Английский: [changelog_en.md](../changelog_en.md)
@@ -20,12 +20,13 @@
 - `fix` — номер версии исправлений внутри текущего поколения;
 - `versionCode` — код сборки Android, совпадающий с третьим компонентом версии.
 
-Например, в версии `1.2.262`: `1` — глобальное поколение, `2` — версия исправлений, `262` — `versionCode`.
+Например, в версии `2.0.265`: `2` — глобальное поколение, `0` — версия исправлений, `265` — `versionCode`.
 
 Пока первая цифра не меняется, все release notes этого поколения остаются в `changelog_ru.md` и `changelog_en.md`. Архив создаётся только при переходе к следующему поколению.
 
 | Ветка релизов | Русский | Английский |
 | --- | --- | --- |
+| `1.x.x` | [ru/1.x.x.md](./ru/1.x.x.md) | [en/1.x.x.md](./en/1.x.x.md) |
 | `0.61.x` | [ru/0.61.x.md](./ru/0.61.x.md) | [en/0.61.x.md](./en/0.61.x.md) |
 | `0.60.x` | [ru/0.60.x.md](./ru/0.60.x.md) | [en/0.60.x.md](./en/0.60.x.md) |
 | `0.59.x` | [ru/0.59.x.md](./ru/0.59.x.md) | [en/0.59.x.md](./en/0.59.x.md) |
@@ -49,7 +50,7 @@
 
 ## English
 
-Current `1.x.x` generation release notes remain in the root changelog files:
+Current `2.x.x` generation release notes remain in the root changelog files:
 
 - Russian: [changelog_ru.md](../changelog_ru.md)
 - English: [changelog_en.md](../changelog_en.md)
@@ -67,12 +68,13 @@ Versions use the `major.fix.versionCode` format:
 - `fix` is the correction release number within the current generation;
 - `versionCode` is the Android build code and matches the third version component.
 
-For example, in version `1.2.262`: `1` is the global generation, `2` is the correction release, and `262` is the `versionCode`.
+For example, in version `2.0.265`: `2` is the global generation, `0` is the correction release, and `265` is the `versionCode`.
 
 As long as the first component does not change, all release notes for that generation remain in `changelog_ru.md` and `changelog_en.md`. An archive is created only when the next generation starts.
 
 | Release branch | Russian | English |
 | --- | --- | --- |
+| `1.x.x` | [ru/1.x.x.md](./ru/1.x.x.md) | [en/1.x.x.md](./en/1.x.x.md) |
 | `0.61.x` | [ru/0.61.x.md](./ru/0.61.x.md) | [en/0.61.x.md](./en/0.61.x.md) |
 | `0.60.x` | [ru/0.60.x.md](./ru/0.60.x.md) | [en/0.60.x.md](./en/0.60.x.md) |
 | `0.59.x` | [ru/0.59.x.md](./ru/0.59.x.md) | [en/0.59.x.md](./en/0.59.x.md) |
@@ -96,26 +98,26 @@ As long as the first component does not change, all release notes for that gener
 
 ## Как архивировать предыдущее поколение релизов
 
-Архивируйте changelog только при смене первой цифры версии. Например, при переходе с `1.x.x` на `2.x.x`:
+Архивируйте changelog только при смене первой цифры версии. Например, при переходе с `2.x.x` на `3.x.x`:
 
-1. Создайте `release-notes/ru/1.x.x.md` и перенесите туда все записи версий `1.*.*` из `changelog_ru.md`.
-2. Создайте `release-notes/en/1.x.x.md` и перенесите туда все записи версий `1.*.*` из `changelog_en.md`.
-3. Оставьте в основных changelog-файлах только версии нового поколения `2.*.*`.
-4. Добавьте строку `1.x.x` в обе таблицы архива выше.
-5. Обновите вводный текст, указав новое текущее поколение `2.x.x`.
+1. Создайте `release-notes/ru/2.x.x.md` и перенесите туда все записи версий `2.*.*` из `changelog_ru.md`.
+2. Создайте `release-notes/en/2.x.x.md` и перенесите туда все записи версий `2.*.*` из `changelog_en.md`.
+3. Оставьте в основных changelog-файлах только версии нового поколения `3.*.*`.
+4. Добавьте строку `2.x.x` в обе таблицы архива выше.
+5. Обновите вводный текст, указав новое текущее поколение `3.x.x`.
 6. Не переименовывайте существующие архивы `0.xx.x`: они созданы по прежней схеме.
 
 Для следующих поколений используйте тот же принцип: все версии с одной первой цифрой хранятся вместе в `{major}.x.x.md`.
 
 ## How to archive the previous release generation
 
-Archive the changelog only when the first version component changes. For example, when moving from `1.x.x` to `2.x.x`:
+Archive the changelog only when the first version component changes. For example, when moving from `2.x.x` to `3.x.x`:
 
-1. Create `release-notes/ru/1.x.x.md` and move every `1.*.*` entry from `changelog_ru.md` into it.
-2. Create `release-notes/en/1.x.x.md` and move every `1.*.*` entry from `changelog_en.md` into it.
-3. Leave only the new `2.*.*` generation in the root changelog files.
-4. Add a `1.x.x` row to both archive tables above.
-5. Update the introduction to identify `2.x.x` as the current generation.
+1. Create `release-notes/ru/2.x.x.md` and move every `2.*.*` entry from `changelog_ru.md` into it.
+2. Create `release-notes/en/2.x.x.md` and move every `2.*.*` entry from `changelog_en.md` into it.
+3. Leave only the new `3.*.*` generation in the root changelog files.
+4. Add a `2.x.x` row to both archive tables above.
+5. Update the introduction to identify `3.x.x` as the current generation.
 6. Do not rename the existing `0.xx.x` archives; they use the previous scheme.
 
 Use the same rule for later generations: every version sharing the same first component is stored together in `{major}.x.x.md`.

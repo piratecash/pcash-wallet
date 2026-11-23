@@ -22,13 +22,53 @@ class CompositeScanToAddUseCaseTest {
     private val accountManager = mockk<IAccountManager>()
     private val tangemScanToAdd = mockk<ScanToAddUseCase>()
     private val trezorScanToAdd = mockk<ScanToAddUseCase>()
+    private val ledgerScanToAdd = mockk<ScanToAddUseCase>()
     private val addMonero = mockk<AddMoneroToTrezorAccountUseCase>()
     private val useCase = CompositeScanToAddUseCase(
         accountManager,
         tangemScanToAdd,
         trezorScanToAdd,
+        ledgerScanToAdd,
         addMonero,
     )
+
+    @Test
+    fun addTokensByScan_ledgerAccount_routesToLedgerScan() = runTest {
+        val ledger = Account(
+            id = ACCOUNT_ID,
+            name = "Ledger",
+            type = AccountType.LedgerDevice(DEVICE_ID, "NanoX", "wallet-key"),
+            origin = AccountOrigin.Created,
+            level = 0,
+        )
+        val ethereum = TokenQuery(BlockchainType.Ethereum, TokenType.Native)
+        every { accountManager.account(ACCOUNT_ID) } returns ledger
+        coEvery { ledgerScanToAdd.addTokensByScan(listOf(ethereum), DEVICE_ID, ACCOUNT_ID) } returns true
+
+        val result = useCase.addTokensByScan(listOf(ethereum), DEVICE_ID, ACCOUNT_ID)
+
+        assertTrue(result)
+        coVerify(exactly = 0) { trezorScanToAdd.addTokensByScan(any(), any(), any()) }
+        coVerify(exactly = 0) { tangemScanToAdd.addTokensByScan(any(), any(), any()) }
+    }
+
+    @Test
+    fun addTokensByScan_ledgerMonero_provisionsWallet() = runTest {
+        val ledger = Account(
+            id = ACCOUNT_ID,
+            name = "Ledger",
+            type = AccountType.LedgerDevice(DEVICE_ID, "NanoX", "wallet-key"),
+            origin = AccountOrigin.Created,
+            level = 0,
+        )
+        every { accountManager.account(ACCOUNT_ID) } returns ledger
+        coEvery { ledgerScanToAdd.addTokensByScan(listOf(moneroQuery), DEVICE_ID, ACCOUNT_ID) } returns true
+        coEvery { addMonero.provision(ledger) } returns ledger
+
+        useCase.addTokensByScan(listOf(moneroQuery), DEVICE_ID, ACCOUNT_ID)
+
+        coVerify(exactly = 1) { addMonero.provision(ledger) }
+    }
 
     @Test
     fun addTokensByScan_targetTrezorIsNotActive_addsMoneroToTargetAccount() = runTest {

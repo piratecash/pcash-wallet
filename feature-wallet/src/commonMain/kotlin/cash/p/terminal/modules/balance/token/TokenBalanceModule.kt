@@ -96,6 +96,7 @@ class TokenBalanceModule {
         val transactionsHidden: Boolean = false,
         val offlineSince: Long? = null,
         val moneroHardwareWallet: Boolean = false,
+        val moneroLedgerWallet: Boolean = false,
         val moneroSpendReadiness: MoneroSpendReadiness? = null,
         val moneroKeyImageSyncInProgress: Boolean = false,
         val moneroKeyImageSyncError: StringResource? = null,
