@@ -38,13 +38,15 @@ fun HsSettingCell(
     newBadgeText: String? = null,
     alertPainter: Painter? = null,
     onClick: (() -> Unit)? = null,
+    onInfoClick: (() -> Unit)? = null,
 ) {
     RowUniversal(
         modifier = modifier.padding(horizontal = 16.dp),
         onClick = onClick,
     ) {
         SettingCellLeadingIcon(leadingPainter, iconTint)
-        SettingCellTitle(title, leadingPainter != null)
+        SettingCellTitle(title, leadingPainter != null, onInfoClick != null)
+        onInfoClick?.let { InfoIconButton(onClick = it, modifier = Modifier.padding(end = 16.dp)) }
         Spacer(Modifier.weight(1f))
         SettingCellValue(counterBadge, value, onClick != null)
         SettingCellNewBadge(newBadgeText)
@@ -144,6 +146,7 @@ private fun SettingCellLeadingIcon(
 private fun SettingCellTitle(
     title: String,
     hasLeadingIcon: Boolean,
+    hasInfoIcon: Boolean,
 ) {
     body_leah(
         text = title,
@@ -151,7 +154,7 @@ private fun SettingCellTitle(
         overflow = TextOverflow.Ellipsis,
         modifier = Modifier.padding(
             start = if (hasLeadingIcon) 16.dp else 0.dp,
-            end = 16.dp,
+            end = if (hasInfoIcon) 8.dp else 16.dp,
         ),
     )
 }

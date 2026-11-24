@@ -24,7 +24,6 @@ import cash.p.terminal.network.yifi.domain.entity.YiFiPair
 import cash.p.terminal.network.yifi.domain.entity.YiFiQuote
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.ic_yifi
-import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.useCases.WalletUseCase
@@ -143,9 +142,9 @@ class YiFiProvider(
     override fun getCreateTokenActionRequired(tokens: List<Token>): ActionCreate? =
         providerSupport.getCreateTokenActionRequired(tokens)
 
-    override suspend fun getWarningMessage(tokenIn: Token, tokenOut: Token): TranslatableString? =
+    override suspend fun temporaryRefundAddress(tokenIn: Token, tokenOut: Token): String? =
         withContext(dispatcherProvider.io) {
-            providerSupport.getWarningMessage(tokenIn)
+            providerSupport.temporaryRefundAddress(tokenIn)
         }
 
     override suspend fun fetchFinalQuote(

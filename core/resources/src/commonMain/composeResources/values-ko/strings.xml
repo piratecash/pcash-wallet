@@ -717,7 +717,33 @@
     <string name="unsupported_address">지원되지 않는 주소</string>
     <string name="unexpected_error">Unexpected error</string>
     <string name="unsupported_token">지원되지 않는 토큰</string>
-    <string name="zec_transparent_used">교환을 생성할 때 임시 t-주소가 사용됩니다: %s. 이 주소는 교환 제공자에게 전달되며, 교환이 완료되지 않을 경우 환불을 위해 필요합니다. t-주소를 사용하면 거래가 부분적으로 익명 해제될 수 있습니다.</string>
+    <string name="zec_refund_plate">환불에는 임시 t-주소 %1$s을(를) 사용합니다.</string>
+    <string name="zec_refund_address_title">임시 환불 주소</string>
+    <string name="zec_refund_notice_direct">스왑이 실패하면 %1$s이(가) 이 주소로 ZEC를 환불합니다. 이 주소는 투명 주소이므로 블록체인에서 확인할 수 있습니다.</string>
+    <string name="zec_refund_notice_via_pcash">스왑이 실패하면 %1$s이(가) P.CASH 서버를 통해 이 주소로 ZEC를 환불합니다. 이 주소는 투명 주소이므로 블록체인에서 확인할 수 있습니다.</string>
+    <string name="zec_refund_notice_restore">스왑마다 새 주소가 발급됩니다. 시드 문구만으로 복원하면 주소가 반복될 수 있고 환불이 자동으로 발견되지 않을 수 있습니다. 이를 방지하려면 백업을 만드세요. 누락된 환불은 ZEC 설정의 주소 검색으로 찾을 수 있습니다.</string>
+    <string name="zec_refund_address_copy">주소 복사</string>
+    <string name="zec_refund_address_explorer">탐색기에서 보기</string>
+    <string name="zec_refund_address_error">환불 주소를 가져오지 못했습니다</string>
+    <string name="zec_address_search_title">주소 검색</string>
+    <plurals name="zec_address_search_addresses">
+        <item quantity="other">%1$s개 주소</item>
+    </plurals>
+    <string name="zec_address_search_running">진행 중 · %1$d%</string>
+    <string name="zec_address_search_description">시드 문구로 복원한 후 보이지 않는 임시 주소로의 스왑 제공자 환불을 찾습니다.</string>
+    <string name="zec_address_search_info">시드 문구만으로 복원한 후 지갑에 보이지 않는 임시 주소로 들어온 스왑 제공자 환불을 찾습니다. 백업에서 복원한 경우에는 검색이 필요 없습니다.\n\n무언가 발견된 주소는 이후 지갑이 직접 확인합니다. 빈 주소는 기억되지 않습니다. 확인 날짜 이후에 환불이 들어왔다면 “%1$s”을(를) 누르세요.</string>
+    <string name="zec_address_search_checked">확인됨</string>
+    <string name="zec_address_search_more">추가 확인</string>
+    <plurals name="zec_address_search_total">
+        <item quantity="other">총 %1$s개 주소를 확인합니다.</item>
+    </plurals>
+    <string name="zec_address_search_long">검색에 약 %1$d분이 걸립니다.</string>
+    <string name="zec_address_search_start">검색 시작</string>
+    <string name="zec_address_search_check_all_again">처음부터 다시 확인</string>
+    <string name="zec_address_search_progress">%2$s개 중 %1$s개 확인됨</string>
+    <string name="zec_address_search_found">거래가 있는 주소 발견</string>
+    <string name="zec_address_search_hint">닫아도 됩니다. 앱을 다시 시작한 후에도 검색은 계속됩니다.</string>
+    <string name="zec_address_search_stop">중지</string>
     <string name="swap_yifi_memo_unsupported">스왑 제공자가 이 네트워크에서 보낼 수 없는 입금 메모(memo)를 요구합니다. 다른 제공자를 선택하세요.</string>
     <string name="swap_provider_order_failed">제공자가 스왑을 생성하지 못했습니다. 견적을 새로고침하거나 뒤로 가서 다른 제공자를 선택하세요.</string>
     <!-- Swap Settings -->

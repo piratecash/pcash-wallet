@@ -200,6 +200,17 @@ class AssetSettingsPage(val wallet: Wallet) : HSPage() {
             creationBlockVisible = creationBlockVisible,
             currentHeightText = currentHeightText,
             onCreationBlockClick = { navigation.slideFromRight(CreationBlockPage(wallet)) },
+            addressSearchRow = viewModel.addressSearchUiState?.takeIf { creationBlockVisible }?.let { state ->
+                {
+                    ZcashAddressSearchRow(
+                        uiState = state,
+                        onMoreChange = viewModel::onAddressSearchMoreChange,
+                        onStart = viewModel::startAddressSearch,
+                        onCheckAllAgain = viewModel::checkAllAddressesAgain,
+                        onStop = viewModel::stopAddressSearch,
+                    )
+                }
+            },
             onSignMessageClick = { navigation.slideFromRight(SignMessagePage(wallet)) }.takeIf { signMessageVisible },
         )
     }

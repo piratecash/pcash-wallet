@@ -81,6 +81,7 @@ fun TextImportantWarning(
     title: String? = null,
     icon: DrawableResource? = null,
     onClose: (() -> Unit)? = null,
+    onInfoClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
     TextImportant(
@@ -92,6 +93,7 @@ fun TextImportantWarning(
         textColor = ComposeAppTheme.colors.statusWarning,
         iconColor = ComposeAppTheme.colors.statusWarning,
         onClose = onClose,
+        onInfoClick = onInfoClick,
         alignTrailingToEndWhenNoTitle = true,
         content = content
     )

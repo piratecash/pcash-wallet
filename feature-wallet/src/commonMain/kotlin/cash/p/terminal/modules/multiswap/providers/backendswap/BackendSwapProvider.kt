@@ -29,7 +29,6 @@ import cash.p.terminal.network.backendswap.domain.entity.BackendSwapCreatedOrder
 import cash.p.terminal.network.backendswap.domain.entity.BackendSwapEstimateRequest
 import cash.p.terminal.network.backendswap.domain.entity.BackendSwapProviderInfo
 import cash.p.terminal.network.swaprepository.SwapProvider
-import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.useCases.WalletUseCase
@@ -65,6 +64,7 @@ class BackendSwapProvider(
     override val riskType = ProviderRiskType.Controlled
     override val mevProtectionAvailable = false
     override val signsOrderWithAccountKey = true
+    override val createsOrderThroughPcashServer = true
 
     // SwapConfirmViewModel requests the final quote repeatedly; each miss creates a new order.
     private var placedOrder: PlacedOrder? by accountManager.accountScoped()
@@ -130,9 +130,9 @@ class BackendSwapProvider(
     override fun getCreateTokenActionRequired(tokens: List<Token>): ActionCreate? =
         providerSupport.getCreateTokenActionRequired(tokens)
 
-    override suspend fun getWarningMessage(tokenIn: Token, tokenOut: Token): TranslatableString? =
+    override suspend fun temporaryRefundAddress(tokenIn: Token, tokenOut: Token): String? =
         withContext(dispatcherProvider.io) {
-            providerSupport.getWarningMessage(tokenIn)
+            providerSupport.temporaryRefundAddress(tokenIn)
         }
 
     override suspend fun fetchFinalQuote(

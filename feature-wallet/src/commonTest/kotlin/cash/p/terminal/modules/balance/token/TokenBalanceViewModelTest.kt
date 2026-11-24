@@ -8,10 +8,14 @@ import cash.p.terminal.core.TransactionSettingsStorage
 import cash.p.terminal.core.MoneroSpendReadiness
 import cash.p.terminal.core.adapters.zcash.ZcashAdapter
 import cash.p.terminal.core.adapters.zcash.convertZatoshiToZec
+import cash.p.terminal.core.adapters.zcash.session.ZcashAddressSearch
+import cash.p.terminal.core.adapters.zcash.session.ZcashAddressSearchState
+import cash.p.terminal.core.adapters.zcash.session.ZcashSyncScheduler
 import cash.p.terminal.core.managers.AmlStatusManager
 import cash.p.terminal.core.managers.AddressLabelManager
 import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
+import cash.p.terminal.core.managers.NumberFormatter
 import cash.p.terminal.core.managers.OfflineKey
 import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.core.managers.PendingTransactionRegistrar
@@ -94,6 +98,7 @@ import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import io.mockk.verify
 import java.math.BigDecimal
+import java.util.Locale
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.Dispatchers
@@ -155,6 +160,11 @@ class TokenBalanceViewModelTest : KoinTest {
     private val locallyCreatedTransactionRepository = mockk<LocallyCreatedTransactionRepository>(relaxed = true)
     private val pendingRegistrar = mockk<PendingTransactionRegistrar>(relaxed = true)
     private val evmBlockchainManager = mockk<EvmBlockchainManager>(relaxed = true)
+    private val addressSearchFlow = MutableStateFlow<ZcashAddressSearchState?>(null)
+    private val syncScheduler = mockk<ZcashSyncScheduler>(relaxed = true)
+    private val addressSearch = mockk<ZcashAddressSearch>(relaxed = true) {
+        every { state(any()) } returns addressSearchFlow
+    }
     private val addressLabelsChangedFlow = MutableSharedFlow<Unit>()
     private val addressLabelManager = mockk<AddressLabelManager>(relaxed = true) {
         every { labelsChangedFlow } returns addressLabelsChangedFlow
@@ -203,6 +213,8 @@ class TokenBalanceViewModelTest : KoinTest {
                 }
                 single { addressLabelManager }
                 single { evmBlockchainManager }
+                single { addressSearch }
+                single { syncScheduler }
             }
         )
     }
@@ -2158,6 +2170,91 @@ class TokenBalanceViewModelTest : KoinTest {
     // endregion
 
     // region Helper Methods
+
+    @Test
+    fun addressSearchUiState_searchRunning_showsCheckedOfTargetAndRoundedPercent() = runTest(dispatcher) {
+        setZcashTransparentWallet()
+        val viewModel = createViewModel()
+
+        addressSearchFlow.value = ZcashAddressSearchState(checkedThrough = 2360, target = 5520, checkedAt = null, found = 1)
+        advanceUntilIdle()
+
+        val state = checkNotNull(viewModel.addressSearchUiState)
+        assertEquals(true, state.running)
+        assertEquals(43, state.percent)
+        assertEquals("2,360", state.checkedText)
+        assertEquals("5,520", state.targetText)
+        assertEquals("1", state.foundText)
+    }
+
+    @Test
+    fun onAddressSearchMoreChange_input_validatesAndRecomputesTheTotal() = runTest(dispatcher) {
+        setZcashTransparentWallet()
+        val viewModel = createViewModel()
+        addressSearchFlow.value = ZcashAddressSearchState(checkedThrough = 520, target = null, checkedAt = null, found = 0)
+        advanceUntilIdle()
+
+        assertEquals(1020, viewModel.addressSearchUiState?.total)
+        assertEquals(null, viewModel.addressSearchUiState?.longSearchMinutes)
+
+        viewModel.onAddressSearchMoreChange("0")
+        assertEquals(null, viewModel.addressSearchUiState?.total)
+
+        viewModel.onAddressSearchMoreChange("1a2")
+        assertEquals("12", viewModel.addressSearchUiState?.moreText)
+        assertEquals(532, viewModel.addressSearchUiState?.total)
+
+        viewModel.onAddressSearchMoreChange("5000")
+        assertEquals(4, viewModel.addressSearchUiState?.longSearchMinutes)
+    }
+
+    @Test
+    fun startAddressSearch_validInput_startsWithThatCount() = runTest(dispatcher) {
+        setZcashTransparentWallet()
+        val viewModel = createViewModel()
+        addressSearchFlow.value = ZcashAddressSearchState(checkedThrough = 520, target = null, checkedAt = null, found = 0)
+        advanceUntilIdle()
+
+        viewModel.onAddressSearchMoreChange("")
+        viewModel.startAddressSearch()
+        advanceUntilIdle()
+        coVerify(exactly = 0) { addressSearch.start(any(), any()) }
+
+        viewModel.onAddressSearchMoreChange("700")
+        viewModel.startAddressSearch()
+        advanceUntilIdle()
+        coVerify(exactly = 1) { addressSearch.start(any(), 700) }
+        verify(exactly = 1) { syncScheduler.wakeUp() }
+    }
+
+    @Test
+    fun addressSearchUiState_notZcash_staysHidden() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        addressSearchFlow.value = ZcashAddressSearchState(checkedThrough = 520, target = null, checkedAt = null, found = 0)
+        advanceUntilIdle()
+
+        assertEquals(null, viewModel.addressSearchUiState)
+    }
+
+    private fun setZcashTransparentWallet() {
+        val token = Token(
+            coin = Coin(uid = "zcash", name = "Zcash", code = "ZEC"),
+            blockchain = Blockchain(BlockchainType.Zcash, "Zcash", null),
+            type = TokenType.AddressSpecTyped(TokenType.AddressSpecType.Unified),
+            decimals = 8,
+        )
+        val account = Account(
+            id = "zcash-account",
+            name = "Zcash",
+            type = AccountType.Mnemonic(emptyList(), ""),
+            origin = AccountOrigin.Restored,
+            level = 0,
+        )
+        testWallet = checkNotNull(WalletFactory(mockk(relaxed = true)).create(token, account, null))
+        // The real formatter: it rejects Int, which a pass-through mock would hide.
+        val formatter = NumberFormatter(mockk { every { currentLocale } returns Locale.US })
+        every { numberFormatter.format(any(), 0, 0, any(), any()) } answers { formatter.format(firstArg(), 0, 0) }
+    }
 
     private fun markSwapsByUidPrefix() {
         coEvery { transactionViewItemFactory.convertToViewItemCached(any(), any(), any()) } answers {

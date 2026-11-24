@@ -717,7 +717,35 @@
     <string name="unsupported_address">آدرس پشتیبانی نمی‌شود</string>
     <string name="unexpected_error">Unexpected error</string>
     <string name="unsupported_token">توکن پشتیبانی نمی‌شود</string>
-    <string name="zec_transparent_used">در هنگام ایجاد مبادله از آدرس t موقت استفاده می‌شود: ‎%s‎. این آدرس به ارائه‌دهنده مبادله ارسال می‌شود و در صورت عدم تکمیل مبادله برای بازپرداخت وجه مورد نیاز است. استفاده از آدرس t ممکن است منجر به ناشناس‌زدایی جزئی تراکنش شود.</string>
+    <string name="zec_refund_plate">برای بازگشت وجه از آدرس موقت t یعنی %1$s استفاده می‌شود.</string>
+    <string name="zec_refund_address_title">آدرس موقت بازگشت وجه</string>
+    <string name="zec_refund_notice_direct">اگر سواپ انجام نشود، %1$s ZEC را به این آدرس برمی‌گرداند. این آدرس شفاف است: در بلاکچین دیده می‌شود.</string>
+    <string name="zec_refund_notice_via_pcash">اگر سواپ انجام نشود، %1$s از طریق سرور P.CASH ZEC را به این آدرس برمی‌گرداند. این آدرس شفاف است: در بلاکچین دیده می‌شود.</string>
+    <string name="zec_refund_notice_restore">هر سواپ آدرس جدیدی می‌گیرد. پس از بازیابی فقط با عبارت بازیابی، آدرس‌ها ممکن است تکرار شوند و بازگشت وجه خودکار پیدا نشود. برای جلوگیری از این مشکل، پشتیبان بگیرید. بازگشت وجهِ گم‌شده را جستجوی آدرس در تنظیمات ZEC پیدا می‌کند.</string>
+    <string name="zec_refund_address_copy">کپی آدرس</string>
+    <string name="zec_refund_address_explorer">مشاهده در اکسپلورر</string>
+    <string name="zec_refund_address_error">دریافت آدرس بازگشت وجه ممکن نشد</string>
+    <string name="zec_address_search_title">جستجوی آدرس‌ها</string>
+    <plurals name="zec_address_search_addresses">
+        <item quantity="one">%1$s آدرس</item>
+        <item quantity="other">%1$s آدرس</item>
+    </plurals>
+    <string name="zec_address_search_running">در حال اجرا · %1$d%</string>
+    <string name="zec_address_search_description">بازپرداخت‌های ارائه‌دهندگان سواپ به آدرس‌های موقت را که پس از بازیابی با عبارت بازیابی دیده نمی‌شوند، پیدا می‌کند.</string>
+    <string name="zec_address_search_info">بازپرداخت‌های ارائه‌دهندگان سواپ به آدرس‌های موقتی را پیدا می‌کند که کیف پول پس از بازیابی فقط با عبارت بازیابی آن‌ها را نمی‌بیند. پس از بازیابی از نسخه پشتیبان، جستجو لازم نیست.\n\nآدرس‌هایی که در آن‌ها چیزی پیدا شده، از این پس خود کیف پول بررسی می‌کند. آدرس‌های خالی ذخیره نمی‌شوند. اگر بازپرداخت پس از تاریخ بررسی رسیده است، روی «%1$s» بزنید.</string>
+    <string name="zec_address_search_checked">بررسی‌شده</string>
+    <string name="zec_address_search_more">بررسی بیشتر</string>
+    <plurals name="zec_address_search_total">
+        <item quantity="one">در مجموع %1$s آدرس بررسی خواهد شد.</item>
+        <item quantity="other">در مجموع %1$s آدرس بررسی خواهد شد.</item>
+    </plurals>
+    <string name="zec_address_search_long">جستجو حدود %1$d دقیقه طول می‌کشد.</string>
+    <string name="zec_address_search_start">شروع جستجو</string>
+    <string name="zec_address_search_check_all_again">بررسی دوباره همه</string>
+    <string name="zec_address_search_progress">%1$s از %2$s بررسی شد</string>
+    <string name="zec_address_search_found">آدرس‌های دارای تراکنش پیدا شده</string>
+    <string name="zec_address_search_hint">می‌توانید ببندید: جستجو ادامه می‌یابد، حتی پس از راه‌اندازی دوباره برنامه.</string>
+    <string name="zec_address_search_stop">توقف</string>
     <string name="swap_yifi_memo_unsupported">ارائه‌دهنده سواپ به یک یادداشت (memo) واریز نیاز دارد که نمی‌توان آن را از این شبکه ارسال کرد. ارائه‌دهنده دیگری را انتخاب کنید.</string>
     <string name="swap_provider_order_failed">ارائه‌دهنده نتوانست سواپ را ایجاد کند. پیشنهاد قیمت را به‌روزرسانی کنید یا بازگردید و ارائه‌دهنده دیگری را انتخاب کنید.</string>
     <!-- Swap Settings -->

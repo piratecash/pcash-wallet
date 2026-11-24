@@ -13,12 +13,12 @@ interface ZcashSingleUseAddressDao {
         """
         SELECT * FROM ZcashSingleUseAddress
         WHERE accountId = :accountId
+        AND useCount = 0
         AND hadBalance = 0
-        ORDER BY useCount ASC
         LIMIT 1
         """
     )
-    suspend fun getNextUnusedAddress(accountId: String): ZcashSingleUseAddress?
+    suspend fun getUnsentAddress(accountId: String): ZcashSingleUseAddress?
 
     @Query(
         """

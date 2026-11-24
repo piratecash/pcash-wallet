@@ -14,6 +14,7 @@ import io.mockk.coEvery
 import io.horizontalsystems.core.BackgroundManagerState
 import io.horizontalsystems.core.entities.BlockchainType
 import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.every
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -375,8 +376,76 @@ class ZcashAdapterFreshReceiveAddressTest : ZcashAdapterTestFixture() {
         assertTrue(fresh != oneTime)
     }
 
+    @Test
+    fun freshReceiveAddress_afterARestore_preparesTheIndexThenPassesTheRecreatedFloor() = runTest(dispatcher) {
+        coEvery { session.discoverForEpoch(any()) } returns true
+        coEvery { transparentIndexStore.recreatedThrough(ACCOUNT_ID) } returns RECREATED_THROUGH
+        val adapter = createTransparentAdapter()
+
+        adapter.freshReceiveAddress()
+
+        coVerifyOrder {
+            transparentIndexStore.prepare(session)
+            zcashWallet.nextUnusedTransparentAddress(DB_ACCOUNT_ID, any(), RECREATED_THROUGH)
+        }
+    }
+
+    @Test
+    fun freshReceiveAddress_neverRestored_passesNoFloor() = runTest(dispatcher) {
+        coEvery { session.discoverForEpoch(any()) } returns true
+        val adapter = createTransparentAdapter()
+
+        adapter.freshReceiveAddress()
+
+        coVerify(exactly = 1) { zcashWallet.nextUnusedTransparentAddress(DB_ACCOUNT_ID, any(), null) }
+    }
+
+    @Test
+    fun freshReceiveAddress_indexPreparationFails_returnsTheStaticAddressWithoutAskingTheSdk() = runTest(dispatcher) {
+        coEvery { transparentIndexStore.prepare(any()) } throws IOException("boom")
+        val adapter = createTransparentAdapter()
+
+        val fresh = adapter.freshReceiveAddress()
+
+        assertEquals(adapter.receiveAddress, fresh)
+        coVerify(exactly = 0) { zcashWallet.nextUnusedTransparentAddress(any(), any(), any()) }
+    }
+
+    @Test
+    fun freshReceiveAddress_afterTheWalk_raisesTheIndexFromHistory() = runTest(dispatcher) {
+        coEvery { session.discoverForEpoch(any()) } returns true
+        val adapter = createTransparentAdapter()
+
+        adapter.freshReceiveAddress()
+
+        coVerifyOrder {
+            session.discoverForEpoch(any())
+            transparentIndexStore.raiseFromHistory(session)
+        }
+    }
+
+    @Test
+    fun generateOneTimeAddress_issued_raisesTheIssueIndexToItsIndex() = runTest(dispatcher) {
+        coEvery { zcashWallet.nextTransparentAddress(any()) } returns ONE_TIME_ADDRESS
+        coEvery { zcashWallet.transparentAddressIndex(DB_ACCOUNT_ID, ONE_TIME_ADDRESS) } returns ISSUED_INDEX
+        val adapter = createTransparentAdapter()
+        adapter.attachLocalData()
+        advanceUntilIdle()
+
+        adapter.generateOneTimeAddress()
+
+        coVerifyOrder {
+            transparentIndexStore.prepare(session)
+            zcashWallet.nextTransparentAddress(DB_ACCOUNT_ID)
+            transparentIndexStore.raise(ACCOUNT_ID, ISSUED_INDEX)
+            singleUseAddressManager.saveNewAddress(ONE_TIME_ADDRESS)
+        }
+    }
+
     private companion object {
         const val DERIVED_ADDRESS = "t1derived"
         const val ONE_TIME_ADDRESS = "t1onetime"
+        const val RECREATED_THROUGH = 41
+        const val ISSUED_INDEX = 7
     }
 }
