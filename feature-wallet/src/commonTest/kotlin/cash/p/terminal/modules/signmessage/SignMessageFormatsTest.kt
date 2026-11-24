@@ -49,6 +49,16 @@ class SignMessageFormatsTest {
     }
 
     @Test
+    fun available_ledgerAccount_standardOnlyAndNothingForTaproot() {
+        val ledger = AccountType.LedgerDevice("ledger-id", "nanoSP", "wallet-key")
+
+        assertEquals(listOf(Standard), SignMessageFormats.available(ledger, Derivation.Bip44))
+        assertEquals(listOf(Standard), SignMessageFormats.available(ledger, Derivation.Bip49))
+        assertEquals(listOf(Standard), SignMessageFormats.available(ledger, Derivation.Bip84))
+        assertEquals(emptyList(), SignMessageFormats.available(ledger, Derivation.Bip86))
+    }
+
+    @Test
     fun available_everyOfferedFormat_signsWithSoftwareKit() = runTest {
         val seed = Mnemonic().toSeed(MNEMONIC.split(" "))
         Derivation.entries.forEach { derivation ->

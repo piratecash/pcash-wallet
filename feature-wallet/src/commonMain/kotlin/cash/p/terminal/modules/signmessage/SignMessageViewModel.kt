@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cash.p.terminal.core.adapters.BitcoinAdapter
 import cash.p.terminal.core.derivation
+import cash.p.terminal.modules.send.signingErrorText
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.sign_message_failed
 import cash.p.terminal.resources.sign_message_not_ready
@@ -63,8 +64,8 @@ class SignMessageViewModel(
     }
 
     fun sign() {
+        if (!uiState.signEnabled) return
         val format = uiState.selectedFormat ?: return
-        if (uiState.signing) return
         val adapter = adapter() ?: return showError(Res.string.sign_message_not_ready)
         val address = uiState.address.ifEmpty { adapter.receiveAddress }
         val message = uiState.message
@@ -77,7 +78,8 @@ class SignMessageViewModel(
                 throw e
             } catch (e: Exception) {
                 logger.w(e) { "Message signing failed" }
-                uiState.copy(signing = false, error = Translator.getString(Res.string.sign_message_failed))
+                val error = e.signingErrorText(Translator.getString(Res.string.sign_message_failed))
+                uiState.copy(signing = false, error = error)
             }
         }
     }

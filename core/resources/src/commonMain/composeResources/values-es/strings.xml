@@ -736,7 +736,35 @@
     <string name="unsupported_address">Dirección no admitida</string>
     <string name="unexpected_error">Unexpected error</string>
     <string name="unsupported_token">Token no compatible</string>
-    <string name="zec_transparent_used">Al crear el intercambio se utiliza una dirección t temporal: %s. Se proporciona al proveedor del intercambio y es necesaria para el reembolso en caso de que el intercambio no se complete. El uso de una dirección t puede provocar una desanonimización parcial de la transacción.</string>
+    <string name="zec_refund_plate">Para el reembolso se usa la dirección t temporal %1$s.</string>
+    <string name="zec_refund_address_title">Dirección temporal de reembolso</string>
+    <string name="zec_refund_notice_direct">A esta dirección %1$s devolverá los ZEC si el swap no se completa. La dirección es transparente: se ve en la blockchain.</string>
+    <string name="zec_refund_notice_via_pcash">A esta dirección %1$s devolverá los ZEC a través del servidor de P.CASH si el swap no se completa. La dirección es transparente: se ve en la blockchain.</string>
+    <string name="zec_refund_notice_restore">Cada swap recibe una dirección nueva. Tras restaurar solo con la frase semilla, las direcciones pueden repetirse y el reembolso puede no encontrarse por sí solo. Para evitarlo, haga una copia de seguridad. Un reembolso perdido lo encuentra la búsqueda de direcciones en los ajustes de ZEC.</string>
+    <string name="zec_refund_address_copy">Copiar dirección</string>
+    <string name="zec_refund_address_explorer">Ver en el explorador</string>
+    <string name="zec_refund_address_error">No se pudo obtener la dirección de reembolso</string>
+    <string name="zec_address_search_title">Búsqueda de direcciones</string>
+    <plurals name="zec_address_search_addresses">
+        <item quantity="one">%1$s dirección</item>
+        <item quantity="other">%1$s direcciones</item>
+    </plurals>
+    <string name="zec_address_search_running">en curso · %1$d%</string>
+    <string name="zec_address_search_description">Encuentra reembolsos de proveedores de swap a direcciones temporales que no se ven tras restaurar desde la frase semilla.</string>
+    <string name="zec_address_search_info">Encuentra reembolsos de proveedores de swap a direcciones temporales que la billetera no ve tras restaurar solo con la frase semilla. Tras restaurar desde una copia de seguridad, la búsqueda no es necesaria.\n\nLa billetera sigue revisando por sí sola las direcciones en las que encontró algo. Las direcciones vacías no se guardan. Si un reembolso llegó después de la fecha de revisión, toca «%1$s».</string>
+    <string name="zec_address_search_checked">Revisadas</string>
+    <string name="zec_address_search_more">Revisar más</string>
+    <plurals name="zec_address_search_total">
+        <item quantity="one">Se revisará %1$s dirección en total.</item>
+        <item quantity="other">Se revisarán %1$s direcciones en total.</item>
+    </plurals>
+    <string name="zec_address_search_long">La búsqueda tardará unos %1$d min.</string>
+    <string name="zec_address_search_start">Iniciar búsqueda</string>
+    <string name="zec_address_search_check_all_again">Revisar todo de nuevo</string>
+    <string name="zec_address_search_progress">Revisadas %1$s de %2$s</string>
+    <string name="zec_address_search_found">Direcciones con operaciones encontradas</string>
+    <string name="zec_address_search_hint">Puede cerrar: la búsqueda continuará, incluso tras reiniciar la aplicación.</string>
+    <string name="zec_address_search_stop">Detener</string>
     <string name="swap_yifi_memo_unsupported">El proveedor del swap requiere un memo de depósito que no se puede enviar desde esta red. Elige otro proveedor.</string>
     <string name="swap_provider_order_failed">El proveedor no pudo crear el swap. Actualiza la cotización o vuelve atrás y elige otro proveedor.</string>
     <!-- Swap Settings -->
@@ -2709,7 +2737,7 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="sign_message_format_bip322_description">Nuevo estándar, también funciona con Taproot</string>
     <string name="sign_message_format_info">Estándar es el mensaje firmado clásico de Bitcoin que aceptan casi todos los exchanges y billeteras. BIP-322 es un formato más nuevo que también admite direcciones Taproot. Elige el que pida el exchange.</string>
     <string name="sign_message_taproot_only">Para direcciones Taproot solo está disponible BIP-322.</string>
-    <string name="sign_message_trezor_taproot">Trezor no puede firmar mensajes para direcciones Taproot. Usa una dirección de Bitcoin de otro tipo, por ejemplo Native SegWit.</string>
+    <string name="sign_message_hardware_taproot">Una billetera de hardware no puede firmar mensajes para direcciones Taproot. Usa una dirección de Bitcoin de otro tipo, por ejemplo Native SegWit.</string>
     <string name="sign_message_select_address_hint">Elige la dirección que indicaste en el exchange.</string>
     <string name="sign_message_current_receive_address">Dirección de recepción actual</string>
     <string name="sign_message_used">Usadas</string>

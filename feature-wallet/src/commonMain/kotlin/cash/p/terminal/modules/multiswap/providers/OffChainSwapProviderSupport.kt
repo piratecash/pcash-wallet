@@ -1,32 +1,23 @@
 package cash.p.terminal.modules.multiswap.providers
 
 import cash.p.terminal.core.ISendEthereumAdapter
-import cash.p.terminal.core.cache.accountScoped
 import cash.p.terminal.core.isEvm
 import cash.p.terminal.core.isUtxoBased
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
-import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.entities.SwapProviderTransaction
 import cash.p.terminal.modules.multiswap.action.ActionCreate
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionData
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionResult
 import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.resources.Res
-import cash.p.terminal.resources.zec_transparent_used
-import cash.p.terminal.strings.helpers.TranslatableString
-import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IAdapterManager
-import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
-import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.isLitecoinMweb
 import cash.p.terminal.wallet.useCases.WalletUseCase
 import io.horizontalsystems.bitcoincore.storage.UtxoFilters
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.ethereumkit.models.Address
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import java.math.BigDecimal
 import cash.p.terminal.resources.swap_create_wallet_description
 import cash.p.terminal.resources.swap_create_wallet_description_with_zcash
@@ -50,15 +41,11 @@ internal fun Token.normalizeSwapAddress(address: String): String =
 
 class OffChainSwapProviderSupport(
     private val walletUseCase: WalletUseCase,
-    private val accountManager: IAccountManager,
     private val swapProviderTransactionsStorage: SwapProviderTransactionsStorage,
-    private val marketKit: MarketKitWrapper,
     private val adapterManager: IAdapterManager,
     private val swapProviderTransactionFactory: SwapProviderTransactionFactory,
+    private val refundAddressReservation: ZcashRefundAddressReservation,
 ) {
-    private var zcashTransparentAddress: String? by accountManager.accountScoped()
-    private val zcashAddressMutex = Mutex()
-
     fun getCreateTokenActionRequired(
         tokens: List<Token>,
         useTransparentZcashRefundAddress: Boolean = true,
@@ -69,7 +56,7 @@ class OffChainSwapProviderSupport(
             useTransparentZcashRefundAddress &&
             requiresTransparentRefundAddress(tokenIn)
         ) {
-            getZCashTransparentToken()
+            refundAddressReservation.transparentToken()
         } else {
             null
         }
@@ -108,27 +95,39 @@ class OffChainSwapProviderSupport(
         )
     }
 
-    suspend fun getWarningMessage(
+    /** Throws [ZcashRefundAddressUnavailable] instead of falling back to another address. */
+    suspend fun temporaryRefundAddress(
         tokenIn: Token,
         useTransparentZcashRefundAddress: Boolean = true,
-    ): TranslatableString? {
-        if (!useTransparentZcashRefundAddress || !requiresTransparentRefundAddress(tokenIn)) return null
-
-        val refundAddress = getCachedZcashTransparentAddress() ?: return null
-
-        return TranslatableString.ResString(Res.string.zec_transparent_used, refundAddress)
+    ): String? = if (usesTemporaryRefundAddress(tokenIn, useTransparentZcashRefundAddress)) {
+        refundAddressReservation.current()
+    } else {
+        null
     }
 
+    suspend fun refundAddressFor(
+        tokenIn: Token,
+        useTransparentZcashRefundAddress: Boolean = true,
+    ): String = temporaryRefundAddress(tokenIn, useTransparentZcashRefundAddress)
+        ?: walletUseCase.getReceiveAddress(tokenIn)
+
+    /** Call right before the request that creates the order. */
+    suspend fun onRefundAddressSent(
+        tokenIn: Token,
+        address: String,
+        useTransparentZcashRefundAddress: Boolean = true,
+    ) {
+        if (usesTemporaryRefundAddress(tokenIn, useTransparentZcashRefundAddress)) {
+            refundAddressReservation.markSent(address)
+        }
+    }
+
+    /** Marks the address sent even on a cache hit, so the caller's order cache must key on it. */
     suspend fun getRefundAddress(
         tokenIn: Token,
         useTransparentZcashRefundAddress: Boolean = true,
-    ): String {
-        if (!useTransparentZcashRefundAddress || !requiresTransparentRefundAddress(tokenIn)) {
-            return walletUseCase.getReceiveAddress(tokenIn)
-        }
-
-        return getCachedZcashTransparentAddress()
-            ?: throw IllegalStateException("Can't find ZCASH transparent wallet")
+    ): String = refundAddressFor(tokenIn, useTransparentZcashRefundAddress).also {
+        onRefundAddressSent(tokenIn, it, useTransparentZcashRefundAddress)
     }
 
     fun buildSwapProviderTransaction(
@@ -258,29 +257,10 @@ class OffChainSwapProviderSupport(
             SendTransactionData.Thorchain.Send(address = depositAddress, amount = amountIn, memo = memo)
         }
 
-    private suspend fun getCachedZcashTransparentAddress(): String? =
-        zcashAddressMutex.withLock {
-            zcashTransparentAddress ?: initializeZcashAddress()
-        }
-
-    private suspend fun initializeZcashAddress(): String? {
-        val transparentToken = getZCashTransparentToken() ?: return null
-        val address = tryOrNull {
-            walletUseCase.getOneTimeReceiveAddress(transparentToken)
-        } ?: return null
-
-        zcashTransparentAddress = address
-        return address
-    }
-
-    private fun getZCashTransparentToken() = marketKit.token(
-        TokenQuery(
-            BlockchainType.Zcash,
-            TokenType.AddressSpecTyped(TokenType.AddressSpecType.Transparent)
-        )
-    )
-
     private fun Token.isNativeBeam() = blockchainType == BlockchainType.Beam && type == TokenType.Native
+
+    private fun usesTemporaryRefundAddress(tokenIn: Token, useTransparentZcashRefundAddress: Boolean) =
+        useTransparentZcashRefundAddress && requiresTransparentRefundAddress(tokenIn)
 
     private fun requiresTransparentRefundAddress(tokenIn: Token): Boolean =
         tokenIn.blockchainType == BlockchainType.Zcash &&

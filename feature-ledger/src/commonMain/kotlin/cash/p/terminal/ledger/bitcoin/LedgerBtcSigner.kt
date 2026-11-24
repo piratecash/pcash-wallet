@@ -1,6 +1,7 @@
 package cash.p.terminal.ledger.bitcoin
 
 import cash.p.terminal.ledger.domain.LedgerAppAccess
+import cash.p.terminal.ledger.domain.LedgerAppRequirements.BITCOIN_MESSAGE_SIGNING_MIN_VERSION
 import cash.p.terminal.ledger.domain.LedgerSigningFailedException
 import cash.p.terminal.ledger.domain.tokenQuery
 import cash.p.terminal.ledgerkit.bitcoin.BitcoinAppClient
@@ -10,8 +11,12 @@ import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.entities.HardwarePublicKey
 import cash.p.terminal.wallet.hardware.BtcPreviousTransactionProvider
 import cash.p.terminal.wallet.hardware.rawTransactions
+import cash.p.terminal.wallet.hardware.standardMessageSignature
 import io.horizontalsystems.bitcoincore.extensions.hexToByteArray
 import io.horizontalsystems.bitcoincore.extensions.toHexString
+import io.horizontalsystems.bitcoincore.messages.IStandardMessageSigner
+import io.horizontalsystems.bitcoincore.messages.MessageSignError
+import io.horizontalsystems.bitcoincore.models.PublicKey
 import io.horizontalsystems.bitcoincore.models.Transaction
 import io.horizontalsystems.bitcoincore.models.TransactionOutput
 import io.horizontalsystems.bitcoincore.network.Network
@@ -22,15 +27,16 @@ import io.horizontalsystems.bitcoincore.transactions.builder.IInputSigner
 import io.horizontalsystems.bitcoincore.transactions.builder.ISchnorrInputSigner
 import io.horizontalsystems.bitcoincore.transactions.builder.MutableTransaction
 import io.horizontalsystems.bitcoincore.transactions.builder.SignedTransactionData
+import io.horizontalsystems.bitcoincore.transactions.scripts.ScriptType
 import kotlin.concurrent.Volatile
 
-/** Signs a whole Bitcoin-family transaction on the Ledger, after the device proved it holds [hardwarePublicKey]. */
+/** Signs Bitcoin-family transactions and Bitcoin messages on the Ledger once it proved it holds [hardwarePublicKey]. */
 class LedgerBtcSigner(
     private val appAccess: LedgerAppAccess,
     private val account: Account,
     private val hardwarePublicKey: HardwarePublicKey,
     private val previousTransactions: BtcPreviousTransactionProvider,
-) : IInputSigner, ISchnorrInputSigner, IFullTransactionSigner {
+) : IInputSigner, ISchnorrInputSigner, IFullTransactionSigner, IStandardMessageSigner {
 
     private val query = hardwarePublicKey.tokenQuery
     private val specAndApp = checkNotNull(LedgerBtcApp.specFor(query)) { "Ledger cannot sign ${query.id}" }
@@ -72,6 +78,16 @@ class LedgerBtcSigner(
         val account = LedgerBtcAccount(client.getMasterFingerprint(), spec)
         val psbt = transaction.toPsbt(account, previous)
         return client.signPsbt(psbt, account.policy(hardwarePublicKey.key.value)).inInputOrder(psbt)
+    }
+
+    override suspend fun signStandardMessage(publicKey: PublicKey, scriptType: ScriptType, message: String): ByteArray {
+        if (app != LedgerBtcApp.Bitcoin) throw MessageSignError.UnsupportedFormat()
+        val path = ledgerAddressPath(spec.derivationPath, publicKey.position)
+        val deviceSignature =
+            appAccess.signWithLedgerApp(account, query, BITCOIN_MESSAGE_SIGNING_MIN_VERSION) { transport ->
+                BitcoinAppClient(transport).signMessage(path, message.encodeToByteArray())
+            }
+        return standardMessageSignature(deviceSignature, message, publicKey, scriptType)
     }
 
     private fun previousTransactionsOf(transaction: MutableTransaction): Map<String, ByteArray> =

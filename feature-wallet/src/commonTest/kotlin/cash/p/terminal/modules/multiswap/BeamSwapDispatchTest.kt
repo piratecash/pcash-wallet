@@ -4,12 +4,11 @@ import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
 import cash.p.terminal.modules.multiswap.providers.IMultiSwapProvider
 import cash.p.terminal.modules.multiswap.providers.OffChainSwapProviderSupport
 import cash.p.terminal.modules.multiswap.providers.SwapProviderTransactionFactory
+import cash.p.terminal.modules.multiswap.providers.ZcashRefundAddressReservation
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionData
 import cash.p.terminal.modules.multiswap.sendtransaction.SwapTransactionServiceFactory
 import cash.p.terminal.modules.multiswap.sendtransaction.services.SendTransactionServiceBeam
-import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IAdapterManager
-import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.useCases.WalletUseCase
@@ -59,11 +58,10 @@ class BeamSwapDispatchTest {
     fun buildTransactionData_nativeBeam_carriesDepositAmountAndMemo() {
         val support = OffChainSwapProviderSupport(
             walletUseCase = mockk<WalletUseCase>(relaxed = true),
-            accountManager = mockk<IAccountManager>(relaxed = true),
             swapProviderTransactionsStorage = mockk<SwapProviderTransactionsStorage>(relaxed = true),
-            marketKit = mockk<MarketKitWrapper>(relaxed = true),
             adapterManager = mockk<IAdapterManager>(relaxed = true),
             swapProviderTransactionFactory = mockk<SwapProviderTransactionFactory>(relaxed = true),
+            refundAddressReservation = mockk<ZcashRefundAddressReservation>(relaxed = true),
         )
 
         val data = support.buildTransactionData(

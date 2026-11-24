@@ -21,7 +21,6 @@ import cash.p.terminal.network.exolix.domain.repository.ExolixRepository
 import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.ic_exolix
-import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.TokenType
@@ -180,9 +179,9 @@ class ExolixProvider(
                 ?: true,
         )
 
-    override suspend fun getWarningMessage(tokenIn: Token, tokenOut: Token): TranslatableString? =
+    override suspend fun temporaryRefundAddress(tokenIn: Token, tokenOut: Token): String? =
         withContext(dispatcherProvider.io) {
-            providerSupport.getWarningMessage(
+            providerSupport.temporaryRefundAddress(
                 tokenIn = tokenIn,
                 useTransparentZcashRefundAddress = useTransparentZcashRefundAddress(tokenIn),
             )

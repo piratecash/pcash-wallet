@@ -94,13 +94,13 @@ class QuickexProviderTest {
 
         val provider = createProvider()
 
-        val before = provider.getWarningMessage(zcashUnifiedToken, anyToken)
-        assertEquals("addr-1", before.formatArgFirst())
+        val before = provider.temporaryRefundAddress(zcashUnifiedToken, anyToken)
+        assertEquals("addr-1", before)
 
         every { accountManager.activeAccount } returns buildTestAccount("acc-2")
 
-        val after = provider.getWarningMessage(zcashUnifiedToken, anyToken)
-        assertEquals("addr-2", after.formatArgFirst())
+        val after = provider.temporaryRefundAddress(zcashUnifiedToken, anyToken)
+        assertEquals("addr-2", after)
     }
 
     @Test
@@ -114,19 +114,19 @@ class QuickexProviderTest {
 
         val provider = createProvider()
 
-        repeat(3) { provider.getWarningMessage(zcashUnifiedToken, anyToken) }
+        repeat(3) { provider.temporaryRefundAddress(zcashUnifiedToken, anyToken) }
 
         coEvery { walletUseCase.getOneTimeReceiveAddress(transparentToken) } returns "addr-fresh"
 
-        val cached = provider.getWarningMessage(zcashUnifiedToken, anyToken)
-        assertEquals("addr-cached", cached.formatArgFirst())
+        val cached = provider.temporaryRefundAddress(zcashUnifiedToken, anyToken)
+        assertEquals("addr-cached", cached)
     }
 
     @Test
-    fun getWarningMessage_nonZcashTokenIn_returnsNull() = runTest {
+    fun temporaryRefundAddress_nonZcashTokenIn_returnsNull() = runTest {
         val provider = createProvider()
 
-        assertNull(provider.getWarningMessage(mockNonZcashNativeToken(), mockk(relaxed = true)))
+        assertNull(provider.temporaryRefundAddress(mockNonZcashNativeToken(), mockk(relaxed = true)))
     }
 
     @Test

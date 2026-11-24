@@ -69,7 +69,9 @@ class AccountCleaner(
         }
 
         if (isWalletActive(accountId, token)) return
-        if (token.blockchainType != BlockchainType.Monero) return clearWalletData(accountId, token.blockchainType)
+        if (token.blockchainType != BlockchainType.Monero) {
+            return clearWalletData(accountId, token.blockchainType, accountDeleted = false)
+        }
 
         val account = liveOrStoredAccount(accountId) ?: return
         // Only its device can recreate a device wallet: RescanMoneroUseCase applies its height instead.
@@ -88,20 +90,23 @@ class AccountCleaner(
         bitcoinKitDatabaseManager.clearMweb(accountId)
     }
 
+    /** Account deletion only. */
     private suspend fun clearWalletDataForBlockchainIfInactive(
         accountId: String,
         blockchainType: BlockchainType
     ) {
         if (isWalletActive(accountId, blockchainType)) return
-        clearWalletData(accountId, blockchainType)
+        clearWalletData(accountId, blockchainType, accountDeleted = true)
     }
 
     private suspend fun clearWalletData(
         accountId: String,
-        blockchainType: BlockchainType
+        blockchainType: BlockchainType,
+        accountDeleted: Boolean,
     ) {
         when (blockchainType) {
-            is BlockchainType.Zcash -> clearZCashWalletDataUseCase.invoke(accountId)
+            is BlockchainType.Zcash ->
+                clearZCashWalletDataUseCase.invoke(accountId, eraseIssuedAddresses = accountDeleted)
             is BlockchainType.Monero -> liveOrStoredAccount(accountId)?.let { clearMoneroWalletData(it) }
             else -> Unit
         }

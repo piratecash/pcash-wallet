@@ -177,6 +177,55 @@ class UnstoppableSwapProviderTest {
         }
     }
 
+    @Test
+    fun fetchFinalQuote_newSessionAfterOrderSent_doesNotReuseCachedOrder() = runTest(dispatcher) {
+        val zec = yiFiTestToken(
+            BlockchainType.Zcash, TokenType.AddressSpecTyped(TokenType.AddressSpecType.Unified), "ZEC",
+        )
+        val transparent = mockZcashToken(TokenType.AddressSpecType.Transparent)
+        coEvery { repository.getTokens("NEAR") } returns UnstoppableProviderTokens(
+            tokens = listOf(
+                UnstoppableToken(chain = "zcash", chainId = "zcash", address = null, identifier = "ZEC.ZEC"),
+                UnstoppableToken(chain = "ethereum", chainId = "1", address = null, identifier = "ETH"),
+            ),
+            supportedChainIds = emptyList(),
+        )
+        every {
+            marketKit.tokens(match<List<TokenQuery>> { it.any { q -> q.blockchainType == BlockchainType.Zcash } })
+        } returns listOf(zec)
+        marketKit.stubZcashTransparentToken(transparent)
+        val dao = InMemoryZcashSingleUseAddressDao()
+        val issued = mutableListOf("t1-visit-a", "t1-visit-b")
+        coEvery { walletUseCase.getOneTimeReceiveAddress(transparent) } coAnswers {
+            issued.removeAt(0).also { dao.saveIssued("acc-1", it) }
+        }
+        val reservation = buildZcashRefundAddressReservation(walletUseCase, accountManager, marketKit, dao)
+        val provider = createProvider(reservation = reservation)
+
+        reservation.startSession()
+        provider.fetchFinalQuote(zec, tokenOut)
+        reservation.startSession()
+        provider.fetchFinalQuote(zec, tokenOut)
+
+        listOf("t1-visit-a", "t1-visit-b").forEach { refund ->
+            coVerify(exactly = 1) {
+                repository.swap("ZEC.ZEC", "ETH", any(), any(), any(), any(), refund, any(), any())
+            }
+        }
+    }
+
+    @Test
+    fun fetchFinalQuote_nonZcashInputWithoutZcashWallet_refundsToOwnReceiveAddress() = runTest(dispatcher) {
+        every { marketKit.token(match<TokenQuery> { it.blockchainType == BlockchainType.Zcash }) } returns null
+        coEvery { walletUseCase.getReceiveAddress(tokenIn) } returns "sol-own"
+        val provider = createProvider()
+
+        provider.fetchFinalQuote()
+
+        coVerify { repository.swap("SOL", "ETH", any(), any(), any(), any(), "sol-own", any(), any()) }
+        coVerify(exactly = 0) { walletUseCase.getOneTimeReceiveAddress(any()) }
+    }
+
     private fun natives() = listOf(
         Triple(rune, "THOR.RUNE", THOR_ADDRESS),
         Triple(cacao, "MAYA.CACAO", MAYA_ADDRESS),
@@ -187,14 +236,19 @@ class UnstoppableSwapProviderTest {
         to: Token = tokenOut,
     ) = fetchFinalQuote(from, to, BigDecimal.ONE, emptyMap(), null, mockk(relaxed = true))
 
-    private fun createProvider(descriptor: UnstoppableProvider = UnstoppableProvider.Near) = UnstoppableSwapProvider(
+    private fun createProvider(
+        descriptor: UnstoppableProvider = UnstoppableProvider.Near,
+        reservation: ZcashRefundAddressReservation =
+            buildZcashRefundAddressReservation(walletUseCase, accountManager, marketKit),
+    ) = UnstoppableSwapProvider(
         descriptor = descriptor,
         walletUseCase = walletUseCase,
         repository = repository,
         marketKit = marketKit,
         accountManager = accountManager,
         dispatcherProvider = TestDispatcherProvider(dispatcher, TestScope(dispatcher)),
-        providerSupport = buildOffChainSwapProviderSupport(walletUseCase, accountManager, storage, marketKit),
+        providerSupport =
+            buildOffChainSwapProviderSupport(walletUseCase, accountManager, storage, marketKit, reservation),
     )
 
     private fun route(memo: String? = null) = UnstoppableRoute(

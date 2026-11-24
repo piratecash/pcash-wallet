@@ -8,25 +8,16 @@ class ZcashSingleUseAddressManager(
     private val accountId: String
 ) {
 
+    /** Reserved, not yet sent to any provider: `useCount` counts the orders it was sent in. */
     suspend fun saveNewAddress(address: String) {
         storage.saveAddress(
             ZcashSingleUseAddress(
                 accountId = accountId,
                 address = address,
-                useCount = 1,
+                useCount = 0,
                 hadBalance = false
             )
         )
-    }
-
-    suspend fun getNextAddress(): String? {
-        return storage.getNextAddress(accountId)?.address?.also {
-            markAddressAsShown(it)
-        }
-    }
-
-    suspend fun markAddressAsShown(address: String) {
-        storage.incrementUseCount(accountId, address)
     }
 
     suspend fun updateAddressBalance(address: String, hasBalance: Boolean) {
