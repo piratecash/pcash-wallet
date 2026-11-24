@@ -5,6 +5,7 @@ import com.android.tools.profgen.ArtProfileKt
 import com.android.tools.profgen.ArtProfileSerializer
 import com.android.tools.profgen.DexFile
 import groovy.xml.XmlSlurper
+import java.util.regex.Pattern
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -308,6 +309,44 @@ androidComponents {
             output.outputFileName.set("p.cash.apk")
         }
     }
+}
+
+// Crashlytics 3.0.8 writes build_ids in directory order, so the release APK is not reproducible
+// (firebase-android-sdk#8789, fixed upstream after 3.0.8). Remove once the plugin is bumped.
+tasks.matching { it.name.startsWith('injectCrashlyticsBuildIds') }.configureEach { task ->
+    task.doLast { sortCrashlyticsBuildIds(task.resourceDir.get().asFile) }
+}
+
+def sortCrashlyticsBuildIds(File resDir) {
+    def pluginVersion = libs.versions.firebaseCrashlyticsGradle.get()
+    if (pluginVersion != '3.0.8') {
+        throw new GradleException("Crashlytics Gradle plugin is $pluginVersion: it sorts build_ids itself " +
+            "since 3.0.9; delete sortCrashlyticsBuildIds from app/build.gradle")
+    }
+    def file = new File(resDir, 'values/com_google_firebase_crashlytics_build_ids.xml')
+    if (!file.exists()) return
+
+    def text = file.getText('UTF-8')
+    def names = ['lib', 'arch', 'build_id'].collect { "com.google.firebase.crashlytics.build_ids_$it" }
+    def arrays = names.collect { name ->
+        def matcher = text =~ /(?s)(<string-array name="${Pattern.quote(name)}"[^>]*>)(.*?)(<\/string-array>)/
+        if (!matcher.find()) throw new GradleException("Crashlytics build_ids format changed: no $name in $file")
+        [start: matcher.start(2), end: matcher.end(2), items: (matcher.group(2) =~ /<item>(.*?)<\/item>/).collect { it[1] }]
+    }
+    def sizes = arrays.collect { it.items.size() }
+    if (sizes.unique(false).size() != 1) {
+        throw new GradleException("Crashlytics build_ids format changed: array sizes $sizes in $file")
+    }
+
+    def rows = (0..<sizes[0]).collect { i -> arrays.collect { it.items[i] } }
+        .sort { a, b -> a[0] <=> b[0] ?: a[1] <=> b[1] ?: a[2] <=> b[2] }
+    def sorted = new StringBuilder(text)
+    // Replace from the end of the file so earlier offsets stay valid.
+    [0, 1, 2].sort { -arrays[it].start }.each { column ->
+        def body = '\n' + rows.collect { "<item>${it[column]}</item>\n" }.join('')
+        sorted.replace(arrays[column].start, arrays[column].end, body)
+    }
+    file.write(sorted.toString(), 'UTF-8')
 }
 
 kotlin {
