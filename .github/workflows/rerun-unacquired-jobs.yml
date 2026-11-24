@@ -1,0 +1,40 @@
+name: Rerun jobs that got no runner
+
+# GitHub cancels a queued job when no hosted runner frees up (macOS arm64 most often). Such a job has
+# no runner and no steps; a real failure always has steps, so it is never retried here.
+on:
+  workflow_run: # zizmor: ignore[dangerous-triggers] nothing is checked out, only run ids are read
+    workflows: [Android CI, Desktop CI]
+    types: [completed]
+
+permissions: {}
+
+jobs:
+  rerun:
+    if: github.event.workflow_run.conclusion == 'failure' && github.event.workflow_run.run_attempt < 3
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    steps:
+      - name: Rerun when every failed job never got a runner
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+        run: |
+          jobs=$(gh api --paginate "repos/$REPO/actions/runs/$RUN_ID/attempts/$ATTEMPT/jobs" --jq '.jobs[]')
+          failed=$(echo "$jobs" | jq -s '[.[] | select(.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out")]')
+          unacquired=$(echo "$failed" | jq '[.[] | select((.runner_name // "") == "" and (.steps | length) == 0)]')
+          if [ "$(echo "$unacquired" | jq length)" = 0 ] || [ "$(echo "$failed" | jq length)" != "$(echo "$unacquired" | jq length)" ]; then
+            echo "Nothing to rerun: no job without a runner, or a job failed for real."
+            exit 0
+          fi
+          echo "No runner for: $(echo "$unacquired" | jq -r '[.[].name] | join(", ")')"
+          # --failed reruns the run's latest attempt, so skip if someone has rerun it meanwhile.
+          if [ "$(gh api "repos/$REPO/actions/runs/$RUN_ID" --jq '"\(.run_attempt) \(.status)"')" != "$ATTEMPT completed" ]; then
+            echo "The run has moved past attempt $ATTEMPT."
+            exit 0
+          fi
+          gh run rerun "$RUN_ID" --failed --repo "$REPO"
