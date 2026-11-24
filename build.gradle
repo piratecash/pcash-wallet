@@ -44,24 +44,29 @@ plugins {
 }
 
 subprojects {
-    apply plugin: 'io.gitlab.arturbosch.detekt'
-
     tasks.withType(Test).configureEach {
         // Robolectric accesses file descriptor internals when initializing Android SDK 36+.
         jvmArgs '--add-opens=java.base/jdk.internal.access=ALL-UNNAMED'
     }
+}
 
-    detekt {
-        buildUponDefaultConfig = true
-        config.setFrom("$rootDir/config/detekt/detekt.yml")
-        baseline = file("detekt-baseline.xml")
-        parallel = true
-    }
+// One run over every module's sources, tests included, without type resolution: no source sets to
+// list per module, so a new module or source set cannot silently drop out of the check.
+detekt {
+    source.setFrom(fileTree(rootDir) {
+        include '**/src/**/*.kt'
+        exclude '**/build/**', '.claude/**'
+    })
+    buildUponDefaultConfig = true
+    config.setFrom("$rootDir/config/detekt/detekt.yml")
+    baseline = file("$rootDir/config/detekt/detekt-baseline.xml")
+    basePath = rootDir.absolutePath
+    parallel = true
+}
 
-    dependencies {
-        detektPlugins "io.nlopez.compose.rules:detekt:0.4.22"
-        detektPlugins project(':config:detekt:rules')
-    }
+dependencies {
+    detektPlugins "io.nlopez.compose.rules:detekt:0.4.22"
+    detektPlugins project(':config:detekt:rules')
 }
 
 allprojects {

@@ -28,7 +28,7 @@ import org.junit.Test
 import java.math.BigInteger
 
 /**
- * Regression test for MOBILE-623: zero-value token-event spam must be marked as spam so
+ * Regression test: zero-value token-event spam must be marked as spam so
  * that Hide Suspicious Transactions can filter it. Covers two phantom patterns:
  *   1. Transaction.to == null (Erc20TransactionSyncer phantom) -> EVM_EXTERNAL_CONTRACT_CALL
  *   2. Transaction.to == contract but method is unknown -> EVM_CONTRACT_CALL

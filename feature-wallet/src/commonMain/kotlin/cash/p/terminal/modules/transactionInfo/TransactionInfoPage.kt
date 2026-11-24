@@ -554,7 +554,7 @@ fun TransactionInfoSection(
                                 navigation = navigation
                             )
                         }
-                        // MOBILE-593
+                        // Cancel transaction is temporarily disabled.
                         /*add {
                             TransactionInfoCancelCell(
                                 transactionHash = viewItem.transactionHash,

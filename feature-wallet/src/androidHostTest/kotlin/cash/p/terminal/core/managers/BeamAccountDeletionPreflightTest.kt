@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.test.core.app.ApplicationProvider
 import cash.p.terminal.core.TestDispatcherProvider
-import cash.p.terminal.core.managers.IdentityKitStorageNaming
 import cash.p.terminal.core.storage.AccountsDao
 import cash.p.terminal.core.storage.AppDatabase
 import cash.p.terminal.core.storage.RestoreSettingDao

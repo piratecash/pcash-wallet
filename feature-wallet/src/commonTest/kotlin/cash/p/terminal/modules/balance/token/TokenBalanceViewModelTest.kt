@@ -287,7 +287,7 @@ class TokenBalanceViewModelTest : KoinTest {
         unmockkAll()
     }
 
-    // region Core Fix Tests (MOBILE-469)
+    // region Core Fix Tests
 
     @Test
     fun transactionHiddenFlowEmits_callsRefreshList() = runTest(dispatcher) {
@@ -364,7 +364,7 @@ class TokenBalanceViewModelTest : KoinTest {
 
     // endregion
 
-    // region Sync Message Tests (MOBILE-583)
+    // region Sync Message Tests
 
     @Test
     fun updateTransactions_emptyItemsDuringSyncing_transactionsStaysNull() = runTest(dispatcher) {
@@ -789,7 +789,7 @@ class TokenBalanceViewModelTest : KoinTest {
 
     // endregion
 
-    // region Secondary Value Tests (MOBILE-517)
+    // region Secondary Value Tests
 
     @Test
     fun secondaryValue_globalBalanceHiddenPerWalletRevealed_showsFiatValue() = runTest(dispatcher) {
@@ -829,7 +829,7 @@ class TokenBalanceViewModelTest : KoinTest {
 
     // endregion
 
-    // region Staking Status Tests (MOBILE-588)
+    // region Staking Status Tests
 
     @Test
     fun stakingStatus_balanceAboveThreshold_showsActive() = runTest(dispatcher) {
@@ -894,7 +894,7 @@ class TokenBalanceViewModelTest : KoinTest {
         balanceItemFlow.value = balanceItem
         advanceUntilIdle()
 
-        // MOBILE-588: Must show INACTIVE even when unpaid rewards exist
+        // Must show INACTIVE even when unpaid rewards exist
         assertEquals(TokenBalanceModule.StakingStatus.INACTIVE, viewModel.uiState.stakingStatus)
     }
 
@@ -920,7 +920,7 @@ class TokenBalanceViewModelTest : KoinTest {
 
     // endregion
 
-    // region Network Fee Warning Tests (MOBILE-526)
+    // region Network Fee Warning Tests
 
     @Test
     fun networkFeeWarning_nativeToken_noWarning() = runTest(dispatcher) {

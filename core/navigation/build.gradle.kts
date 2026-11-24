@@ -14,11 +14,6 @@ androidComponents {
     }
 }
 
-// KMP source directories must be configured explicitly or Detekt reports NO-SOURCE.
-detekt {
-    source.setFrom("src/commonMain/kotlin", "src/androidMain/kotlin", "src/desktopMain/kotlin")
-}
-
 kotlin {
     android {
         namespace = "cash.p.terminal.navigation"

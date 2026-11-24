@@ -1,6 +1,5 @@
 package cash.p.terminal.network.stonfi.domain.entity
 
-import java.math.BigDecimal
 import java.math.BigInteger
 
 data class SimulateSwap(

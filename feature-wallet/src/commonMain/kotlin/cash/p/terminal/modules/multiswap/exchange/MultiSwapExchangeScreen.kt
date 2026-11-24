@@ -89,7 +89,6 @@ import io.horizontalsystems.core.entities.CurrencyValue
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import org.jetbrains.compose.resources.DrawableResource
-import cash.p.terminal.resources.Alert_TitleWarning
 import cash.p.terminal.resources.Button_Cancel
 import cash.p.terminal.resources.Button_Close
 import cash.p.terminal.resources.Button_Delete

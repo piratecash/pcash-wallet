@@ -87,7 +87,7 @@ class ResendBitcoinViewModel(
                 sendButtonTitleResId = Res.string.TransactionInfoOptions_SpeedUp_Button
             }
 
-            // MOBILE-593
+            // Cancel transaction is temporarily disabled.
             /*SpeedUpCancelType.Cancel -> {
                 titleResId = Res.string.TransactionInfoOptions_Cancel_Title
                 addressTitleResId = Res.string.Send_Confirmation_Own
@@ -128,7 +128,7 @@ class ResendBitcoinViewModel(
 
             val (replacementTransaction, bitcoinTransactionRecord) = when (type) {
                 SpeedUpCancelType.SpeedUp -> adapter.speedUpTransaction(transactionHash, minFee)
-                // SpeedUpCancelType.Cancel -> adapter.cancelTransaction(transactionHash, minFee) // MOBILE-593
+                // SpeedUpCancelType.Cancel -> adapter.cancelTransaction(transactionHash, minFee)
             }
 
             this.replacementTransaction = replacementTransaction

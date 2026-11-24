@@ -15,8 +15,6 @@ import org.junit.Before
 import org.junit.Test
 
 /**
- * Red tests for MOBILE-682.
- *
  * The user-facing "Auto-Lock" setting in calculator pin settings
  * (CalculatorAutoLockOption) must determine how long the app may stay
  * unlocked in the background while calculator mode is active. Today

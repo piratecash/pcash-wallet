@@ -2,7 +2,6 @@ package cash.p.terminal.core.managers
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
-import cash.p.terminal.core.managers.IdentityKitStorageNaming
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test

@@ -6,5 +6,5 @@ import io.horizontalsystems.core.common.CommonParcelize
 @CommonParcelize
 enum class SpeedUpCancelType : CommonParcelable {
     SpeedUp,
-    // Cancel // MOBILE-593
+    // Cancel: temporarily disabled
 }
