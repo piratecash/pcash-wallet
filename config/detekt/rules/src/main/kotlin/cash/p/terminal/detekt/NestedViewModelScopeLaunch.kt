@@ -50,18 +50,25 @@ class NestedViewModelScopeLaunch(config: Config = Config.empty) :
     private fun KtClassOrObject.launchingFunctionNames(): Set<String> =
         declarations.filterIsInstance<KtNamedFunction>()
             .filter { function ->
-                function.bodyExpression?.anyDescendantOfType<KtCallExpression> { it.isViewModelScopeLaunch() } == true
+                function.bodyExpression?.anyDescendantOfType<KtCallExpression> {
+                    it.isViewModelScopeLaunch() && !it.isInsideCallback()
+                } == true
             }
             .mapNotNull { it.name }
             .toSet()
 
-    // A listener or callback lambda runs later, outside the coroutine that registered it.
-    private fun KtCallExpression.isInsideCoroutineLambda() =
+    private fun KtCallExpression.lambdaOwnerNames() =
         generateSequence(parent) { it.parent }
             .filterIsInstance<KtLambdaExpression>()
             .map { it.argumentOwner()?.calleeName().orEmpty() }
-            .takeWhile { !it.endsWith("Listener") && !it.endsWith("Callback") }
-            .any { it.isCoroutineCall() }
+
+    private fun KtCallExpression.isInsideCoroutineLambda() =
+        lambdaOwnerNames().takeWhile { !it.isCallbackRegistration() }.any { it.isCoroutineCall() }
+
+    private fun KtCallExpression.isInsideCallback() = lambdaOwnerNames().any { it.isCallbackRegistration() }
+
+    // A listener or callback lambda runs later, outside the coroutine that registered it.
+    private fun String.isCallbackRegistration() = endsWith("Listener") || endsWith("Callback")
 
     private fun KtLambdaExpression.argumentOwner(): KtCallExpression? {
         val argument = parent as? KtValueArgument ?: return null

@@ -46,6 +46,19 @@ class NestedViewModelScopeLaunchTest {
     }
 
     @Test
+    fun lint_helperLaunchingOnlyInCallbackCalledInLaunch_notReported() {
+        val code = """
+            class VM : ViewModel() {
+                fun bind(button: Button) {
+                    button.setOnClickListener { viewModelScope.launch { work() } }
+                }
+                fun load() = viewModelScope.launch { bind(button) }
+            }
+        """.trimIndent()
+        assertEquals(0, rule.lint(code).size)
+    }
+
+    @Test
     fun lint_launchInsideInlineLambdasOfLaunch_reported() {
         val code = """
             class VM : ViewModel() {
