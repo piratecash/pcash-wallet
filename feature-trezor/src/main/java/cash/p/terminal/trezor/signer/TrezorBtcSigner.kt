@@ -13,12 +13,12 @@ import cash.p.terminal.trezorkit.client.TrezorPrevTxInput
 import cash.p.terminal.trezorkit.client.TrezorPrevTxOutput
 import cash.p.terminal.wallet.hardware.HardwareAddressPosition
 import cash.p.terminal.wallet.hardware.rawTransactions
+import cash.p.terminal.wallet.hardware.standardMessageSignature
 import io.horizontalsystems.bitcoincore.extensions.hexToByteArray
 import io.horizontalsystems.bitcoincore.extensions.toHexString
 import io.horizontalsystems.bitcoincore.extensions.toReversedHex
 import io.horizontalsystems.bitcoincore.io.BitcoinInputMarkable
 import io.horizontalsystems.bitcoincore.messages.IStandardMessageSigner
-import io.horizontalsystems.bitcoincore.messages.StandardMessage
 import io.horizontalsystems.bitcoincore.models.PublicKey
 import io.horizontalsystems.bitcoincore.models.Transaction
 import io.horizontalsystems.bitcoincore.models.TransactionOutput
@@ -33,7 +33,6 @@ import io.horizontalsystems.bitcoincore.transactions.builder.MutableTransaction
 import io.horizontalsystems.bitcoincore.transactions.builder.SignedTransactionData
 import io.horizontalsystems.bitcoincore.transactions.scripts.OP_RETURN
 import io.horizontalsystems.bitcoincore.transactions.scripts.ScriptType
-import io.horizontalsystems.hdwalletkit.ECKey
 
 class TrezorBtcSigner(
     private val coin: String,
@@ -83,8 +82,7 @@ class TrezorBtcSigner(
         val result = trezorClient.connect {
             signBitcoinMessage(coin, addressPath(publicKey), message.encodeToByteArray(), inputScriptType(scriptType))
         }
-        val compactSignature = result.signature.copyOfRange(1, STANDARD_SIGNATURE_SIZE)
-        return StandardMessage.signature(ECKey.messageHash(message), compactSignature, publicKey.publicKey, scriptType)
+        return standardMessageSignature(result.signature, message, publicKey, scriptType)
     }
 
     private fun InputToSign.toTrezorInput() = TrezorBtcInput(
@@ -210,8 +208,4 @@ class TrezorBtcSigner(
         outputs: List<TransactionOutput>,
         index: Int
     ): List<ByteArray> = throw UnsupportedOperationException("Use signFullTransaction")
-
-    private companion object {
-        const val STANDARD_SIGNATURE_SIZE = 65
-    }
 }

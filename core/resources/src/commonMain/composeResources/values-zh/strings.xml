@@ -2651,7 +2651,7 @@
     <string name="sign_message_format_bip322_description">新标准，也适用于 Taproot</string>
     <string name="sign_message_format_info">标准是经典的比特币消息签名，几乎所有交易所和钱包都支持。BIP-322 是较新的格式，也支持 Taproot 地址。请选择交易所要求的格式。</string>
     <string name="sign_message_taproot_only">Taproot 地址仅支持 BIP-322。</string>
-    <string name="sign_message_trezor_taproot">Trezor 无法为 Taproot 地址签名消息。请使用其他类型的比特币地址，例如 Native SegWit。</string>
+    <string name="sign_message_hardware_taproot">硬件钱包无法为 Taproot 地址签名消息。请使用其他类型的比特币地址，例如 Native SegWit。</string>
     <string name="sign_message_select_address_hint">请选择您在交易所填写的地址。</string>
     <string name="sign_message_current_receive_address">当前收款地址</string>
     <string name="sign_message_used">已使用</string>

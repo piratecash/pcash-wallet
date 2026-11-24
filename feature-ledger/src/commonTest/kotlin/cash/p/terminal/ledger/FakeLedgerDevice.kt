@@ -17,6 +17,7 @@ class FakeLedgerDevice(
     private val rejectedReopens: Set<String> = emptySet(),
     private val openedInstead: String? = null,
     private val keyPrefix: String = "",
+    private val messageSignature: ByteArray = ByteArray(0),
 ) {
     var currentApp = DASHBOARD
         private set
@@ -26,16 +27,20 @@ class FakeLedgerDevice(
     var opens = 0
         private set
 
+    val sent = mutableListOf<ByteArray>()
+
     val provider = LedgerTransportProvider { Transport().also { opens++ } }
 
     private inner class Transport : LedgerTransport {
         override suspend fun exchange(apdu: ByteArray): ByteArray {
             if (unplugged) throw LedgerException.TransportClosed()
+            sent += apdu
             return when ((apdu[0].toInt() and 0xFF) to (apdu[1].toInt() and 0xFF)) {
                 0xB0 to 0x01 -> byteArrayOf(1) + field(currentApp) + field(installedApps[currentApp] ?: "1.0.0") + OK
                 0xB0 to 0xA7 -> OK.also { currentApp = DASHBOARD }
                 0xE0 to 0xD8 -> openApp(apdu.decodeToString(5, apdu.size))
                 0xE0 to 0x02 -> keyPrefix.encodeToByteArray() + OK
+                0xE1 to 0x10 -> messageSignature + OK
                 else -> OK
             }
         }

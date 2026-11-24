@@ -2852,7 +2852,7 @@
     <string name="sign_message_format_bip322_description">Новий стандарт, працює і для Taproot</string>
     <string name="sign_message_format_info">Стандартний — класичний підпис повідомлення Bitcoin, його приймають майже всі біржі та гаманці. BIP-322 — новіший формат, він підтримує й адреси Taproot. Оберіть той, який просить біржа.</string>
     <string name="sign_message_taproot_only">Для адрес Taproot доступний лише BIP-322.</string>
-    <string name="sign_message_trezor_taproot">Trezor не підписує повідомлення для адрес Taproot. Використайте адресу Bitcoin іншого типу, наприклад Native SegWit.</string>
+    <string name="sign_message_hardware_taproot">Апаратний гаманець не підписує повідомлення для адрес Taproot. Використайте адресу Bitcoin іншого типу, наприклад Native SegWit.</string>
     <string name="sign_message_select_address_hint">Оберіть адресу, яку ви вказали на біржі.</string>
     <string name="sign_message_current_receive_address">Поточна адреса отримання</string>
     <string name="sign_message_used">Використані</string>

@@ -2681,7 +2681,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="sign_message_format_bip322_description">Yeni standart, Taproot için de çalışır</string>
     <string name="sign_message_format_info">Standart, neredeyse tüm borsaların ve cüzdanların kabul ettiği klasik Bitcoin imzalı mesajıdır. BIP-322, Taproot adreslerini de destekleyen daha yeni bir biçimdir. Borsanın istediğini seçin.</string>
     <string name="sign_message_taproot_only">Taproot adresleri için yalnızca BIP-322 kullanılabilir.</string>
-    <string name="sign_message_trezor_taproot">Trezor, Taproot adresleri için mesaj imzalayamaz. Başka türde bir Bitcoin adresi kullanın, örneğin Native SegWit.</string>
+    <string name="sign_message_hardware_taproot">Donanım cüzdanı, Taproot adresleri için mesaj imzalayamaz. Başka türde bir Bitcoin adresi kullanın, örneğin Native SegWit.</string>
     <string name="sign_message_select_address_hint">Borsaya bildirdiğiniz adresi seçin.</string>
     <string name="sign_message_current_receive_address">Mevcut alma adresi</string>
     <string name="sign_message_used">Kullanılmış</string>

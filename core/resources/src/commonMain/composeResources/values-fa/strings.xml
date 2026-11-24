@@ -2684,7 +2684,7 @@
     <string name="sign_message_format_bip322_description">استاندارد جدید، برای Taproot هم کار می‌کند</string>
     <string name="sign_message_format_info">استاندارد، امضای کلاسیک پیام بیت‌کوین است که تقریباً همه صرافی‌ها و کیف‌پول‌ها آن را می‌پذیرند. BIP-322 قالب جدیدتری است که از آدرس‌های Taproot هم پشتیبانی می‌کند. قالبی را انتخاب کنید که صرافی درخواست می‌کند.</string>
     <string name="sign_message_taproot_only">برای آدرس‌های Taproot فقط BIP-322 در دسترس است.</string>
-    <string name="sign_message_trezor_taproot">Trezor نمی‌تواند برای آدرس‌های Taproot پیام امضا کند. از آدرس بیت‌کوین نوع دیگری، مثلاً Native SegWit، استفاده کنید.</string>
+    <string name="sign_message_hardware_taproot">کیف پول سخت‌افزاری نمی‌تواند برای آدرس‌های Taproot پیام امضا کند. از آدرس بیت‌کوین نوع دیگری، مثلاً Native SegWit، استفاده کنید.</string>
     <string name="sign_message_select_address_hint">آدرسی را که در صرافی وارد کرده‌اید انتخاب کنید.</string>
     <string name="sign_message_current_receive_address">آدرس دریافت فعلی</string>
     <string name="sign_message_used">استفاده‌شده</string>

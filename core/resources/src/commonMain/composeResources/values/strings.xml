@@ -3099,7 +3099,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="sign_message_format_bip322_description">New standard, also works for Taproot</string>
     <string name="sign_message_format_info">Standard is the classic Bitcoin signed message that almost every exchange and wallet accepts. BIP-322 is a newer format that also supports Taproot addresses. Choose the one the exchange asks for.</string>
     <string name="sign_message_taproot_only">Only BIP-322 is available for Taproot addresses.</string>
-    <string name="sign_message_trezor_taproot">Trezor cannot sign messages for Taproot addresses. Use a Bitcoin address of another type, for example Native SegWit.</string>
+    <string name="sign_message_hardware_taproot">A hardware wallet cannot sign messages for Taproot addresses. Use a Bitcoin address of another type, for example Native SegWit.</string>
     <string name="sign_message_select_address_hint">Choose the address you provided to the exchange.</string>
     <string name="sign_message_current_receive_address">Current Receive Address</string>
     <string name="sign_message_used">Used</string>

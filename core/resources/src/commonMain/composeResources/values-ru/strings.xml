@@ -2877,7 +2877,7 @@
     <string name="sign_message_format_bip322_description">Новый стандарт, работает и для Taproot</string>
     <string name="sign_message_format_info">Стандартный — классическая подпись сообщения Bitcoin, её принимают почти все биржи и кошельки. BIP-322 — более новый формат, он поддерживает и адреса Taproot. Выберите тот, который просит биржа.</string>
     <string name="sign_message_taproot_only">Для адресов Taproot доступен только BIP-322.</string>
-    <string name="sign_message_trezor_taproot">Trezor не подписывает сообщения для адресов Taproot. Используйте адрес Bitcoin другого типа, например Native SegWit.</string>
+    <string name="sign_message_hardware_taproot">Аппаратный кошелёк не подписывает сообщения для адресов Taproot. Используйте адрес Bitcoin другого типа, например Native SegWit.</string>
     <string name="sign_message_select_address_hint">Выберите адрес, который вы указали на бирже.</string>
     <string name="sign_message_current_receive_address">Текущий адрес получения</string>
     <string name="sign_message_used">Использованные</string>

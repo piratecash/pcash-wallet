@@ -2685,7 +2685,7 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="sign_message_format_bip322_description">Nuevo estándar, también funciona con Taproot</string>
     <string name="sign_message_format_info">Estándar es el mensaje firmado clásico de Bitcoin que aceptan casi todos los exchanges y billeteras. BIP-322 es un formato más nuevo que también admite direcciones Taproot. Elige el que pida el exchange.</string>
     <string name="sign_message_taproot_only">Para direcciones Taproot solo está disponible BIP-322.</string>
-    <string name="sign_message_trezor_taproot">Trezor no puede firmar mensajes para direcciones Taproot. Usa una dirección de Bitcoin de otro tipo, por ejemplo Native SegWit.</string>
+    <string name="sign_message_hardware_taproot">Una billetera de hardware no puede firmar mensajes para direcciones Taproot. Usa una dirección de Bitcoin de otro tipo, por ejemplo Native SegWit.</string>
     <string name="sign_message_select_address_hint">Elige la dirección que indicaste en el exchange.</string>
     <string name="sign_message_current_receive_address">Dirección de recepción actual</string>
     <string name="sign_message_used">Usadas</string>

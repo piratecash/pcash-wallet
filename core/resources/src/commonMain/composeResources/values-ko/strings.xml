@@ -2660,7 +2660,7 @@
     <string name="sign_message_format_bip322_description">새로운 표준, Taproot에서도 작동</string>
     <string name="sign_message_format_info">표준은 거의 모든 거래소와 지갑에서 지원하는 기존 Bitcoin 메시지 서명 방식입니다. BIP-322는 Taproot 주소도 지원하는 새로운 형식입니다. 거래소에서 요구하는 형식을 선택하세요.</string>
     <string name="sign_message_taproot_only">Taproot 주소에는 BIP-322만 사용할 수 있습니다.</string>
-    <string name="sign_message_trezor_taproot">Trezor는 Taproot 주소로 메시지에 서명할 수 없습니다. Native SegWit 등 다른 유형의 Bitcoin 주소를 사용하세요.</string>
+    <string name="sign_message_hardware_taproot">하드웨어 지갑은 Taproot 주소로 메시지에 서명할 수 없습니다. Native SegWit 등 다른 유형의 Bitcoin 주소를 사용하세요.</string>
     <string name="sign_message_select_address_hint">거래소에 입력한 주소를 선택하세요.</string>
     <string name="sign_message_current_receive_address">현재 수신 주소</string>
     <string name="sign_message_used">사용됨</string>

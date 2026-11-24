@@ -2693,7 +2693,7 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="sign_message_format_bip322_description">Novo padrão, também funciona para Taproot</string>
     <string name="sign_message_format_info">Padrão é a mensagem assinada clássica do Bitcoin, aceita por quase todas as corretoras e carteiras. BIP-322 é um formato mais novo que também suporta endereços Taproot. Escolha o que a corretora pedir.</string>
     <string name="sign_message_taproot_only">Para endereços Taproot, só o BIP-322 está disponível.</string>
-    <string name="sign_message_trezor_taproot">A Trezor não assina mensagens para endereços Taproot. Use um endereço Bitcoin de outro tipo, por exemplo Native SegWit.</string>
+    <string name="sign_message_hardware_taproot">A carteira de hardware não assina mensagens para endereços Taproot. Use um endereço Bitcoin de outro tipo, por exemplo Native SegWit.</string>
     <string name="sign_message_select_address_hint">Escolha o endereço que você informou à corretora.</string>
     <string name="sign_message_current_receive_address">Endereço de recebimento atual</string>
     <string name="sign_message_used">Usados</string>
