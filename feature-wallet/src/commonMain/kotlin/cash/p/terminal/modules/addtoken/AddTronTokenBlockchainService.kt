@@ -1,13 +1,12 @@
 package cash.p.terminal.modules.addtoken
 
-import cash.p.terminal.core.providers.SharedAppConfig
+import cash.p.terminal.core.managers.TronKitManager
 import cash.p.terminal.wallet.customCoinUid
 import cash.p.terminal.wallet.Token
 import io.horizontalsystems.core.entities.Blockchain
 import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenQuery
 import io.horizontalsystems.tronkit.models.Address
-import io.horizontalsystems.tronkit.network.Network
 import io.horizontalsystems.tronkit.rpc.Trc20Provider
 
 class AddTronTokenBlockchainService(
@@ -45,7 +44,7 @@ class AddTronTokenBlockchainService(
 
     companion object {
         fun getInstance(blockchain: Blockchain): AddTronTokenBlockchainService {
-            val trc20Provider = Trc20Provider.getInstance(Network.Mainnet, SharedAppConfig.trongridApiKeys)
+            val trc20Provider = Trc20Provider.getInstance(TronKitManager.rpcSource)
             return AddTronTokenBlockchainService(blockchain, trc20Provider)
         }
     }
