@@ -1,5 +1,6 @@
 package cash.p.terminal.modules.send.solana
 
+import cash.p.terminal.core.INativeBalanceProvider
 import cash.p.terminal.core.ISendSolanaAdapter
 import cash.p.terminal.core.OfflineSolanaSignRequest
 import cash.p.terminal.core.OfflineTransactionAdapter
@@ -18,6 +19,7 @@ import cash.p.terminal.manager.IConnectivityManager
 import cash.p.terminal.modules.amount.SendAmountService
 import cash.p.terminal.modules.contacts.ContactsRepository
 import cash.p.terminal.modules.pin.core.UptimeProvider
+import cash.p.terminal.modules.send.SendResult
 import cash.p.terminal.modules.send.mockConnectivityManager
 import cash.p.terminal.modules.send.offline.OfflineSignState
 import cash.p.terminal.modules.send.offline.OfflineTransactionFormat
@@ -28,10 +30,12 @@ import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAdapterManager
+import cash.p.terminal.wallet.IBalanceAdapter
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.WalletFactory
+import cash.p.terminal.wallet.entities.BalanceData
 import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
@@ -55,6 +59,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -280,6 +286,74 @@ class SendSolanaViewModelTest : KoinTest {
         val viewModel = createViewModel(wallet = watchWallet)
 
         assertFalse(viewModel.offlineSignSupported)
+    }
+
+    @Test
+    fun send_splTokenBalanceBelowFeeWithEnoughSol_sends() = runTest(dispatcher) {
+        val splWallet = createWallet(splToken())
+        every { adapterManager.getAdjustedBalanceData(splWallet) } returns BalanceData(BigDecimal("0.0001"))
+        every { adapterManager.getAdjustedBalanceDataForToken(solanaToken) } returns BalanceData(BigDecimal.ONE)
+
+        send(splWallet, BigDecimal("0.0001"))
+
+        coVerify(exactly = 1) { adapter.send(BigDecimal("0.0001"), any()) }
+    }
+
+    @Test
+    fun send_splTokenSolBelowFee_failsShowingActualSolBalance() = runTest(dispatcher) {
+        mockkObject(Translator)
+        every { Translator.getString(any(), *anyVararg()) } answers { firstArg<StringResource>().key }
+        val splWallet = createWallet(splToken())
+        every { adapterManager.getAdjustedBalanceData(splWallet) } returns BalanceData(BigDecimal.TEN)
+        every { adapterManager.getAdjustedBalanceDataForToken(solanaToken) } returns BalanceData(BigDecimal.ZERO)
+
+        val viewModel = send(splWallet, amount)
+
+        coVerify(exactly = 0) { adapter.send(any(), any()) }
+        assertEquals(listOf("SOL", "0"), viewModel.failureArgs())
+    }
+
+    @Test
+    fun send_solAmountAboveBalance_failsShowingActualSolBalance() = runTest(dispatcher) {
+        mockkObject(Translator)
+        every { Translator.getString(any(), *anyVararg()) } answers { firstArg<StringResource>().key }
+        every { adapterManager.getAdjustedBalanceData(wallet) } returns BalanceData(BigDecimal("0.5"))
+
+        val viewModel = send(wallet, amount)
+
+        coVerify(exactly = 0) { adapter.send(any(), any()) }
+        assertEquals(listOf("SOL", "0.5"), viewModel.failureArgs())
+    }
+
+    private fun SendSolanaViewModel.failureArgs(): List<Any> =
+        ((sendResult as SendResult.Failed).caution.description as TranslatableString.ResString).formatArgs.toList()
+
+    @Test
+    fun send_splTokenSolWalletHidden_usesNativeBalanceOfSplAdapter() = runTest(dispatcher) {
+        val splWallet = createWallet(splToken())
+        val splAdapter = mockk<IBalanceAdapter>(relaxed = true, moreInterfaces = arrayOf(INativeBalanceProvider::class))
+        every { (splAdapter as INativeBalanceProvider).nativeBalanceData } returns BalanceData(BigDecimal.ONE)
+        every { adapterManager.getAdjustedBalanceDataForToken(solanaToken) } returns null
+        every { adapterManager.getAdapterForToken<IBalanceAdapter>(splWallet.token) } returns splAdapter
+
+        send(splWallet, amount)
+
+        coVerify(exactly = 1) { adapter.send(amount, any()) }
+    }
+
+    private fun TestScope.send(fromWallet: Wallet, value: BigDecimal): SendSolanaViewModel {
+        every { connectivityManager.isConnected } returns MutableStateFlow(true)
+        // The base view model reads feeToken after yield(), which does not suspend on an unconfined Main.
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        every { adapterManager.getAdapterForToken<IBalanceAdapter>(solanaToken) } returns null
+        val viewModel = createViewModel(wallet = fromWallet, feeToken = solanaToken)
+        viewModel.onEnterAddress(address)
+        viewModel.onEnterAmount(value)
+        advanceUntilIdle()
+
+        viewModel.onClickSend()
+        advanceUntilIdle()
+        return viewModel
     }
 
     private fun createViewModel(

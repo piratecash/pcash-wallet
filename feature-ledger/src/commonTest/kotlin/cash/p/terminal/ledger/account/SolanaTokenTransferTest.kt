@@ -35,6 +35,17 @@ class SolanaTokenTransferTest {
     }
 
     @Test
+    fun parse_token2022TransferWithCreate_returnsMintDestinationAndOwner() {
+        val message = splTransferMessage(newRecipient = true, programId = PublicKey("TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"))
+
+        val transfer = checkNotNull(SolanaTokenTransfer.parse(message))
+
+        assertEquals(SPL_MINT, transfer.mint)
+        assertEquals(SPL_DESTINATION, transfer.destination)
+        assertEquals(SPL_RECIPIENT, transfer.newAccountOwner)
+    }
+
+    @Test
     fun parse_deprecatedTransfer_returnsNull() {
         val transfer = TokenProgram.transfer(PublicKey(SPL_SOURCE), PublicKey(SPL_DESTINATION), 1, PublicKey(SPL_OWNER))
 

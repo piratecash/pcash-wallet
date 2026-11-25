@@ -189,6 +189,18 @@ class SendSolanaViewModel(
         )
     }
 
+    // A token send spends SOL only on the fee, so it is checked against the SOL balance, as the screens do.
+    private fun hasInsufficientSolForSend(): Boolean {
+        if (sendToken.type != TokenType.Native) return isInsufficientFeeBalance(SolanaKit.fee)
+        return decimalAmount + SolanaKit.fee > availableSolBalance()
+    }
+
+    private fun availableSolBalance(): BigDecimal = if (sendToken.type == TokenType.Native) {
+        adapterManager.getAdjustedBalanceData(wallet)?.available ?: solBalance
+    } else {
+        feeCoinBalance ?: BigDecimal.ZERO
+    }
+
     fun hasConnection(): Boolean {
         return connectivityManager.isConnected.value
     }
@@ -205,13 +217,7 @@ class SendSolanaViewModel(
             val solanaAddress = addressState.solanaAddress
                 ?: throw LocalizedException(Res.string.send_error_address_unavailable)
 
-            val totalSolAmount =
-                (if (sendToken.type == TokenType.Native) decimalAmount else BigDecimal.ZERO) + SolanaKit.fee
-
-            val availableBalance = adapterManager.getAdjustedBalanceData(wallet)?.available
-                ?: solBalance
-            if (totalSolAmount > availableBalance)
-                throw EvmError.InsufficientBalanceWithFee
+            if (hasInsufficientSolForSend()) throw EvmError.InsufficientBalanceWithFee
 
             // 1. Create pending transaction draft BEFORE sending
             val sdkBalance = adapterManager.getBalanceAdapterForWallet(wallet)
@@ -285,7 +291,7 @@ class SendSolanaViewModel(
         is UnknownHostException -> HSCaution(TranslatableString.ResString(Res.string.Hud_Text_NoInternet))
         is LocalizedException -> HSCaution(TranslatableString.ResString(error.errorTextRes))
         is EvmError.InsufficientBalanceWithFee -> SendErrorInsufficientBalance(
-            feeToken.coin.code, solBalance.toPlainString()
+            feeToken.coin.code, availableSolBalance().toPlainString()
         )
 
         else -> HSCaution(TranslatableString.PlainString(error.cause?.message ?: error.message ?: ""))
