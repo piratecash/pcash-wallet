@@ -788,10 +788,9 @@ class TransactionViewItemFactory(
 
         when (val recordType = record.type) {
             is StellarTransactionRecord.Type.Send -> {
-                subtitle = Translator.getString(
-                    Res.string.Transactions_To,
-                    mapped(recordType.to, record.blockchainType)
-                )
+                subtitle = recordType.to?.let {
+                    Translator.getString(Res.string.Transactions_To, mapped(it, record.blockchainType))
+                } ?: "---"
 
                 sentToSelf = recordType.sentToSelf
 
@@ -806,10 +805,9 @@ class TransactionViewItemFactory(
             }
 
             is StellarTransactionRecord.Type.Receive -> {
-                subtitle = Translator.getString(
-                    Res.string.Transactions_From,
-                    mapped(recordType.from, record.blockchainType)
-                )
+                subtitle = recordType.from?.let {
+                    Translator.getString(Res.string.Transactions_From, mapped(it, record.blockchainType))
+                } ?: "---"
 
                 primaryValue = getColoredValue(recordType.value, ColorName.Remus)
                 iconX = singleValueIconType(recordType.value)
@@ -819,6 +817,13 @@ class TransactionViewItemFactory(
                 subtitle = recordType.trustee.shorten()
                 primaryValue = getColoredValue(recordType.value, ColorName.Primary, true)
                 iconX = singleValueIconType(recordType.value)
+            }
+
+            is StellarTransactionRecord.Type.Swap -> {
+                subtitle = ""
+                primaryValue = getColoredValue(recordType.valueOut, ColorName.Remus)
+                secondaryValue = getColoredValue(recordType.valueIn, ColorName.Lucian)
+                iconX = doubleValueIconType(recordType.valueOut, recordType.valueIn)
             }
 
             is StellarTransactionRecord.Type.Unsupported -> {

@@ -67,7 +67,7 @@ fun TransactionRecord.getSenderAddresses(): List<String> {
         }
         is BitcoinTransactionRecord -> listOfNotNull(from)
         is StellarTransactionRecord -> {
-            (type as? StellarTransactionRecord.Type.Receive)?.from?.let { listOf(it) }
+            (type as? StellarTransactionRecord.Type.Receive)?.senderTransfers?.mapNotNull { it.address }
                 ?: listOfNotNull(from)
         }
         is MoneroTransactionRecord -> listOfNotNull(from)

@@ -38,7 +38,7 @@ class StellarTransactionRecord(
     sealed class Type {
         data class Send(
             val value: TransactionValue,
-            override val to: String,
+            override val to: String?,
             override val sentToSelf: Boolean,
             val comment: String?,
             val accountCreated: Boolean,
@@ -46,15 +46,23 @@ class StellarTransactionRecord(
 
         data class Receive(
             val value: TransactionValue,
-            override val from: String,
+            override val from: String?,
             override val to: String,
             val comment: String?,
             val accountCreated: Boolean,
+            /** One per sender: a contract call may pay in from several, and then [from] is null. */
+            val senderTransfers: List<TransferEvent> = listOf(TransferEvent(from, null, value)),
         ) : Type()
 
         data class ChangeTrust(
             val trustee: String,
             val value: TransactionValue
+        ) : Type()
+
+        /** [valueIn] is what the account sold (negative), [valueOut] what it received. */
+        data class Swap(
+            val valueIn: TransactionValue,
+            val valueOut: TransactionValue,
         ) : Type()
 
         class Unsupported(val type: String) : Type()
@@ -64,6 +72,7 @@ class StellarTransactionRecord(
                 is Receive -> value
                 is Send -> value
                 is ChangeTrust -> value
+                is Swap -> valueOut
                 is Unsupported -> null
             }
 
@@ -90,7 +99,8 @@ class StellarTransactionRecord(
             when (this) {
                 is Send -> TransactionRecordType.STELLAR_OUTGOING
                 is Receive -> TransactionRecordType.STELLAR_INCOMING
-                is ChangeTrust -> TransactionRecordType.UNKNOWN
+                is ChangeTrust,
+                is Swap,
                 is Unsupported -> TransactionRecordType.UNKNOWN
             }
     }
@@ -104,12 +114,11 @@ class StellarTransactionRecord(
     companion object {
         fun eventsForPhishingCheck(type: Type): List<TransferEvent> =
             when (type) {
-                is Type.Receive -> {
-                    listOf(TransferEvent(type.from, null, type.value))
-                }
+                is Type.Receive -> type.senderTransfers
 
                 is Type.ChangeTrust,
                 is Type.Send,
+                is Type.Swap,
                 is Type.Unsupported -> listOf()
             }
     }

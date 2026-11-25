@@ -355,6 +355,7 @@ class TransactionListTitlesTest {
         "stellar send" to stellar(StellarTransactionRecord.Type.Send(coin("-1"), "G-to", false, null, false)),
         "stellar receive" to stellar(StellarTransactionRecord.Type.Receive(coin("1"), "G-from", "G-to", null, false)),
         "stellar change trust" to stellar(StellarTransactionRecord.Type.ChangeTrust("G-trustee", coin("0"))),
+        "stellar swap" to stellar(StellarTransactionRecord.Type.Swap(coin("-1"), coin("2"))),
         "stellar unsupported" to stellar(StellarTransactionRecord.Type.Unsupported("custom")),
     )
 

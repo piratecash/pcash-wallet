@@ -118,8 +118,12 @@ class SwapProviderRecordResolver(
             record.actions.singleOrNull()?.type is TonTransactionRecord.Action.Type.Receive
         )
 
-        is StellarTransactionRecord ->
-            directed(record, record.token, record.type is StellarTransactionRecord.Type.Receive)
+        // record.token is always XLM, so match by the asset that moved; a DEX swap is no provider leg.
+        is StellarTransactionRecord -> directed(
+            record,
+            record.mainCoinToken.takeUnless { record.type is StellarTransactionRecord.Type.Swap },
+            record.type is StellarTransactionRecord.Type.Receive
+        )
 
         is ThorchainTransactionRecord ->
             directed(record, record.token, record.type is ThorchainTransactionRecord.Type.Incoming)

@@ -82,7 +82,7 @@ jna = "5.13.0"
 piratecash-bitcoin = "v0.1.0-pcash.49"
 
 hd-wallet-kit = "1.0.2"
-stellar-kit = "v2.0.0-pcash.6"
+stellar-kit = "v2.0.0-pcash.9"
 thorchain-kit = "1.4.0"
 trezor-kit = "1.4.2"
 ledger-kit = "0.6.9"
