@@ -112,8 +112,7 @@ class WCRequestPage : HSPage() {
                         logger,
                         blockchainType,
                         transaction,
-                        sessionRequestUI.peerUI.peerName,
-                        sessionRequestUI.verifyAlert,
+                        sessionRequestUI,
                     )
                 } else if (sessionRequestUI.method == "eth_signTransaction") {
                     val blockchainType = wcRequestEvmViewModel.blockchainType ?: return
@@ -134,9 +133,8 @@ class WCRequestPage : HSPage() {
                         logger,
                         blockchainType,
                         transaction,
-                        sessionRequestUI.peerUI.peerName,
                         evmKitWrapper,
-                        sessionRequestUI.verifyAlert,
+                        sessionRequestUI,
                     )
                 } else {
                     WCNewSignRequestScreen(

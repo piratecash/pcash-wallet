@@ -14,6 +14,7 @@ import cash.p.terminal.core.managers.EvmKitWrapper
 import cash.p.terminal.modules.confirm.ConfirmTransactionScreen
 import cash.p.terminal.modules.send.signingErrorText
 import cash.p.terminal.modules.sendevmtransaction.SendEvmTransactionView
+import cash.p.terminal.modules.walletconnect.request.SessionRequestUI
 import cash.p.terminal.modules.walletconnect.request.WCRequestPage
 import cash.p.terminal.modules.walletconnect.request.sendtransaction.WalletConnectTransaction
 import cash.p.terminal.navigation.HSNavigation
@@ -28,7 +29,6 @@ import io.horizontalsystems.core.logger.AppLogger
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.padding
-import cash.p.terminal.modules.walletconnect.WCVerifyAlert
 import cash.p.terminal.modules.walletconnect.WCVerifyAlertCard
 
 @Composable
@@ -37,17 +37,16 @@ fun WCSignEthereumTransactionRequestScreen(
     logger: AppLogger,
     blockchainType: BlockchainType,
     transaction: WalletConnectTransaction,
-    peerName: String,
     evmKitWrapper: EvmKitWrapper,
-    verifyAlert: WCVerifyAlert?,
+    request: SessionRequestUI.Content,
 ) {
     val viewModel = viewModel<WCSignEthereumTransactionRequestViewModel>(
         viewModelStoreOwner = navigation.viewModelStoreOwnerForPage(WCRequestPage::class),
         factory = WCSignEthereumTransactionRequestViewModel.Factory(
             blockchainType = blockchainType,
             transaction = transaction,
-            peerName = peerName,
-            evmKitWrapper = evmKitWrapper
+            evmKitWrapper = evmKitWrapper,
+            request = request
         )
     )
     val uiState = viewModel.uiState
@@ -94,7 +93,7 @@ fun WCSignEthereumTransactionRequestScreen(
             )
         }
     ) {
-        WCVerifyAlertCard(verifyAlert, Modifier.padding(horizontal = 16.dp))
+        WCVerifyAlertCard(request.verifyAlert, Modifier.padding(horizontal = 16.dp))
         SendEvmTransactionView(
             navigation,
             uiState.sectionViewItems,

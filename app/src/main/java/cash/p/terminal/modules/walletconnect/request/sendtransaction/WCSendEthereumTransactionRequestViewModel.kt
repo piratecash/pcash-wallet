@@ -18,6 +18,7 @@ import cash.p.terminal.modules.sendevmtransaction.SendEvmTransactionViewItemFact
 import cash.p.terminal.modules.sendevmtransaction.ValueType
 import cash.p.terminal.modules.sendevmtransaction.ViewItem
 import cash.p.terminal.modules.walletconnect.WCDelegate
+import cash.p.terminal.modules.walletconnect.request.SessionRequestUI
 import cash.p.terminal.modules.walletconnect.request.WCChainData
 import cash.p.terminal.strings.helpers.Translator
 import io.horizontalsystems.core.entities.BlockchainType
@@ -30,7 +31,9 @@ internal class WCSendEthereumTransactionRequestViewModel(
     private val sendEvmTransactionViewItemFactory: SendEvmTransactionViewItemFactory,
     private val dAppName: String,
     transaction: WalletConnectTransaction,
-    blockchainType: BlockchainType
+    blockchainType: BlockchainType,
+    private val topic: String,
+    private val requestId: Long
 ) : ViewModelUiState<WCSendEthereumTransactionRequestUiState>() {
     val sendTransactionService: SendTransactionServiceEvm = SendTransactionServiceEvm(
         token = App.evmBlockchainManager.getBaseToken(blockchainType)!!,
@@ -107,13 +110,7 @@ internal class WCSendEthereumTransactionRequestViewModel(
         val sendResult = sendTransactionService.send()
         val transactionHash = sendResult.getRecordUid().orEmpty()
 
-        WCDelegate.sessionRequestEvent?.let { sessionRequest ->
-            WCDelegate.respondPendingRequest(
-                requestId = sessionRequest.request.id,
-                topic = sessionRequest.topic,
-                data = transactionHash
-            )
-        }
+        WCDelegate.respondPendingRequest(requestId = requestId, topic = topic, data = transactionHash)
     }
 
     fun retry() {
@@ -121,15 +118,13 @@ internal class WCSendEthereumTransactionRequestViewModel(
     }
 
     fun reject() {
-        WCDelegate.sessionRequestEvent?.let { sessionRequest ->
-            WCDelegate.rejectRequest(sessionRequest.topic, sessionRequest.request.id)
-        }
+        WCDelegate.rejectRequest(topic, requestId)
     }
 
     class Factory(
         private val blockchainType: BlockchainType,
         private val transaction: WalletConnectTransaction,
-        private val peerName: String
+        private val request: SessionRequestUI.Content
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -150,9 +145,11 @@ internal class WCSendEthereumTransactionRequestViewModel(
 
             return WCSendEthereumTransactionRequestViewModel(
                 sendEvmTransactionViewItemFactory,
-                peerName,
+                request.peerUI.peerName,
                 transaction,
-                blockchainType
+                blockchainType,
+                request.topic,
+                request.requestId
             ) as T
         }
     }

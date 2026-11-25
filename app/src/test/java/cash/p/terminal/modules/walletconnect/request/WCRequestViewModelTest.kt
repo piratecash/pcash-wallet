@@ -4,6 +4,7 @@ import cash.p.terminal.core.ServiceStateFlow
 import cash.p.terminal.ledger.domain.LedgerBlindSigningRequiredException
 import cash.p.terminal.ledger.domain.LedgerRejectedException
 import cash.p.terminal.modules.walletconnect.WCManager
+import cash.p.terminal.modules.walletconnect.WCVerifyAlert
 import cash.p.terminal.strings.helpers.TranslatableString
 import io.horizontalsystems.core.Translator
 import io.mockk.coEvery
@@ -11,6 +12,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkObject
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -22,6 +24,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -69,6 +72,20 @@ class WCRequestViewModelTest {
         val viewModel = approveFailingWith(IllegalStateException("Network down"))
 
         assertEquals("Network down", viewModel.uiState.errorText)
+        assertTrue(viewModel.uiState.runnable)
+    }
+
+    @Test
+    fun uiState_verifyAlertNotLoaded_approveDisabledUntilAlertShown() = runTest {
+        val alert = CompletableDeferred<WCVerifyAlert?>()
+        coEvery { wcManager.getRequestVerifyAlert(any()) } coAnswers { alert.await() }
+        val viewModel = WCRequestViewModel(mockk(relaxed = true), wcAction, wcManager)
+
+        assertFalse(viewModel.uiState.runnable)
+
+        alert.complete(WCVerifyAlert.Scam)
+
+        assertEquals(WCVerifyAlert.Scam, viewModel.uiState.verifyAlert)
         assertTrue(viewModel.uiState.runnable)
     }
 
