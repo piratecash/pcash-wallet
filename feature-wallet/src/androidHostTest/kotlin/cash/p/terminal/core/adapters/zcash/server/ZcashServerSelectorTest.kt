@@ -61,7 +61,12 @@ private fun probe(
 
 /** Answers by URL; an unknown URL behaves like an unreachable server. */
 private class FakeProber : ZcashServerProber {
-    private class Answer(val probe: ServerProbe, val infoSamples: ArrayDeque<Long>, val latestSamples: ArrayDeque<Int>)
+    private class Answer(
+        val probe: ServerProbe,
+        val infoSamples: ArrayDeque<Long>,
+        val latestSamples: ArrayDeque<Int>,
+        val blockSamples: ArrayDeque<Int>,
+    )
 
     private val answers = mutableMapOf<String, Answer>()
     val probed = mutableListOf<Pair<String, Transport>>()
@@ -71,8 +76,9 @@ private class FakeProber : ZcashServerProber {
         probe: ServerProbe,
         infoSamples: List<Long> = emptyList(),
         latestSamples: List<Int> = emptyList(),
+        blockSamples: List<Int> = emptyList(),
     ) {
-        answers[url] = Answer(probe, ArrayDeque(infoSamples), ArrayDeque(latestSamples))
+        answers[url] = Answer(probe, ArrayDeque(infoSamples), ArrayDeque(latestSamples), ArrayDeque(blockSamples))
     }
 
     fun unreachable(url: String) {
@@ -85,6 +91,7 @@ private class FakeProber : ZcashServerProber {
         return answer.probe.copy(
             infoMs = answer.infoSamples.removeFirstOrNull() ?: answer.probe.infoMs,
             latestHeight = answer.latestSamples.removeFirstOrNull() ?: answer.probe.latestHeight,
+            blockHeight = answer.blockSamples.removeFirstOrNull() ?: answer.probe.blockHeight,
         )
     }
 
@@ -268,12 +275,62 @@ class ZcashServerSelectorTest {
     }
 
     @Test
-    fun evaluate_oneOfThreeProbesStale_rejectsServer() = runTest {
+    fun evaluate_oneOfThreeProbesStale_losesToACleanServer() = runTest {
         prober.answer(urls[0], probe(infoMs = 10), latestSamples = listOf(TIP, STALE_TIP, TIP))
         prober.answer(urls[1], probe(infoMs = 100))
         val selector = selector()
 
         evaluate(selector)
+
+        assertEquals(urls[1], current())
+        assertTrue(selector.healthOf(urls[0]), "stale 1/3" in selector.healthOf(urls[0]))
+        assertFalse(selector.healthOf(urls[0]), "rejected" in selector.healthOf(urls[0]))
+    }
+
+    @Test
+    fun evaluate_twoProbesBehindInBothHeights_losesToACleanServer() = runTest {
+        prober.answer(
+            urls[0],
+            probe(infoMs = 10),
+            blockSamples = listOf(TIP, TIP - 100, TIP - 100),
+            latestSamples = listOf(TIP, TIP - 100, TIP - 100),
+        )
+        prober.answer(urls[1], probe(infoMs = 100))
+        val selector = selector()
+
+        evaluate(selector)
+
+        assertEquals(urls[1], current())
+        assertTrue(selector.healthOf(urls[0]), "stale 2/3" in selector.healthOf(urls[0]))
+    }
+
+    @Test
+    fun evaluate_everyProbeStaleWhileTheTipAdvances_rejectsServer() = runTest {
+        prober.answer(
+            urls[0],
+            probe(infoMs = 10),
+            blockSamples = listOf(TIP, TIP + 1, TIP + 1),
+            latestSamples = listOf(TIP - 10, TIP - 9, TIP - 9),
+        )
+        prober.answer(urls[1], probe(infoMs = 100))
+        val selector = selector()
+
+        evaluate(selector)
+
+        assertEquals(urls[1], current())
+        assertTrue(selector.healthOf(urls[0]), "rejected: stale tip" in selector.healthOf(urls[0]))
+    }
+
+    @Test
+    fun evaluate_currentTurnsPartiallyStale_switchesToACleanSlowServer() = runTest {
+        prober.answer(urls[0], probe(infoMs = 10))
+        prober.answer(urls[1], probe(infoMs = 100))
+        val selector = selector()
+        evaluate(selector)
+        prober.answer(urls[0], probe(infoMs = 100, rangeMs = 0), latestSamples = listOf(TIP, STALE_TIP, TIP))
+        prober.answer(urls[1], probe(rangeMs = 6_000), infoSamples = listOf(100, 6_000, 6_000))
+
+        reevaluate(selector)
 
         assertEquals(urls[1], current())
     }
@@ -557,6 +614,31 @@ class ZcashServerSelectorTest {
         assertEquals(urls[0], current())
         assertFalse(selector.healthOf(urls[0]), "quarantined" in selector.healthOf(urls[0]))
         assertEquals("auto: no network", selector.selection())
+    }
+
+    @Test
+    fun onPassFinished_currentFailsAndAlternativeOneOfThreeStale_switchesToIt() = runTest {
+        prober.answer(urls[0], probe(infoMs = 10))
+        val selector = selector()
+        evaluate(selector)
+        prober.answer(urls[1], probe(), latestSamples = listOf(TIP, STALE_TIP, TIP))
+
+        fail(selector, urls[0])
+
+        assertEquals(urls[1], current())
+    }
+
+    @Test
+    fun onPassFinished_currentFailsAndAlternativeEveryProbeStale_keepsTheCurrentServer() = runTest {
+        prober.answer(urls[0], probe(infoMs = 10))
+        val selector = selector()
+        evaluate(selector)
+        prober.answer(urls[1], probe(latestHeight = STALE_TIP))
+
+        fail(selector, urls[0])
+
+        assertEquals(urls[0], current())
+        assertEquals("auto: no alternative", selector.selection())
     }
 
     @Test
