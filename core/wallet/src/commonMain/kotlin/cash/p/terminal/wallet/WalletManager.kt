@@ -26,6 +26,9 @@ class WalletManager(
     private val _activeWalletsState = MutableStateFlow<List<Wallet>>(emptyList())
     override val activeWalletsFlow: StateFlow<List<Wallet>> get() = _activeWalletsState.asStateFlow()
 
+    private val _activeWalletsAccountId = MutableStateFlow<String?>(null)
+    override val activeWalletsAccountIdFlow: StateFlow<String?> = _activeWalletsAccountId.asStateFlow()
+
     private val walletsSet = mutableSetOf<Wallet>()
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -79,6 +82,8 @@ class WalletManager(
             walletsSet.clear()
             walletsSet.addAll(activeWallets.orEmpty())
             notifyActiveWalletsLocked()
+            // After the wallets: a reader that sees the new id must also see the new list.
+            _activeWalletsAccountId.value = activeAccount?.id
         }
     }
 

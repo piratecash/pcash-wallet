@@ -38,6 +38,8 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.junit.After
+import cash.p.terminal.ui_compose.entities.ViewState
+import cash.p.terminal.wallet.balance.BalanceItem
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -47,13 +49,14 @@ import org.junit.Rule
 import org.junit.Test
 import org.koin.dsl.module
 import org.koin.test.KoinTest
+import org.koin.test.get
 import org.koin.test.KoinTestRule
 import java.util.Collections
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-class BalanceViewModelScanTest : KoinTest {
+class BalanceViewModelTest : KoinTest {
 
     private val scheduler = TestCoroutineScheduler()
     private val ioExecutor = Executors.newSingleThreadExecutor { Thread(it, IO_THREAD) }
@@ -91,6 +94,13 @@ class BalanceViewModelScanTest : KoinTest {
                 }
             }
         )
+    }
+
+    private val balanceItems = MutableStateFlow<List<BalanceItem>?>(emptyList())
+    private val balanceViewItemFactory = mockk<BalanceViewItemFactory> {
+        every { viewItem2(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } answers {
+            mockk(relaxed = true) { every { wallet } returns firstArg<BalanceItem>().wallet }
+        }
     }
 
     private val detectorThreads = Collections.synchronizedList(mutableListOf<String>())
@@ -149,13 +159,57 @@ class BalanceViewModelScanTest : KoinTest {
         assertNotNull(viewModel.uiState.errorMessage)
     }
 
+    @Test
+    fun uiState_balanceItemsNotLoaded_drawsNothing() {
+        balanceItems.value = null
+
+        assertNull(createViewModel().uiState.viewState)
+    }
+
+    @Test
+    fun uiState_accountWithoutCoins_showsEmptyList() {
+        val viewModel = createViewModel()
+
+        assertEquals(ViewState.Success, viewModel.uiState.viewState)
+        assertTrue(viewModel.uiState.balanceViewItems.isEmpty())
+    }
+
+    @Test
+    fun uiState_severalUpdatesInARow_showsTheLatest() {
+        balanceItems.value = null
+        val viewModel = createViewModel()
+        val first = balanceItem()
+        val latest = listOf(balanceItem(), balanceItem())
+
+        balanceItems.value = listOf(first)
+        balanceItems.value = latest
+
+        assertEquals(latest.map { it.wallet }, viewModel.uiState.balanceViewItems.map { it.wallet })
+    }
+
+    @Test
+    fun uiState_listBuiltForThePreviousAccount_isNotShown() {
+        val accountManager: IAccountManager = get()
+        every { accountManager.activeAccount } returns mockk(relaxed = true) { every { id } returns "current" }
+        balanceItems.value = null
+        val viewModel = createViewModel()
+
+        balanceItems.value = listOf(balanceItem(accountId = "previous"))
+
+        assertNull(viewModel.uiState.viewState)
+    }
+
+    private fun balanceItem(accountId: String = ""): BalanceItem = mockk(relaxed = true) {
+        every { wallet } returns mockk(relaxed = true) { every { account.id } returns accountId }
+    }
+
     private fun createViewModel(): BalanceViewModel {
         val addressHandlerFactory = mockk<AddressHandlerFactory> {
             every { parserChain(null) } returns parserChain
         }
         return BalanceViewModel(
-            service = mockk(relaxed = true) { every { balanceItemsFlow } returns MutableStateFlow(emptyList()) },
-            balanceViewItemFactory = mockk(relaxed = true),
+            service = mockk(relaxed = true) { every { balanceItemsFlow } returns balanceItems },
+            balanceViewItemFactory = balanceViewItemFactory,
             balanceViewTypeManager = mockk {
                 every { balanceViewTypeFlow } returns MutableStateFlow(BalanceViewType.entries.first())
             },

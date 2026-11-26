@@ -197,6 +197,9 @@ private class InMemoryAccountsDao : AccountsDao {
 
     override fun loadAccount(id: String): AccountRecord? = accounts[id]?.copy()
 
+    override fun loadVisibleAccount(id: String, accountsMinLevel: Int): AccountRecord? =
+        getAll(accountsMinLevel).find { it.id == id }
+
     override fun delete(id: String) {
         accounts[id]?.let { accounts[id] = it.apply { deleted = true } }
     }

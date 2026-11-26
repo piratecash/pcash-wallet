@@ -381,6 +381,10 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
 
             initializeWalletConnectV2()
             WCDelegate.initialize()
+            // After WalletKit: a wc: deep link opens as soon as the active account is announced.
+            if (!pinComponent.isPinSet) {
+                pinComponent.initDefaultPinLevel()
+            }
 
             EthereumKit.init()
             walletServicesStarter.startAdapters()
@@ -392,9 +396,6 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
             }
             rateAppManager.onAppLaunch()
             get<LedgerTokenDescriptorSync>().start()
-            if (!pinComponent.isPinSet) {
-                pinComponent.initDefaultPinLevel()
-            }
             walletServicesStarter.scheduleAccountDataCleanup()
             wcSessionManager.start()
 

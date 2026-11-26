@@ -20,6 +20,9 @@ interface IAccountManager {
     /** Null before any level is loaded and after [unload]. */
     val visibleAccounts: VisibleAccounts?
 
+    /** True once [accounts] holds the whole level; [activeAccountStateFlow] may announce the active one earlier. */
+    val accountsLoadedFlow: StateFlow<Boolean>
+
     fun setActiveAccountId(activeAccountId: String?)
     fun updateSignedHashes(signedHashes: Int)
     fun account(id: String): Account?
