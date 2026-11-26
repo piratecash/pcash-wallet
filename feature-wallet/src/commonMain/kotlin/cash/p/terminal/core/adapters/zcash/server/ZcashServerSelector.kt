@@ -245,8 +245,11 @@ private fun assess(measurements: Map<String, Measurement?>): Map<String, ZcashSe
  * between probes nor a backend lagging in both heights may hide it.
  */
 private suspend fun ZcashServerProber.measure(url: String, transport: Transport): Measurement? = try {
-    val first = probe(url, transport, RANGE_BLOCKS)
-    val probes = listOf(first) + List(LATENCY_SAMPLES - 1) { probe(url, transport, 1) }
+    val probes = coroutineScope {
+        List(LATENCY_SAMPLES) { index -> async { probe(url, transport, if (index == 0) RANGE_BLOCKS else 1) } }
+            .awaitAll()
+    }
+    val first = probes.first()
     val tip = probes.maxOf { it.blockHeight }
     Measurement(
         probe = first.copy(

@@ -15,10 +15,12 @@ import io.horizontalsystems.core.IBackgroundManager
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -70,6 +72,7 @@ private class FakeProber : ZcashServerProber {
 
     private val answers = mutableMapOf<String, Answer>()
     val probed = mutableListOf<Pair<String, Transport>>()
+    var probeDurationMs = 0L
 
     fun answer(
         url: String,
@@ -87,6 +90,7 @@ private class FakeProber : ZcashServerProber {
 
     override suspend fun probe(url: String, transport: Transport, rangeBlocks: Int): ServerProbe {
         probed += url to transport
+        delay(probeDurationMs)
         val answer = answers[url] ?: throw ZcashException("connection refused")
         return answer.probe.copy(
             infoMs = answer.infoSamples.removeFirstOrNull() ?: answer.probe.infoMs,
@@ -272,6 +276,18 @@ class ZcashServerSelectorTest {
 
         assertEquals(urls[1], current())
         assertTrue(selector.healthOf(urls[0]), "rejected: stale tip $STALE_TIP" in selector.healthOf(urls[0]))
+    }
+
+    @Test
+    fun evaluate_slowServer_samplesItsProbesAtOnce() = runTest {
+        allHealthy()
+        prober.probeDurationMs = 1_000
+        val selector = selector()
+        val started = currentTime
+
+        evaluate(selector)
+
+        assertEquals(1_000, currentTime - started)
     }
 
     @Test
