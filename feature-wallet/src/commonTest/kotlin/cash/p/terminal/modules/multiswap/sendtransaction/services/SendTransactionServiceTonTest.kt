@@ -2,6 +2,7 @@ package cash.p.terminal.modules.multiswap.sendtransaction.services
 
 import cash.p.terminal.core.ISendTonAdapter
 import cash.p.terminal.core.TonFeeEstimate
+import cash.p.terminal.core.cancelAndAwait
 import cash.p.terminal.core.ethereum.CautionViewItem
 import cash.p.terminal.core.managers.PendingTransactionRegistrar
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionData
@@ -35,7 +36,6 @@ import io.tonapi.infrastructure.ClientException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -112,7 +112,7 @@ class SendTransactionServiceTonTest : KoinTest {
 
     @After
     fun tearDown() {
-        scope.cancel()
+        scope.cancelAndAwait()
         unmockkAll()
         stopKoin()
     }
