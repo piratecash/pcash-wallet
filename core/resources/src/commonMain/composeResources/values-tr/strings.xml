@@ -881,6 +881,7 @@
     <string name="Transactions_ContractCreation">Sözleşme Oluşturma</string>
     <string name="Transactions_ContractDeploy">Contract Deploy</string>
     <string name="Transactions_To">%s kişisine</string>
+    <string name="transactions_to_self">kendine</string>
     <string name="Transactions_From">%s kişisinden</string>
     <string name="Transaction_Unlimited_CoinCode">sınırsız %s</string>
     <string name="Transaction_Unlimited">sınırsız</string>
@@ -1345,6 +1346,7 @@
     <string name="transaction_error_invalid_derivation_path">Geçersiz türetme yolu</string>
     <!--Hud texts-->
     <string name="Hud_Text_NoInternet">Internet Bağlantısı Yok</string>
+    <string name="zcash_server_unavailable">Sunucuya ulaşılamıyor. Tekrar deneyin.</string>
     <string name="Hud_Text_Copied">Kopyalandı</string>
     <string name="Hud_Text_Created">Oluşturuldu</string>
     <string name="Hud_Text_Restored">Geri yüklendi </string>
@@ -1602,7 +1604,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="Coin_Tab_Market">Marketler</string>
     <string name="Coin_Tab_Details">Analitik</string>
     <string name="Coin_Tab_Tweets">Tweets</string>
-    <string name="typical_fee"><![CDATA[Tipik ücret < 0.001 ZEC]]></string>
+    <string name="typical_fee"><![CDATA[Tipik ücret < 0.0001 ZEC]]></string>
     <string name="CoinPage_TimeDuration_Hour">1H</string>
     <string name="CoinPage_TimeDuration_Day">1D</string>
     <string name="CoinPage_TimeDuration_Week">7G</string>

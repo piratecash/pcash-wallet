@@ -866,6 +866,7 @@
     <string name="Transactions_ContractCreation">Створення контракту</string>
     <string name="Transactions_ContractDeploy">Розгортання контракту</string>
     <string name="Transactions_To">кому %s</string>
+    <string name="transactions_to_self">собі</string>
     <string name="Transactions_From">від %s</string>
     <string name="Transaction_Unlimited_CoinCode">безлімітний %s</string>
     <string name="Transaction_Unlimited">безлімітний</string>
@@ -1346,6 +1347,7 @@
     <string name="transaction_error_invalid_derivation_path">Невірний шлях деривації</string>
     <!--Hud texts-->
     <string name="Hud_Text_NoInternet">Немає інтернету</string>
+    <string name="zcash_server_unavailable">Сервер недоступний. Спробуйте ще раз.</string>
     <string name="Hud_Text_Copied">Скопійовано</string>
     <string name="Hud_Text_Created">Створено</string>
     <string name="Hud_Text_Restored">Імпортовано</string>
@@ -1611,7 +1613,7 @@
     <string name="Coin_Tab_Market">Ринки</string>
     <string name="Coin_Tab_Details">Аналітика</string>
     <string name="Coin_Tab_Tweets">Твіти</string>
-    <string name="typical_fee">Типова комісія &lt; 0.001 ZEC</string>
+    <string name="typical_fee">Типова комісія &lt; 0.0001 ZEC</string>
     <string name="CoinPage_TimeDuration_Hour">1Г</string>
     <string name="CoinPage_TimeDuration_Day">1Д</string>
     <string name="CoinPage_TimeDuration_Week">7Д</string>

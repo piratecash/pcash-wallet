@@ -206,7 +206,11 @@ private fun ServerProbe.chainMismatch(): String? = when {
 
 private fun ServerProbe.isCatchingUp() = estimatedHeight - blockHeight > MAX_CATCH_UP_BLOCKS
 
+/** A balancer can route a connection to a backend whose `GetLatestBlock` lags far behind its info. */
+private fun ServerProbe.hasStaleTip() = blockHeight - latestHeight > MAX_LAG_BLOCKS
+
 private fun ServerProbe.rejection(lag: Int): String? = chainMismatch() ?: when {
+    hasStaleTip() -> "stale tip $latestHeight"
     rangeBlocksReceived < RANGE_BLOCKS -> "range $rangeBlocksReceived/$RANGE_BLOCKS"
     isCatchingUp() -> "catching up"
     lag > MAX_LAG_BLOCKS -> "lag $lag"
@@ -229,11 +233,17 @@ private fun assess(probes: Map<String, ServerProbe?>): Map<String, ZcashServerHe
     }
 }
 
-/** Median of three latencies; the kit needs at least one block per call, so the repeats fetch just one. */
+/**
+ * Median of three latencies; the kit needs at least one block per call, so the repeats fetch just one.
+ * Each probe is a new connection, so the lowest latest height of the three exposes a lagging backend.
+ */
 private suspend fun ZcashServerProber.measure(url: String, transport: Transport): ServerProbe? = try {
     val first = probe(url, transport, RANGE_BLOCKS)
-    val latencies = listOf(first.infoMs) + List(LATENCY_SAMPLES - 1) { probe(url, transport, 1).infoMs }
-    first.copy(infoMs = latencies.sorted()[LATENCY_SAMPLES / 2])
+    val probes = listOf(first) + List(LATENCY_SAMPLES - 1) { probe(url, transport, 1) }
+    first.copy(
+        infoMs = probes.map { it.infoMs }.sorted()[LATENCY_SAMPLES / 2],
+        latestHeight = probes.minOf { it.latestHeight },
+    )
 } catch (e: CancellationException) {
     throw e
 } catch (_: Exception) {

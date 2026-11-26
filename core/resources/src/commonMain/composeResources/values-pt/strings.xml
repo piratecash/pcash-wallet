@@ -881,6 +881,7 @@
     <string name="Transactions_ContractCreation">Criação de contrato</string>
     <string name="Transactions_ContractDeploy">Contract Deploy</string>
     <string name="Transactions_To">para %s</string>
+    <string name="transactions_to_self">para si mesmo</string>
     <string name="Transactions_From">de %s</string>
     <string name="Transaction_Unlimited_CoinCode">ilimitado %s</string>
     <string name="Transaction_Unlimited">unlimited</string>
@@ -1345,6 +1346,7 @@
     <string name="transaction_error_invalid_derivation_path">Caminho de derivação inválido</string>
     <!--Hud texts-->
     <string name="Hud_Text_NoInternet">Sem Internet</string>
+    <string name="zcash_server_unavailable">O servidor está indisponível. Tente novamente.</string>
     <string name="Hud_Text_Copied">Copiado</string>
     <string name="Hud_Text_Created">Criado</string>
     <string name="Hud_Text_Restored">Restaurado</string>
@@ -1600,7 +1602,7 @@
     <string name="Coin_Tab_Market">Mercados</string>
     <string name="Coin_Tab_Details">Análises</string>
     <string name="Coin_Tab_Tweets">Tweets</string>
-    <string name="typical_fee"><![CDATA[Taxa típica < 0.001 ZEC]]></string>
+    <string name="typical_fee"><![CDATA[Taxa típica < 0.0001 ZEC]]></string>
     <string name="CoinPage_TimeDuration_Hour">1H</string>
     <string name="CoinPage_TimeDuration_Day">24H</string>
     <string name="CoinPage_TimeDuration_Week">7D</string>

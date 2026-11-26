@@ -876,6 +876,7 @@
     <string name="Transactions_ContractCreation">Creación de Contrato</string>
     <string name="Transactions_ContractDeploy">Contract Deploy</string>
     <string name="Transactions_To">a %s</string>
+    <string name="transactions_to_self">a sí mismo</string>
     <string name="Transactions_From">desde %s</string>
     <string name="Transaction_Unlimited_CoinCode">%s ilimitado</string>
     <string name="Transaction_Unlimited">ilimitado</string>
@@ -1340,6 +1341,7 @@
     <string name="transaction_error_invalid_derivation_path">Ruta de derivación no válida</string>
     <!--Hud texts-->
     <string name="Hud_Text_NoInternet">Sin conexión a Internet</string>
+    <string name="zcash_server_unavailable">El servidor no está disponible. Inténtalo de nuevo.</string>
     <string name="Hud_Text_Copied">Copiado</string>
     <string name="Hud_Text_Created">Creado</string>
     <string name="Hud_Text_Restored">Restaurado </string>
@@ -1592,7 +1594,7 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="Coin_Tab_Market">Mercados</string>
     <string name="Coin_Tab_Details">Estadísticas</string>
     <string name="Coin_Tab_Tweets">Tweets</string>
-    <string name="typical_fee"><![CDATA[Comisión típica < 0.001 ZEC]]></string>
+    <string name="typical_fee"><![CDATA[Comisión típica < 0.0001 ZEC]]></string>
     <string name="CoinPage_TimeDuration_Hour">1H</string>
     <string name="CoinPage_TimeDuration_Day">1D</string>
     <string name="CoinPage_TimeDuration_Week">7D</string>

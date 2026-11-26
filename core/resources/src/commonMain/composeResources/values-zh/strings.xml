@@ -875,6 +875,7 @@
     <string name="Transactions_ContractCreation">合约创建</string>
     <string name="Transactions_ContractDeploy">Contract Deploy</string>
     <string name="Transactions_To">接收人%s</string>
+    <string name="transactions_to_self">给自己</string>
     <string name="Transactions_From">发送人%s</string>
     <string name="Transaction_Unlimited_CoinCode">无限%s</string>
     <string name="Transaction_Unlimited">无限</string>
@@ -1339,6 +1340,7 @@
     <string name="transaction_error_invalid_derivation_path">派生路径无效</string>
     <!--Hud texts-->
     <string name="Hud_Text_NoInternet">没有网络</string>
+    <string name="zcash_server_unavailable">服务器不可用，请重试。</string>
     <string name="Hud_Text_Copied">已复制</string>
     <string name="Hud_Text_Created">已创建</string>
     <string name="Hud_Text_Restored">已恢复</string>
@@ -1589,7 +1591,7 @@
     <string name="Coin_Tab_Market">市场</string>
     <string name="Coin_Tab_Details">分析</string>
     <string name="Coin_Tab_Tweets">推文</string>
-    <string name="typical_fee"><![CDATA[典型费用 < 0.001 ZEC]]></string>
+    <string name="typical_fee"><![CDATA[典型费用 < 0.0001 ZEC]]></string>
     <string name="CoinPage_TimeDuration_Hour">1H</string>
     <string name="CoinPage_TimeDuration_Day">1天</string>
     <string name="CoinPage_TimeDuration_Week">7天</string>

@@ -28,6 +28,8 @@ import org.junit.Test
 import java.io.IOException
 
 private const val TIP = 3_000_000
+/** What a backend re-syncing from genesis answers to `GetLatestBlock`. */
+private const val STALE_TIP = 805_800
 private const val MINUTE_MS = 60_000L
 private const val EVALUATION_INTERVAL_MS = 30 * MINUTE_MS
 private const val CUSTOM_URL = "https://my.node.io:443"
@@ -43,6 +45,7 @@ private fun probe(
     branchIdMatches: Boolean = true,
     estimatedHeight: Int = blockHeight,
     rangeBlocksReceived: Int = 10,
+    latestHeight: Int = blockHeight,
 ) = ServerProbe(
     chainName = chainName,
     saplingActivationHeight = saplingActivationHeight,
@@ -53,15 +56,23 @@ private fun probe(
     infoMs = infoMs,
     rangeMs = rangeMs,
     rangeBlocksReceived = rangeBlocksReceived,
+    latestHeight = latestHeight,
 )
 
 /** Answers by URL; an unknown URL behaves like an unreachable server. */
 private class FakeProber : ZcashServerProber {
-    private val answers = mutableMapOf<String, Pair<ServerProbe, ArrayDeque<Long>>>()
+    private class Answer(val probe: ServerProbe, val infoSamples: ArrayDeque<Long>, val latestSamples: ArrayDeque<Int>)
+
+    private val answers = mutableMapOf<String, Answer>()
     val probed = mutableListOf<Pair<String, Transport>>()
 
-    fun answer(url: String, probe: ServerProbe, infoSamples: List<Long> = emptyList()) {
-        answers[url] = probe to ArrayDeque(infoSamples)
+    fun answer(
+        url: String,
+        probe: ServerProbe,
+        infoSamples: List<Long> = emptyList(),
+        latestSamples: List<Int> = emptyList(),
+    ) {
+        answers[url] = Answer(probe, ArrayDeque(infoSamples), ArrayDeque(latestSamples))
     }
 
     fun unreachable(url: String) {
@@ -70,8 +81,11 @@ private class FakeProber : ZcashServerProber {
 
     override suspend fun probe(url: String, transport: Transport, rangeBlocks: Int): ServerProbe {
         probed += url to transport
-        val (probe, samples) = answers[url] ?: throw ZcashException("connection refused")
-        return probe.copy(infoMs = samples.removeFirstOrNull() ?: probe.infoMs)
+        val answer = answers[url] ?: throw ZcashException("connection refused")
+        return answer.probe.copy(
+            infoMs = answer.infoSamples.removeFirstOrNull() ?: answer.probe.infoMs,
+            latestHeight = answer.latestSamples.removeFirstOrNull() ?: answer.probe.latestHeight,
+        )
     }
 
     override fun streamBreaks(): Long = 0
@@ -239,6 +253,40 @@ class ZcashServerSelectorTest {
 
         assertEquals(urls[1], current())
         assertTrue(selector.healthOf(urls[0]), "rejected: range 3/10" in selector.healthOf(urls[0]))
+    }
+
+    @Test
+    fun evaluate_latestBlockFarBelowInfoHeight_rejectsServer() = runTest {
+        prober.answer(urls[0], probe(infoMs = 10, latestHeight = STALE_TIP))
+        prober.answer(urls[1], probe(infoMs = 100))
+        val selector = selector()
+
+        evaluate(selector)
+
+        assertEquals(urls[1], current())
+        assertTrue(selector.healthOf(urls[0]), "rejected: stale tip $STALE_TIP" in selector.healthOf(urls[0]))
+    }
+
+    @Test
+    fun evaluate_oneOfThreeProbesStale_rejectsServer() = runTest {
+        prober.answer(urls[0], probe(infoMs = 10), latestSamples = listOf(TIP, STALE_TIP, TIP))
+        prober.answer(urls[1], probe(infoMs = 100))
+        val selector = selector()
+
+        evaluate(selector)
+
+        assertEquals(urls[1], current())
+    }
+
+    @Test
+    fun evaluate_latestHeightWithinLag_admitsServer() = runTest {
+        prober.answer(urls[0], probe(infoMs = 10, latestHeight = TIP - 9))
+        prober.answer(urls[1], probe(infoMs = 100))
+        val selector = selector()
+
+        evaluate(selector)
+
+        assertEquals(urls[0], current())
     }
 
     @Test
