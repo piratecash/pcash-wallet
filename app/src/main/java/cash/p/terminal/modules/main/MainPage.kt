@@ -144,6 +144,14 @@ private fun MainScreen(
     val showAllTransactions = navigation.rememberAuthorizedShowAllTransactionsAction {
         transactionsViewModel.showAllTransactions(true)
     }
+    val showAllThenCalendar = navigation.rememberAuthorizedShowAllTransactionsAction {
+        transactionsViewModel.showAllTransactions(true)
+        transactionsViewModel.onCalendarClick()
+    }
+    val showAllThenSearch = navigation.rememberAuthorizedShowAllTransactionsAction {
+        transactionsViewModel.showAllTransactions(true)
+        transactionsViewModel.onSearchClick()
+    }
 
     var showWalletSheet by remember { mutableStateOf(false) }
     BalanceHideOnFlipHandling(
@@ -214,6 +222,7 @@ private fun MainScreen(
             LaunchedEffect(key1 = selectedPage, block = {
                 if (uiState.mainNavItems[selectedPage].mainNavItem != MainDestination.Transactions) {
                     transactionsViewModel.showAllTransactions(false)
+                    transactionsViewModel.onLeave()
                 }
                 pagerState.scrollToPage(selectedPage)
             })
@@ -232,7 +241,9 @@ private fun MainScreen(
                         navigation = navigation,
                         paddingValues = paddingValues,
                         viewModel = transactionsViewModel,
-                        onShowAllTransactionsClicked = showAllTransactions
+                        onShowAllTransactionsClicked = showAllTransactions,
+                        onHiddenCalendarClick = showAllThenCalendar,
+                        onHiddenSearchClick = showAllThenSearch,
                     )
 
                     MainDestination.Settings -> SettingsScreen(

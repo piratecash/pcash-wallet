@@ -14,6 +14,7 @@ import cash.p.terminal.core.managers.BeamSessionOwner
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.beam.BeamTransactionRecordConverter
 import cash.p.terminal.modules.transactions.FilterTransactionType
+import cash.p.terminal.modules.transactions.TimestampRange
 import cash.p.terminal.modules.transactions.TransactionStatus
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AdapterState
@@ -283,6 +284,31 @@ class BeamAdapterTransactionsTest {
                 runCurrent()
                 assertNull(adapter.lastBlockInfo)
             }
+        }
+    }
+
+    @Test
+    fun getTransactions_periodDeepInHistory_skipsNewerAndStopsBelowSince() = runTest {
+        history.value = List(600) { transaction(it) }
+        withAdapter { adapter ->
+            val period = TimestampRange(since = 700, until = 705)
+
+            val records = adapter.getTransactions(null, token, 10, FilterTransactionType.All, null, period)
+
+            assertEquals(listOf("0296", "0297", "0298", "0299", "0300"), records.map { it.transactionHash })
+            coVerify(exactly = 0) { sdk.transactionPage(400, any()) }
+        }
+    }
+
+    @Test
+    fun getOldestTransactionTimestamp_typeFilter_returnsOldestMatchingOrNull() = runTest {
+        history.value = List(450) { transaction(it) }.mapIndexed { index, transaction ->
+            if (index == 420) transaction.copy(direction = BeamTransactionDirection.Outgoing) else transaction
+        }
+        withAdapter { adapter ->
+            assertEquals(1000L - 449, adapter.getOldestTransactionTimestamp(token, FilterTransactionType.All, null))
+            assertEquals(1000L - 420, adapter.getOldestTransactionTimestamp(token, FilterTransactionType.Outgoing, null))
+            assertNull(adapter.getOldestTransactionTimestamp(token, FilterTransactionType.Swap, null))
         }
     }
 

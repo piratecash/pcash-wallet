@@ -5,6 +5,7 @@ import cash.p.terminal.core.managers.ThorchainKitWrapper
 import cash.p.terminal.entities.TransactionValue
 import cash.p.terminal.entities.transactionrecords.thorchain.ThorchainTransactionRecord
 import cash.p.terminal.modules.transactions.FilterTransactionType
+import cash.p.terminal.modules.transactions.TimestampRange
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.Coin
@@ -19,6 +20,8 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.math.BigDecimal
 
@@ -58,11 +61,38 @@ class ThorchainTransactionsAdapterTest {
         assertEquals(listOf(spendRune), adapter.getTransactions(null, null, 10, FilterTransactionType.Outgoing, null))
     }
 
-    private fun record(uid: String, token: Token, outgoing: Boolean): ThorchainTransactionRecord {
+    @Test
+    fun getTransactions_period_keepsOnlyRecordsInsidePeriod() = runTest {
+        every { kit.getTransactions(null, any()) } returns listOf(swap)
+
+        val inside = adapter.getTransactions(null, null, 10, FilterTransactionType.All, null, TimestampRange(TIMESTAMP, TIMESTAMP + 1))
+        val after = adapter.getTransactions(null, null, 10, FilterTransactionType.All, null, TimestampRange(TIMESTAMP + 1, null))
+
+        assertEquals(listOf(spendRune, receiveTcy), inside)
+        assertTrue(after.isEmpty())
+    }
+
+    @Test
+    fun getOldestTransactionTimestamp_filters_returnsOldestMatchingOrNull() = runTest {
+        val olderSwap = Transaction("OLD", 1, TIMESTAMP - 100, "swap", "success", null, emptyList(), emptyList())
+        every { converter.convert(olderSwap) } returns listOf(record("old-rune", rune, outgoing = true, olderSwap))
+        every { kit.getTransactions(null, any()) } returns listOf(swap, olderSwap)
+
+        assertEquals(TIMESTAMP - 100, adapter.getOldestTransactionTimestamp(null, FilterTransactionType.All, null))
+        assertEquals(TIMESTAMP, adapter.getOldestTransactionTimestamp(tcy, FilterTransactionType.All, null))
+        assertNull(adapter.getOldestTransactionTimestamp(null, FilterTransactionType.Swap, null))
+    }
+
+    private fun record(
+        uid: String,
+        token: Token,
+        outgoing: Boolean,
+        transaction: Transaction = swap,
+    ): ThorchainTransactionRecord {
         val value = TransactionValue.CoinValue(token, BigDecimal.ONE)
         return ThorchainTransactionRecord(
             uid = uid,
-            transaction = swap,
+            transaction = transaction,
             spam = false,
             source = source,
             token = token,

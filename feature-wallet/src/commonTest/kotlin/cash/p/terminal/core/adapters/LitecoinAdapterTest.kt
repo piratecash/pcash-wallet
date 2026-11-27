@@ -25,6 +25,7 @@ import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.policy.HardwareWalletTokenPolicy
 import cash.p.terminal.modules.transactions.FilterTransactionType
+import cash.p.terminal.modules.transactions.TimestampRange
 import cash.p.terminal.modules.transactions.TransactionStatus as RecordTransactionStatus
 import io.horizontalsystems.bitcoincore.BitcoinCore
 import io.horizontalsystems.bitcoincore.core.IPluginData
@@ -746,6 +747,38 @@ class LitecoinAdapterTest {
         assertEquals(BigDecimal("0.00001000"), (incoming.mainValue as TransactionValue.CoinValue).value)
         assertEquals("receive-output", incoming.transactionHash)
         assertEquals(listOf("ltcmweb1receive"), incoming.to)
+    }
+
+    @Test
+    fun getTransactions_mwebPeriod_returnsOnlyTransactionsInsidePeriod() = runTest {
+        val adapter = createMwebAdapter()
+        every { kit.mwebState } returns mwebState(
+            MwebSyncState(1_000, 1_000, 1_000),
+            transactions = mwebHistoryTransactions()
+        )
+
+        val records = adapter.getTransactions(
+            from = null,
+            token = null,
+            limit = 10,
+            transactionType = FilterTransactionType.All,
+            address = null,
+            period = TimestampRange(since = 10_000, until = 10_100),
+        )
+
+        assertEquals(listOf("mweb-incoming:receive-output"), records.map { it.uid })
+    }
+
+    @Test
+    fun getOldestTransactionTimestamp_mwebTypeFilter_returnsOldestMatching() = runTest {
+        val adapter = createMwebAdapter()
+        every { kit.mwebState } returns mwebState(
+            MwebSyncState(1_000, 1_000, 1_000),
+            transactions = mwebHistoryTransactions()
+        )
+
+        assertEquals(10_000L, adapter.getOldestTransactionTimestamp(null, FilterTransactionType.All, null))
+        assertEquals(10_100L, adapter.getOldestTransactionTimestamp(null, FilterTransactionType.Outgoing, null))
     }
 
     @Test

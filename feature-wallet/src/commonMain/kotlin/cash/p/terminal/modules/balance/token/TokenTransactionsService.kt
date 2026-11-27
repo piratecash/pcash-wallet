@@ -11,6 +11,8 @@ import cash.p.terminal.modules.transactions.RecordsBatch
 import cash.p.terminal.modules.transactions.SearchPaging
 import cash.p.terminal.modules.transactions.SearchScanState
 import cash.p.terminal.modules.transactions.TransactionItem
+import cash.p.terminal.modules.transactions.TimestampRange
+import cash.p.terminal.modules.transactions.TransactionPeriod
 import cash.p.terminal.modules.transactions.TransactionSyncStateRepository
 import cash.p.terminal.modules.transactions.TransactionWallet
 import cash.p.terminal.modules.transactions.TransactionsRateRepository
@@ -34,6 +36,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.java.KoinJavaComponent.inject
+import java.time.ZoneId
 
 class TokenTransactionsService(
     private val wallet: Wallet,
@@ -62,6 +65,8 @@ class TokenTransactionsService(
     val syncingFlow: StateFlow<Boolean> = transactionSyncStateRepository.syncingFlow
     private val _searchScanStateFlow = MutableStateFlow<SearchScanState>(SearchScanState.Idle)
     val searchScanStateFlow: StateFlow<SearchScanState> = _searchScanStateFlow.asStateFlow()
+    private val _historyExhaustedFlow = MutableStateFlow(false)
+    val historyExhaustedFlow: StateFlow<Boolean> = _historyExhaustedFlow.asStateFlow()
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
     private val searchPaging = SearchPaging()
@@ -78,6 +83,9 @@ class TokenTransactionsService(
 
     @Volatile
     private var searchQuery: String? = null
+
+    @Volatile
+    private var period: TimestampRange? = null
 
     @Volatile
     private var initialized = false
@@ -144,12 +152,13 @@ class TokenTransactionsService(
         transactionSyncStateRepository.setTransactionWallets(listOf(transactionWallet))
         val loadedType = selectedTransactionType
         val loadedSearchQuery = searchQuery
+        val loadedPeriod = period
         loadTransactions()
         initialized = true
-        // A setTransactionType() or setSearchQuery() that raced during the initial load saw
-        // initialized == false and skipped its own reload; apply the latest selection if it
+        // A setTransactionType(), setSearchQuery() or setPeriod() that raced during the initial load
+        // saw initialized == false and skipped its own reload; apply the latest selection if it
         // changed meanwhile.
-        if (selectedTransactionType != loadedType || searchQuery != loadedSearchQuery) {
+        if (selectedTransactionType != loadedType || searchQuery != loadedSearchQuery || period != loadedPeriod) {
             loadTransactions()
         }
     }
@@ -162,6 +171,7 @@ class TokenTransactionsService(
             blockchain = null,
             contact = null,
             searchQuery = searchQuery,
+            period = period,
         )
         // Only a real reload may reopen the loading window: without a batch to close it again the
         // screen would keep already loaded records behind the sync placeholder indefinitely.
@@ -174,6 +184,7 @@ class TokenTransactionsService(
     private fun dropToLoading() {
         emptyBatchFallbackJob?.cancel()
         _recordsLoadedFlow.value = false
+        _historyExhaustedFlow.value = false
     }
 
     /** A real read is starting: the previous read's failure no longer describes the screen. */
@@ -211,13 +222,37 @@ class TokenTransactionsService(
     }
 
     fun setTransactionType(transactionType: FilterTransactionType) {
-        // Bump version so an in-flight handleUpdatedRecords() of the previous filter is
-        // discarded, then drop to loading and clear the previous-filter list before reload.
-        // The repository's type-change branch does not emit emptyList(), so without this the
-        // stale list of the old type stays visible until the first filtered page arrives.
         selectedTransactionType = transactionType
+        reloadSelection()
+    }
+
+    /**
+     * Applies (or clears, for `null`) an in-app search query, preserving the current
+     * [selectedTransactionType] and wallet. The resulting reload is driven deeper by
+     * [handleUpdatedRecords] calling [loadNext] while the repository reports the scan is not yet
+     * exhausted.
+     */
+    fun setSearchQuery(query: String?) {
+        searchQuery = query
+        reloadSelection()
+    }
+
+    /** Applies (or clears, for `null`) a calendar period, keeping the type and the search query. */
+    fun setPeriod(period: TransactionPeriod?) {
+        val range = period?.timestampRange(ZoneId.systemDefault())
+        if (range == this.period) return
+        this.period = range
+        reloadSelection()
+    }
+
+    private fun reloadSelection() {
+        // Bump version so an in-flight handleUpdatedRecords() of the previous selection is
+        // discarded, then drop to loading and clear the previous list before reload.
+        // The repository's filter-change branch does not emit emptyList(), so without this the
+        // stale list stays visible until the first page of the new selection arrives.
         serviceVersion++
         dropToLoading()
+        searchPaging.reset()
         // Set before clearing the list: a search re-scan is driven by the resulting reload, so
         // the scan state must already read Scanning by the time collectors see the empty list -
         // otherwise a stale Finished/Idle could slip through and flash the old results as final.
@@ -226,25 +261,7 @@ class TokenTransactionsService(
         // Before initialization the repository has no adapters yet, so set() would load against an
         // empty adapter map and emit a premature empty result that flips recordsLoaded to true,
         // flashing "no transactions". handleInitialization() issues the first set() with the saved
-        // type once adapters are ready.
-        if (initialized) {
-            loadTransactions()
-        }
-    }
-
-    /**
-     * Applies (or clears, for `null`) an in-app search query, preserving the current
-     * [selectedTransactionType] and wallet. Mirrors [setTransactionType]'s reset pattern; the
-     * resulting reload is driven deeper by [handleUpdatedRecords] calling [loadNext] while the
-     * repository reports the scan is not yet exhausted.
-     */
-    fun setSearchQuery(query: String?) {
-        searchQuery = query
-        serviceVersion++
-        dropToLoading()
-        searchPaging.reset()
-        _searchScanStateFlow.value = if (query != null) SearchScanState.Scanning else SearchScanState.Idle
-        _transactionItems.value = emptyList()
+        // selection once adapters are ready.
         if (initialized) {
             loadTransactions()
         }
@@ -340,6 +357,7 @@ class TokenTransactionsService(
             }
         }
         emptyBatchFallbackJob?.cancel()
+        _historyExhaustedFlow.value = batch.historyExhausted
 
         val capturedVersion = serviceVersion
 
@@ -471,6 +489,8 @@ class TokenTransactionsService(
     fun getTransactionItem(recordUid: String): TransactionItem? {
         return _transactionItems.value.find { it.record.uid == recordUid }
     }
+
+    suspend fun oldestTimestamp(): Long? = transactionRecordRepository.oldestTimestamp()
 
 
     override fun clear() {

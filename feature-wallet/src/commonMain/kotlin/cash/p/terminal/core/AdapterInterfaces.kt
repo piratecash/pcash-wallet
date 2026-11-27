@@ -8,6 +8,7 @@ import cash.p.terminal.entities.OfflineTransactionOutpoint
 import cash.p.terminal.entities.TransactionDataSortMode
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.modules.transactions.FilterTransactionType
+import cash.p.terminal.modules.transactions.TimestampRange
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.IBalanceAdapter
 import cash.p.terminal.wallet.IReceiveAdapter
@@ -92,7 +93,15 @@ interface ITransactionsAdapter {
         limit: Int,
         transactionType: FilterTransactionType,
         address: String?,
+        period: TimestampRange? = null,
     ): List<TransactionRecord>
+
+    /** Seconds; null when no record matches or the source cannot tell. */
+    suspend fun getOldestTransactionTimestamp(
+        token: Token?,
+        transactionType: FilterTransactionType,
+        address: String?,
+    ): Long?
 
     suspend fun getTransactionsAfter(
         fromTransactionId: String?

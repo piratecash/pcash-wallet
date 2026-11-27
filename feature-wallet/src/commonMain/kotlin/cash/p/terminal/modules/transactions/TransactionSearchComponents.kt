@@ -53,7 +53,9 @@ import cash.p.terminal.resources.ic_not_found
 import cash.p.terminal.resources.transactions_empty_search_results
 import cash.p.terminal.resources.transactions_search_continue
 import cash.p.terminal.resources.transactions_search_no_more_in_last
+import cash.p.terminal.resources.transactions_search_no_more_in_period
 import cash.p.terminal.resources.transactions_search_not_found_in_last
+import cash.p.terminal.resources.transactions_search_not_found_in_period
 
 // The hoisted [query] is a plain String fed from the ViewModel (emitState). The
 // String overload of BasicTextField does NOT let us own the caret/selection or the
@@ -199,12 +201,13 @@ fun SearchInProgressView(modifier: Modifier = Modifier) {
 
 /**
  * A search that stopped after [scannedCount] records without a new result. Without results it replaces
- * the list; with results it is the list footer.
+ * the list; with results it is the list footer. [inPeriod]: the records scanned are of the applied period.
  */
 @Composable
 fun SearchPausedView(
     scannedCount: String,
     hasResults: Boolean,
+    inPeriod: Boolean,
     onSearchFurther: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -216,7 +219,11 @@ fun SearchPausedView(
     }
     if (!hasResults) {
         ScreenMessageWithAction(
-            text = stringResource(Res.string.transactions_search_not_found_in_last, scannedCount),
+            text = stringResource(
+                if (inPeriod) Res.string.transactions_search_not_found_in_period
+                else Res.string.transactions_search_not_found_in_last,
+                scannedCount,
+            ),
             icon = Res.drawable.ic_not_found,
             modifier = modifier,
             actionsComposable = searchFurtherButton,
@@ -230,7 +237,11 @@ fun SearchPausedView(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         subhead2_grey(
-            text = stringResource(Res.string.transactions_search_no_more_in_last, scannedCount),
+            text = stringResource(
+                if (inPeriod) Res.string.transactions_search_no_more_in_period
+                else Res.string.transactions_search_no_more_in_last,
+                scannedCount,
+            ),
             textAlign = TextAlign.Center,
         )
         VSpacer(16.dp)
@@ -242,7 +253,15 @@ fun SearchPausedView(
 @Composable
 private fun SearchPausedViewNoResultsPreview() {
     ComposeAppTheme {
-        SearchPausedView(scannedCount = "10,000", hasResults = false, onSearchFurther = {})
+        SearchPausedView(scannedCount = "10,000", hasResults = false, inPeriod = false, onSearchFurther = {})
+    }
+}
+
+@Preview
+@Composable
+private fun SearchPausedViewNoResultsInPeriodPreview() {
+    ComposeAppTheme {
+        SearchPausedView(scannedCount = "10,000", hasResults = false, inPeriod = true, onSearchFurther = {})
     }
 }
 
@@ -250,6 +269,14 @@ private fun SearchPausedViewNoResultsPreview() {
 @Composable
 private fun SearchPausedViewFooterPreview() {
     ComposeAppTheme {
-        SearchPausedView(scannedCount = "20,000", hasResults = true, onSearchFurther = {})
+        SearchPausedView(scannedCount = "20,000", hasResults = true, inPeriod = false, onSearchFurther = {})
+    }
+}
+
+@Preview
+@Composable
+private fun SearchPausedViewFooterInPeriodPreview() {
+    ComposeAppTheme {
+        SearchPausedView(scannedCount = "20,000", hasResults = true, inPeriod = true, onSearchFurther = {})
     }
 }

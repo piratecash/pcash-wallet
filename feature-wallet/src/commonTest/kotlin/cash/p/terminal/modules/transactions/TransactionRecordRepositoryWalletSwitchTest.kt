@@ -1964,6 +1964,127 @@ class TransactionRecordRepositoryWalletSwitchTest {
         assertEquals(2, scenario.readCount)
     }
 
+    @Test
+    fun set_periodApplied_reloadsOnlyRecordsOfThePeriod() = runTest {
+        startKoinForTests()
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val wallet = walletFor(searchToken, searchSource)
+        val adapter = pagedAdapter(
+            listOf(fixtureRecord("newer", 2_500), fixtureRecord("inside", 1_500), fixtureRecord("older", 500)),
+        )
+        val repository = createRepository(adapterManager(searchSource, adapter), dispatcher, this)
+        val (batches, collectorJob) = collectBatches(repository, dispatcher)
+        repository.setAndReload(listOf(wallet), wallet, FilterTransactionType.All, null, null, null)
+        advanceUntilIdle()
+
+        val changed = repository.set(listOf(wallet), wallet, FilterTransactionType.All, null, null, null, PERIOD)
+        repository.reloadItems()
+        advanceUntilIdle()
+
+        assertTrue(changed)
+        assertFalse(repository.set(listOf(wallet), wallet, FilterTransactionType.All, null, null, null, PERIOD))
+        assertEquals(listOf("inside"), batches.last().records.map { it.uid })
+        collectorJob.cancel()
+        repository.clear()
+    }
+
+    @Test
+    fun loadSearchPage_periodChangedDuringScan_dropsTheOldPeriodResult() = runTest {
+        startKoinForTests()
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val wallet = walletFor(searchToken, searchSource)
+        val gate = CompletableDeferred<Unit>()
+        val adapter = pagedAdapter(
+            listOf(
+                searchRecord(searchToken, searchSource, "match-new", 2_500, "needle-address"),
+                searchRecord(searchToken, searchSource, "match-old", 1_500, "needle-address"),
+            ),
+            onRead = { gate.await() },
+        )
+        val repository = createRepository(adapterManager(searchSource, adapter), dispatcher, this)
+        val (batches, collectorJob) = collectBatches(repository, dispatcher)
+        repository.set(listOf(wallet), wallet, FilterTransactionType.All, null, null, "needle", PERIOD)
+        repository.reloadItems()
+        runCurrent()
+
+        repository.set(listOf(wallet), wallet, FilterTransactionType.All, null, null, "needle", OTHER_PERIOD)
+        gate.complete(Unit)
+        advanceUntilIdle()
+        val publishedBeforeReload = batches.toList()
+        repository.reloadItems()
+        advanceUntilIdle()
+
+        assertTrue(publishedBeforeReload.none { batch -> batch.records.any { it.uid == "match-old" } })
+        assertEquals(listOf("match-new"), batches.last { it.searchCompleted }.records.map { it.uid })
+        collectorJob.cancel()
+        repository.clear()
+    }
+
+    @Test
+    fun loadRegularPage_shortCompletePage_reportsHistoryExhausted() = runTest {
+        val batch = firstRegularBatch(pagedAdapter(incomingRecords(3)))
+
+        assertTrue(batch.historyExhausted)
+    }
+
+    @Test
+    fun loadRegularPage_fullPage_reportsHistoryNotExhausted() = runTest {
+        val batch = firstRegularBatch(pagedAdapter(incomingRecords(TransactionRecordRepository.itemsPerPage + 5)))
+
+        assertFalse(batch.historyExhausted)
+    }
+
+    @Test
+    fun loadRegularPage_sourceFailed_reportsHistoryNotExhausted() = runTest {
+        val failingSource = createSource("account-2", searchToken.blockchain)
+
+        val batch = firstRegularBatch(pagedAdapter(incomingRecords(3)), failingSource to throwingAdapter())
+
+        assertFalse(batch.historyExhausted)
+    }
+
+    @Test
+    fun oldestTimestamp_severalSources_returnsMinimumSkippingFailingSource() = runTest {
+        startKoinForTests()
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val sources = (1..3).map { createSource("account-$it", searchToken.blockchain) }
+        val oldest = listOf<suspend () -> Long?>({ 500L }, { 300L }, { error("source failure") })
+        val adapters = sources.zip(oldest).associate { (source, answer) ->
+            source to pagedAdapter(emptyList()).apply {
+                coEvery { getOldestTransactionTimestamp(any(), any(), any()) } coAnswers { answer() }
+            }
+        }
+        val adapterManager = mockk<TransactionAdapterManager>(relaxed = true) {
+            every { getAdapter(any()) } answers { adapters[firstArg()] }
+        }
+        val repository = createRepository(adapterManager, dispatcher, this)
+        repository.set(sources.map { walletFor(searchToken, it) }, null, FilterTransactionType.All, null, null)
+
+        assertEquals(300L, repository.oldestTimestamp())
+        repository.clear()
+    }
+
+    // The first page of [mainAdapter]'s wallet, read together with every [otherSources] wallet.
+    private fun TestScope.firstRegularBatch(
+        mainAdapter: ITransactionsAdapter,
+        vararg otherSources: Pair<TransactionSource, ITransactionsAdapter>,
+    ): RecordsBatch {
+        startKoinForTests()
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val adapters = mapOf(searchSource to mainAdapter) + otherSources
+        val adapterManager = mockk<TransactionAdapterManager>(relaxed = true) {
+            every { getAdapter(any()) } answers { adapters[firstArg()] }
+        }
+        val repository = createRepository(adapterManager, dispatcher, this)
+        val (batches, collectorJob) = collectBatches(repository, dispatcher)
+        val wallets = adapters.keys.map { walletFor(searchToken, it) }
+        repository.setAndReload(wallets, null, FilterTransactionType.All, null, null, null)
+        advanceUntilIdle()
+        collectorJob.cancel()
+        repository.clear()
+        return batches.last()
+    }
+
     private fun startKoinForTests() {
         startKoin {
             modules(module {
@@ -1994,18 +2115,19 @@ class TransactionRecordRepositoryWalletSwitchTest {
         updates: Flow<List<TransactionRecord>> = emptyFlow(),
         onRead: suspend () -> Unit = {},
     ) = mockk<ITransactionsAdapter>(relaxed = true) {
-            coEvery { getTransactions(any(), any(), any(), any(), any()) } coAnswers {
+            coEvery { getTransactions(any(), any(), any(), any(), any(), any()) } coAnswers {
                 onRead()
                 val from = invocation.args[0] as? TransactionRecord
                 val limit = invocation.args[2] as Int
+                val periodRecords = records.filterInPeriod(invocation.args[5] as? TimestampRange) { it.timestamp }
                 val startIndex = from
-                    ?.let { fromRecord -> records.indexOfFirst { it.uid == fromRecord.uid } + 1 }
+                    ?.let { fromRecord -> periodRecords.indexOfFirst { it.uid == fromRecord.uid } + 1 }
                     ?: 0
-                records.drop(startIndex.coerceAtLeast(0)).take(limit)
+                periodRecords.drop(startIndex.coerceAtLeast(0)).take(limit)
                     .also { page -> served?.addAll(page.map { it.uid }) }
             }
             // The Swaps tab reaches these records only through its extra All-type source.
-            coEvery { getTransactions(any(), any(), any(), FilterTransactionType.Swap, any()) } returns emptyList()
+            coEvery { getTransactions(any(), any(), any(), FilterTransactionType.Swap, any(), any()) } returns emptyList()
             every { getTransactionRecordsFlow(any(), any(), any()) } returns updates
             every { getTransactionUrl(any()) } returns ""
         }
@@ -2404,5 +2526,7 @@ class TransactionRecordRepositoryWalletSwitchTest {
 
     private companion object {
         const val MAX_TEST_PAGES = 50
+        val PERIOD = TimestampRange(since = 1_000, until = 2_000)
+        val OTHER_PERIOD = TimestampRange(since = 2_000, until = 3_000)
     }
 }

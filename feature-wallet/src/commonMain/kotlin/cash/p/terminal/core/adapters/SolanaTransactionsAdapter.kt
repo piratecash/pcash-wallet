@@ -6,6 +6,7 @@ import cash.p.terminal.core.managers.SolanaKitWrapper
 import cash.p.terminal.entities.LastBlockInfo
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.modules.transactions.FilterTransactionType
+import cash.p.terminal.modules.transactions.TimestampRange
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.TokenType
 import io.horizontalsystems.solanakit.SolanaKit
@@ -44,14 +45,30 @@ class SolanaTransactionsAdapter(
     override val transactionsStateUpdatedFlowable: Flowable<Unit>
         get() = kit.transactionsSyncStateFlow.map {}.asFlowable()
 
+    override suspend fun getOldestTransactionTimestamp(
+        token: Token?,
+        transactionType: FilterTransactionType,
+        address: String?,
+    ): Long? {
+        if (address != null || !transactionType.isSupported()) return null
+        val incoming = transactionType.incoming()
+        return when (val type = token?.type) {
+            null -> kit.oldestTransactionTimestamp(incoming)
+            is TokenType.Native -> kit.oldestSolTransactionTimestamp(incoming)
+            is TokenType.Spl -> kit.oldestSplTransactionTimestamp(type.address, incoming)
+            else -> null
+        }
+    }
+
     override suspend fun getTransactions(
         from: TransactionRecord?,
         token: Token?,
         limit: Int,
         transactionType: FilterTransactionType,
         address: String?,
+        period: TimestampRange?,
     ) = when (address) {
-        null -> getTransactionsAsync(from, token, limit, transactionType)
+        null -> getTransactionsAsync(from, token, limit, transactionType, period)
         else -> emptyList<TransactionRecord>()
     }
 
@@ -60,20 +77,21 @@ class SolanaTransactionsAdapter(
         token: Token?,
         limit: Int,
         transactionType: FilterTransactionType,
+        period: TimestampRange?,
     ): List<TransactionRecord> {
-        val incoming = when (transactionType) {
-            FilterTransactionType.All -> null
-            FilterTransactionType.Incoming -> true
-            FilterTransactionType.Outgoing -> false
-            else -> return emptyList()
-        }
+        if (!transactionType.isSupported()) return emptyList()
+        val incoming = transactionType.incoming()
+        val since = period?.since
+        val until = period?.until
 
         val transactions = rxSingle(Dispatchers.IO) {
             when {
-                token == null -> kit.getAllTransactions(incoming, from?.transactionHash, limit)
-                token.type is TokenType.Native -> kit.getSolTransactions(incoming, from?.transactionHash, limit)
+                token == null -> kit.getAllTransactions(incoming, from?.transactionHash, limit, since, until)
+                token.type is TokenType.Native ->
+                    kit.getSolTransactions(incoming, from?.transactionHash, limit, since, until)
+
                 token.type is TokenType.Spl -> kit.getSplTransactions(
-                    (token.type as TokenType.Spl).address, incoming, from?.transactionHash, limit
+                    (token.type as TokenType.Spl).address, incoming, from?.transactionHash, limit, since, until
                 )
 
                 else -> listOf()
@@ -125,6 +143,16 @@ class SolanaTransactionsAdapter(
             is SolanaKit.SyncState.NotSynced -> AdapterState.NotSynced(syncState.error)
             is SolanaKit.SyncState.Syncing -> AdapterState.Syncing()
         }
+
+    private fun FilterTransactionType.isSupported() =
+        this == FilterTransactionType.All || this == FilterTransactionType.Incoming ||
+            this == FilterTransactionType.Outgoing
+
+    private fun FilterTransactionType.incoming(): Boolean? = when (this) {
+        FilterTransactionType.Incoming -> true
+        FilterTransactionType.Outgoing -> false
+        else -> null
+    }
 
     companion object {
         const val decimal = 9
