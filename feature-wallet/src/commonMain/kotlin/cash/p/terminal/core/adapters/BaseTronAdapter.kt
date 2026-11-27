@@ -62,7 +62,7 @@ abstract class BaseTronAdapter(
         tronKit.accountActivationFees().toTronFeeBreakdown(TronAdapter.decimal).totalFee
     )
 
-    // In TRX: the cost of sending the whole balance to an activated address.
+    // In TRX: the cost of sending the whole balance to maxFeeRecipient.
     override val fee: StateFlow<BigDecimal> = _fee.asStateFlow()
 
     override val debugInfo: String
@@ -89,11 +89,15 @@ abstract class BaseTronAdapter(
         coroutineScope.cancel()
     }
 
+    // The recipient the "send everything" estimate is simulated for.
+    protected open val maxFeeRecipient: Address
+        get() = tronKit.address
+
     // A failed estimate keeps the previous value.
     private suspend fun estimateFeeForMax() {
         tryOrNull {
             val amount = maxOf(balanceData.available, BigDecimal.ONE.movePointLeft(decimal))
-            val breakdown = estimateFee(amount, tronKit.address).toTronFeeBreakdown(TronAdapter.decimal)
+            val breakdown = estimateFee(amount, maxFeeRecipient).toTronFeeBreakdown(TronAdapter.decimal)
             _fee.value = breakdown.totalFee.stripTrailingZeros()
         }
     }

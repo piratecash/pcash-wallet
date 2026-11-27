@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.map
 import org.koin.java.KoinJavaComponent.inject
 import java.math.BigDecimal
 import java.math.BigInteger
+import kotlin.random.Random
 
 class Trc20Adapter(
     tronKitWrapper: TronKitWrapper,
@@ -77,6 +78,11 @@ class Trc20Adapter(
 
     override val nativeBalanceUpdatedFlow: Flow<Unit>
         get() = tronKit.trxBalanceFlow.map { }
+
+    // Swap deposit addresses are fresh: a recipient without the token costs about twice the energy.
+    // Random, so nobody can make the estimate cheaper by funding a well-known address.
+    override val maxFeeRecipient: Address
+        get() = Address.fromRawWithoutPrefix(Random.nextBytes(20), tronKit.network.addressPrefixByte)
 
     override fun transferContract(amount: BigDecimal, to: Address): Contract =
         tronKit.transferTrc20TriggerSmartContract(contractAddress, to, scaleUp(amount))

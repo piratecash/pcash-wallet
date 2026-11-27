@@ -10,6 +10,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -49,6 +50,7 @@ class TronAdapterTest {
         withTimeout(TIMEOUT_MS) { adapter.fee.first { it.compareTo(BigDecimal("0.269")) == 0 } }
 
         assertEquals(0, BigDecimal("9.731").compareTo(adapter.maxSpendableBalance))
+        verify { tronKit.transferContract(any(), Address.fromBase58(OWN_ADDRESS)) }
     }
 
     @Test
