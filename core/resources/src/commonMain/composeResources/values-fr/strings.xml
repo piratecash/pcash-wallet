@@ -2182,7 +2182,7 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="auth_info_successful">Réussi</string>
     <string name="auth_info_unsuccessful">Échoué</string>
     <string name="auth_info_duress_mode">(Mode contrainte)</string>
-    <string name="auth_info_entrance_to">Entrée dans le %s</string>
+    <string name="auth_info_entrance_to">Entrée dans le %1$s</string>
     <string name="auth_info_seconds_ago">(il y a %d sec)</string>
     <string name="auth_info_minutes_ago">(il y a %d min)</string>
     <string name="auth_info_hours_ago">(il y a %d heures)</string>
@@ -2735,6 +2735,19 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="desktop_password_save_failed">Impossible d\u0027enregistrer le mot de passe. Veuillez réessayer</string>
     <string name="tron_controlled_by_others_title">D\'autres personnes peuvent contrôler ce compte</string>
     <string name="tron_controlled_by_others_warning">Les autorisations de ce compte ont été modifiées : d\'autres clés peuvent le contrôler. Les fonds que vous y envoyez peuvent être retirés sans votre intervention. N\'y déposez des fonds que si vous savez à qui appartiennent ces clés.</string>
+    <string name="login_logging_selfie_unsuccessful_shared">Ce commutateur est commun à tous les portefeuilles de cet ordinateur</string>
+    <string name="desktop_journal_password_title">Mot de passe du journal</string>
+    <string name="desktop_journal_password_set_description">Définissez un mot de passe qui protège le journal des connexions. Il doit être différent des mots de passe qui déverrouillent vos portefeuilles</string>
+    <string name="desktop_journal_password_access_description">Saisissez le mot de passe du journal pour ouvrir le journal des connexions</string>
+    <string name="desktop_journal_password_disable_description">Saisissez le mot de passe du journal pour le désactiver</string>
+    <string name="desktop_delete_contacts_password_title">Mot de passe de suppression des contacts</string>
+    <string name="desktop_delete_contacts_password_set_description">Saisir ce mot de passe sur l\'écran de déverrouillage supprime immédiatement votre carnet d\'adresses de cet ordinateur. Il doit être différent de vos autres mots de passe</string>
+    <string name="desktop_delete_contacts_password_disable_description">Saisissez le mot de passe de suppression des contacts pour le désactiver</string>
+    <string name="desktop_delete_contacts_terms_warning">En définissant ce mot de passe, vous confirmez comprendre son rôle : protéger votre vie privée. Le saisir sur l\'écran de déverrouillage supprime immédiatement et de façon irréversible le carnet d\'adresses crypto stocké sur cet ordinateur. Le carnet d\'adresses n\'est conservé qu\'en local et ne peut pas être restauré sans sauvegarde.</string>
+    <string-array name="desktop_delete_contacts_terms">
+        <item>Je comprends que ce mot de passe sert à supprimer immédiatement le carnet d\'adresses crypto.</item>
+        <item>Je comprends qu\'après la saisie de ce mot de passe, le carnet d\'adresses sera supprimé et ne pourra pas être restauré sans sauvegarde.</item>
+    </string-array>
     <string name="sign_message_title">Signer un message</string>
     <string name="sign_message_intro">La signature prouve que l\'adresse vous appartient. Les plateformes d\'échange la demandent lorsque vous ajoutez une adresse de retrait. Elle ne donne aucun accès à vos fonds.</string>
     <string name="sign_message_message">Message</string>

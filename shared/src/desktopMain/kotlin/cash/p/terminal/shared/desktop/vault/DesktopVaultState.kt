@@ -40,3 +40,21 @@ interface DesktopWalletLayer {
     /** The session is about to close for another one: the wallet lets go of its accounts. */
     suspend fun onSessionClosing()
 }
+
+/** What the login journal hears from the lock screen. The calls made under the vault lock must not wait. */
+interface VaultLoginEvents {
+    /** A password at the lock screen opened [session], or came back to it. */
+    fun onEntered(session: DesktopStorageSession)
+
+    /** Under the vault lock: a password at the lock screen was refused. */
+    fun onFailedUnlock()
+
+    /** Under the vault lock, before the file goes: the delete-contacts password was typed at the lock screen. */
+    fun onEraseContacts()
+
+    object None : VaultLoginEvents {
+        override fun onEntered(session: DesktopStorageSession) = Unit
+        override fun onFailedUnlock() = Unit
+        override fun onEraseContacts() = Unit
+    }
+}

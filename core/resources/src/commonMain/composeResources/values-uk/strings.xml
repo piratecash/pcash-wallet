@@ -2346,7 +2346,7 @@
     <string name="auth_info_successful">Успішно</string>
     <string name="auth_info_unsuccessful">Невдало</string>
     <string name="auth_info_duress_mode">(Режим примусу)</string>
-    <string name="auth_info_entrance_to">Вхід до %s</string>
+    <string name="auth_info_entrance_to">Вхід до %1$s</string>
     <string name="auth_info_seconds_ago">(%d сек тому)</string>
     <string name="auth_info_minutes_ago">(%d хв тому)</string>
     <string name="auth_info_hours_ago">(%d год тому)</string>
@@ -2900,6 +2900,19 @@
     <string name="desktop_password_save_failed">Не вдалося зберегти пароль. Спробуйте ще раз</string>
     <string name="tron_controlled_by_others_title">Цим акаунтом можуть керувати інші</string>
     <string name="tron_controlled_by_others_warning">Права на цей акаунт змінено: ним можуть керувати інші ключі. Кошти, які ви на нього переведете, можуть вивести без вашої участі. Поповнюйте його, лише якщо знаєте, чиї це ключі.</string>
+    <string name="login_logging_selfie_unsuccessful_shared">Цей перемикач спільний для всіх гаманців на цьому комп’ютері</string>
+    <string name="desktop_journal_password_title">Пароль журналу</string>
+    <string name="desktop_journal_password_set_description">Задайте пароль, який захищає журнал входів. Він має відрізнятися від паролів, якими відкриваються ваші гаманці</string>
+    <string name="desktop_journal_password_access_description">Введіть пароль журналу, щоб відкрити журнал входів</string>
+    <string name="desktop_journal_password_disable_description">Введіть пароль журналу, щоб вимкнути його</string>
+    <string name="desktop_delete_contacts_password_title">Пароль видалення контактів</string>
+    <string name="desktop_delete_contacts_password_set_description">Введення цього пароля на екрані розблокування одразу видаляє вашу адресну книгу з цього комп’ютера. Він має відрізнятися від ваших інших паролів</string>
+    <string name="desktop_delete_contacts_password_disable_description">Введіть пароль видалення контактів, щоб вимкнути його</string>
+    <string name="desktop_delete_contacts_terms_warning">Задаючи цей пароль, ви підтверджуєте, що розумієте його призначення: захист вашої приватності. Введення пароля на екрані розблокування негайно та безповоротно видаляє крипто-адресну книгу, що зберігається на цьому комп’ютері. Адресна книга зберігається лише локально й без резервної копії не відновлюється.</string>
+    <string-array name="desktop_delete_contacts_terms">
+        <item>Я розумію, що цей пароль потрібен для негайного видалення крипто-адресної книги.</item>
+        <item>Я розумію, що після введення цього пароля адресну книгу буде видалено, і без резервної копії її не можна відновити.</item>
+    </string-array>
     <string name="sign_message_title">Підписати повідомлення</string>
     <string name="sign_message_intro">Підпис доводить, що адреса належить вам. Його просять біржі, коли ви додаєте адресу для виведення. Доступу до коштів підпис не дає.</string>
     <string name="sign_message_message">Повідомлення</string>

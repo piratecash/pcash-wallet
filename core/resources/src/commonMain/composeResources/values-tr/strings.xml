@@ -2184,7 +2184,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="auth_info_successful">Başarılı</string>
     <string name="auth_info_unsuccessful">Başarısız</string>
     <string name="auth_info_duress_mode">(Zorlama Modu)</string>
-    <string name="auth_info_entrance_to">%s girişi</string>
+    <string name="auth_info_entrance_to">%1$s girişi</string>
     <string name="auth_info_seconds_ago">(%d sn önce)</string>
     <string name="auth_info_minutes_ago">(%d dk önce)</string>
     <string name="auth_info_hours_ago">(%d saat önce)</string>
@@ -2725,6 +2725,19 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="desktop_password_save_failed">Şifre kaydedilemedi. Lütfen tekrar deneyin</string>
     <string name="tron_controlled_by_others_title">Bu hesabı başkaları kontrol edebilir</string>
     <string name="tron_controlled_by_others_warning">Bu hesabın izinleri değiştirilmiş: başka anahtarlar hesabı kontrol edebilir. Hesaba gönderdiğiniz fonlar sizin haberiniz olmadan çekilebilir. Hesaba yalnızca bu anahtarların kime ait olduğunu biliyorsanız para yatırın.</string>
+    <string name="login_logging_selfie_unsuccessful_shared">Bu anahtar bu bilgisayardaki tüm cüzdanlar için ortaktır</string>
+    <string name="desktop_journal_password_title">Günlük şifresi</string>
+    <string name="desktop_journal_password_set_description">Giriş günlüğünü koruyan bir şifre belirleyin. Cüzdanlarınızın kilidini açan şifrelerden farklı olmalıdır</string>
+    <string name="desktop_journal_password_access_description">Giriş günlüğünü açmak için günlük şifresini girin</string>
+    <string name="desktop_journal_password_disable_description">Kapatmak için günlük şifresini girin</string>
+    <string name="desktop_delete_contacts_password_title">Kişileri silme şifresi</string>
+    <string name="desktop_delete_contacts_password_set_description">Bu şifrenin kilit açma ekranında girilmesi, adres defterinizi bu bilgisayardan hemen siler. Diğer şifrelerinizden farklı olmalıdır</string>
+    <string name="desktop_delete_contacts_password_disable_description">Kapatmak için kişileri silme şifresini girin</string>
+    <string name="desktop_delete_contacts_terms_warning">Bu şifreyi belirleyerek amacını anladığınızı onaylarsınız: gizliliğinizi korumak. Kilit açma ekranında girilmesi, bu bilgisayarda saklanan kripto adres defterini hemen ve geri döndürülemez biçimde siler. Adres defteri yalnızca yerel olarak saklanır ve yedek olmadan geri yüklenemez.</string>
+    <string-array name="desktop_delete_contacts_terms">
+        <item>Bu şifrenin kripto adres defterini hemen silmek için kullanıldığını anlıyorum.</item>
+        <item>Bu şifre girildikten sonra adres defterinin silineceğini ve yedek olmadan geri yüklenemeyeceğini anlıyorum.</item>
+    </string-array>
     <string name="sign_message_title">Mesaj imzala</string>
     <string name="sign_message_intro">İmza, adresin size ait olduğunu kanıtlar. Borsalar, çekim adresi eklediğinizde bunu ister. İmza, fonlarınıza erişim sağlamaz.</string>
     <string name="sign_message_message">Mesaj</string>

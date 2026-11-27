@@ -3,6 +3,8 @@ package cash.p.terminal.shared.desktop.vault
 import cash.p.terminal.core.storage.desktop.SafeLink
 import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.modules.pin.LevelOutcome
+import cash.p.terminal.shared.desktop.journal.JournalKeys
+import cash.p.terminal.shared.desktop.journal.PasswordUniqueness
 import cash.p.terminal.vault.EnvelopePayload
 import cash.p.terminal.vault.UnlockResult
 import cash.p.terminal.vault.VaultSession
@@ -33,7 +35,8 @@ internal class LevelProvisioner(
         get() {
             val meta = chain.root.meta
             return when {
-                meta.isHiddenRoot -> DuressAvailability.UNAVAILABLE
+                // Its setters refuse while a level below did not open.
+                meta.isHiddenRoot || !chain.isComplete -> DuressAvailability.UNAVAILABLE
                 meta.child != null -> DuressAvailability.SET
                 else -> DuressAvailability.NOT_SET
             }
@@ -43,33 +46,64 @@ internal class LevelProvisioner(
         val meta = chain.root.meta
         check(!meta.isHiddenRoot) { "A hidden wallet has no duress" }
         check(meta.collapse == null) { "The level below is being removed" }
-        if (environment.passwordVault.opensAny(password)) return LevelOutcome.PASSWORD_IN_USE
+        if (!chain.isComplete) return LevelOutcome.FAILED
+        if (isTaken(password)) return LevelOutcome.PASSWORD_IN_USE
         val child = meta.child ?: return createLevel(password, isHiddenRoot = false)
         seal(child.envelopeIndex, password, child.slot, child.key)
         return LevelOutcome.SUCCESS
     }
 
     fun createHidden(password: CharArray): LevelOutcome {
-        if (environment.passwordVault.opensAny(password)) return LevelOutcome.PASSWORD_IN_USE
+        if (!chain.isComplete) return LevelOutcome.FAILED
+        if (isTaken(password)) return LevelOutcome.PASSWORD_IN_USE
         return createLevel(password, isHiddenRoot = true)
     }
 
     /** A safe cannot tell a hidden root from another root's empty duress: both count as reusable. */
-    fun resolveHiddenPassword(password: CharArray): HiddenPasswordResolution =
-        when (val result = environment.passwordVault.unlock(password)) {
-            UnlockResult.WrongPassword -> HiddenPasswordResolution.NEW
+    fun resolveHiddenPassword(password: CharArray): HiddenPasswordResolution {
+        if (!chain.isComplete) return HiddenPasswordResolution.FAILED
+        return when (val result = environment.passwordVault.unlock(password)) {
+            UnlockResult.WrongPassword ->
+                if (matchesStoredVerifier(password)) HiddenPasswordResolution.IN_USE else HiddenPasswordResolution.NEW
+            UnlockResult.EraseContacts -> HiddenPasswordResolution.IN_USE
             UnlockResult.Corrupted, UnlockResult.LegacyFormat -> HiddenPasswordResolution.FAILED
             is UnlockResult.Success -> result.session.use {
                 if (isEmptyForeignChain(it)) HiddenPasswordResolution.REUSE_EMPTY else HiddenPasswordResolution.IN_USE
             }
         }
+    }
 
     private fun createLevel(password: CharArray, isHiddenRoot: Boolean): LevelOutcome {
         val place = findPlace(isHiddenRoot) ?: return LevelOutcome.LIMIT_REACHED
         val safe = provision(place, password, isHiddenRoot) ?: return LevelOutcome.FAILED
-        if (isHiddenRoot) safe.close() else chain.append(safe)
+        if (isHiddenRoot) {
+            safe.close()
+        } else {
+            chain.append(safe)
+            linkJournal(place.source, safe)
+        }
         return LevelOutcome.SUCCESS
     }
+
+    /** Idempotent and cheap, so every entry into the open storage repairs a link a failed write left broken. */
+    fun linkEntryKeys() = try {
+        JournalKeys.ensureNotifyKeys(chain.safes.map { it.dao }, environment.mailbox)
+    } catch (e: Exception) {
+        logger.w(e) { "Linking the entry keys failed" }
+    }
+
+    /** The level exists by now: a journal that cannot follow must not undo it. */
+    private fun linkJournal(parent: OpenSafe, child: OpenSafe) = try {
+        JournalKeys.onDuressChildCreated(parent.dao, child.dao, environment.mailbox)
+    } catch (e: Exception) {
+        logger.w(e) { "The new level's journal was not linked" }
+    }
+
+    private fun isTaken(password: CharArray): Boolean =
+        environment.passwordVault.opensAny(password) || matchesStoredVerifier(password)
+
+    fun matchesStoredVerifier(password: CharArray, eraseOwner: OpenSafe? = null): Boolean =
+        PasswordUniqueness.matchesStoredVerifier(password, chain.safes, environment.passwordVault, eraseOwner)
 
     /** The first safe of the chain that still has both a slot and an envelope. */
     private fun findPlace(isHiddenRoot: Boolean): Place? = chain.safes
@@ -117,7 +151,7 @@ internal class LevelProvisioner(
             logger.w(e) { "Creating a level failed" }
             tryOrNull { place.source.dao.putMeta(sourceBefore) }
             safe.close()
-            environment.slots.erase(place.slot)
+            environment.eraseSlot(place.slot)
             return null
         } finally {
             key.fill(0)
@@ -133,7 +167,7 @@ internal class LevelProvisioner(
         )
     } catch (e: Throwable) {
         key.fill(0)
-        environment.slots.erase(place.slot)
+        environment.eraseSlot(place.slot)
         throw e
     }
 

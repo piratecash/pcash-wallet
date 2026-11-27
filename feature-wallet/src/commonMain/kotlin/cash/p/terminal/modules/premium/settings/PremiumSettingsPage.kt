@@ -43,7 +43,9 @@ class PremiumSettingsPage : HSPage() {
         val openLoginLogging = platformSettings?.rememberLoginLoggingAction(navigation)
         val openAuthorizationInfo = platformSettings?.rememberAuthorizationInfoAction(navigation)
         val openPushNotifications = platformSettings?.let { settings ->
-            navigation.rememberPremiumAction { navigation.slideFromRightSafely(settings.pushNotificationsPage()) }
+            navigation.rememberPremiumAction {
+                settings.pushNotificationsPage()?.let { navigation.slideFromRightSafely(it) }
+            }
         }
 
         PremiumSettingsScreen(
@@ -140,17 +142,19 @@ private fun PlatformSettingsSections(
             }
         )
     )
-    VSpacer(12.dp)
-    CellUniversalLawrenceSection(
-        listOf(
-            {
-                RowWithArrow(
-                    text = stringResource(Res.string.push_notification),
-                    showAlert = uiState.notificationNotAvailable,
-                    onClick = onPushNotificationsClick
-                )
-            }
+    if (uiState.pushNotificationsAvailable) {
+        VSpacer(12.dp)
+        CellUniversalLawrenceSection(
+            listOf(
+                {
+                    RowWithArrow(
+                        text = stringResource(Res.string.push_notification),
+                        showAlert = uiState.notificationNotAvailable,
+                        onClick = onPushNotificationsClick
+                    )
+                }
+            )
         )
-    )
+    }
 }
 
