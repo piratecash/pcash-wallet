@@ -374,16 +374,10 @@ class TransactionRecordRepository(
         if (selectedFilterTransactionType == FilterTransactionType.Swap) {
             addAll(activeSwapExtraAdapters.map { it.updatedFlow })
         }
-        if (selectedFilterTransactionType == FilterTransactionType.Swap || searchReadsProviderSwaps()) {
+        // A provider swap update arrives without an on-chain update, yet it can change which records a search accepts.
+        if (selectedFilterTransactionType == FilterTransactionType.Swap || selectedSearchQuery != null) {
             add(swapProviderTransactionsStorage.observeAll().map { Unit })
         }
-    }
-
-    // A provider status change has no on-chain update, yet it changes which records such a search accepts.
-    private fun searchReadsProviderSwaps(): Boolean {
-        val query = selectedSearchQuery ?: return false
-        val tabReadsProviderSwaps = searchVisibility.readsProviderSwaps(selectedFilterTransactionType)
-        return searchMatcher.readsProviderSwaps(query, tabReadsProviderSwaps)
     }
 
     @Synchronized

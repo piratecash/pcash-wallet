@@ -15,6 +15,7 @@ import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
 import cash.p.terminal.modules.contacts.model.Contact
 import cash.p.terminal.network.changenow.domain.entity.TransactionStatusEnum
+import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.modules.contacts.model.ContactAddress
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
@@ -437,7 +438,42 @@ class TransactionRecordRepositoryWalletSwitchTest {
     }
 
     @Test
-    fun searchQuery_notInProviderTitleOnAllTab_doesNotObserveProviderStorage() = runTest {
+    fun searchQuery_providerNameOnAllTab_reloadsWhenStorageMakesRecordMatch() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+        mockRussianTitles()
+
+        val fixture = providerSearchFixture()
+        val changeNowSwap = fixture.storedSwap
+        fixture.storedSwap = changeNowSwap.copy(provider = SwapProvider.EXOLIX)
+        val repository = createRepository(
+            adapterManager = adapterManager(fixture.source, pagedAdapter(listOf(fixture.record))),
+            dispatcher = testDispatcher,
+            scope = this,
+            swapProviderTransactionsStorage = fixture.storage,
+        )
+        val (emissions, collectorJob) = collectRecordUids(repository, testDispatcher)
+
+        repository.searchAllTab(fixture.wallet, searchQuery = "changenow")
+        advanceUntilIdle()
+        assertTrue(
+            "an Exolix swap must not match a ChangeNow search, but got: $emissions",
+            emissions.none { it.contains(fixture.record.uid) }
+        )
+
+        fixture.storedSwap = changeNowSwap
+        // The newest-rows payload need not contain the changed swap.
+        fixture.updates.emit(emptyList())
+        advanceUntilIdle()
+
+        assertEquals(listOf(fixture.record.uid), emissions.last())
+
+        collectorJob.cancel()
+        repository.clear()
+    }
+
+    @Test
+    fun searchQuery_notInStatusOrProviderTitleOnAllTab_storageChangeKeepsResultWithoutSwapLookups() = runTest {
         val testDispatcher = UnconfinedTestDispatcher(testScheduler)
         startKoinForTests()
         mockRussianTitles()
@@ -453,9 +489,11 @@ class TransactionRecordRepositoryWalletSwitchTest {
 
         repository.searchAllTab(fixture.wallet, searchQuery = "provider-deposit")
         advanceUntilIdle()
+        fixture.updates.emit(listOf(fixture.storedSwap))
+        advanceUntilIdle()
 
         assertEquals(listOf(fixture.record.uid), emissions.last())
-        verify(exactly = 0) { fixture.storage.observeAll() }
+        verify(exactly = 0) { fixture.storage.getByOutgoingRecordUid(any()) }
 
         collectorJob.cancel()
         repository.clear()

@@ -4,6 +4,7 @@ import cash.p.terminal.core.ICoinManager
 import cash.p.terminal.core.TransactionSettingsStorage
 import cash.p.terminal.core.adapters.BitcoinReplacementLink
 import cash.p.terminal.core.adapters.BitcoinReplacementRegistry
+import cash.p.terminal.core.managers.AddressMetadataManager
 import cash.p.terminal.core.managers.SpamManager
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
 import cash.p.terminal.core.utils.IncomingSwapMatch
@@ -18,6 +19,7 @@ import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
 import cash.p.terminal.entities.transactionrecords.evm.EvmTransactionRecord
 import cash.p.terminal.entities.transactionrecords.thorchain.ThorchainTransactionRecord
+import cash.p.terminal.modules.multiswap.providers.AndroidUnstoppableProviderTitles
 import cash.p.terminal.network.changenow.domain.entity.TransactionStatusEnum
 import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.resources.Res
@@ -74,7 +76,16 @@ import io.horizontalsystems.ethereumkit.models.Transaction as EvmTransaction
 /** Search over a wallet without provider swaps, for tests that do not exercise provider titles. */
 internal fun testSearchMatcher(
     swapStorage: SwapProviderTransactionsStorage = mockk(relaxed = true),
-) = TransactionRecordSearchMatcher(testSwapProviderRecordResolver(swapStorage), swapStorage)
+) = TransactionRecordSearchMatcher(
+    testSwapProviderRecordResolver(swapStorage),
+    swapStorage,
+    AndroidUnstoppableProviderTitles(),
+    addressNamesShownAsIs(),
+)
+
+private fun addressNamesShownAsIs(): AddressMetadataManager = mockk {
+    every { mapped(any(), any()) } answers { secondArg() }
+}
 
 internal fun testSearchVisibility(
     swapStorage: SwapProviderTransactionsStorage = mockk(relaxed = true),
@@ -142,9 +153,12 @@ class TransactionRecordSearchMatcherTest {
     private val swapTransactionMatcher = mockk<SwapTransactionMatcher> {
         every { findMatch(any()) } returns null
     }
+    private val addressMetadataManager = addressNamesShownAsIs()
     private val matcher = TransactionRecordSearchMatcher(
         SwapProviderRecordResolver(swapStorage, swapTransactionMatcher),
         swapStorage,
+        AndroidUnstoppableProviderTitles(),
+        addressMetadataManager,
     )
     private val thorchain = Blockchain(BlockchainType.Thorchain, "THORChain", null)
     private val rune = Token(Coin("thorchain", "THORChain", "RUNE"), thorchain, TokenType.Native, 8)
@@ -283,12 +297,44 @@ class TransactionRecordSearchMatcherTest {
     }
 
     @Test
-    fun prepare_queryInNoProviderStatusTitle_skipsSwapStorage() {
+    fun prepare_queryInNoStatusOrProviderTitle_skipsProviderSwapLookups() {
         storedSwaps = listOf(testProviderSwap(TransactionStatusEnum.FINISHED, outgoingRecordUid = "0xhash"))
+        val query = matcher.prepare("разреш")
 
-        assertFalse(matches(evmRecord(TransactionRecordType.EVM_OUTGOING), "разреш"))
-        verify(exactly = 0) { swapStorage.getAllAcrossAccounts() }
+        assertFalse(matcher.matches(evmRecord(TransactionRecordType.EVM_OUTGOING), query))
+        assertNull(query.providerFingerprint)
         verify(exactly = 0) { swapStorage.getByOutgoingRecordUid(any()) }
+    }
+
+    @Test
+    fun match_providerSwapByName_findsCaseInsensitivelyAndOnlyThatProvider() {
+        val changeNowRecord = evmRecord(TransactionRecordType.EVM_OUTGOING, hash = "0xa1")
+        val changellyRecord = evmRecord(TransactionRecordType.EVM_OUTGOING, hash = "0xb2")
+        storedSwaps = listOf(
+            testProviderSwap(TransactionStatusEnum.FINISHED, outgoingRecordUid = changeNowRecord.uid),
+            changellySwap(outgoingRecordUid = changellyRecord.uid),
+        )
+
+        assertTrue(matches(changeNowRecord, "changenow"))
+        assertTrue(matches(changeNowRecord, "ChangeNOW"))
+        assertFalse(matches(changellyRecord, "changenow"))
+    }
+
+    @Test
+    fun match_backendProviderSwap_findsBrandTitle() {
+        val record = evmRecord(TransactionRecordType.EVM_OUTGOING)
+        storedSwaps = listOf(changellySwap(outgoingRecordUid = record.uid))
+
+        assertTrue(matches(record, "changelly"))
+    }
+
+    @Test
+    fun match_dexSwap_findsExchangeAddressName() {
+        val record = evmRecord(TransactionRecordType.EVM_SWAP, exchangeAddress = "0xrouter")
+        every { addressMetadataManager.mapped(any(), "0xrouter") } returns "Uniswap V3 Router"
+
+        assertTrue(matches(record, "uniswap"))
+        assertFalse(matches(record, "pancake"))
     }
 
     @Test
@@ -329,14 +375,26 @@ class TransactionRecordSearchMatcherTest {
 
     private fun matches(record: TransactionRecord, query: String) = matcher.matches(record, matcher.prepare(query))
 
-    private fun evmRecord(type: TransactionRecordType, failed: Boolean = false): EvmTransactionRecord {
+    private fun changellySwap(outgoingRecordUid: String) =
+        testProviderSwap(TransactionStatusEnum.FINISHED, outgoingRecordUid).copy(
+            date = 2_000L,
+            provider = SwapProvider.PCASH_BACKEND,
+            subProviderId = "changelly",
+        )
+
+    private fun evmRecord(
+        type: TransactionRecordType,
+        failed: Boolean = false,
+        hash: String = "0xhash",
+        exchangeAddress: String? = null,
+    ): EvmTransactionRecord {
         val bsc = Blockchain(BlockchainType.BinanceSmartChain, "BNB Smart Chain", null)
         val bnb = Token(Coin("bsc", "BNB Smart Chain", "BNB"), bsc, TokenType.Native, 18)
         return EvmTransactionRecord(
             from = "0xfrom",
             to = "0xto",
             transaction = mockk<EvmTransaction>(relaxed = true) {
-                every { hashString } returns "0xhash"
+                every { hashString } returns hash
                 every { isFailed } returns failed
             },
             token = bnb,
@@ -345,6 +403,7 @@ class TransactionRecordSearchMatcherTest {
             transactionRecordType = type,
             spender = "0xspender",
             value = TransactionValue.CoinValue(bnb, BigDecimal.ONE),
+            exchangeAddress = exchangeAddress,
         )
     }
 

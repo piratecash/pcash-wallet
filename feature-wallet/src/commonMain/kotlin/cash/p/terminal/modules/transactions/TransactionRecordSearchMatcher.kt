@@ -1,8 +1,12 @@
 package cash.p.terminal.modules.transactions
 
+import cash.p.terminal.core.managers.AddressMetadataManager
 import cash.p.terminal.core.managers.localizedEvmMethodLabel
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
+import cash.p.terminal.entities.SwapProviderTransaction
 import cash.p.terminal.entities.TransactionValue
+import cash.p.terminal.entities.UnstoppableProviderTitles
+import cash.p.terminal.entities.swapProviderDisplayTitle
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.beam.BeamTransactionRecord
 import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
@@ -22,7 +26,7 @@ import java.util.Locale
 /** Built once per page load: [providerFingerprint] changes with any provider swap the search can read. */
 data class PreparedSearchQuery(
     val normalizedQuery: String,
-    /** Null when neither matching nor the caller's acceptance reads swap storage. */
+    /** Null when neither matching nor the caller's acceptance depends on swap storage. */
     val providerFingerprint: Int?,
     internal val searchesProviderSwaps: Boolean,
 )
@@ -33,23 +37,22 @@ class TransactionSearchMatch(val providerSwap: ResolvedProviderSwap?)
 class TransactionRecordSearchMatcher(
     private val swapProviderRecordResolver: SwapProviderRecordResolver,
     private val swapProviderTransactionsStorage: SwapProviderTransactionsStorage,
+    private val providerTitles: UnstoppableProviderTitles,
+    private val addressMetadataManager: AddressMetadataManager,
 ) {
-
-    /** Whether [prepare] for the same arguments depends on swap storage; reads no storage itself. */
-    fun readsProviderSwaps(query: String, readsProviderSwaps: Boolean): Boolean =
-        readsProviderSwaps || query.normalizedSearchValue().isInProviderTitle()
 
     /** [readsProviderSwaps]: the caller's own acceptance reads swap storage, so the fingerprint must cover it. */
     fun prepare(query: String, readsProviderSwaps: Boolean = false): PreparedSearchQuery {
         val normalizedQuery = query.normalizedSearchValue()
-        val inProviderTitle = normalizedQuery.isInProviderTitle()
-        if (!inProviderTitle && !readsProviderSwaps) {
+        if (normalizedQuery.isEmpty() && !readsProviderSwaps) {
             return PreparedSearchQuery(normalizedQuery, null, searchesProviderSwaps = false)
         }
 
+        // Provider names are open-ended (sub-providers come from the API), so only stored swaps tell.
         val providerSwaps = swapProviderTransactionsStorage.getAllAcrossAccounts()
-        val searchesProviderSwaps = inProviderTitle && providerSwaps.isNotEmpty()
-        return PreparedSearchQuery(normalizedQuery, providerSwaps.hashCode(), searchesProviderSwaps)
+        val searchesProviderSwaps = normalizedQuery.searchesProviderSwaps(providerSwaps)
+        val fingerprint = providerSwaps.hashCode().takeIf { searchesProviderSwaps || readsProviderSwaps }
+        return PreparedSearchQuery(normalizedQuery, fingerprint, searchesProviderSwaps)
     }
 
     fun matches(record: TransactionRecord, query: PreparedSearchQuery): Boolean = match(record, query) != null
@@ -68,9 +71,13 @@ class TransactionRecordSearchMatcher(
 
     // Search has no on-chain progress, so a payout may show either title of a finished swap.
     private fun ResolvedProviderSwap.displayTitles(): List<String> = listOfNotNull(
+        swap.providerTitle(),
         swap.displayStatus(payoutConfirming = false).listTitle(),
         swap.displayStatus(payoutConfirming = true).listTitle().takeIf { isIncoming },
     )
+
+    private fun SwapProviderTransaction.providerTitle() =
+        providerTitles.swapProviderDisplayTitle(provider, subProviderId)
 
     private fun searchableFields(record: TransactionRecord): List<String> = buildList {
         addCommonFields(record)
@@ -119,6 +126,7 @@ class TransactionRecordSearchMatcher(
         add(record.contractAddress)
         addMethod(record.method)
         add(record.exchangeAddress)
+        record.exchangeAddress?.let { add(addressMetadataManager.mapped(record.blockchainType, it)) }
         add(record.recipient)
         addEvents(record.incomingEvents)
         addEvents(record.outgoingEvents)
@@ -254,6 +262,9 @@ class TransactionRecordSearchMatcher(
 
     private fun String.containsQuery(normalizedQuery: String) = normalizedSearchValue().contains(normalizedQuery)
 
-    private fun String.isInProviderTitle() =
-        isNotEmpty() && TransactionStatusEnum.entries.any { it.listTitle().containsQuery(this) }
+    private fun String.searchesProviderSwaps(providerSwaps: List<SwapProviderTransaction>) =
+        isNotEmpty() && providerSwaps.isNotEmpty() &&
+            (isInStatusTitle() || providerSwaps.any { it.providerTitle().containsQuery(this) })
+
+    private fun String.isInStatusTitle() = TransactionStatusEnum.entries.any { it.listTitle().containsQuery(this) }
 }
