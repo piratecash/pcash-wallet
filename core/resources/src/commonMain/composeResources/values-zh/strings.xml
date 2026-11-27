@@ -1518,7 +1518,7 @@
     <string name="Bip32RootKey">BIP32 Root Key</string>
     <!-- Account Extended Keys -->
     <string name="ExtendedKey_TapToShowPrivateKey">点击显示私钥</string>
-    <string name="ExtendedKey_AccountInfo">To do</string>
+    <string name="ExtendedKey_AccountInfo">一个恢复码中的账户编号。一个恢复码可以包含多个相互独立的账户，每个账户都有自己的密钥和地址。大多数钱包使用账户 0。只有当您的资金位于其他账户时，才选择其他编号。</string>
     <!-- Private Keys -->
     <string name="PrivateKeys_Title">私钥</string>
     <string name="PrivateKeys_EvmPrivateKey">EVM 私钥</string>

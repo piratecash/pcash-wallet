@@ -1521,7 +1521,7 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="Bip32RootKey">BIP32 Root Key</string>
     <!-- Account Extended Keys -->
     <string name="ExtendedKey_TapToShowPrivateKey">Tippen um privaten Schlüssel anzuzeigen</string>
-    <string name="ExtendedKey_AccountInfo">To do</string>
+    <string name="ExtendedKey_AccountInfo">Die Kontonummer innerhalb einer Wiederherstellungsphrase. Eine Phrase kann mehrere unabhängige Konten enthalten, jedes mit eigenen Schlüsseln und Adressen. Die meisten Wallets verwenden Konto 0. Wählen Sie eine andere Nummer nur, wenn sich Ihr Guthaben in einem anderen Konto befindet.</string>
     <!-- Private Keys -->
     <string name="PrivateKeys_Title">Private Schlüssel</string>
     <string name="PrivateKeys_EvmPrivateKey">EVM privater Schlüssel</string>

@@ -1943,7 +1943,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="ExtendedKey_Purpose" translatable="false">Purpose</string>
     <string name="ExtendedKey_Account" translatable="false">Account</string>
     <string name="ExtendedKey_TapToShowPrivateKey">Tap to show private key</string>
-    <string name="ExtendedKey_AccountInfo">To do</string>
+    <string name="ExtendedKey_AccountInfo">The account number inside one recovery phrase. A single phrase can hold several independent accounts, each with its own keys and addresses. Most wallets use account 0. Pick another number only if your funds are in a different account.</string>
 
     <string name="AccountExtendedPrivateKey_Short" translatable="false">Account xPrivKey</string>
     <string name="AccountExtendedPublicKey_Short" translatable="false">Account xPubKey</string>

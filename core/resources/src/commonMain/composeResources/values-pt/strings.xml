@@ -1529,7 +1529,7 @@
     <string name="Bip32RootKey">BIP32 Root Key</string>
     <!-- Account Extended Keys -->
     <string name="ExtendedKey_TapToShowPrivateKey">Toque para mostrar a chave privada</string>
-    <string name="ExtendedKey_AccountInfo">To do</string>
+    <string name="ExtendedKey_AccountInfo">O número da conta dentro de uma frase de recuperação. Uma frase pode conter várias contas independentes, cada uma com as suas próprias chaves e endereços. A maioria das carteiras utiliza a conta 0. Escolha outro número apenas se os seus fundos estiverem noutra conta.</string>
     <!-- Private Keys -->
     <string name="PrivateKeys_Title">Chave Privada</string>
     <string name="PrivateKeys_EvmPrivateKey">Chave Privada EVM</string>

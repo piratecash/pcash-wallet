@@ -1521,7 +1521,7 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="Bip32RootKey">BIP32 Root Key</string>
     <!-- Account Extended Keys -->
     <string name="ExtendedKey_TapToShowPrivateKey">Toca para mostrar la clave privada</string>
-    <string name="ExtendedKey_AccountInfo">To do</string>
+    <string name="ExtendedKey_AccountInfo">El número de cuenta dentro de una frase de recuperación. Una misma frase puede contener varias cuentas independientes, cada una con sus propias claves y direcciones. La mayoría de las billeteras usan la cuenta 0. Elige otro número solo si tus fondos están en otra cuenta.</string>
     <!-- Private Keys -->
     <string name="PrivateKeys_Title">Claves privadas</string>
     <string name="PrivateKeys_EvmPrivateKey">Clave Privada EVM</string>

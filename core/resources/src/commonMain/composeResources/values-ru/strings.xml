@@ -1349,7 +1349,7 @@
     <string name="SettingsTerms_Bugs">В процессе работы кода могут возникнуть проблемы с программным обеспечением, что может привести к сбоям приложения.</string>
     <!--Setting_Tell Friends-->
     <string name="SettingsShare_Title">Поделиться</string>
-    <string name="SettingsShare_Text">Продолжить</string>
+    <string name="SettingsShare_Text">Будь свободен</string>
     <!--Setting_Contact-->
     <string name="SettingsContact_Title">Свяжитесь с нами</string>
 
@@ -1552,7 +1552,7 @@
     <string name="Bip32RootKey">Корневой ключ BIP32</string>
     <!-- Account Extended Keys -->
     <string name="ExtendedKey_TapToShowPrivateKey">Нажмите, чтобы показать приватный ключ</string>
-    <string name="ExtendedKey_AccountInfo">Сделать</string>
+    <string name="ExtendedKey_AccountInfo">Номер аккаунта внутри одной фразы восстановления. Одна фраза может содержать несколько независимых аккаунтов, у каждого свои ключи и адреса. Большинство кошельков используют аккаунт 0. Выбирайте другой номер, только если ваши средства лежат в другом аккаунте.</string>
     <!-- Private Keys -->
     <string name="PrivateKeys_Title">Приватные ключи</string>
     <string name="PrivateKeys_EvmPrivateKey">Приватный ключ EVM</string>
