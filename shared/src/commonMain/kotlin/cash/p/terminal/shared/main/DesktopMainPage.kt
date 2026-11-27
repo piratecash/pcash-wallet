@@ -82,7 +82,6 @@ private val DESKTOP_HIDDEN_SETTINGS = setOf(
     SettingsAction.WalletConnect,
     SettingsAction.SoftwareUpdate,
     SettingsAction.AdvancedSecurity,
-    SettingsAction.RateApp,
 )
 
 /** Root of the desktop back stack: the main tabs; pages opened from them stack above it. */

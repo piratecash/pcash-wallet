@@ -86,7 +86,6 @@ class SettingsContentDesktopTest {
             SettingsAction.TonConnect to "Ton Connect",
             SettingsAction.SoftwareUpdate to "Software Updates",
             SettingsAction.AdvancedSecurity to "Advanced Security",
-            SettingsAction.RateApp to "Rate Us",
         )
 
         val state = MainSettingUiState(

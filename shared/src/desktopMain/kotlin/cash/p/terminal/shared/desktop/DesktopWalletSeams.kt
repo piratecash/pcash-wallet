@@ -105,7 +105,7 @@ object DesktopNoHardwareScanToAdd : ScanToAddUseCase {
         false
 }
 
-/** TON Connect only (no WalletConnect, no store rating); the app content is not composed while locked. */
+/** TON Connect only (no WalletConnect); the app content is not composed while locked. */
 class DesktopBalancePlatformActions(private val tonConnectManager: TonConnectManager) : BalancePlatformActions {
     override val appLocked: StateFlow<Boolean> = MutableStateFlow(false)
     override val connectionsSupported = true
@@ -117,8 +117,6 @@ class DesktopBalancePlatformActions(private val tonConnectManager: TonConnectMan
     ) = tonConnectManager.openConnectionLink(text, scope)
 
     override fun isOfflineTransaction(text: String) = false
-    override fun onBalancePageActive() = Unit
-    override fun onBalancePageInactive() = Unit
 }
 
 /** Unreachable: [DesktopPlatformChainSupport] keeps hardware accounts away from the kits. */
