@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 
 object DateHelper {
 
@@ -27,12 +28,13 @@ object DateHelper {
             formatDate(date, far)
         }
 
-    fun formatDate(date: Date, pattern: String): String {
-        return SimpleDateFormat(
-            bestDateTimePattern(Locale.getDefault(), pattern),
-            Locale.getDefault()
-        ).format(date)
-    }
+    fun formatDate(date: Date, pattern: String): String = formatter(pattern).format(date)
+
+    fun formatUtcDate(date: Date, pattern: String): String =
+        formatter(pattern).apply { timeZone = TimeZone.getTimeZone("UTC") }.format(date)
+
+    private fun formatter(pattern: String) =
+        SimpleDateFormat(bestDateTimePattern(Locale.getDefault(), pattern), Locale.getDefault())
 
     fun getSecondsAgo(dateInMillis: Long): Long {
         val differenceInMillis = Date().time - dateInMillis
