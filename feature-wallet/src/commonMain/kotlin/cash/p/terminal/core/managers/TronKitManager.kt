@@ -16,6 +16,8 @@ import io.horizontalsystems.core.BackgroundManagerState
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.tronkit.TronKit
 import io.horizontalsystems.tronkit.models.Address
+import io.horizontalsystems.tronkit.models.RpcSource
+import io.horizontalsystems.tronkit.models.TransactionSource
 import io.horizontalsystems.tronkit.network.Network
 import io.horizontalsystems.tronkit.transaction.Signer
 import kotlinx.coroutines.CoroutineScope
@@ -129,7 +131,8 @@ class TronKitManager(
             walletId = account.id,
             seed = seed,
             network = network,
-            tronGridApiKeys = SharedAppConfig.trongridApiKeys,
+            rpcSource = rpcSource,
+            transactionSource = TransactionSource.tronGrid(network, SharedAppConfig.trongridApiKeys),
             databaseKey = databaseKey,
             eventListenerFactory = eventListenerFactory(account)
         )
@@ -181,8 +184,9 @@ class TronKitManager(
             nameResolver = storageNaming.resolverFor(account.id),
             address = address,
             network = network,
+            rpcSource = rpcSource,
+            transactionSource = TransactionSource.tronGrid(network, SharedAppConfig.trongridApiKeys),
             walletId = account.id,
-            tronGridApiKeys = SharedAppConfig.trongridApiKeys,
             databaseKey = databaseKey,
             eventListenerFactory = eventListenerFactory(account)
         )
@@ -286,6 +290,20 @@ class TronKitManager(
                 }
             }
         }
+    }
+
+    companion object {
+        /** TronGrid first with our keys; PublicNode takes over when TronGrid fails. History stays on TronGrid. */
+        val rpcSource: RpcSource by lazy {
+            RpcSource(
+                listOf(
+                    RpcSource.Endpoint(Network.Mainnet.tronGridUrl, SharedAppConfig.trongridApiKeys),
+                    RpcSource.Endpoint(PUBLIC_NODE_URL),
+                )
+            )
+        }
+
+        private const val PUBLIC_NODE_URL = "https://tron-rpc.publicnode.com/"
     }
 }
 
