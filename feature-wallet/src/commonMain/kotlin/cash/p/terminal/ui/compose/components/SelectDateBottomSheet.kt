@@ -1,6 +1,5 @@
 package cash.p.terminal.ui.compose.components
 
-import cash.p.terminal.ui_compose.components.plateBackground
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -124,7 +123,7 @@ fun SelectDateBottomSheet(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun selectDateBottomSheetColors() = DatePickerDefaults.colors(
-    containerColor = plateBackground(),
+    containerColor = ComposeAppTheme.colors.surfaceElevated,
     titleContentColor = ComposeAppTheme.colors.textSecondary,
     headlineContentColor = ComposeAppTheme.colors.textPrimary,
     weekdayContentColor = ComposeAppTheme.colors.textSecondary,
