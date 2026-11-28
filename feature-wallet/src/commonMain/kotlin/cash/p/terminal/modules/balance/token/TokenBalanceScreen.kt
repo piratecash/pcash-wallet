@@ -44,6 +44,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
@@ -52,7 +53,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.node.ModifierNodeElement
+import androidx.compose.ui.relocation.BringIntoViewModifierNode
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -221,6 +226,7 @@ import cash.p.terminal.wallet.isStakingWallet
 import io.horizontalsystems.core.Translator
 import io.horizontalsystems.core.helpers.DateHelper
 import java.util.Date
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.pluralStringResource
@@ -569,6 +575,7 @@ internal fun TokenBalanceScreenContent(
                 listState.animateScrollToItem(searchHeaderIndex)
             }
         }
+        val coroutineScope = rememberCoroutineScope()
         val appliedPeriod by rememberUpdatedState(uiState.period.period)
         LaunchedEffect(listState) {
             // The current value is skipped: re-entering the page keeps its restored scroll position.
@@ -663,6 +670,7 @@ internal fun TokenBalanceScreenContent(
                                 // bleed through the pinned header.
                                 .background(ComposeAppTheme.colors.backgroundBase)
                                 .onSizeChanged { headerHeightPx = it.height }
+                                .ignoreBringIntoViewRequests()
                         ) {
                             if (showFilterTabs) {
                                 FilterTypeTabs(
@@ -678,7 +686,11 @@ internal fun TokenBalanceScreenContent(
                                 onBackToLatest = onBackToLatest,
                                 onSearchClick = onSearchClick,
                                 onSearchClose = onSearchClose,
-                                onSearchQueryChange = onSearchQueryChange,
+                                onSearchQueryChange = { query ->
+                                    onSearchQueryChange(query)
+                                    // Results replace the list in place and would keep its old offset under the header
+                                    coroutineScope.launch { listState.scrollToItem(searchHeaderIndex) }
+                                },
                             )
                             HorizontalDivider(
                                 thickness = 1.dp,
@@ -857,6 +869,21 @@ private fun PinnedDateOverlay(offsetY: () -> Int, date: () -> String?) {
     Box(modifier = Modifier.offset { IntOffset(0, offsetY()) }) {
         HeaderStick(text = text)
     }
+}
+
+/**
+ * The pinned header is always on screen, but the sticky-aware list treats a child of it as hidden
+ * and would scroll back to the header's own slot when the search field takes focus.
+ */
+private fun Modifier.ignoreBringIntoViewRequests(): Modifier = this then IgnoreBringIntoViewElement
+
+private data object IgnoreBringIntoViewElement : ModifierNodeElement<IgnoreBringIntoViewNode>() {
+    override fun create() = IgnoreBringIntoViewNode()
+    override fun update(node: IgnoreBringIntoViewNode) = Unit
+}
+
+private class IgnoreBringIntoViewNode : Modifier.Node(), BringIntoViewModifierNode {
+    override suspend fun bringIntoView(childCoordinates: LayoutCoordinates, boundsProvider: () -> Rect?) = Unit
 }
 
 // Tabs-row controls of the history: hide balance, calendar and search, or the search field; then the period.
