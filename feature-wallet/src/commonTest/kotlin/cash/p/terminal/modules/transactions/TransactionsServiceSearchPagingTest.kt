@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -22,6 +23,8 @@ import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.concurrent.atomic.AtomicInteger
 
 class TransactionsServiceSearchPagingTest : KoinTest {
@@ -244,6 +247,35 @@ class TransactionsServiceSearchPagingTest : KoinTest {
         exhausted: Boolean = false,
         sessionId: Long = 1,
     ) = RecordsBatch(records, true, exhausted, searchScannedCount = scannedCount, searchSessionId = sessionId)
+
+    @Test
+    fun set_period_passesDayBoundsOfSystemZoneAndReloads() = runBlocking {
+        every { repository.set(any(), any(), any(), any(), any(), any(), any()) } returns true
+        val period = TransactionPeriod(LocalDate.of(2024, 3, 10), LocalDate.of(2024, 3, 12))
+        val service = TransactionsService(rateRepository, syncStateRepository, spamManager)
+
+        service.set(emptyList(), null, FilterTransactionType.All, null, null, period = period)
+
+        verify { repository.set(any(), any(), any(), any(), any(), null, period.timestampRange(ZoneId.systemDefault())) }
+        verify { repository.reloadItems() }
+        service.clear()
+    }
+
+    @Test
+    fun handleUpdatedRecords_historyExhaustedBatch_exposesFlagUntilNextReload() = runBlocking {
+        val service = TransactionsService(rateRepository, syncStateRepository, spamManager)
+        service.start()
+        waitUntil { repositoryItemsFlow.subscriptionCount.value >= 1 }
+
+        repositoryItemsFlow.emit(RecordsBatch(listOf(mockRecord("r1", source)), historyExhausted = true))
+        waitUntil { service.historyExhaustedFlow.value }
+        val exhaustedAfterBatch = service.historyExhaustedFlow.value
+        service.set(emptyList(), null, FilterTransactionType.Incoming, null, null)
+
+        assertTrue(exhaustedAfterBatch)
+        assertFalse(service.historyExhaustedFlow.value)
+        service.clear()
+    }
 
     private fun searchingService(): TransactionsService {
         val service = TransactionsService(rateRepository, syncStateRepository, spamManager)

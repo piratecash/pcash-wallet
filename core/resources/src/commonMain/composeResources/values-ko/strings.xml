@@ -283,6 +283,30 @@
     <string name="transactions_search_not_found_in_last">최근 거래 %1$s건에서 찾을 수 없습니다</string>
     <string name="transactions_search_no_more_in_last">최근 거래 %1$s건에서 더 이상 일치하는 항목이 없습니다</string>
     <string name="transactions_search_continue">계속 검색</string>
+    <string name="transactions_calendar_title">캘린더</string>
+    <string name="transactions_calendar_mode_to_date">날짜까지</string>
+    <string name="transactions_calendar_mode_period">기간</string>
+    <string name="transactions_calendar_show_up_to">표시 기준일</string>
+    <string name="transactions_calendar_to_date_hint">목록은 해당 날짜의 마지막 거래부터 시작됩니다. 그날 거래가 없으면 그 이전의 가장 가까운 거래부터 시작됩니다.</string>
+    <string name="transactions_calendar_from">시작</string>
+    <string name="transactions_calendar_to">종료</string>
+    <string name="transactions_calendar_show">거래 보기</string>
+    <string name="transactions_calendar_back_to_latest">최신으로</string>
+    <string name="transactions_calendar_period_range">%1$s부터\n%2$s까지</string>
+    <string name="transactions_calendar_period_day">%1$s</string>
+    <string name="transactions_calendar_period_up_to">%1$s까지</string>
+    <string name="transactions_calendar_period_end">선택한 기간의 모든 거래입니다</string>
+    <string name="transactions_calendar_period_empty_all">선택한 기간에 거래가 없습니다</string>
+    <string name="transactions_calendar_period_empty_incoming">선택한 기간에 받은 거래가 없습니다</string>
+    <string name="transactions_calendar_period_empty_outgoing">선택한 기간에 보낸 거래가 없습니다</string>
+    <string name="transactions_calendar_period_empty_swap">선택한 기간에 스왑이 없습니다</string>
+    <string name="transactions_calendar_period_empty_approve">선택한 기간에 승인이 없습니다</string>
+    <string name="transactions_calendar_change_period">기간 변경</string>
+    <string name="transactions_calendar_previous_month">이전 달</string>
+    <string name="transactions_calendar_next_month">다음 달</string>
+    <string name="transactions_calendar_period_selected">캘린더, 기간 선택됨</string>
+    <string name="transactions_search_not_found_in_period">선택한 기간의 거래 %1$s건에서 찾을 수 없습니다</string>
+    <string name="transactions_search_no_more_in_period">선택한 기간의 거래 %1$s건에서 다른 일치 항목이 없습니다</string>
     <string name="Market_Filters">필터</string>
     <string name="Market_AdvancedSearch_Results">결과</string>
     <string name="Market_Search_Hint">검색</string>
@@ -879,6 +903,7 @@
     <string name="Transactions_ContractCreation">계약 생성</string>
     <string name="Transactions_ContractDeploy">Contract Deploy</string>
     <string name="Transactions_To">%s에게</string>
+    <string name="transactions_to_self">나에게</string>
     <string name="Transactions_From">%s부터</string>
     <string name="Transaction_Unlimited_CoinCode">무제한 %s</string>
     <string name="Transaction_Unlimited">무제한</string>
@@ -1345,6 +1370,7 @@
     <string name="transaction_error_invalid_derivation_path">잘못된 파생 경로</string>
     <!--Hud texts-->
     <string name="Hud_Text_NoInternet">인터넷에 연결되지 않음</string>
+    <string name="zcash_server_unavailable">서버를 사용할 수 없습니다. 다시 시도하세요.</string>
     <string name="Hud_Text_Copied">복사됨</string>
     <string name="Hud_Text_Created">생성됨</string>
     <string name="Hud_Text_Restored">복구됨</string>
@@ -1598,7 +1624,7 @@
     <string name="Coin_Tab_Market">시장</string>
     <string name="Coin_Tab_Details">분석</string>
     <string name="Coin_Tab_Tweets">트윗</string>
-    <string name="typical_fee"><![CDATA[일반적인 수수료 < 0.001 ZEC]]></string>
+    <string name="typical_fee"><![CDATA[일반적인 수수료 < 0.0001 ZEC]]></string>
     <string name="CoinPage_TimeDuration_Hour">1H</string>
     <string name="CoinPage_TimeDuration_Day">1하루</string>
     <string name="CoinPage_TimeDuration_Week">7일</string>
@@ -2150,7 +2176,7 @@
     <string name="auth_info_successful">성공</string>
     <string name="auth_info_unsuccessful">실패</string>
     <string name="auth_info_duress_mode">(강압 모드)</string>
-    <string name="auth_info_entrance_to">%s 접속</string>
+    <string name="auth_info_entrance_to">%1$s 접속</string>
     <string name="auth_info_seconds_ago">(%d초 전)</string>
     <string name="auth_info_minutes_ago">(%d분 전)</string>
     <string name="auth_info_hours_ago">(%d시간 전)</string>
@@ -2676,6 +2702,19 @@
     <string name="desktop_password_save_failed">비밀번호를 저장할 수 없습니다. 다시 시도하세요</string>
     <string name="tron_controlled_by_others_title">다른 사람이 이 계정을 제어할 수 있습니다</string>
     <string name="tron_controlled_by_others_warning">이 계정의 권한이 변경되어 다른 키가 이 계정을 제어할 수 있습니다. 이 계정으로 보낸 자금은 회원님의 동의 없이 인출될 수 있습니다. 이 키가 누구의 것인지 아는 경우에만 입금하세요.</string>
+    <string name="login_logging_selfie_unsuccessful_shared">이 스위치는 이 컴퓨터의 모든 지갑에 공통으로 적용됩니다</string>
+    <string name="desktop_journal_password_title">기록 비밀번호</string>
+    <string name="desktop_journal_password_set_description">로그인 기록을 보호하는 비밀번호를 설정하세요. 지갑을 잠금 해제하는 비밀번호와 달라야 합니다</string>
+    <string name="desktop_journal_password_access_description">로그인 기록을 열려면 기록 비밀번호를 입력하세요</string>
+    <string name="desktop_journal_password_disable_description">기록 비밀번호를 끄려면 입력하세요</string>
+    <string name="desktop_delete_contacts_password_title">연락처 삭제 비밀번호</string>
+    <string name="desktop_delete_contacts_password_set_description">잠금 해제 화면에서 이 비밀번호를 입력하면 이 컴퓨터의 주소록이 즉시 삭제됩니다. 다른 비밀번호와 달라야 합니다</string>
+    <string name="desktop_delete_contacts_password_disable_description">연락처 삭제 비밀번호를 끄려면 입력하세요</string>
+    <string name="desktop_delete_contacts_terms_warning">이 비밀번호를 설정하면 그 목적, 즉 개인정보 보호를 위한 것임을 이해했다고 확인하는 것입니다. 잠금 해제 화면에서 이 비밀번호를 입력하면 이 컴퓨터에 저장된 암호화폐 주소록이 즉시 영구적으로 삭제됩니다. 주소록은 로컬에만 저장되며 백업 없이는 복구할 수 없습니다.</string>
+    <string-array name="desktop_delete_contacts_terms">
+        <item>이 비밀번호가 암호화폐 주소록을 즉시 삭제하는 데 쓰인다는 것을 이해합니다.</item>
+        <item>이 비밀번호를 입력하면 주소록이 삭제되며 백업 없이는 복구할 수 없다는 것을 이해합니다.</item>
+    </string-array>
     <string name="sign_message_title">메시지 서명</string>
     <string name="sign_message_intro">서명은 주소가 본인 소유임을 증명합니다. 거래소에서 출금 주소를 추가할 때 요구합니다. 서명으로는 자금에 접근할 수 없습니다.</string>
     <string name="sign_message_message">메시지</string>

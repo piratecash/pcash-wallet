@@ -315,6 +315,30 @@
     <string name="transactions_search_not_found_in_last">Not found among the last %1$s transactions</string>
     <string name="transactions_search_no_more_in_last">No other matches among the last %1$s transactions</string>
     <string name="transactions_search_continue">Search further</string>
+    <string name="transactions_calendar_title">Calendar</string>
+    <string name="transactions_calendar_mode_to_date">To date</string>
+    <string name="transactions_calendar_mode_period">Period</string>
+    <string name="transactions_calendar_show_up_to">Show up to</string>
+    <string name="transactions_calendar_to_date_hint">The list starts with the last transaction of this day. If there were none that day, with the nearest earlier one.</string>
+    <string name="transactions_calendar_from">From</string>
+    <string name="transactions_calendar_to">To</string>
+    <string name="transactions_calendar_show">Show transactions</string>
+    <string name="transactions_calendar_back_to_latest">Back to latest</string>
+    <string name="transactions_calendar_period_range">From %1$s\nto %2$s</string>
+    <string name="transactions_calendar_period_day">On %1$s</string>
+    <string name="transactions_calendar_period_up_to">Up to %1$s</string>
+    <string name="transactions_calendar_period_end">These are all transactions for the selected period</string>
+    <string name="transactions_calendar_period_empty_all">No transactions for the selected period</string>
+    <string name="transactions_calendar_period_empty_incoming">No received transactions for the selected period</string>
+    <string name="transactions_calendar_period_empty_outgoing">No sent transactions for the selected period</string>
+    <string name="transactions_calendar_period_empty_swap">No swaps for the selected period</string>
+    <string name="transactions_calendar_period_empty_approve">No approvals for the selected period</string>
+    <string name="transactions_calendar_change_period">Change period</string>
+    <string name="transactions_calendar_previous_month">Previous month</string>
+    <string name="transactions_calendar_next_month">Next month</string>
+    <string name="transactions_calendar_period_selected">Calendar, period selected</string>
+    <string name="transactions_search_not_found_in_period">Not found among %1$s transactions of the selected period</string>
+    <string name="transactions_search_no_more_in_period">No other matches among %1$s transactions of the selected period</string>
     <string name="Market_Filters">Filters</string>
     <string name="Market_AdvancedSearch_Results">Results</string>
     <string name="Market_Search_Hint">Search</string>
@@ -1111,6 +1135,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="Transactions_ContractCreation">Contract Creation</string>
     <string name="Transactions_ContractDeploy">Contract Deploy</string>
     <string name="Transactions_To">to %s</string>
+    <string name="transactions_to_self">to self</string>
     <string name="Transactions_From">from %s</string>
     <string name="Transaction_Unlimited_CoinCode">unlimited %s</string>
     <string name="Transaction_Unlimited">unlimited</string>
@@ -1720,6 +1745,7 @@ Proceed only if you\u0027re sure.</string>
 
     <!--Hud texts-->
     <string name="Hud_Text_NoInternet">No Internet</string>
+    <string name="zcash_server_unavailable">Server is unavailable. Try again.</string>
     <string name="Hud_Text_Copied">Copied</string>
     <string name="Hud_Text_Created">Created</string>
     <string name="Hud_Text_Restored">Imported</string>
@@ -2041,7 +2067,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="Coin_Tab_Market">Markets</string>
     <string name="Coin_Tab_Details">Analytics</string>
     <string name="Coin_Tab_Tweets">Tweets</string>
-    <string name="typical_fee"><![CDATA[Typical fee < 0.001 ZEC]]></string>
+    <string name="typical_fee"><![CDATA[Typical fee < 0.0001 ZEC]]></string>
 
     <string name="CoinPage_TimeDuration_Hour">1H</string>
     <string name="CoinPage_TimeDuration_Day">1D</string>
@@ -2520,7 +2546,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="auth_info_successful">Successful</string>
     <string name="auth_info_unsuccessful">Unsuccessful</string>
     <string name="auth_info_duress_mode">(Duress Mode)</string>
-    <string name="auth_info_entrance_to">Entrance to the %s</string>
+    <string name="auth_info_entrance_to">Entrance to the %1$s</string>
     <string name="auth_info_seconds_ago">(%d sec ago)</string>
     <string name="auth_info_minutes_ago">(%d min ago)</string>
     <string name="auth_info_hours_ago">(%d hours ago)</string>
@@ -3117,6 +3143,19 @@ Proceed only if you\u0027re sure.</string>
     <string name="desktop_password_save_failed">Could not save the password. Please try again</string>
     <string name="tron_controlled_by_others_title">Others may control this account</string>
     <string name="tron_controlled_by_others_warning">The permissions on this account have been changed: other keys may control it. Funds you send to it can be withdrawn without your involvement. Top it up only if you know whose keys these are.</string>
+    <string name="login_logging_selfie_unsuccessful_shared">This switch is shared by all wallets on this computer</string>
+    <string name="desktop_journal_password_title">Journal password</string>
+    <string name="desktop_journal_password_set_description">Set a password that protects the login journal. It must differ from the passwords that unlock your wallets</string>
+    <string name="desktop_journal_password_access_description">Enter the journal password to open the login journal</string>
+    <string name="desktop_journal_password_disable_description">Enter the journal password to turn it off</string>
+    <string name="desktop_delete_contacts_password_title">Delete contacts password</string>
+    <string name="desktop_delete_contacts_password_set_description">Entering this password on the unlock screen immediately deletes your address book from this computer. It must differ from your other passwords</string>
+    <string name="desktop_delete_contacts_password_disable_description">Enter the delete contacts password to turn it off</string>
+    <string name="desktop_delete_contacts_terms_warning">By setting this password you confirm that you understand its purpose: protecting your privacy. Entering it on the unlock screen immediately and irreversibly deletes the crypto-address book stored on this computer. The address book is stored only locally and cannot be restored without a backup.</string>
+    <string-array name="desktop_delete_contacts_terms">
+        <item>I understand that this password is used to immediately delete the crypto-address book.</item>
+        <item>I understand that after entering this password the address book will be deleted and cannot be restored without a backup copy.</item>
+    </string-array>
     <string name="sign_message_title">Sign Message</string>
     <string name="sign_message_intro">The signature proves that the address belongs to you. Exchanges ask for it when you add a withdrawal address. It gives no access to your funds.</string>
     <string name="sign_message_message">Message</string>

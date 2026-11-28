@@ -283,6 +283,30 @@
     <string name="transactions_search_not_found_in_last">Son %1$s işlem arasında bulunamadı</string>
     <string name="transactions_search_no_more_in_last">Son %1$s işlem arasında başka eşleşme yok</string>
     <string name="transactions_search_continue">Aramaya devam et</string>
+    <string name="transactions_calendar_title">Takvim</string>
+    <string name="transactions_calendar_mode_to_date">Tarihe kadar</string>
+    <string name="transactions_calendar_mode_period">Dönem</string>
+    <string name="transactions_calendar_show_up_to">Şu tarihe kadar göster</string>
+    <string name="transactions_calendar_to_date_hint">Liste, o günün son işlemiyle başlar. O gün işlem yoksa, ondan önceki en yakın işlemle başlar.</string>
+    <string name="transactions_calendar_from">Başlangıç</string>
+    <string name="transactions_calendar_to">Bitiş</string>
+    <string name="transactions_calendar_show">İşlemleri göster</string>
+    <string name="transactions_calendar_back_to_latest">Son işlemlere dön</string>
+    <string name="transactions_calendar_period_range">%1$s tarihinden\n%2$s tarihine kadar</string>
+    <string name="transactions_calendar_period_day">%1$s tarihinde</string>
+    <string name="transactions_calendar_period_up_to">%1$s tarihine kadar</string>
+    <string name="transactions_calendar_period_end">Seçilen dönemdeki tüm işlemler bunlar</string>
+    <string name="transactions_calendar_period_empty_all">Seçilen dönemde işlem yok</string>
+    <string name="transactions_calendar_period_empty_incoming">Seçilen dönemde alınan işlem yok</string>
+    <string name="transactions_calendar_period_empty_outgoing">Seçilen dönemde gönderilen işlem yok</string>
+    <string name="transactions_calendar_period_empty_swap">Seçilen dönemde takas yok</string>
+    <string name="transactions_calendar_period_empty_approve">Seçilen dönemde onay yok</string>
+    <string name="transactions_calendar_change_period">Dönemi değiştir</string>
+    <string name="transactions_calendar_previous_month">Önceki ay</string>
+    <string name="transactions_calendar_next_month">Sonraki ay</string>
+    <string name="transactions_calendar_period_selected">Takvim, dönem seçildi</string>
+    <string name="transactions_search_not_found_in_period">Seçilen dönemdeki %1$s işlem arasında bulunamadı</string>
+    <string name="transactions_search_no_more_in_period">Seçilen dönemdeki %1$s işlem arasında başka eşleşme yok</string>
     <string name="Market_Filters">Filtreler</string>
     <string name="Market_AdvancedSearch_Results">Sonuçlar</string>
     <string name="Market_Search_Hint">Ara</string>
@@ -881,6 +905,7 @@
     <string name="Transactions_ContractCreation">Sözleşme Oluşturma</string>
     <string name="Transactions_ContractDeploy">Contract Deploy</string>
     <string name="Transactions_To">%s kişisine</string>
+    <string name="transactions_to_self">kendine</string>
     <string name="Transactions_From">%s kişisinden</string>
     <string name="Transaction_Unlimited_CoinCode">sınırsız %s</string>
     <string name="Transaction_Unlimited">sınırsız</string>
@@ -1345,6 +1370,7 @@
     <string name="transaction_error_invalid_derivation_path">Geçersiz türetme yolu</string>
     <!--Hud texts-->
     <string name="Hud_Text_NoInternet">Internet Bağlantısı Yok</string>
+    <string name="zcash_server_unavailable">Sunucuya ulaşılamıyor. Tekrar deneyin.</string>
     <string name="Hud_Text_Copied">Kopyalandı</string>
     <string name="Hud_Text_Created">Oluşturuldu</string>
     <string name="Hud_Text_Restored">Geri yüklendi </string>
@@ -1602,7 +1628,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="Coin_Tab_Market">Marketler</string>
     <string name="Coin_Tab_Details">Analitik</string>
     <string name="Coin_Tab_Tweets">Tweets</string>
-    <string name="typical_fee"><![CDATA[Tipik ücret < 0.001 ZEC]]></string>
+    <string name="typical_fee"><![CDATA[Tipik ücret < 0.0001 ZEC]]></string>
     <string name="CoinPage_TimeDuration_Hour">1H</string>
     <string name="CoinPage_TimeDuration_Day">1D</string>
     <string name="CoinPage_TimeDuration_Week">7G</string>
@@ -2158,7 +2184,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="auth_info_successful">Başarılı</string>
     <string name="auth_info_unsuccessful">Başarısız</string>
     <string name="auth_info_duress_mode">(Zorlama Modu)</string>
-    <string name="auth_info_entrance_to">%s girişi</string>
+    <string name="auth_info_entrance_to">%1$s girişi</string>
     <string name="auth_info_seconds_ago">(%d sn önce)</string>
     <string name="auth_info_minutes_ago">(%d dk önce)</string>
     <string name="auth_info_hours_ago">(%d saat önce)</string>
@@ -2699,6 +2725,19 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="desktop_password_save_failed">Şifre kaydedilemedi. Lütfen tekrar deneyin</string>
     <string name="tron_controlled_by_others_title">Bu hesabı başkaları kontrol edebilir</string>
     <string name="tron_controlled_by_others_warning">Bu hesabın izinleri değiştirilmiş: başka anahtarlar hesabı kontrol edebilir. Hesaba gönderdiğiniz fonlar sizin haberiniz olmadan çekilebilir. Hesaba yalnızca bu anahtarların kime ait olduğunu biliyorsanız para yatırın.</string>
+    <string name="login_logging_selfie_unsuccessful_shared">Bu anahtar bu bilgisayardaki tüm cüzdanlar için ortaktır</string>
+    <string name="desktop_journal_password_title">Günlük şifresi</string>
+    <string name="desktop_journal_password_set_description">Giriş günlüğünü koruyan bir şifre belirleyin. Cüzdanlarınızın kilidini açan şifrelerden farklı olmalıdır</string>
+    <string name="desktop_journal_password_access_description">Giriş günlüğünü açmak için günlük şifresini girin</string>
+    <string name="desktop_journal_password_disable_description">Kapatmak için günlük şifresini girin</string>
+    <string name="desktop_delete_contacts_password_title">Kişileri silme şifresi</string>
+    <string name="desktop_delete_contacts_password_set_description">Bu şifrenin kilit açma ekranında girilmesi, adres defterinizi bu bilgisayardan hemen siler. Diğer şifrelerinizden farklı olmalıdır</string>
+    <string name="desktop_delete_contacts_password_disable_description">Kapatmak için kişileri silme şifresini girin</string>
+    <string name="desktop_delete_contacts_terms_warning">Bu şifreyi belirleyerek amacını anladığınızı onaylarsınız: gizliliğinizi korumak. Kilit açma ekranında girilmesi, bu bilgisayarda saklanan kripto adres defterini hemen ve geri döndürülemez biçimde siler. Adres defteri yalnızca yerel olarak saklanır ve yedek olmadan geri yüklenemez.</string>
+    <string-array name="desktop_delete_contacts_terms">
+        <item>Bu şifrenin kripto adres defterini hemen silmek için kullanıldığını anlıyorum.</item>
+        <item>Bu şifre girildikten sonra adres defterinin silineceğini ve yedek olmadan geri yüklenemeyeceğini anlıyorum.</item>
+    </string-array>
     <string name="sign_message_title">Mesaj imzala</string>
     <string name="sign_message_intro">İmza, adresin size ait olduğunu kanıtlar. Borsalar, çekim adresi eklediğinizde bunu ister. İmza, fonlarınıza erişim sağlamaz.</string>
     <string name="sign_message_message">Mesaj</string>

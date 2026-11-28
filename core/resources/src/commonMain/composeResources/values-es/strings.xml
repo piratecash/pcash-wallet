@@ -282,6 +282,30 @@
     <string name="transactions_search_not_found_in_last">No se encontró entre las últimas %1$s transacciones</string>
     <string name="transactions_search_no_more_in_last">No hay más coincidencias entre las últimas %1$s transacciones</string>
     <string name="transactions_search_continue">Seguir buscando</string>
+    <string name="transactions_calendar_title">Calendario</string>
+    <string name="transactions_calendar_mode_to_date">Hasta una fecha</string>
+    <string name="transactions_calendar_mode_period">Período</string>
+    <string name="transactions_calendar_show_up_to">Mostrar hasta</string>
+    <string name="transactions_calendar_to_date_hint">La lista empieza con la última transacción de ese día. Si ese día no hubo ninguna, con la anterior más cercana.</string>
+    <string name="transactions_calendar_from">Desde</string>
+    <string name="transactions_calendar_to">Hasta</string>
+    <string name="transactions_calendar_show">Mostrar transacciones</string>
+    <string name="transactions_calendar_back_to_latest">Volver a las últimas</string>
+    <string name="transactions_calendar_period_range">Del %1$s\nal %2$s</string>
+    <string name="transactions_calendar_period_day">El %1$s</string>
+    <string name="transactions_calendar_period_up_to">Hasta el %1$s</string>
+    <string name="transactions_calendar_period_end">Estas son todas las transacciones del período seleccionado</string>
+    <string name="transactions_calendar_period_empty_all">No hay transacciones en el período seleccionado</string>
+    <string name="transactions_calendar_period_empty_incoming">No hay transacciones recibidas en el período seleccionado</string>
+    <string name="transactions_calendar_period_empty_outgoing">No hay transacciones enviadas en el período seleccionado</string>
+    <string name="transactions_calendar_period_empty_swap">No hay intercambios en el período seleccionado</string>
+    <string name="transactions_calendar_period_empty_approve">No hay aprobaciones en el período seleccionado</string>
+    <string name="transactions_calendar_change_period">Cambiar período</string>
+    <string name="transactions_calendar_previous_month">Mes anterior</string>
+    <string name="transactions_calendar_next_month">Mes siguiente</string>
+    <string name="transactions_calendar_period_selected">Calendario, período seleccionado</string>
+    <string name="transactions_search_not_found_in_period">No se encontró entre %1$s transacciones del período seleccionado</string>
+    <string name="transactions_search_no_more_in_period">No hay otras coincidencias entre %1$s transacciones del período seleccionado</string>
     <string name="Market_Filters">Filtros</string>
     <string name="Market_AdvancedSearch_Results">Resultados</string>
     <string name="Market_Search_Hint">Buscar</string>
@@ -876,6 +900,7 @@
     <string name="Transactions_ContractCreation">Creación de Contrato</string>
     <string name="Transactions_ContractDeploy">Contract Deploy</string>
     <string name="Transactions_To">a %s</string>
+    <string name="transactions_to_self">a sí mismo</string>
     <string name="Transactions_From">desde %s</string>
     <string name="Transaction_Unlimited_CoinCode">%s ilimitado</string>
     <string name="Transaction_Unlimited">ilimitado</string>
@@ -1340,6 +1365,7 @@
     <string name="transaction_error_invalid_derivation_path">Ruta de derivación no válida</string>
     <!--Hud texts-->
     <string name="Hud_Text_NoInternet">Sin conexión a Internet</string>
+    <string name="zcash_server_unavailable">El servidor no está disponible. Inténtalo de nuevo.</string>
     <string name="Hud_Text_Copied">Copiado</string>
     <string name="Hud_Text_Created">Creado</string>
     <string name="Hud_Text_Restored">Restaurado </string>
@@ -1592,7 +1618,7 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="Coin_Tab_Market">Mercados</string>
     <string name="Coin_Tab_Details">Estadísticas</string>
     <string name="Coin_Tab_Tweets">Tweets</string>
-    <string name="typical_fee"><![CDATA[Comisión típica < 0.001 ZEC]]></string>
+    <string name="typical_fee"><![CDATA[Comisión típica < 0.0001 ZEC]]></string>
     <string name="CoinPage_TimeDuration_Hour">1H</string>
     <string name="CoinPage_TimeDuration_Day">1D</string>
     <string name="CoinPage_TimeDuration_Week">7D</string>
@@ -2150,7 +2176,7 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="auth_info_successful">Exitoso</string>
     <string name="auth_info_unsuccessful">No exitoso</string>
     <string name="auth_info_duress_mode">(Modo coacción)</string>
-    <string name="auth_info_entrance_to">Entrada al %s</string>
+    <string name="auth_info_entrance_to">Entrada al %1$s</string>
     <string name="auth_info_seconds_ago">(hace %d seg)</string>
     <string name="auth_info_minutes_ago">(hace %d min)</string>
     <string name="auth_info_hours_ago">(hace %d horas)</string>
@@ -2703,6 +2729,19 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="desktop_password_save_failed">No se pudo guardar la contraseña. Inténtalo de nuevo</string>
     <string name="tron_controlled_by_others_title">Otros pueden controlar esta cuenta</string>
     <string name="tron_controlled_by_others_warning">Los permisos de esta cuenta han cambiado: otras claves pueden controlarla. Los fondos que envíe a ella podrían retirarse sin su participación. Recárguela solo si sabe de quién son esas claves.</string>
+    <string name="login_logging_selfie_unsuccessful_shared">Este interruptor es común a todas las billeteras de este ordenador</string>
+    <string name="desktop_journal_password_title">Contraseña del registro</string>
+    <string name="desktop_journal_password_set_description">Establezca una contraseña que proteja el registro de inicios de sesión. Debe ser distinta de las contraseñas que desbloquean sus billeteras</string>
+    <string name="desktop_journal_password_access_description">Introduzca la contraseña del registro para abrir el registro de inicios de sesión</string>
+    <string name="desktop_journal_password_disable_description">Introduzca la contraseña del registro para desactivarla</string>
+    <string name="desktop_delete_contacts_password_title">Contraseña para eliminar contactos</string>
+    <string name="desktop_delete_contacts_password_set_description">Al introducir esta contraseña en la pantalla de desbloqueo, su libreta de direcciones se elimina de inmediato de este ordenador. Debe ser distinta de sus otras contraseñas</string>
+    <string name="desktop_delete_contacts_password_disable_description">Introduzca la contraseña para eliminar contactos para desactivarla</string>
+    <string name="desktop_delete_contacts_terms_warning">Al establecer esta contraseña confirma que entiende su finalidad: proteger su privacidad. Introducirla en la pantalla de desbloqueo elimina de inmediato y de forma irreversible la libreta de direcciones cripto guardada en este ordenador. La libreta de direcciones se guarda solo de forma local y no se puede recuperar sin una copia de seguridad.</string>
+    <string-array name="desktop_delete_contacts_terms">
+        <item>Entiendo que esta contraseña sirve para eliminar de inmediato la libreta de direcciones cripto.</item>
+        <item>Entiendo que, tras introducir esta contraseña, la libreta de direcciones se eliminará y no podrá recuperarse sin una copia de seguridad.</item>
+    </string-array>
     <string name="sign_message_title">Firmar mensaje</string>
     <string name="sign_message_intro">La firma demuestra que la dirección te pertenece. Los exchanges la piden cuando añades una dirección de retiro. No da acceso a tus fondos.</string>
     <string name="sign_message_message">Mensaje</string>
