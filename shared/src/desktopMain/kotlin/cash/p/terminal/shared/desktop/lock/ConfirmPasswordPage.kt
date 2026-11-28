@@ -23,6 +23,7 @@ import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -55,6 +56,7 @@ internal fun ConfirmPasswordContent(
     onPasswordChange: (String) -> Unit,
     onConfirmClick: () -> Unit,
     onBack: () -> Unit,
+    description: StringResource = Res.string.desktop_unlock_title,
 ) {
     Scaffold(
         containerColor = ComposeAppTheme.colors.backgroundBase,
@@ -71,7 +73,7 @@ internal fun ConfirmPasswordContent(
                 .centeredForm(rememberScrollState()),
         ) {
             VSpacer(24.dp)
-            subhead2_grey(text = stringResource(Res.string.desktop_unlock_title))
+            subhead2_grey(text = stringResource(description))
             VSpacer(16.dp)
             PasswordCheckForm(
                 uiState = uiState,

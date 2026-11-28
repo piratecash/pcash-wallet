@@ -73,6 +73,7 @@ class SourceSearch internal constructor(
         val extraSource: Boolean,
         val hideSuspiciousTx: Boolean,
         val sessionId: Long,
+        val period: TimestampRange?,
     )
 
     // The text match is cheap and runs first; only its hits reach the visibility rule.

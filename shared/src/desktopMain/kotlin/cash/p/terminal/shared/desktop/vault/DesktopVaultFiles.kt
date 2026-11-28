@@ -24,6 +24,14 @@ class DesktopVaultFiles(private val dataDirectory: File) {
 
     fun premiumFile(slot: Int): File = File(vaultDirectory, "$PREMIUM_FILE_PREFIX.$slot")
 
+    fun journalFile(slot: Int): File = File(vaultDirectory, "$JOURNAL_FILE_PREFIX.$slot")
+
+    /** One mailbox for all slots: what it holds is sealed per slot, its size never changes. */
+    val inboxFile: File get() = File(vaultDirectory, INBOX_FILE_NAME)
+
+    /** The erase tags of all slots. */
+    val actionsFile: File get() = File(vaultDirectory, ACTIONS_FILE_NAME)
+
     fun accountStoreDirectory(storageId: String): File = File(kitsDirectory, opaqueName(storageId, ACCOUNT_DIRECTORY))
 
     fun accountStoreFile(storageId: String): File =
@@ -59,6 +67,9 @@ class DesktopVaultFiles(private val dataDirectory: File) {
         const val TEMP_SUFFIX = ".tmp"
         const val SAFE_FILE_PREFIX = "app"
         const val PREMIUM_FILE_PREFIX = "prem"
+        const val JOURNAL_FILE_PREFIX = "log"
+        const val INBOX_FILE_NAME = "inbox"
+        const val ACTIONS_FILE_NAME = "actions"
         const val SHARED_FILE_NAME = "shared"
         const val ACCOUNT_DIRECTORY = "account"
         const val ACCOUNT_DATABASE = "account.db"

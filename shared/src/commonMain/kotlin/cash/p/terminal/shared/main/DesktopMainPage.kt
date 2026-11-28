@@ -106,12 +106,16 @@ class DesktopMainPage : HSPage() {
             )
         }
         val selectedDestination = selected.takeIf { it in destinations } ?: MainDestination.Balance
+        val transactionsViewModel = rememberMainPageTransactionsViewModel(navigation)
         ShowReleaseNotesAfterUpdate(navigation)
         MainNavigation(
             destinations = destinations,
             selectedDestination = selectedDestination,
             onDestinationSelect = {
                 rememberedMainTab(it)?.let { tab -> mainTabStorage.mainTab = tab }
+                if (selectedDestination == MainDestination.Transactions && it != MainDestination.Transactions) {
+                    transactionsViewModel.onLeave()
+                }
                 selected = it
             },
             modifier = Modifier.fillMaxSize(),
@@ -152,6 +156,8 @@ private fun TransactionsPane(navigation: HSNavigation) {
         paddingValues = PaddingValues(),
         viewModel = rememberMainPageTransactionsViewModel(navigation),
         onShowAllTransactionsClicked = hud::showNotSupportedOnPlatform,
+        onHiddenCalendarClick = hud::showNotSupportedOnPlatform,
+        onHiddenSearchClick = hud::showNotSupportedOnPlatform,
     )
 }
 

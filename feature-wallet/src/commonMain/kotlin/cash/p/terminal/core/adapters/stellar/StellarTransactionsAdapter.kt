@@ -9,6 +9,7 @@ import cash.p.terminal.entities.LastBlockInfo
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.stellar.StellarTransactionRecord
 import cash.p.terminal.modules.transactions.FilterTransactionType
+import cash.p.terminal.modules.transactions.TimestampRange
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.TokenType
@@ -37,17 +38,34 @@ class StellarTransactionsAdapter(
     override val lastBlockUpdatedFlowable: Flowable<Unit>
         get() = Flowable.empty()
 
+    override suspend fun getOldestTransactionTimestamp(
+        token: Token?,
+        transactionType: FilterTransactionType,
+        address: String?,
+    ): Long? = try {
+        stellarKit.oldestOperationTimestamp(getTagQuery(token, transactionType, address))
+    } catch (e: TonTransactionsAdapter.NotSupportedException) {
+        null
+    }
+
     override suspend fun getTransactions(
         from: TransactionRecord?,
         token: Token?,
         limit: Int,
         transactionType: FilterTransactionType,
-        address: String?
+        address: String?,
+        period: TimestampRange?,
     ): List<TransactionRecord> = try {
         val tagQuery = getTagQuery(token, transactionType, address)
         val beforeId = (from as? StellarTransactionRecord)?.operation?.id
 
-        stellarKit.operationsBefore(tagQuery, fromId = beforeId, limit = limit)
+        stellarKit.operationsBefore(
+            tagQuery,
+            fromId = beforeId,
+            limit = limit,
+            sinceTimestamp = period?.since,
+            untilTimestamp = period?.until,
+        )
             .map {
                 transactionConverter.convert(it)
             }
