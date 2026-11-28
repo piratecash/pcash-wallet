@@ -6,14 +6,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -65,7 +60,6 @@ import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
 import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.InfoText
-import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_grey
 import cash.p.terminal.ui_compose.components.body_leah
@@ -392,9 +386,9 @@ private fun SecurityCenterScreen(
                 displayLevel = uiState.displayLevel,
                 transactionAutoHideSeparatePinExists = uiState.transactionAutoHideSeparatePinExists,
                 onTransactionAutoHideEnabledChange = onTransactionAutoHideEnabledChange,
-                onPinClicked = onSetTransactionAutoHidePinClicked,
-                onDisablePinClicked = onDisableTransactionAutoHidePinClicked,
-                onChangeDisplayClicked = onChangeDisplayClicked
+                onPinClick = onSetTransactionAutoHidePinClicked,
+                onDisablePinClick = onDisableTransactionAutoHidePinClicked,
+                onChangeDisplayClick = onChangeDisplayClicked
             )
 
             TransferPasscodeBlock(
@@ -448,35 +442,6 @@ private fun SecurityCenterScreen(
                     }
                 }
             )
-        }
-    }
-}
-
-@Composable
-fun SecurityCenterCell(
-    start: @Composable RowScope.() -> Unit,
-    center: @Composable RowScope.() -> Unit,
-    end: @Composable() (RowScope.() -> Unit)? = null,
-    onClick: (() -> Unit)? = null,
-) {
-    RowUniversal(
-        modifier = Modifier.padding(horizontal = 16.dp),
-        onClick = onClick
-    ) {
-        start.invoke(this)
-        Spacer(Modifier.width(16.dp))
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.weight(1f)
-        ) {
-            center(this)
-        }
-        end?.let {
-            Spacer(
-                Modifier
-                    .defaultMinSize(minWidth = 8.dp)
-            )
-            end.invoke(this)
         }
     }
 }

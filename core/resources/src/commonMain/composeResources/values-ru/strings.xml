@@ -269,6 +269,30 @@
     <string name="transactions_search_not_found_in_last">Не найдено среди последних %1$s транзакций</string>
     <string name="transactions_search_no_more_in_last">Других совпадений среди последних %1$s транзакций нет</string>
     <string name="transactions_search_continue">Искать дальше</string>
+    <string name="transactions_calendar_title">Календарь</string>
+    <string name="transactions_calendar_mode_to_date">К дате</string>
+    <string name="transactions_calendar_mode_period">За период</string>
+    <string name="transactions_calendar_show_up_to">Показать по</string>
+    <string name="transactions_calendar_to_date_hint">Список начнётся с последней операции этого дня. Если в этот день операций не было, с ближайшей более ранней.</string>
+    <string name="transactions_calendar_from">От</string>
+    <string name="transactions_calendar_to">До</string>
+    <string name="transactions_calendar_show">Показать операции</string>
+    <string name="transactions_calendar_back_to_latest">К последним</string>
+    <string name="transactions_calendar_period_range">С %1$s\nпо %2$s</string>
+    <string name="transactions_calendar_period_day">За %1$s</string>
+    <string name="transactions_calendar_period_up_to">По %1$s</string>
+    <string name="transactions_calendar_period_end">Это все операции за выбранный период</string>
+    <string name="transactions_calendar_period_empty_all">За выбранный период операций нет</string>
+    <string name="transactions_calendar_period_empty_incoming">За выбранный период полученных операций нет</string>
+    <string name="transactions_calendar_period_empty_outgoing">За выбранный период отправленных операций нет</string>
+    <string name="transactions_calendar_period_empty_swap">За выбранный период обменов нет</string>
+    <string name="transactions_calendar_period_empty_approve">За выбранный период одобрений нет</string>
+    <string name="transactions_calendar_change_period">Изменить период</string>
+    <string name="transactions_calendar_previous_month">Предыдущий месяц</string>
+    <string name="transactions_calendar_next_month">Следующий месяц</string>
+    <string name="transactions_calendar_period_selected">Календарь, выбран период</string>
+    <string name="transactions_search_not_found_in_period">Не найдено среди %1$s транзакций выбранного периода</string>
+    <string name="transactions_search_no_more_in_period">Других совпадений среди %1$s транзакций выбранного периода нет</string>
     <string name="Market_Filters">Фильтры</string>
     <string name="Market_AdvancedSearch_Results">Результат</string>
     <string name="Market_Search_Hint">Поиск</string>
@@ -887,6 +911,7 @@
     <string name="Transactions_ContractCreation">Создание контракта</string>
     <string name="Transactions_ContractDeploy">Развертывание контракта</string>
     <string name="Transactions_To">кому %s</string>
+    <string name="transactions_to_self">себе</string>
     <string name="Transactions_From">от %s</string>
     <string name="Transaction_Unlimited_CoinCode">безлимитный %s</string>
     <string name="Transaction_Unlimited">безлимитный</string>
@@ -1366,6 +1391,7 @@
     <string name="transaction_error_invalid_derivation_path">Неверный путь деривации</string>
     <!--Hud texts-->
     <string name="Hud_Text_NoInternet">Нет интернета</string>
+    <string name="zcash_server_unavailable">Сервер недоступен. Повторите попытку.</string>
     <string name="Hud_Text_Copied">Скопировано</string>
     <string name="Hud_Text_Created">Создан</string>
     <string name="Hud_Text_Restored">Импортировано</string>
@@ -1631,7 +1657,7 @@
     <string name="Coin_Tab_Market">Рынки</string>
     <string name="Coin_Tab_Details">Аналитика</string>
     <string name="Coin_Tab_Tweets">Твиты</string>
-    <string name="typical_fee"><![CDATA[Типичная комиссия < 0.001 ZEC]]></string>
+    <string name="typical_fee"><![CDATA[Типичная комиссия < 0.0001 ZEC]]></string>
     <string name="CoinPage_TimeDuration_Hour">1Ч</string>
     <string name="CoinPage_TimeDuration_Day">1Д</string>
     <string name="CoinPage_TimeDuration_Week">7Д</string>
@@ -2378,7 +2404,7 @@
     <string name="auth_info_successful">Успешно</string>
     <string name="auth_info_unsuccessful">Неуспешно</string>
     <string name="auth_info_duress_mode">(Режим принуждения)</string>
-    <string name="auth_info_entrance_to">Вход в %s</string>
+    <string name="auth_info_entrance_to">Вход в %1$s</string>
     <string name="auth_info_seconds_ago">(%d сек назад)</string>
     <string name="auth_info_minutes_ago">(%d мин назад)</string>
     <string name="auth_info_hours_ago">(%d ч назад)</string>
@@ -2890,6 +2916,12 @@
     <string name="desktop_duress_password_edit_description">Введите новый пароль для режима Duress</string>
     <string name="desktop_hidden_wallet_password_title">Пароль скрытого кошелька</string>
     <string name="desktop_hidden_wallet_password_description">Создайте пароль для скрытого кошелька</string>
+    <string name="desktop_transactions_hide_set_password">Установить отдельный пароль</string>
+    <string name="desktop_transactions_hide_edit_password">Изменить пароль</string>
+    <string name="desktop_transactions_hide_delete_password">Удалить отдельный пароль</string>
+    <string name="desktop_transactions_hide_description">Режим безопасности: скрывает транзакции и позволяет установить отдельный пароль для их разблокировки.</string>
+    <string name="desktop_transactions_hide_password_description">Задайте пароль для режима «Автоскрытие транзакций»</string>
+    <string name="desktop_transactions_hide_password_enter">Введите пароль для «Автоскрытия транзакций»</string>
     <string name="desktop_hidden_wallet_password_terms_warning">Глобальный кошелёк не увидит этот кошелёк, а если вы забудете его пароль, доступ к кошельку можно восстановить по seed-фразе.</string>
     <string-array name="desktop_hidden_wallet_password_terms">
         <item>Пользователь понимает, что кошелёк не будет виден среди других кошельков.</item>
@@ -2899,6 +2931,19 @@
     <string name="desktop_password_save_failed">Не удалось сохранить пароль. Попробуйте ещё раз</string>
     <string name="tron_controlled_by_others_title">Аккаунтом могут управлять другие</string>
     <string name="tron_controlled_by_others_warning">Права на этот аккаунт изменены: им могут управлять другие ключи. Средства, которые вы на него переведёте, могут вывести без вашего участия. Пополняйте его, только если знаете, чьи это ключи.</string>
+    <string name="login_logging_selfie_unsuccessful_shared">Этот переключатель общий для всех кошельков на этом компьютере</string>
+    <string name="desktop_journal_password_title">Пароль журнала</string>
+    <string name="desktop_journal_password_set_description">Задайте пароль, который защищает журнал входов. Он должен отличаться от паролей, которыми открываются ваши кошельки</string>
+    <string name="desktop_journal_password_access_description">Введите пароль журнала, чтобы открыть журнал входов</string>
+    <string name="desktop_journal_password_disable_description">Введите пароль журнала, чтобы отключить его</string>
+    <string name="desktop_delete_contacts_password_title">Пароль удаления контактов</string>
+    <string name="desktop_delete_contacts_password_set_description">Ввод этого пароля на экране разблокировки сразу удаляет вашу адресную книгу с этого компьютера. Он должен отличаться от ваших остальных паролей</string>
+    <string name="desktop_delete_contacts_password_disable_description">Введите пароль удаления контактов, чтобы отключить его</string>
+    <string name="desktop_delete_contacts_terms_warning">Задавая этот пароль, вы подтверждаете, что понимаете его назначение: защиту вашей приватности. Ввод пароля на экране разблокировки немедленно и безвозвратно удаляет крипто-адресную книгу, хранящуюся на этом компьютере. Адресная книга хранится только локально и без резервной копии не восстанавливается.</string>
+    <string-array name="desktop_delete_contacts_terms">
+        <item>Я понимаю, что этот пароль нужен для немедленного удаления крипто-адресной книги.</item>
+        <item>Я понимаю, что после ввода этого пароля адресная книга будет удалена и без резервной копии её нельзя восстановить.</item>
+    </string-array>
     <string name="sign_message_title">Подписать сообщение</string>
     <string name="sign_message_intro">Подпись доказывает, что адрес принадлежит вам. Её просят биржи при добавлении адреса вывода. Доступа к средствам подпись не даёт.</string>
     <string name="sign_message_message">Сообщение</string>

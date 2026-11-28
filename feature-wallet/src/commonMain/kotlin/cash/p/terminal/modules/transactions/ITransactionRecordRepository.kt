@@ -21,6 +21,7 @@ interface ITransactionRecordRepository : Clearable {
         blockchain: Blockchain?,
         contact: Contact?,
         searchQuery: String? = null,
+        period: TimestampRange? = null,
     ): Boolean
 
     /** Phase 2: starts loading page 1 with the state applied by [set]. */
@@ -28,6 +29,9 @@ interface ITransactionRecordRepository : Clearable {
     fun loadNext()
     fun reload()
     fun cancelPendingLoads()
+
+    /** Oldest record of the current filters over the active sources; a failing source is skipped. */
+    suspend fun oldestTimestamp(): Long?
 }
 
 /**
@@ -40,6 +44,7 @@ interface ITransactionRecordRepository : Clearable {
  * @param searchSessionId changes whenever the search restarts from its first page.
  * @param searchTimedOut true when the scan step stopped on its time limit or a source did not answer.
  * @param searchRefresh true when an update re-read an already published search page.
+ * @param historyExhausted true on a regular page after which every source has nothing more to load.
  */
 data class RecordsBatch(
     val records: List<TransactionRecord>,
@@ -50,4 +55,5 @@ data class RecordsBatch(
     val searchSessionId: Long = 0,
     val searchTimedOut: Boolean = false,
     val searchRefresh: Boolean = false,
+    val historyExhausted: Boolean = false,
 )

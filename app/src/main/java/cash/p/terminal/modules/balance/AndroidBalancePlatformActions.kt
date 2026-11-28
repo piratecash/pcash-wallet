@@ -1,7 +1,6 @@
 package cash.p.terminal.modules.balance
 
 import cash.p.terminal.core.IRateAppManager
-import cash.p.terminal.core.managers.OfflineTransactionPayloadEncoder
 import cash.p.terminal.core.managers.TonConnectManager
 import cash.p.terminal.modules.walletconnect.list.WalletConnectListModule
 import com.reown.walletkit.client.Wallet
@@ -38,10 +37,6 @@ class AndroidBalancePlatformActions(
 
         else -> false
     }
-
-    override fun isOfflineTransaction(text: String): Boolean =
-        OfflineTransactionPayloadEncoder.isOfflineTransactionPayload(text) ||
-            OfflineTransactionPayloadEncoder.isRawTransactionHex(text)
 
     override fun onBalancePageActive() = rateAppManager.onBalancePageActive()
 

@@ -8,10 +8,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BadgedBox
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -56,6 +54,7 @@ import cash.p.terminal.modules.walletconnect.WCManager.SupportState
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.PageResumeEffect
+import cash.p.terminal.ui_compose.components.AlertDot
 import cash.p.terminal.ui_compose.components.ConnectionStatusView
 import cash.p.terminal.ui.compose.components.BadgeText
 import cash.p.terminal.ui.compose.components.HsBottomNavigation
@@ -144,6 +143,14 @@ private fun MainScreen(
     val showAllTransactions = navigation.rememberAuthorizedShowAllTransactionsAction {
         transactionsViewModel.showAllTransactions(true)
     }
+    val showAllThenCalendar = navigation.rememberAuthorizedShowAllTransactionsAction {
+        transactionsViewModel.showAllTransactions(true)
+        transactionsViewModel.onCalendarClick()
+    }
+    val showAllThenSearch = navigation.rememberAuthorizedShowAllTransactionsAction {
+        transactionsViewModel.showAllTransactions(true)
+        transactionsViewModel.onSearchClick()
+    }
 
     var showWalletSheet by remember { mutableStateOf(false) }
     BalanceHideOnFlipHandling(
@@ -214,6 +221,7 @@ private fun MainScreen(
             LaunchedEffect(key1 = selectedPage, block = {
                 if (uiState.mainNavItems[selectedPage].mainNavItem != MainDestination.Transactions) {
                     transactionsViewModel.showAllTransactions(false)
+                    transactionsViewModel.onLeave()
                 }
                 pagerState.scrollToPage(selectedPage)
             })
@@ -232,7 +240,9 @@ private fun MainScreen(
                         navigation = navigation,
                         paddingValues = paddingValues,
                         viewModel = transactionsViewModel,
-                        onShowAllTransactionsClicked = showAllTransactions
+                        onShowAllTransactionsClicked = showAllTransactions,
+                        onHiddenCalendarClick = showAllThenCalendar,
+                        onHiddenSearchClick = showAllThenSearch,
                     )
 
                     MainDestination.Settings -> SettingsScreen(
@@ -371,16 +381,7 @@ private fun BadgedIcon(
 
         MainModule.BadgeType.BadgeDot ->
             BadgedBox(
-                badge = {
-                    Box(
-                        modifier = Modifier
-                            .size(8.dp)
-                            .background(
-                                ComposeAppTheme.colors.statusError,
-                                shape = RoundedCornerShape(4.dp)
-                            )
-                    ) { }
-                },
+                badge = { AlertDot() },
                 content = icon
             )
 

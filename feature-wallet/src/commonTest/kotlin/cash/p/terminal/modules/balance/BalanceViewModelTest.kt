@@ -203,6 +203,26 @@ class BalanceViewModelTest : KoinTest {
         every { wallet } returns mockk(relaxed = true) { every { account.id } returns accountId }
     }
 
+    @Test
+    fun handleScannedData_offlineTransactionPayload_opensOfflineBroadcast() {
+        val viewModel = createViewModel()
+
+        viewModel.handleScannedData("  $OFFLINE_PAYLOAD\n")
+
+        assertEquals(OFFLINE_PAYLOAD, viewModel.uiState.openOfflineBroadcast)
+        assertTrue("Address detection ran for an offline transaction", detectorThreads.isEmpty())
+    }
+
+    @Test
+    fun handleScannedData_rawTransactionHex_opensOfflineBroadcast() {
+        val viewModel = createViewModel()
+
+        viewModel.handleScannedData(RAW_TX_HEX)
+
+        assertEquals(RAW_TX_HEX, viewModel.uiState.openOfflineBroadcast)
+        assertTrue("Address detection ran for an offline transaction", detectorThreads.isEmpty())
+    }
+
     private fun createViewModel(): BalanceViewModel {
         val addressHandlerFactory = mockk<AddressHandlerFactory> {
             every { parserChain(null) } returns parserChain
@@ -235,5 +255,7 @@ class BalanceViewModelTest : KoinTest {
         const val IO_THREAD = "scan-io"
         const val TRON_ADDRESS = "TJRabPrwbZy45sbavfcjinPJC18kjpRTv8"
         const val INVALID_QR = "not an address"
+        const val OFFLINE_PAYLOAD = "pcash:tx:v1:payload"
+        const val RAW_TX_HEX = "0200000001abcdef0123456789abcdef"
     }
 }

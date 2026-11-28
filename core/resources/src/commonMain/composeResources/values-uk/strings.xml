@@ -265,6 +265,30 @@
     <string name="transactions_search_not_found_in_last">Не знайдено серед останніх %1$s транзакцій</string>
     <string name="transactions_search_no_more_in_last">Інших збігів серед останніх %1$s транзакцій немає</string>
     <string name="transactions_search_continue">Шукати далі</string>
+    <string name="transactions_calendar_title">Календар</string>
+    <string name="transactions_calendar_mode_to_date">До дати</string>
+    <string name="transactions_calendar_mode_period">За період</string>
+    <string name="transactions_calendar_show_up_to">Показати по</string>
+    <string name="transactions_calendar_to_date_hint">Список почнеться з останньої операції цього дня. Якщо в цей день операцій не було, з найближчої ранішої.</string>
+    <string name="transactions_calendar_from">Від</string>
+    <string name="transactions_calendar_to">До</string>
+    <string name="transactions_calendar_show">Показати операції</string>
+    <string name="transactions_calendar_back_to_latest">До останніх</string>
+    <string name="transactions_calendar_period_range">З %1$s\nпо %2$s</string>
+    <string name="transactions_calendar_period_day">За %1$s</string>
+    <string name="transactions_calendar_period_up_to">По %1$s</string>
+    <string name="transactions_calendar_period_end">Це всі операції за вибраний період</string>
+    <string name="transactions_calendar_period_empty_all">За вибраний період операцій немає</string>
+    <string name="transactions_calendar_period_empty_incoming">За вибраний період отриманих операцій немає</string>
+    <string name="transactions_calendar_period_empty_outgoing">За вибраний період надісланих операцій немає</string>
+    <string name="transactions_calendar_period_empty_swap">За вибраний період обмінів немає</string>
+    <string name="transactions_calendar_period_empty_approve">За вибраний період схвалень немає</string>
+    <string name="transactions_calendar_change_period">Змінити період</string>
+    <string name="transactions_calendar_previous_month">Попередній місяць</string>
+    <string name="transactions_calendar_next_month">Наступний місяць</string>
+    <string name="transactions_calendar_period_selected">Календар, вибрано період</string>
+    <string name="transactions_search_not_found_in_period">Не знайдено серед %1$s транзакцій вибраного періоду</string>
+    <string name="transactions_search_no_more_in_period">Інших збігів серед %1$s транзакцій вибраного періоду немає</string>
     <string name="Market_Filters">Фільтри</string>
     <string name="Market_AdvancedSearch_Results">Результат</string>
     <string name="Market_Search_Hint">Пошук</string>
@@ -866,6 +890,7 @@
     <string name="Transactions_ContractCreation">Створення контракту</string>
     <string name="Transactions_ContractDeploy">Розгортання контракту</string>
     <string name="Transactions_To">кому %s</string>
+    <string name="transactions_to_self">собі</string>
     <string name="Transactions_From">від %s</string>
     <string name="Transaction_Unlimited_CoinCode">безлімітний %s</string>
     <string name="Transaction_Unlimited">безлімітний</string>
@@ -1346,6 +1371,7 @@
     <string name="transaction_error_invalid_derivation_path">Невірний шлях деривації</string>
     <!--Hud texts-->
     <string name="Hud_Text_NoInternet">Немає інтернету</string>
+    <string name="zcash_server_unavailable">Сервер недоступний. Спробуйте ще раз.</string>
     <string name="Hud_Text_Copied">Скопійовано</string>
     <string name="Hud_Text_Created">Створено</string>
     <string name="Hud_Text_Restored">Імпортовано</string>
@@ -1611,7 +1637,7 @@
     <string name="Coin_Tab_Market">Ринки</string>
     <string name="Coin_Tab_Details">Аналітика</string>
     <string name="Coin_Tab_Tweets">Твіти</string>
-    <string name="typical_fee">Типова комісія &lt; 0.001 ZEC</string>
+    <string name="typical_fee">Типова комісія &lt; 0.0001 ZEC</string>
     <string name="CoinPage_TimeDuration_Hour">1Г</string>
     <string name="CoinPage_TimeDuration_Day">1Д</string>
     <string name="CoinPage_TimeDuration_Week">7Д</string>
@@ -2320,7 +2346,7 @@
     <string name="auth_info_successful">Успішно</string>
     <string name="auth_info_unsuccessful">Невдало</string>
     <string name="auth_info_duress_mode">(Режим примусу)</string>
-    <string name="auth_info_entrance_to">Вхід до %s</string>
+    <string name="auth_info_entrance_to">Вхід до %1$s</string>
     <string name="auth_info_seconds_ago">(%d сек тому)</string>
     <string name="auth_info_minutes_ago">(%d хв тому)</string>
     <string name="auth_info_hours_ago">(%d год тому)</string>
@@ -2865,6 +2891,12 @@
     <string name="desktop_duress_password_edit_description">Введіть новий пароль для режиму Duress</string>
     <string name="desktop_hidden_wallet_password_title">Пароль прихованого гаманця</string>
     <string name="desktop_hidden_wallet_password_description">Створіть пароль для прихованого гаманця</string>
+    <string name="desktop_transactions_hide_set_password">Встановити окремий пароль</string>
+    <string name="desktop_transactions_hide_edit_password">Змінити пароль</string>
+    <string name="desktop_transactions_hide_delete_password">Видалити окремий пароль</string>
+    <string name="desktop_transactions_hide_description">Режим безпеки: приховує транзакції та дозволяє встановити окремий пароль для їх розблокування.</string>
+    <string name="desktop_transactions_hide_password_description">Задайте пароль для режиму «Автоприховування транзакцій»</string>
+    <string name="desktop_transactions_hide_password_enter">Введіть пароль для «Автоприховування транзакцій»</string>
     <string name="desktop_hidden_wallet_password_terms_warning">Глобальний гаманець не бачитиме цей гаманець, а якщо ви забудете його пароль, доступ до гаманця можна відновити за seed-фразою.</string>
     <string-array name="desktop_hidden_wallet_password_terms">
         <item>Користувач розуміє, що гаманець не буде видно серед інших гаманців.</item>
@@ -2874,6 +2906,19 @@
     <string name="desktop_password_save_failed">Не вдалося зберегти пароль. Спробуйте ще раз</string>
     <string name="tron_controlled_by_others_title">Цим акаунтом можуть керувати інші</string>
     <string name="tron_controlled_by_others_warning">Права на цей акаунт змінено: ним можуть керувати інші ключі. Кошти, які ви на нього переведете, можуть вивести без вашої участі. Поповнюйте його, лише якщо знаєте, чиї це ключі.</string>
+    <string name="login_logging_selfie_unsuccessful_shared">Цей перемикач спільний для всіх гаманців на цьому комп’ютері</string>
+    <string name="desktop_journal_password_title">Пароль журналу</string>
+    <string name="desktop_journal_password_set_description">Задайте пароль, який захищає журнал входів. Він має відрізнятися від паролів, якими відкриваються ваші гаманці</string>
+    <string name="desktop_journal_password_access_description">Введіть пароль журналу, щоб відкрити журнал входів</string>
+    <string name="desktop_journal_password_disable_description">Введіть пароль журналу, щоб вимкнути його</string>
+    <string name="desktop_delete_contacts_password_title">Пароль видалення контактів</string>
+    <string name="desktop_delete_contacts_password_set_description">Введення цього пароля на екрані розблокування одразу видаляє вашу адресну книгу з цього комп’ютера. Він має відрізнятися від ваших інших паролів</string>
+    <string name="desktop_delete_contacts_password_disable_description">Введіть пароль видалення контактів, щоб вимкнути його</string>
+    <string name="desktop_delete_contacts_terms_warning">Задаючи цей пароль, ви підтверджуєте, що розумієте його призначення: захист вашої приватності. Введення пароля на екрані розблокування негайно та безповоротно видаляє крипто-адресну книгу, що зберігається на цьому комп’ютері. Адресна книга зберігається лише локально й без резервної копії не відновлюється.</string>
+    <string-array name="desktop_delete_contacts_terms">
+        <item>Я розумію, що цей пароль потрібен для негайного видалення крипто-адресної книги.</item>
+        <item>Я розумію, що після введення цього пароля адресну книгу буде видалено, і без резервної копії її не можна відновити.</item>
+    </string-array>
     <string name="sign_message_title">Підписати повідомлення</string>
     <string name="sign_message_intro">Підпис доводить, що адреса належить вам. Його просять біржі, коли ви додаєте адресу для виведення. Доступу до коштів підпис не дає.</string>
     <string name="sign_message_message">Повідомлення</string>

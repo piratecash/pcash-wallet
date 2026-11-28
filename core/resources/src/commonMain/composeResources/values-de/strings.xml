@@ -282,6 +282,30 @@
     <string name="transactions_search_not_found_in_last">Nicht gefunden unter den letzten %1$s Transaktionen</string>
     <string name="transactions_search_no_more_in_last">Keine weiteren Treffer unter den letzten %1$s Transaktionen</string>
     <string name="transactions_search_continue">Weiter suchen</string>
+    <string name="transactions_calendar_title">Kalender</string>
+    <string name="transactions_calendar_mode_to_date">Bis Datum</string>
+    <string name="transactions_calendar_mode_period">Zeitraum</string>
+    <string name="transactions_calendar_show_up_to">Anzeigen bis</string>
+    <string name="transactions_calendar_to_date_hint">Die Liste beginnt mit der letzten Transaktion dieses Tages. Gab es an diesem Tag keine, mit der nächsten früheren.</string>
+    <string name="transactions_calendar_from">Von</string>
+    <string name="transactions_calendar_to">Bis</string>
+    <string name="transactions_calendar_show">Transaktionen anzeigen</string>
+    <string name="transactions_calendar_back_to_latest">Zu den neuesten</string>
+    <string name="transactions_calendar_period_range">Von %1$s\nbis %2$s</string>
+    <string name="transactions_calendar_period_day">Am %1$s</string>
+    <string name="transactions_calendar_period_up_to">Bis %1$s</string>
+    <string name="transactions_calendar_period_end">Das sind alle Transaktionen des gewählten Zeitraums</string>
+    <string name="transactions_calendar_period_empty_all">Keine Transaktionen im gewählten Zeitraum</string>
+    <string name="transactions_calendar_period_empty_incoming">Keine erhaltenen Transaktionen im gewählten Zeitraum</string>
+    <string name="transactions_calendar_period_empty_outgoing">Keine gesendeten Transaktionen im gewählten Zeitraum</string>
+    <string name="transactions_calendar_period_empty_swap">Keine Tausche im gewählten Zeitraum</string>
+    <string name="transactions_calendar_period_empty_approve">Keine Bestätigungen im gewählten Zeitraum</string>
+    <string name="transactions_calendar_change_period">Zeitraum ändern</string>
+    <string name="transactions_calendar_previous_month">Vorheriger Monat</string>
+    <string name="transactions_calendar_next_month">Nächster Monat</string>
+    <string name="transactions_calendar_period_selected">Kalender, Zeitraum gewählt</string>
+    <string name="transactions_search_not_found_in_period">Nicht gefunden unter %1$s Transaktionen des gewählten Zeitraums</string>
+    <string name="transactions_search_no_more_in_period">Keine weiteren Treffer unter %1$s Transaktionen des gewählten Zeitraums</string>
     <string name="Market_Filters">Filter</string>
     <string name="Market_AdvancedSearch_Results">Ergebnisse</string>
     <string name="Market_Search_Hint">Suchen</string>
@@ -874,6 +898,7 @@
     <string name="Transactions_ContractCreation">Vertragserstellung</string>
     <string name="Transactions_ContractDeploy">Contract Deploy</string>
     <string name="Transactions_To">an %s</string>
+    <string name="transactions_to_self">an sich selbst</string>
     <string name="Transactions_From">von %s</string>
     <string name="Transaction_Unlimited_CoinCode">unbegrenzt %s</string>
     <string name="Transaction_Unlimited">unbegrenzt</string>
@@ -1340,6 +1365,7 @@
     <string name="transaction_error_invalid_derivation_path">Ungültiger Ableitungspfad</string>
     <!--Hud texts-->
     <string name="Hud_Text_NoInternet">Kein Internet</string>
+    <string name="zcash_server_unavailable">Server nicht erreichbar. Versuchen Sie es erneut.</string>
     <string name="Hud_Text_Copied">Kopiert</string>
     <string name="Hud_Text_Created">Erstellt</string>
     <string name="Hud_Text_Restored">Wiederherstellen</string>
@@ -1591,7 +1617,7 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="Coin_Tab_Market">Märkte</string>
     <string name="Coin_Tab_Details">Analytik</string>
     <string name="Coin_Tab_Tweets">Tweets</string>
-    <string name="typical_fee"><![CDATA[Typische Gebühr < 0.001 ZEC]]></string>
+    <string name="typical_fee"><![CDATA[Typische Gebühr < 0.0001 ZEC]]></string>
     <string name="CoinPage_TimeDuration_Hour">1H</string>
     <string name="CoinPage_TimeDuration_Day">1T</string>
     <string name="CoinPage_TimeDuration_Week">7T</string>
@@ -2150,7 +2176,7 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="auth_info_successful">Erfolgreich</string>
     <string name="auth_info_unsuccessful">Nicht erfolgreich</string>
     <string name="auth_info_duress_mode">(Zwangsmodus)</string>
-    <string name="auth_info_entrance_to">Zugang zum %s</string>
+    <string name="auth_info_entrance_to">Zugang zum %1$s</string>
     <string name="auth_info_seconds_ago">(vor %d Sek)</string>
     <string name="auth_info_minutes_ago">(vor %d Min)</string>
     <string name="auth_info_hours_ago">(vor %d Std)</string>
@@ -2681,6 +2707,12 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="desktop_duress_password_edit_description">Neues Passwort für den Duress-Modus eingeben</string>
     <string name="desktop_hidden_wallet_password_title">Passwort der versteckten Wallet</string>
     <string name="desktop_hidden_wallet_password_description">Passwort für die versteckte Wallet erstellen</string>
+    <string name="desktop_transactions_hide_set_password">Separates Passwort festlegen</string>
+    <string name="desktop_transactions_hide_edit_password">Passwort ändern</string>
+    <string name="desktop_transactions_hide_delete_password">Separates Passwort löschen</string>
+    <string name="desktop_transactions_hide_description">Sicherheitsmodus: blendet Transaktionen aus und ermöglicht ein separates Passwort, um sie wieder anzuzeigen.</string>
+    <string name="desktop_transactions_hide_password_description">Passwort für den Modus „Transaction Auto Hide“ festlegen</string>
+    <string name="desktop_transactions_hide_password_enter">Passwort für „Transaction Auto Hide“ eingeben</string>
     <string name="desktop_hidden_wallet_password_terms_warning">Die globale Wallet wird diese Wallet nicht sehen, und wenn Sie das Passwort vergessen, können Sie den Zugriff auf die Wallet mit der Seed-Phrase wiederherstellen.</string>
     <string-array name="desktop_hidden_wallet_password_terms">
         <item>Der Benutzer versteht, dass die Wallet nicht unter den anderen Wallets sichtbar ist.</item>
@@ -2690,6 +2722,19 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="desktop_password_save_failed">Das Passwort konnte nicht gespeichert werden. Bitte versuchen Sie es erneut</string>
     <string name="tron_controlled_by_others_title">Andere können dieses Konto kontrollieren</string>
     <string name="tron_controlled_by_others_warning">Die Berechtigungen für dieses Konto wurden geändert: Andere Schlüssel können es möglicherweise kontrollieren. Gelder, die Sie dorthin senden, können ohne Ihr Zutun abgehoben werden. Laden Sie es nur auf, wenn Sie wissen, wem diese Schlüssel gehören.</string>
+    <string name="login_logging_selfie_unsuccessful_shared">Dieser Schalter gilt für alle Wallets auf diesem Computer</string>
+    <string name="desktop_journal_password_title">Journal-Passwort</string>
+    <string name="desktop_journal_password_set_description">Legen Sie ein Passwort fest, das das Anmeldejournal schützt. Es muss sich von den Passwörtern unterscheiden, mit denen Ihre Wallets entsperrt werden</string>
+    <string name="desktop_journal_password_access_description">Geben Sie das Journal-Passwort ein, um das Anmeldejournal zu öffnen</string>
+    <string name="desktop_journal_password_disable_description">Geben Sie das Journal-Passwort ein, um es auszuschalten</string>
+    <string name="desktop_delete_contacts_password_title">Passwort zum Löschen der Kontakte</string>
+    <string name="desktop_delete_contacts_password_set_description">Die Eingabe dieses Passworts auf dem Entsperrbildschirm löscht Ihr Adressbuch sofort von diesem Computer. Es muss sich von Ihren anderen Passwörtern unterscheiden</string>
+    <string name="desktop_delete_contacts_password_disable_description">Geben Sie das Passwort zum Löschen der Kontakte ein, um es auszuschalten</string>
+    <string name="desktop_delete_contacts_terms_warning">Mit dem Festlegen dieses Passworts bestätigen Sie, dass Sie seinen Zweck verstehen: den Schutz Ihrer Privatsphäre. Die Eingabe auf dem Entsperrbildschirm löscht das auf diesem Computer gespeicherte Krypto-Adressbuch sofort und unwiderruflich. Das Adressbuch wird nur lokal gespeichert und kann ohne Backup nicht wiederhergestellt werden.</string>
+    <string-array name="desktop_delete_contacts_terms">
+        <item>Ich verstehe, dass dieses Passwort dazu dient, das Krypto-Adressbuch sofort zu löschen.</item>
+        <item>Ich verstehe, dass das Adressbuch nach Eingabe dieses Passworts gelöscht wird und ohne Backup nicht wiederhergestellt werden kann.</item>
+    </string-array>
     <string name="sign_message_title">Nachricht signieren</string>
     <string name="sign_message_intro">Die Signatur beweist, dass die Adresse Ihnen gehört. Börsen verlangen sie, wenn Sie eine Auszahlungsadresse hinzufügen. Zugriff auf Ihr Guthaben gibt sie nicht.</string>
     <string name="sign_message_message">Nachricht</string>

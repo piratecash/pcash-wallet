@@ -44,6 +44,7 @@ class DesktopVault(
     driverFactory: SqlCipherDriverFactory,
     checkpoints: StorageCheckpoints,
     private val walletLayer: Lazy<DesktopWalletLayer>,
+    private val loginEvents: Lazy<VaultLoginEvents> = lazyOf(VaultLoginEvents.None),
 ) {
     private val logger = Logger.withTag("DesktopVault")
     private val releaseScope = CoroutineScope(dispatcherProvider.io + SupervisorJob())
@@ -52,6 +53,9 @@ class DesktopVault(
         override fun <T> exclusive(block: () -> T): T = runBlocking { mutex.withLock { block() } }
     }
     private val environment = StorageEnvironment(files, passwordVault, driverFactory, checkpoints, lock)
+
+    /** The login mailbox is part of the storage, but the journal works on it outside vault operations. */
+    internal val mailbox get() = environment.mailbox
 
     private val session = MutableStateFlow<DesktopStorageSession?>(null)
     internal val sessions: StateFlow<DesktopStorageSession?> = session.asStateFlow()
@@ -79,13 +83,18 @@ class DesktopVault(
         } finally {
             // A password already accepted owns a key and maybe a half-made level change: it always finishes.
             outcome = withContext(NonCancellable + dispatcherProvider.io) { complete(admission) }
+            if (outcome == UnlockOutcome.Success && admission.enters) session.value?.let(loginEvents.value::onEntered)
         }
         return outcome
     }
 
-    /** Re-asks the password inside the app, of this level only; failures count into the same lockout as unlock. */
-    suspend fun verifyPassword(password: CharArray): UnlockOutcome =
+    /**
+     * Re-asks the password inside the app, of this level only, or, with [matches], a secret kept outside the vault.
+     * Failures count into the same lockout as unlock.
+     */
+    suspend fun verifyPassword(password: CharArray, matches: ((CharArray) -> Boolean)? = null): UnlockOutcome =
         operation("verifyPassword", UnlockOutcome.Failed, password) {
+            if (matches != null) return@operation checkSecret(password, matches)
             when (val check = checkPassword(password, ::opensCurrentLevel)) {
                 is PasswordCheck.Correct -> {
                     check.vaultSession.close()
@@ -150,8 +159,13 @@ class DesktopVault(
             PasswordCheck.Corrupted, PasswordCheck.LegacyFormat -> ChangePasswordOutcome.CORRUPTED
         }
 
+    /** An unopened level below may hold a journal password the new one must not equal. */
     private fun reseal(current: VaultSession, new: CharArray): ChangePasswordOutcome {
-        if (opensAnotherEnvelope(new, current)) return ChangePasswordOutcome.PASSWORD_IN_USE
+        val open = session.value
+        if (open?.chain?.isComplete == false) return ChangePasswordOutcome.FAILED
+        if (opensAnotherEnvelope(new, current) || open?.levels?.matchesStoredVerifier(new) == true) {
+            return ChangePasswordOutcome.PASSWORD_IN_USE
+        }
         checkNotNull(current.payload()).use { passwordVault.sealEnvelope(current.envelopeIndex, new, it) }
         return ChangePasswordOutcome.SUCCESS
     }
@@ -160,6 +174,7 @@ class DesktopVault(
     private fun opensAnotherEnvelope(password: CharArray, current: VaultSession): Boolean =
         when (val result = passwordVault.unlock(password)) {
             is UnlockResult.Success -> result.session.use { it.envelopeIndex != current.envelopeIndex }
+            UnlockResult.EraseContacts -> true
             UnlockResult.WrongPassword -> false
             UnlockResult.Corrupted, UnlockResult.LegacyFormat -> throw IOException("Vault file is unusable")
         }
@@ -212,20 +227,24 @@ class DesktopVault(
     private fun admit(password: CharArray): Admission {
         // A second press after a successful first one must not open a second session over the open one.
         if (_state.value is DesktopVaultState.Unlocked) return Admission.Done(UnlockOutcome.Success)
-        val vaultSession = when (val check = checkPassword(password)) {
+        val vaultSession = when (val check = checkPassword(password, rejected = ::refusedAtLockScreen)) {
             is PasswordCheck.Correct -> check.vaultSession
             is PasswordCheck.Rejected -> return Admission.Done(check.outcome())
         }
         val open = session.value ?: return Admission.Done(
-            startSession(vaultSession, UnlockOutcome.Success, UnlockOutcome.StorageUnavailable)
+            startSession(vaultSession, UnlockOutcome.Success, UnlockOutcome.StorageUnavailable),
+            enters = true,
         )
         val level = open.levelOpenedBy(vaultSession)
+        // Before the entry: only an open parent can repair its child's key.
+        if (level != null) open.levels.linkEntryKeys()
         return when {
-            level == open.rootLevel -> {
+            // A level or journal that did not open earlier gets another chance through a full switch.
+            level == open.rootLevel && open.chain.isComplete && open.journalReady -> {
                 // The storage stayed open under the lock: the password only proves who came back.
                 vaultSession.close()
                 _state.value = DesktopVaultState.Unlocked(open)
-                Admission.Done(UnlockOutcome.Success)
+                Admission.Done(UnlockOutcome.Success, enters = true)
             }
             level != null && level > open.rootLevel -> beginNarrowing(open, level, vaultSession)
             else -> Admission.Switching(open, vaultSession)
@@ -297,8 +316,15 @@ class DesktopVault(
         if (released == null) logger.w { "The wallet did not release the accounts in time" }
     }
 
-    /** The slot check under the shared lockout counter; a correct password hands over its vault session. */
-    private fun checkPassword(password: CharArray, accepts: (VaultSession) -> Boolean = { true }): PasswordCheck {
+    /**
+     * The slot check under the shared lockout counter; a correct password hands over its vault session.
+     * Only the lock screen passes a [rejected] that acts on the delete-contacts password.
+     */
+    private fun checkPassword(
+        password: CharArray,
+        accepts: (VaultSession) -> Boolean = { true },
+        rejected: (erasesContacts: Boolean) -> PasswordCheck.Rejected = { failedAttempt() },
+    ): PasswordCheck {
         // Covers a request queued on the mutex before the lockout began.
         (lockoutManager.currentState as? LockoutState.Locked)?.let { return PasswordCheck.LockedOut(it.until) }
         return when (val result = passwordVault.unlock(password)) {
@@ -308,9 +334,31 @@ class DesktopVault(
                 result.session.close()
                 failedAttempt()
             }
-            UnlockResult.WrongPassword -> failedAttempt()
+            UnlockResult.WrongPassword -> rejected(false)
+            UnlockResult.EraseContacts -> rejected(true)
             UnlockResult.Corrupted -> PasswordCheck.Corrupted
             UnlockResult.LegacyFormat -> PasswordCheck.LegacyFormat
+        }
+    }
+
+    private fun checkSecret(secret: CharArray, matches: (CharArray) -> Boolean): UnlockOutcome {
+        (lockoutManager.currentState as? LockoutState.Locked)?.let { return UnlockOutcome.LockedOut(it.until) }
+        if (!matches(secret)) return failedAttempt().outcome()
+        lockoutManager.dropFailedAttempts()
+        return UnlockOutcome.Success
+    }
+
+    /** The delete-contacts password erases and then looks like any wrong password, lockout included. */
+    private fun refusedAtLockScreen(erasesContacts: Boolean): PasswordCheck.Rejected {
+        if (erasesContacts) eraseContacts()
+        return failedAttempt().also { loginEvents.value.onFailedUnlock() }
+    }
+
+    private fun eraseContacts() {
+        try {
+            loginEvents.value.onEraseContacts()
+        } finally {
+            if (files.contactsFile.exists() && !files.contactsFile.delete()) logger.w { "The contacts file stayed" }
         }
     }
 
@@ -426,7 +474,10 @@ class DesktopVault(
 
 /** What an accepted password leads to; decided under the mutex, finished outside it. */
 private sealed interface Admission {
-    class Done(val outcome: UnlockOutcome) : Admission
+    /** True when a password at the lock screen enters a level, not for a repeated press. */
+    val enters: Boolean get() = true
+
+    class Done(val outcome: UnlockOutcome, override val enters: Boolean = false) : Admission
     class Narrowing(val open: DesktopStorageSession, val retired: AutoCloseable, val level: Int) : Admission
     class Switching(val open: DesktopStorageSession, val vaultSession: VaultSession) : Admission
 }

@@ -25,6 +25,7 @@ import cash.p.terminal.core.ITermsManager
 import cash.p.terminal.core.managers.AppVersionManager
 import cash.p.terminal.core.managers.ReleaseNotesManager
 import cash.p.terminal.core.providers.SharedAppConfig
+import cash.p.terminal.feature.wallet.SecretActionAuthorizer
 import cash.p.terminal.entities.LaunchPage
 import cash.p.terminal.modules.backuplocal.fullbackup.BackupManagerPage
 import cash.p.terminal.modules.balance.ui.BalanceScreen
@@ -65,7 +66,6 @@ import cash.p.terminal.shared.settings.currentLanguageName
 import cash.p.terminal.ui_compose.components.LocalHudMessenger
 import cash.p.terminal.ui_compose.components.LocalUrlOpener
 import cash.p.terminal.ui_compose.components.UrlOpener
-import cash.p.terminal.ui_compose.components.showNotSupportedOnPlatform
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.IAccountManager
 import io.horizontalsystems.core.CurrencyManager
@@ -106,15 +106,24 @@ class DesktopMainPage : HSPage() {
             )
         }
         val selectedDestination = selected.takeIf { it in destinations } ?: MainDestination.Balance
+        val transactionsViewModel = rememberMainPageTransactionsViewModel(navigation)
+        LaunchedEffect(selectedDestination) {
+            if (selectedDestination != MainDestination.Transactions) transactionsViewModel.showAllTransactions(false)
+        }
+        val settingsAlert = rememberSettingsAlert()
         ShowReleaseNotesAfterUpdate(navigation)
         MainNavigation(
             destinations = destinations,
             selectedDestination = selectedDestination,
             onDestinationSelect = {
                 rememberedMainTab(it)?.let { tab -> mainTabStorage.mainTab = tab }
+                if (selectedDestination == MainDestination.Transactions && it != MainDestination.Transactions) {
+                    transactionsViewModel.onLeave()
+                }
                 selected = it
             },
             modifier = Modifier.fillMaxSize(),
+            alertDestinations = setOfNotNull(MainDestination.Settings.takeIf { settingsAlert }),
         ) { destination ->
             when (destination) {
                 MainDestination.Balance -> BalancePane(navigation)
@@ -146,12 +155,23 @@ private fun BalancePane(navigation: HSNavigation) {
 
 @Composable
 private fun TransactionsPane(navigation: HSNavigation) {
-    val hud = LocalHudMessenger.current
+    val viewModel = rememberMainPageTransactionsViewModel(navigation)
+    val authorizer = koinInject<SecretActionAuthorizer>()
     TransactionsScreen(
         navigation = navigation,
         paddingValues = PaddingValues(),
-        viewModel = rememberMainPageTransactionsViewModel(navigation),
-        onShowAllTransactionsClicked = hud::showNotSupportedOnPlatform,
+        viewModel = viewModel,
+        onShowAllTransactionsClicked = authorizer.rememberHiddenTransactionsAuthorization(navigation) {
+            viewModel.showAllTransactions(true)
+        },
+        onHiddenCalendarClick = authorizer.rememberHiddenTransactionsAuthorization(navigation) {
+            viewModel.showAllTransactions(true)
+            viewModel.onCalendarClick()
+        },
+        onHiddenSearchClick = authorizer.rememberHiddenTransactionsAuthorization(navigation) {
+            viewModel.showAllTransactions(true)
+            viewModel.onSearchClick()
+        },
     )
 }
 
@@ -253,6 +273,30 @@ private fun openAboutSetting(
 }
 
 @Composable
+private fun rememberSettingsAlert(): Boolean {
+    val (allBackedUp, hasNonStandardAccount) = rememberBackupState()
+    return !allBackedUp || !rememberAllTermsAccepted() || hasNonStandardAccount
+}
+
+@Composable
+private fun rememberAllTermsAccepted(): Boolean {
+    val termsManager = koinInject<ITermsManager>()
+    return remember(termsManager) {
+        termsManager.termsAcceptedSignalFlow.map { termsManager.allTermsAccepted }
+    }.collectAsStateWithLifecycle(termsManager.allTermsAccepted).value
+}
+
+/** `allBackedUp` to `hasNonStandardAccount`; as Android, both are re-read whenever the accounts change. */
+@Composable
+private fun rememberBackupState(): Pair<Boolean, Boolean> {
+    val backupManager = koinInject<IBackupManager>()
+    val accountManager = koinInject<IAccountManager>()
+    return remember(backupManager, accountManager) {
+        backupManager.allBackedUpFlow.map { backupManager.allBackedUp to accountManager.hasNonStandardAccount }
+    }.collectAsStateWithLifecycle(backupManager.allBackedUp to accountManager.hasNonStandardAccount).value
+}
+
+@Composable
 private fun rememberSettingsUiState(): MainSettingUiState {
     val currencyManager = koinInject<CurrencyManager>()
     val languageManager = koinInject<ILanguageManager>()
@@ -260,16 +304,8 @@ private fun rememberSettingsUiState(): MainSettingUiState {
     val baseCurrencyCode by remember(currencyManager) {
         currencyManager.baseCurrencyUpdatedFlow.map { currencyManager.baseCurrency.code }
     }.collectAsStateWithLifecycle(currencyManager.baseCurrency.code)
-    val termsManager = koinInject<ITermsManager>()
-    val allTermsAccepted by remember(termsManager) {
-        termsManager.termsAcceptedSignalFlow.map { termsManager.allTermsAccepted }
-    }.collectAsStateWithLifecycle(termsManager.allTermsAccepted)
-    val backupManager = koinInject<IBackupManager>()
-    val accountManager = koinInject<IAccountManager>()
-    // As Android: both are re-read whenever the accounts change.
-    val (allBackedUp, hasNonStandardAccount) = remember(backupManager, accountManager) {
-        backupManager.allBackedUpFlow.map { backupManager.allBackedUp to accountManager.hasNonStandardAccount }
-    }.collectAsStateWithLifecycle(backupManager.allBackedUp to accountManager.hasNonStandardAccount).value
+    val allTermsAccepted = rememberAllTermsAccepted()
+    val (allBackedUp, hasNonStandardAccount) = rememberBackupState()
     return MainSettingUiState(
         isUpdateAvailable = false,
         currentLanguage = currentLanguage,

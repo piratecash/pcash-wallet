@@ -53,6 +53,13 @@ class TransactionHiddenManager(
         }
     }
 
+    /** Turning auto-hide on or off starts over: no separate code, nothing left visible. */
+    fun setAutoHideEnabled(enabled: Boolean) {
+        setTransactionHideEnabled(enabled)
+        clearSeparatePin()
+        setTransactionDisplayLevel(TransactionDisplayLevel.NOTHING)
+    }
+
     override fun setTransactionDisplayLevel(displayLevel: TransactionDisplayLevel) {
         localStorage.transactionDisplayLevel = displayLevel
         _transactionHiddenFlow.update {

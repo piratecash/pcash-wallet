@@ -22,6 +22,8 @@ import cash.p.terminal.entities.transactionrecords.beam.BeamTransactionRecord
 import cash.p.terminal.entities.transactionrecords.beam.BeamTransactionRecordConverter
 import cash.p.terminal.modules.send.beam.BeamAmount
 import cash.p.terminal.modules.transactions.FilterTransactionType
+import cash.p.terminal.modules.transactions.TimestampRange
+import cash.p.terminal.modules.transactions.oldestDatedTimestamp
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.beam_sync_network_error
 import cash.p.terminal.resources.beam_wallet_operation_failed
@@ -150,23 +152,39 @@ class BeamAdapter(
         limit: Int,
         transactionType: FilterTransactionType,
         address: String?,
+        period: TimestampRange?,
     ): List<TransactionRecord> {
         if (limit <= 0 || !supports(token, transactionType, address)) return emptyList()
         require(from == null || from is BeamTransactionRecord && from.source == wallet.transactionSource)
-        return try {
-            withContext(dispatcherProvider.io) {
-                check(job.isActive) { "BEAM adapter stopped" }
-                owner.withSession(session) { sdk ->
-                    val records = readTransactions(sdk, from, limit, transactionType)
-                    check(job.isActive) { "BEAM adapter stopped" }
-                    records.map(transactionConverter::convert)
-                }
-            }
-        } catch (error: CancellationException) {
-            throw error
-        } catch (_: Exception) {
-            error("BEAM transaction read failed")
+        return readSession { sdk ->
+            readTransactions(sdk, from, limit, transactionType, period).map(transactionConverter::convert)
         }
+    }
+
+    // Histories are short, so the oldest one is found by reading to the end.
+    override suspend fun getOldestTransactionTimestamp(
+        token: Token?,
+        transactionType: FilterTransactionType,
+        address: String?,
+    ): Long? {
+        if (!supports(token, transactionType, address)) return null
+        return readSession { sdk ->
+            readTransactions(sdk, null, Int.MAX_VALUE, transactionType, null)
+                .oldestDatedTimestamp { it.createdAtEpochSeconds }
+        }
+    }
+
+    private suspend fun <T> readSession(read: suspend (BeamWalletSession) -> T): T = try {
+        withContext(dispatcherProvider.io) {
+            check(job.isActive) { "BEAM adapter stopped" }
+            owner.withSession(session) { sdk ->
+                read(sdk).also { check(job.isActive) { "BEAM adapter stopped" } }
+            }
+        }
+    } catch (error: CancellationException) {
+        throw error
+    } catch (_: Exception) {
+        error("BEAM transaction read failed")
     }
 
     private suspend fun readTransactions(
@@ -174,6 +192,7 @@ class BeamAdapter(
         from: TransactionRecord?,
         limit: Int,
         type: FilterTransactionType,
+        period: TimestampRange?,
     ): List<BeamTransaction> {
         val snapshot = sdk.transactions.value
         val result = mutableListOf<BeamTransaction>()
@@ -184,20 +203,21 @@ class BeamAdapter(
             val expected = snapshot.subList(offset, minOf(offset + TRANSACTION_PAGE_SIZE, snapshot.size))
             // Native offsets may shift before the SDK publishes its next snapshot. Fall back to
             // this immutable snapshot instead of joining pages from different history revisions.
-            if (page.items != expected) return snapshot.selectTransactions(from, limit, type)
+            if (page.items != expected) return snapshot.selectTransactions(from, limit, type, period)
             result += page.items
-            val selected = result.selectTransactions(from, limit, type)
+            val selected = result.selectTransactions(from, limit, type, period)
             val nextOffset = page.nextOffset ?: return selected
+            val oldestRead = page.items.last().createdAtEpochSeconds
             // Finish the timestamp group: native ordering does not break equal-time ties by ID.
-            if (selected.size == limit &&
-                page.items.last().createdAtEpochSeconds < selected.last().createdAtEpochSeconds
-            ) {
+            if (selected.size == limit && oldestRead < selected.last().createdAtEpochSeconds) {
                 return selected
             }
+            // Pages run newest first, so nothing deeper can reach the period.
+            if (period?.since?.let { oldestRead < it } == true) return selected
             check(nextOffset > offset) { "BEAM transaction page did not advance" }
             offset = nextOffset
         }
-        return result.selectTransactions(from, limit, type)
+        return result.selectTransactions(from, limit, type, period)
     }
 
     override fun getTransactionRecordsFlow(
@@ -567,8 +587,9 @@ private fun List<BeamTransaction>.selectTransactions(
     from: TransactionRecord?,
     limit: Int,
     type: FilterTransactionType,
+    period: TimestampRange? = null,
 ) = asSequence()
-    .filter { it.matches(type) && it.isAfter(from) }
+    .filter { it.matches(type) && it.isAfter(from) && (period == null || it.createdAtEpochSeconds in period) }
     .sortedWith(compareByDescending<BeamTransaction> { it.createdAtEpochSeconds }.thenByDescending { it.id })
     .take(limit)
     .toList()

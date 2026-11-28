@@ -2,8 +2,11 @@ package cash.p.terminal.shared.desktop.lock
 
 import androidx.lifecycle.viewModelScope
 import cash.p.terminal.core.TestDispatcherProvider
+import cash.p.terminal.core.managers.TransactionHiddenManager
 import cash.p.terminal.modules.pin.DuressSecretController
 import cash.p.terminal.modules.pin.LevelOutcome
+import cash.p.terminal.shared.desktop.vault.DesktopVault
+import cash.p.terminal.shared.desktop.vault.HiddenPasswordResolution
 import cash.p.terminal.wallet.PassphraseValidator
 import cash.p.terminal.wallet.managers.UserManager
 import io.mockk.coEvery
@@ -34,6 +37,8 @@ class SecretPasswordViewModelTest {
     private val dispatcher = StandardTestDispatcher()
     private val controller = mockk<DuressSecretController>(relaxed = true)
     private val userManager = mockk<UserManager>(relaxed = true)
+    private val vault = mockk<DesktopVault>()
+    private val transactionHiddenManager = mockk<TransactionHiddenManager>(relaxed = true)
 
     @BeforeTest
     fun setUp() {
@@ -188,6 +193,56 @@ class SecretPasswordViewModelTest {
         assertTrue(viewModel.uiState.mismatch)
         coVerify(exactly = 0) { controller.createHiddenWallet(any()) }
     }
+
+    @Test
+    fun onSubmitClick_transactionsHidePasswordOpensALevel_storesNothing() = runTest(dispatcher) {
+        listOf(HiddenPasswordResolution.IN_USE, HiddenPasswordResolution.REUSE_EMPTY).forEach { resolution ->
+            coEvery { vault.resolveHiddenPassword(any()) } returns resolution
+            val viewModel = transactionsHideViewModel()
+
+            viewModel.submit()
+
+            assertEquals(LevelOutcome.PASSWORD_IN_USE, viewModel.uiState.outcome)
+        }
+        verify(exactly = 0) { transactionHiddenManager.setSeparatePin(any()) }
+    }
+
+    @Test
+    fun onSubmitClick_transactionsHideVaultUnreadable_storesNothingAndFails() = runTest(dispatcher) {
+        coEvery { vault.resolveHiddenPassword(any()) } returns HiddenPasswordResolution.FAILED
+        val viewModel = transactionsHideViewModel()
+
+        viewModel.submit()
+
+        assertEquals(LevelOutcome.FAILED, viewModel.uiState.outcome)
+        verify(exactly = 0) { transactionHiddenManager.setSeparatePin(any()) }
+    }
+
+    @Test
+    fun onSubmitClick_transactionsHidePasswordFree_storesItAndFinishes() = runTest(dispatcher) {
+        coEvery { vault.resolveHiddenPassword(any()) } returns HiddenPasswordResolution.NEW
+        val viewModel = transactionsHideViewModel()
+
+        viewModel.submit()
+
+        assertTrue(viewModel.uiState.finished)
+        verify { transactionHiddenManager.setSeparatePin(PASSWORD) }
+    }
+
+    @Test
+    fun onSubmitClick_transactionsHidePasswordNotStored_failsAndAllowsRetry() = runTest(dispatcher) {
+        coEvery { vault.resolveHiddenPassword(any()) } returns HiddenPasswordResolution.NEW
+        every { transactionHiddenManager.setSeparatePin(any()) } throws IllegalStateException("disk")
+        val viewModel = transactionsHideViewModel()
+
+        viewModel.submit()
+
+        assertEquals(LevelOutcome.FAILED, viewModel.uiState.outcome)
+        assertTrue(viewModel.uiState.canSubmit)
+    }
+
+    private fun transactionsHideViewModel() =
+        TransactionsHidePasswordViewModel(vault, transactionHiddenManager, PassphraseValidator())
 
     private fun duressViewModel(accountIds: List<String>) = DuressPasswordViewModel(
         accountIds, controller, userManager,

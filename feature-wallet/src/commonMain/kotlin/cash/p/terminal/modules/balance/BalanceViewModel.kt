@@ -11,6 +11,7 @@ import cash.p.terminal.core.adapters.zcash.ZcashAdapter
 import cash.p.terminal.core.adapters.zcash.isValidZcashAddress
 import cash.p.terminal.core.factories.uriScheme
 import cash.p.terminal.core.managers.OfflineModeManager
+import cash.p.terminal.core.managers.OfflineTransactionPayloadEncoder
 import cash.p.terminal.core.managers.PriceManager
 import cash.p.terminal.core.managers.SeedPhraseQrCrypto
 import cash.p.terminal.modules.restoreaccount.restoreshamir.ShamirPrefill
@@ -470,7 +471,7 @@ class BalanceViewModel(
         } else if (shamirShare != null) {
             openShamirRestore = shamirShare
             emitState()
-        } else if (platformActions.isOfflineTransaction(scannedText)) {
+        } else if (OfflineTransactionPayloadEncoder.isOfflineTransaction(scannedText)) {
             openOfflineBroadcast = scannedText.trim()
             emitState()
         } else {

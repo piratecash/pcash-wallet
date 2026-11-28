@@ -8,6 +8,7 @@ import cash.p.terminal.modules.transactions.FilterTransactionType
 import cash.p.terminal.modules.transactions.HistoricalRateKey
 import cash.p.terminal.modules.transactions.ITransactionRecordRepository
 import cash.p.terminal.modules.transactions.RecordsBatch
+import cash.p.terminal.modules.transactions.TransactionPeriod
 import cash.p.terminal.modules.transactions.TransactionSyncStateRepository
 import cash.p.terminal.modules.transactions.TransactionsRateRepository
 import cash.p.terminal.wallet.IAdapterManager
@@ -36,6 +37,8 @@ import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.Collections
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -353,6 +356,25 @@ class TokenTransactionsServiceServiceVersionTest : KoinTest {
 
     @Test
     fun handleInitialization_typeChangedDuringInitialLoad_reloadsRacedType() = runBlocking {
+        assertSelectionRacingInitialLoadIsReloaded(
+            select = { it.setTransactionType(FilterTransactionType.Incoming) },
+            isRacedSelection = { args -> args[2] == FilterTransactionType.Incoming },
+        )
+    }
+
+    @Test
+    fun handleInitialization_periodChangedDuringInitialLoad_reloadsRacedPeriod() = runBlocking {
+        val period = TransactionPeriod(LocalDate.of(2024, 5, 1), LocalDate.of(2024, 5, 3))
+        assertSelectionRacingInitialLoadIsReloaded(
+            select = { it.setPeriod(period) },
+            isRacedSelection = { args -> args[6] == period.timestampRange(ZoneId.systemDefault()) },
+        )
+    }
+
+    private fun assertSelectionRacingInitialLoadIsReloaded(
+        select: (TokenTransactionsService) -> Unit,
+        isRacedSelection: (List<Any?>) -> Boolean,
+    ) {
         val source = mockk<TransactionSource>(relaxed = true)
         val adapter = mockk<ITransactionsAdapter>(relaxed = true)
         every { wallet.transactionSource } returns source
@@ -363,16 +385,15 @@ class TokenTransactionsServiceServiceVersionTest : KoinTest {
 
         val initSetStarted = CountDownLatch(1)
         val releaseInitSet = CountDownLatch(1)
-        val incomingSetReached = CountDownLatch(1)
+        val racedSetReached = CountDownLatch(1)
         var setCall = 0
-        every { repository.set(any(), any(), any(), any(), any()) } answers {
-            val type = thirdArg<FilterTransactionType>()
+        every { repository.set(any(), any(), any(), any(), any(), any(), any()) } answers {
             if (setCall++ == 0) {
                 // First set() is the initial load; block it to keep the init window open.
                 initSetStarted.countDown()
                 releaseInitSet.await(5, TimeUnit.SECONDS)
             }
-            if (type == FilterTransactionType.Incoming) incomingSetReached.countDown()
+            if (isRacedSelection(invocation.args)) racedSetReached.countDown()
             false
         }
 
@@ -388,16 +409,16 @@ class TokenTransactionsServiceServiceVersionTest : KoinTest {
         // The initial load is now in progress (blocked inside set()), before initialized = true.
         assertTrue("Initial load never started", initSetStarted.await(5, TimeUnit.SECONDS))
 
-        // User switches filter during the initial load: adapters are ready, init not yet finished.
-        service.setTransactionType(FilterTransactionType.Incoming)
+        // User changes the selection during the initial load: adapters are ready, init not yet finished.
+        select(service)
 
         // Let the initial load finish.
         releaseInitSet.countDown()
 
         // After init, the service must reconcile the data layer to the raced selection.
         assertTrue(
-            "Init did not reload the filter selected during the initial load",
-            incomingSetReached.await(5, TimeUnit.SECONDS)
+            "Init did not reload the selection made during the initial load",
+            racedSetReached.await(5, TimeUnit.SECONDS)
         )
 
         service.clear()

@@ -283,6 +283,30 @@
     <string name="transactions_search_not_found_in_last">Não encontrado entre as últimas %1$s transações</string>
     <string name="transactions_search_no_more_in_last">Nenhuma outra correspondência entre as últimas %1$s transações</string>
     <string name="transactions_search_continue">Buscar mais</string>
+    <string name="transactions_calendar_title">Calendário</string>
+    <string name="transactions_calendar_mode_to_date">Até a data</string>
+    <string name="transactions_calendar_mode_period">Período</string>
+    <string name="transactions_calendar_show_up_to">Mostrar até</string>
+    <string name="transactions_calendar_to_date_hint">A lista começa pela última transação desse dia. Se não houve nenhuma nesse dia, pela anterior mais próxima.</string>
+    <string name="transactions_calendar_from">De</string>
+    <string name="transactions_calendar_to">Até</string>
+    <string name="transactions_calendar_show">Mostrar transações</string>
+    <string name="transactions_calendar_back_to_latest">Voltar às últimas</string>
+    <string name="transactions_calendar_period_range">De %1$s\naté %2$s</string>
+    <string name="transactions_calendar_period_day">Em %1$s</string>
+    <string name="transactions_calendar_period_up_to">Até %1$s</string>
+    <string name="transactions_calendar_period_end">Estas são todas as transações do período selecionado</string>
+    <string name="transactions_calendar_period_empty_all">Nenhuma transação no período selecionado</string>
+    <string name="transactions_calendar_period_empty_incoming">Nenhuma transação recebida no período selecionado</string>
+    <string name="transactions_calendar_period_empty_outgoing">Nenhuma transação enviada no período selecionado</string>
+    <string name="transactions_calendar_period_empty_swap">Nenhuma troca no período selecionado</string>
+    <string name="transactions_calendar_period_empty_approve">Nenhuma aprovação no período selecionado</string>
+    <string name="transactions_calendar_change_period">Alterar período</string>
+    <string name="transactions_calendar_previous_month">Mês anterior</string>
+    <string name="transactions_calendar_next_month">Próximo mês</string>
+    <string name="transactions_calendar_period_selected">Calendário, período selecionado</string>
+    <string name="transactions_search_not_found_in_period">Não encontrado entre %1$s transações do período selecionado</string>
+    <string name="transactions_search_no_more_in_period">Sem outras correspondências entre %1$s transações do período selecionado</string>
     <string name="Market_Filters">Filtros</string>
     <string name="Market_AdvancedSearch_Results">Resultados</string>
     <string name="Market_Search_Hint">Buscar</string>
@@ -880,6 +904,7 @@
     <string name="Transactions_ContractCreation">Criação de contrato</string>
     <string name="Transactions_ContractDeploy">Contract Deploy</string>
     <string name="Transactions_To">para %s</string>
+    <string name="transactions_to_self">para si mesmo</string>
     <string name="Transactions_From">de %s</string>
     <string name="Transaction_Unlimited_CoinCode">ilimitado %s</string>
     <string name="Transaction_Unlimited">ilimitado</string>
@@ -1343,6 +1368,7 @@
     <string name="transaction_error_invalid_derivation_path">Caminho de derivação inválido</string>
     <!--Hud texts-->
     <string name="Hud_Text_NoInternet">Sem Internet</string>
+    <string name="zcash_server_unavailable">O servidor está indisponível. Tente novamente.</string>
     <string name="Hud_Text_Copied">Copiado</string>
     <string name="Hud_Text_Created">Criado</string>
     <string name="Hud_Text_Restored">Restaurado</string>
@@ -1600,7 +1626,7 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="Coin_Tab_Market">Mercados</string>
     <string name="Coin_Tab_Details">Análises</string>
     <string name="Coin_Tab_Tweets">Tweets</string>
-    <string name="typical_fee"><![CDATA[Taxa típica < 0.001 ZEC]]></string>
+    <string name="typical_fee"><![CDATA[Taxa típica < 0.0001 ZEC]]></string>
     <string name="CoinPage_TimeDuration_Hour">1H</string>
     <string name="CoinPage_TimeDuration_Day">1D</string>
     <string name="CoinPage_TimeDuration_Week">7D</string>
@@ -2158,7 +2184,7 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="auth_info_successful">Bem-sucedido</string>
     <string name="auth_info_unsuccessful">Sem sucesso</string>
     <string name="auth_info_duress_mode">(Modo coação)</string>
-    <string name="auth_info_entrance_to">Entrada no %s</string>
+    <string name="auth_info_entrance_to">Entrada no %1$s</string>
     <string name="auth_info_seconds_ago">(%d seg atrás)</string>
     <string name="auth_info_minutes_ago">(%d min atrás)</string>
     <string name="auth_info_hours_ago">(%d horas atrás)</string>
@@ -2702,6 +2728,12 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="desktop_duress_password_edit_description">Digite uma nova senha para o Modo Coação</string>
     <string name="desktop_hidden_wallet_password_title">Senha da carteira oculta</string>
     <string name="desktop_hidden_wallet_password_description">Crie uma senha para a carteira oculta</string>
+    <string name="desktop_transactions_hide_set_password">Definir uma senha separada</string>
+    <string name="desktop_transactions_hide_edit_password">Alterar a senha</string>
+    <string name="desktop_transactions_hide_delete_password">Excluir a senha separada</string>
+    <string name="desktop_transactions_hide_description">Modo de segurança: oculta as transações e permite definir uma senha separada para desbloqueá-las.</string>
+    <string name="desktop_transactions_hide_password_description">Defina uma senha para o modo “Transaction Auto Hide”</string>
+    <string name="desktop_transactions_hide_password_enter">Digite a senha do “Transaction Auto Hide”</string>
     <string name="desktop_hidden_wallet_password_terms_warning">A carteira global não verá esta carteira e, se você esquecer a senha dela, poderá recuperar o acesso com a frase semente.</string>
     <string-array name="desktop_hidden_wallet_password_terms">
         <item>O usuário entende que a carteira não ficará visível entre as outras carteiras.</item>
@@ -2711,6 +2743,19 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="desktop_password_save_failed">Não foi possível salvar a senha. Tente novamente</string>
     <string name="tron_controlled_by_others_title">Outras pessoas podem controlar esta conta</string>
     <string name="tron_controlled_by_others_warning">As permissões desta conta foram alteradas: outras chaves podem controlá-la. Os fundos que você enviar para ela podem ser sacados sem a sua participação. Deposite nela apenas se você souber de quem são essas chaves.</string>
+    <string name="login_logging_selfie_unsuccessful_shared">Esta chave é compartilhada por todas as carteiras deste computador</string>
+    <string name="desktop_journal_password_title">Senha do registro</string>
+    <string name="desktop_journal_password_set_description">Defina uma senha que proteja o registro de logins. Ela precisa ser diferente das senhas que desbloqueiam suas carteiras</string>
+    <string name="desktop_journal_password_access_description">Digite a senha do registro para abrir o registro de logins</string>
+    <string name="desktop_journal_password_disable_description">Digite a senha do registro para desativá-la</string>
+    <string name="desktop_delete_contacts_password_title">Senha para excluir contatos</string>
+    <string name="desktop_delete_contacts_password_set_description">Ao digitar esta senha na tela de desbloqueio, sua lista de endereços é excluída imediatamente deste computador. Ela precisa ser diferente das suas outras senhas</string>
+    <string name="desktop_delete_contacts_password_disable_description">Digite a senha para excluir contatos para desativá-la</string>
+    <string name="desktop_delete_contacts_terms_warning">Ao definir esta senha, você confirma que entende sua finalidade: proteger a sua privacidade. Digitá-la na tela de desbloqueio exclui imediatamente e de forma irreversível a lista de endereços cripto armazenada neste computador. A lista de endereços é armazenada apenas localmente e não pode ser recuperada sem um backup.</string>
+    <string-array name="desktop_delete_contacts_terms">
+        <item>Entendo que esta senha serve para excluir imediatamente a lista de endereços cripto.</item>
+        <item>Entendo que, depois de digitar esta senha, a lista de endereços será excluída e não poderá ser recuperada sem um backup.</item>
+    </string-array>
     <string name="sign_message_title">Assinar mensagem</string>
     <string name="sign_message_intro">A assinatura prova que o endereço pertence a você. As corretoras pedem isso quando você adiciona um endereço de saque. Ela não dá acesso aos seus fundos.</string>
     <string name="sign_message_message">Mensagem</string>
