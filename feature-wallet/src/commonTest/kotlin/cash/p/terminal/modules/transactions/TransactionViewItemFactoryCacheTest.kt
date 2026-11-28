@@ -17,6 +17,7 @@ import cash.p.terminal.entities.TransactionValue
 import cash.p.terminal.entities.transactionrecords.PendingTransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
+import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
 import cash.p.terminal.entities.transactionrecords.evm.EvmTransactionRecord
 import cash.p.terminal.entities.transactionrecords.evm.TransferEvent
 import cash.p.terminal.entities.transactionrecords.monero.MoneroTransactionRecord
@@ -76,6 +77,7 @@ import cash.p.terminal.resources.transactions_account_delegation
 import cash.p.terminal.resources.transactions_account_delegation_revoke
 import cash.p.terminal.resources.transactions_account_delegation_warning_short
 import cash.p.terminal.resources.transactions_migrate_to_ironwood
+import cash.p.terminal.resources.transactions_to_self
 
 class TransactionViewItemFactoryCacheTest {
 
@@ -92,6 +94,7 @@ class TransactionViewItemFactoryCacheTest {
         const val BRIDGE_ADDRESS = "0x579fedB9253ccA1b3114d5e2fA44F8158d61e436"
         const val RECIPIENT_ADDRESS = "t1Js8mMvZzCY2gUpTpKcNetJrMihqaPbSXF"
         const val MIGRATION_SUBTITLE = "To Ironwood pool"
+        const val TO_SELF_SUBTITLE = "to self"
 
         val ZEC_AMOUNT: BigDecimal = BigDecimal("0.01285429")
         val DELEGATE_ADDRESS = Address("0x64fc23203fcc4bcf09fc4b30669131333ba7936b")
@@ -622,6 +625,39 @@ class TransactionViewItemFactoryCacheTest {
     }
 
     @Test
+    fun convertToViewItemCached_sentToSelfWithoutRecipient_showsToSelfSubtitle() = runTest {
+        stubNoSwapMatch()
+        every { Translator.getString(Res.string.transactions_to_self) } returns TO_SELF_SUBTITLE
+        val token = createZcashToken()
+        val record = BitcoinTransactionRecord(
+            token = token,
+            amount = ZEC_AMOUNT.negate(),
+            to = null,
+            from = null,
+            changeAddresses = null,
+            uid = PENDING_UID,
+            transactionHash = TX_HASH,
+            transactionIndex = 0,
+            blockHeight = 3_612_000,
+            confirmationsThreshold = 1,
+            timestamp = PENDING_TIMESTAMP,
+            failed = false,
+            memo = null,
+            source = TransactionSource(token.blockchain, mockk<Account>(relaxed = true), null),
+            sentToSelf = true,
+            transactionRecordType = TransactionRecordType.BITCOIN_OUTGOING,
+            fee = null,
+            lockInfo = null,
+            conflictingHash = null,
+            showRawTransaction = false,
+        )
+
+        val viewItem = factory.convertToViewItemCached(createTransactionItem(record))
+
+        assertEquals(TO_SELF_SUBTITLE, viewItem.subtitle)
+    }
+
+    @Test
     fun convertToViewItemCached_beamDirections_showsSignedAmountAndCounterparty() = runTest {
         val titles = listOf(
             Res.string.Transactions_Receive, Res.string.Transactions_Send, Res.string.Transactions_Send
@@ -700,11 +736,11 @@ class TransactionViewItemFactoryCacheTest {
     @Test
     fun matches_beamIdentifiersAndFailure_searchesWithoutInventedAddresses() {
         val record = beamHistoryRecord(failureReason = "Transaction expired")
-        val matcher = TransactionRecordSearchMatcher()
+        val matcher = testSearchMatcher()
         listOf("transaction-id", "KERNEL-ID", "expired", "BEAM").forEach {
-            assertTrue(matcher.matches(record, it))
+            assertTrue(matcher.matches(record, matcher.prepare(it)))
         }
-        assertEquals(false, matcher.matches(record, "recipient-address"))
+        assertEquals(false, matcher.matches(record, matcher.prepare("recipient-address")))
         assertEquals(emptyList<String>(), record.getSenderAddresses())
     }
 

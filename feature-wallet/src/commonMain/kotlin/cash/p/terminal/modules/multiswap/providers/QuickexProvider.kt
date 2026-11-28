@@ -23,7 +23,6 @@ import cash.p.terminal.network.quickex.domain.repository.QuickexRepository
 import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.ic_quickex
-import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.badge
@@ -274,9 +273,9 @@ class QuickexProvider(
         return providerSupport.getCreateTokenActionRequired(tokens)
     }
 
-    override suspend fun getWarningMessage(tokenIn: Token, tokenOut: Token): TranslatableString? =
+    override suspend fun temporaryRefundAddress(tokenIn: Token, tokenOut: Token): String? =
         withContext(Dispatchers.IO) {
-            providerSupport.getWarningMessage(tokenIn)
+            providerSupport.temporaryRefundAddress(tokenIn)
         }
 
     override suspend fun fetchFinalQuote(

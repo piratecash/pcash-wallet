@@ -66,7 +66,6 @@ import org.koin.core.error.InstanceCreationException
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 import cash.p.terminal.modules.xrate.XRateService
-import cash.p.terminal.modules.premium.settings.PremiumPlatformSettings
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.modules.configuredtoken.ConfiguredTokenInfoViewModel
@@ -318,6 +317,12 @@ import cash.p.terminal.modules.unlinkaccount.UnlinkAccountViewModel
 import cash.p.terminal.modules.zcashconfigure.ZcashConfigureViewModel
 import cash.p.terminal.modules.settings.advancedsecurity.terms.HiddenWalletTermsViewModel
 import cash.p.terminal.shared.desktop.lock.ChangePasswordViewModel
+import cash.p.terminal.feature.logging.detail.LoggingDetailViewModel
+import cash.p.terminal.feature.logging.history.LoggingListViewModel
+import cash.p.terminal.feature.logging.settings.LoggingSettingsViewModel
+import cash.p.terminal.shared.desktop.journal.JournalSecretCheckViewModel
+import cash.p.terminal.shared.desktop.journal.JournalSecretKind
+import cash.p.terminal.shared.desktop.journal.JournalSecretPasswordViewModel
 import cash.p.terminal.shared.desktop.lock.DuressPasswordViewModel
 import cash.p.terminal.shared.desktop.lock.ConfirmPasswordViewModel
 import cash.p.terminal.shared.desktop.lock.CreatePasswordViewModel
@@ -400,11 +405,14 @@ class DesktopKoinGraphTest {
 
         desktopGraph.verify(
             extraTypes = providedOutsideTheGraph + builtFromInjectedParameters + stakingPageParameters +
-                notReachedOnDesktop + absentOnDesktop,
+                notReachedOnDesktop,
             injections = injectedParameters(
                 definition<PassphraseTermsViewModel>(Array<String>::class),
                 definition<HiddenWalletTermsViewModel>(Array<String>::class),
                 definition<DuressPasswordViewModel>(List::class),
+                definition<LoggingDetailViewModel>(Long::class),
+                definition<JournalSecretCheckViewModel>(JournalSecretKind::class),
+                definition<JournalSecretPasswordViewModel>(JournalSecretKind::class),
                 definition<SafetyRulesViewModel>(SafetyRulesModule.SafetyRulesMode::class, List::class),
                 definition<ManageAccountsViewModel>(ManageAccountsModule.Mode::class),
                 definition<NftCollectionsViewModel>(NftCollectionSource::class),
@@ -514,6 +522,9 @@ class DesktopKoinGraphTest {
             SyncErrorViewModel::class to { parametersOf(wallet) },
             ContactsViewModel::class to { parametersOf(Mode.Full) },
             AddressCheckerViewModel::class to null,
+            LoggingSettingsViewModel::class to null,
+            LoggingListViewModel::class to null,
+            LoggingDetailViewModel::class to { parametersOf(1L) },
             AddressCheckBlockchainSelectorViewModel::class to null,
             UnifiedAddressCheckerViewModel::class to { parametersOf("address") },
             // Not BlockchainStatusViewModel: its init reads the locked log DB on IO; verify() covers it.
@@ -673,6 +684,8 @@ class DesktopKoinGraphTest {
             ForgotPasswordViewModel::class to null,
             ChangePasswordViewModel::class to null,
             ConfirmPasswordViewModel::class to null,
+            JournalSecretCheckViewModel::class to { parametersOf(JournalSecretKind.JOURNAL_PASSWORD) },
+            JournalSecretPasswordViewModel::class to { parametersOf(JournalSecretKind.DELETE_CONTACTS) },
             DesktopSecurityViewModel::class to null,
             DesktopAutoLockIntervalsViewModel::class to null,
             DesktopLanguageSettingsViewModel::class to null,
@@ -864,8 +877,5 @@ class DesktopKoinGraphTest {
 
         /** GitHub release checks have no desktop screen that resolves them. */
         val notReachedOnDesktop = listOf(GithubApiConfig::class)
-
-        /** Resolved with `getOrNull`: desktop has no such feature and hides what needs it. */
-        val absentOnDesktop = listOf(PremiumPlatformSettings::class)
     }
 }

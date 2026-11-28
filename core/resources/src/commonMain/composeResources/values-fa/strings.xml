@@ -55,6 +55,38 @@
     <string name="trezor_wallet">کیف پول Trezor</string>
     <string name="connect_trezor">اتصال Trezor</string>
     <string name="trezor_setup_description">Trezor خود را با کابل USB وصل کنید و روی دستگاه تأیید کنید.</string>
+    <string name="ledger_wallet">کیف پول Ledger</string>
+    <string name="connect_ledger">اتصال Ledger</string>
+    <string name="ledger_setup_description">Ledger خود را با کابل USB وصل کنید، قفل آن را باز کنید و باز شدن هر برنامه را روی دستگاه تأیید کنید.</string>
+    <string name="ledger_usb_permission">در پنجره سیستم اجازه دسترسی به Ledger را بدهید</string>
+    <string name="ledger_opening_app">%1$d از %2$d: باز شدن برنامه %3$s را روی Ledger تأیید کنید</string>
+    <string name="ledger_not_added_title">افزوده نشد</string>
+    <string name="ledger_not_added_description">%1$s: برنامه نصب نیست، قدیمی است یا باز شدن آن رد شد. آن را از طریق Ledger Live نصب یا به‌روزرسانی کنید و سپس شبکه را در مدیریت کوین‌ها اضافه کنید.</string>
+    <string name="ledger_identity_mismatch">Ledger دیگری یا عبارت عبور دیگری متصل است</string>
+    <string name="ledger_update_app">برنامه %1$s را از طریق Ledger Live به‌روزرسانی کنید</string>
+    <string name="ledger_install_app">برنامه %1$s را از طریق Ledger Live نصب کنید</string>
+    <string name="ledger_install_identity_app">برای تأیید اینکه این همان Ledger است، یکی از این برنامه‌ها را از طریق Ledger Live نصب کنید: %1$s</string>
+    <string name="ledger_not_found">Ledger پیدا نشد. آن را با کابل USB وصل کنید و قفلش را باز کنید.</string>
+    <string name="ledger_usb_permission_denied">دسترسی USB به Ledger رد شد</string>
+    <string name="ledger_device_locked">قفل Ledger را باز کنید</string>
+    <string name="ledger_device_not_set_up">Ledger هنوز راه‌اندازی نشده است. آن را راه‌اندازی کنید و برنامه‌ها را از طریق Ledger Live نصب کنید، سپس دوباره متصل شوید</string>
+    <string name="ledger_no_supported_apps">هیچ شبکه پشتیبانی‌شده‌ای از این Ledger افزوده نشد</string>
+    <string name="ledger_connect_failed">اتصال Ledger ناموفق بود</string>
+    <string name="ledger_rejected">روی Ledger رد شد</string>
+    <string name="ledger_signing_failed">Ledger نتوانست تراکنش را امضا کند</string>
+    <string name="ledger_blind_signing_required">Blind signing را در تنظیمات برنامه %1$s روی Ledger فعال کنید و دوباره تلاش کنید</string>
+    <string name="ledger_data_too_large">پیام برای Ledger بیش از حد بزرگ است</string>
+    <string name="ledger_zcash_reopen_app">برنامه Zcash را روی Ledger ببندید و دوباره باز کنید، سپس دوباره تلاش کنید</string>
+    <string name="ledger_ton_single_message">Ledger فقط می‌تواند یک پیام در هر تراکنش TON امضا کند</string>
+    <string name="ledger_tron_settings_required">در تنظیمات برنامه Tron روی Ledger گزینه Transactions data (برای یادداشت) یا Custom contracts (برای فراخوانی سایر قراردادها) را فعال کنید و دوباره تلاش کنید</string>
+    <string name="ledger_ton_blind_signing_required">در تنظیمات برنامه TON روی Ledger گزینه Allow blind sign را فعال کنید و دوباره تلاش کنید</string>
+    <string name="ledger_verify_address">بررسی آدرس روی Ledger</string>
+    <string name="ledger_monero_confirm_view_key">خروجی گرفتن از کلید مشاهده را در برنامه Monero روی Ledger مجاز کنید</string>
+    <string name="ledger_waiting_for_device">در انتظار Ledger…</string>
+    <string name="ledger_sync_paused_open_app">همگام‌سازی %1$s متوقف شد. برای ادامه، برنامه %1$s را روی Ledger خود باز کنید.</string>
+    <string name="ledger_sync_finishing_wait">Ledger در حال پایان دادن به همگام‌سازی %1$s است. عملیات شما به‌طور خودکار ادامه می‌یابد.</string>
+    <string name="ledger_device_request_wait">درخواست %1$s را روی Ledger خود تأیید کنید. عملیات شما به‌طور خودکار ادامه می‌یابد.</string>
+    <string name="ledger_confirm_opening_app">باز شدن برنامه %1$s را روی Ledger خود تأیید کنید</string>
     <string name="trezor_not_initialized_title">دستگاه راه‌اندازی نشده است</string>
     <string name="trezor_not_initialized_description">این Trezor هنوز راه‌اندازی نشده است. راه‌اندازی را روی دستگاه کامل کنید و دوباره آن را وصل کنید.</string>
     <string name="trezor_not_initialized_cta">راهنمای راه‌اندازی</string>
@@ -248,6 +280,33 @@
     <!--Market Search-->
     <string name="EmptyResults">نتیجه‌ای پیدا نشد</string>
     <string name="transactions_empty_search_results">تراکنشی پیدا نشد</string>
+    <string name="transactions_search_not_found_in_last">در میان %1$s تراکنش اخیر یافت نشد</string>
+    <string name="transactions_search_no_more_in_last">در میان %1$s تراکنش اخیر مورد مشابه دیگری وجود ندارد</string>
+    <string name="transactions_search_continue">ادامه جستجو</string>
+    <string name="transactions_calendar_title">تقویم</string>
+    <string name="transactions_calendar_mode_to_date">تا تاریخ</string>
+    <string name="transactions_calendar_mode_period">بازه زمانی</string>
+    <string name="transactions_calendar_show_up_to">نمایش تا</string>
+    <string name="transactions_calendar_to_date_hint">فهرست از آخرین تراکنش آن روز شروع می‌شود. اگر در آن روز تراکنشی نبود، از نزدیک‌ترین تراکنش قبلی.</string>
+    <string name="transactions_calendar_from">از</string>
+    <string name="transactions_calendar_to">تا</string>
+    <string name="transactions_calendar_show">نمایش تراکنش‌ها</string>
+    <string name="transactions_calendar_back_to_latest">بازگشت به آخرین‌ها</string>
+    <string name="transactions_calendar_period_range">از %1$s\nتا %2$s</string>
+    <string name="transactions_calendar_period_day">در %1$s</string>
+    <string name="transactions_calendar_period_up_to">تا %1$s</string>
+    <string name="transactions_calendar_period_end">این همه تراکنش‌های بازه انتخاب‌شده است</string>
+    <string name="transactions_calendar_period_empty_all">در بازه انتخاب‌شده تراکنشی وجود ندارد</string>
+    <string name="transactions_calendar_period_empty_incoming">در بازه انتخاب‌شده تراکنش دریافتی وجود ندارد</string>
+    <string name="transactions_calendar_period_empty_outgoing">در بازه انتخاب‌شده تراکنش ارسالی وجود ندارد</string>
+    <string name="transactions_calendar_period_empty_swap">در بازه انتخاب‌شده تبادلی وجود ندارد</string>
+    <string name="transactions_calendar_period_empty_approve">در بازه انتخاب‌شده تأییدی وجود ندارد</string>
+    <string name="transactions_calendar_change_period">تغییر بازه</string>
+    <string name="transactions_calendar_previous_month">ماه قبل</string>
+    <string name="transactions_calendar_next_month">ماه بعد</string>
+    <string name="transactions_calendar_period_selected">تقویم، بازه انتخاب شده</string>
+    <string name="transactions_search_not_found_in_period">در میان %1$s تراکنش بازه انتخاب‌شده یافت نشد</string>
+    <string name="transactions_search_no_more_in_period">مورد دیگری در میان %1$s تراکنش بازه انتخاب‌شده یافت نشد</string>
     <string name="Market_Filters">Filters</string>
     <string name="Market_AdvancedSearch_Results">Results</string>
     <string name="Market_Search_Hint">Search</string>
@@ -601,6 +660,7 @@
     <string name="WalletConnect_ActiveWallet">کیف پول فعال</string>
     <string name="connect">اتصال</string>
     <string name="connect_trezor_to_add_message">برای افزودن توکن‌ها باید Trezor را متصل کنید</string>
+    <string name="connect_ledger_to_add_message">برای افزودن توکن‌ها باید Ledger را متصل کنید</string>
     <string name="WalletConnect_Unnamed">بدون نام</string>
     <string name="delete_all">حذف همه</string>
 
@@ -681,7 +741,35 @@
     <string name="unsupported_address">آدرس پشتیبانی نمی‌شود</string>
     <string name="unexpected_error">Unexpected error</string>
     <string name="unsupported_token">توکن پشتیبانی نمی‌شود</string>
-    <string name="zec_transparent_used">در هنگام ایجاد مبادله از آدرس t موقت استفاده می‌شود: ‎%s‎. این آدرس به ارائه‌دهنده مبادله ارسال می‌شود و در صورت عدم تکمیل مبادله برای بازپرداخت وجه مورد نیاز است. استفاده از آدرس t ممکن است منجر به ناشناس‌زدایی جزئی تراکنش شود.</string>
+    <string name="zec_refund_plate">برای بازگشت وجه از آدرس موقت t یعنی %1$s استفاده می‌شود.</string>
+    <string name="zec_refund_address_title">آدرس موقت بازگشت وجه</string>
+    <string name="zec_refund_notice_direct">اگر سواپ انجام نشود، %1$s ZEC را به این آدرس برمی‌گرداند. این آدرس شفاف است: در بلاکچین دیده می‌شود.</string>
+    <string name="zec_refund_notice_via_pcash">اگر سواپ انجام نشود، %1$s از طریق سرور P.CASH ZEC را به این آدرس برمی‌گرداند. این آدرس شفاف است: در بلاکچین دیده می‌شود.</string>
+    <string name="zec_refund_notice_restore">هر سواپ آدرس جدیدی می‌گیرد. پس از بازیابی فقط با عبارت بازیابی، آدرس‌ها ممکن است تکرار شوند و بازگشت وجه خودکار پیدا نشود. برای جلوگیری از این مشکل، پشتیبان بگیرید. بازگشت وجهِ گم‌شده را جستجوی آدرس در تنظیمات ZEC پیدا می‌کند.</string>
+    <string name="zec_refund_address_copy">کپی آدرس</string>
+    <string name="zec_refund_address_explorer">مشاهده در اکسپلورر</string>
+    <string name="zec_refund_address_error">دریافت آدرس بازگشت وجه ممکن نشد</string>
+    <string name="zec_address_search_title">جستجوی آدرس‌ها</string>
+    <plurals name="zec_address_search_addresses">
+        <item quantity="one">%1$s آدرس</item>
+        <item quantity="other">%1$s آدرس</item>
+    </plurals>
+    <string name="zec_address_search_running">در حال اجرا · %1$d%</string>
+    <string name="zec_address_search_description">بازپرداخت‌های ارائه‌دهندگان سواپ به آدرس‌های موقت را که پس از بازیابی با عبارت بازیابی دیده نمی‌شوند، پیدا می‌کند.</string>
+    <string name="zec_address_search_info">بازپرداخت‌های ارائه‌دهندگان سواپ به آدرس‌های موقتی را پیدا می‌کند که کیف پول پس از بازیابی فقط با عبارت بازیابی آن‌ها را نمی‌بیند. پس از بازیابی از نسخه پشتیبان، جستجو لازم نیست.\n\nآدرس‌هایی که در آن‌ها چیزی پیدا شده، از این پس خود کیف پول بررسی می‌کند. آدرس‌های خالی ذخیره نمی‌شوند. اگر بازپرداخت پس از تاریخ بررسی رسیده است، روی «%1$s» بزنید.</string>
+    <string name="zec_address_search_checked">بررسی‌شده</string>
+    <string name="zec_address_search_more">بررسی بیشتر</string>
+    <plurals name="zec_address_search_total">
+        <item quantity="one">در مجموع %1$s آدرس بررسی خواهد شد.</item>
+        <item quantity="other">در مجموع %1$s آدرس بررسی خواهد شد.</item>
+    </plurals>
+    <string name="zec_address_search_long">جستجو حدود %1$d دقیقه طول می‌کشد.</string>
+    <string name="zec_address_search_start">شروع جستجو</string>
+    <string name="zec_address_search_check_all_again">بررسی دوباره همه</string>
+    <string name="zec_address_search_progress">%1$s از %2$s بررسی شد</string>
+    <string name="zec_address_search_found">آدرس‌های دارای تراکنش پیدا شده</string>
+    <string name="zec_address_search_hint">می‌توانید ببندید: جستجو ادامه می‌یابد، حتی پس از راه‌اندازی دوباره برنامه.</string>
+    <string name="zec_address_search_stop">توقف</string>
     <string name="swap_yifi_memo_unsupported">ارائه‌دهنده سواپ به یک یادداشت (memo) واریز نیاز دارد که نمی‌توان آن را از این شبکه ارسال کرد. ارائه‌دهنده دیگری را انتخاب کنید.</string>
     <string name="swap_provider_order_failed">ارائه‌دهنده نتوانست سواپ را ایجاد کند. پیشنهاد قیمت را به‌روزرسانی کنید یا بازگردید و ارائه‌دهنده دیگری را انتخاب کنید.</string>
     <!-- Swap Settings -->
@@ -817,6 +905,7 @@
     <string name="Transactions_ContractCreation">ایجاد قرارداد</string>
     <string name="Transactions_ContractDeploy">Contract Deploy</string>
     <string name="Transactions_To">به %s</string>
+    <string name="transactions_to_self">به خود</string>
     <string name="Transactions_From">از %s</string>
     <string name="Transaction_Unlimited_CoinCode">unlimited %s</string>
     <string name="Transaction_Unlimited">unlimited</string>
@@ -1283,6 +1372,7 @@
     <string name="transaction_error_invalid_derivation_path">مسیر مشتق‌سازی نامعتبر</string>
     <!--Hud texts-->
     <string name="Hud_Text_NoInternet">اینترنت ندارید</string>
+    <string name="zcash_server_unavailable">سرور در دسترس نیست. دوباره تلاش کنید.</string>
     <string name="Hud_Text_Copied">کپی شد</string>
     <string name="Hud_Text_Created">ایجاد شد</string>
     <string name="Hud_Text_Restored">بازگرداني</string>
@@ -1332,6 +1422,7 @@
     <string name="ManageAccounts_ImportWallet">بازگرداني</string>
     <string name="ManageAccounts_WatchAddress">مشاهده آدرس</string>
     <string name="add_via_trezor">اضافه کردن از طریق Trezor</string>
+    <string name="add_via_ledger">اضافه کردن از طریق Ledger</string>
     <!-- Import Wallet -->
     <string name="ImportWallet_BackupFile">from File</string>
     <string name="ImportWallet_BackupFile_Description">Import a backup file from your local folder.</string>
@@ -1539,7 +1630,7 @@
     <string name="Coin_Tab_Market">Markets</string>
     <string name="Coin_Tab_Details">Analytics</string>
     <string name="Coin_Tab_Tweets">Tweets</string>
-    <string name="typical_fee"><![CDATA[کارمزد معمول < 0.001 ZEC]]></string>
+    <string name="typical_fee"><![CDATA[کارمزد معمول < 0.0001 ZEC]]></string>
     <string name="CoinPage_TimeDuration_Hour">1H</string>
     <string name="CoinPage_TimeDuration_Day">1D</string>
     <string name="CoinPage_TimeDuration_Week">7D</string>
@@ -2096,7 +2187,7 @@
     <string name="auth_info_successful">موفق</string>
     <string name="auth_info_unsuccessful">ناموفق</string>
     <string name="auth_info_duress_mode">(حالت اجبار)</string>
-    <string name="auth_info_entrance_to">ورود به %s</string>
+    <string name="auth_info_entrance_to">ورود به %1$s</string>
     <string name="auth_info_seconds_ago">(%d ثانیه قبل)</string>
     <string name="auth_info_minutes_ago">(%d دقیقه قبل)</string>
     <string name="auth_info_hours_ago">(%d ساعت قبل)</string>
@@ -2197,19 +2288,22 @@
     <string name="adding_tokens">در حال افزودن توکن‌ها</string>
     <string name="scan_to_add_message">برای افزودن توکن‌ها باید کارت را اسکن کنید</string>
     <string name="error_hardware_wallet_some_tokens_not_found">برخی توکن‌ها اضافه نشدند</string>
+    <string name="error_hardware_wallet_token_unavailable">در %1$s در دسترس نیست. می‌توانید از آن در کیف پولی با عبارت بازیابی استفاده کنید</string>
     <string name="send_error_address_unavailable">آدرس در دسترس نیست</string>
     <string name="send_error_amount_unavailable">مبلغ در دسترس نیست</string>
     <string name="send_error_fee_rate_unavailable">نرخ کارمزد در دسترس نیست</string>
     <string name="send_error_balance_unavailable">موجودی در دسترس نیست</string>
     <string name="litecoin_mweb_invalid_amount">مبلغ Litecoin MWEB نامعتبر است</string>
     <string name="litecoin_hardware_extended_public_key_required">کیف پول سخت‌افزاری Litecoin به کلید عمومی توسعه‌یافته نیاز دارد</string>
-    <string name="send_trezor_mweb_not_supported">Trezor از MWEB پشتیبانی نمی‌کند. لایت‌کوین را به یک آدرس عادی (غیر MWEB) ارسال کنید.</string>
-    <string name="send_trezor_time_lock_not_supported">Trezor از تراکنش‌های زمان‌قفل پشتیبانی نمی‌کند.</string>
+    <string name="send_hardware_mweb_not_supported">این کیف پول سخت‌افزاری از MWEB پشتیبانی نمی‌کند. لایت‌کوین را به یک آدرس عادی (غیر MWEB) ارسال کنید.</string>
+    <string name="send_hardware_time_lock_not_supported">این کیف پول سخت‌افزاری از تراکنش‌های زمان‌قفل پشتیبانی نمی‌کند.</string>
     <string name="send_trezor_zcash_memo_not_supported">Trezor نمی‌تواند به تراکنش Zcash یادداشت اضافه کند. برای ادامه، یادداشت را حذف کنید.</string>
     <string name="send_memo_too_long">یادداشت بسیار طولانی است: %1$d از %2$d بایت</string>
     <string name="send_trezor_zcash_transparent_only">Trezor فقط می‌تواند Zcash را به آدرس‌های شفاف ارسال کند.</string>
     <string name="send_trezor_zcash_unified_no_transparent_receiver">این آدرس یکپارچه (unified) گیرنده شفافی ندارد، بنابراین Trezor نمی‌تواند تراکنشی به آن ارسال کند.</string>
     <string name="send_trezor_zcash_firmware_required">%1$s برای ارسال به آدرس‌های یکپارچه Zcash به فریمور %2$s یا جدیدتر نیاز دارد. دستگاه را به‌روزرسانی کنید و دوباره تلاش کنید — نسخه فریمور در تراکنش بعدی Zcash دوباره بررسی می‌شود.</string>
+    <string name="send_ledger_zcash_sapling_not_supported">Ledger نمی‌تواند Zcash را به آدرس‌های Sapling ارسال کند. از یک آدرس یکپارچه (unified) یا شفاف استفاده کنید.</string>
+    <string name="send_ledger_zcash_transaction_too_large">این تراکنش برای Ledger بیش از حد بزرگ است. مبلغ کمتری ارسال کنید.</string>
     <string name="send_failed_offline_prompt_title">تراکنش ارسال نشد</string>
     <string name="send_failed_offline_prompt_message">تراکنش را آفلاین امضا کرده و بعداً ارسال کنید؟</string>
 
@@ -2635,6 +2729,19 @@
     <string name="desktop_password_save_failed">ذخیره رمز عبور ممکن نشد. لطفاً دوباره تلاش کنید</string>
     <string name="tron_controlled_by_others_title">ممکن است دیگران این حساب را کنترل کنند</string>
     <string name="tron_controlled_by_others_warning">مجوزهای این حساب تغییر کرده است: ممکن است کلیدهای دیگری آن را کنترل کنند. وجوهی که به آن ارسال می‌کنید ممکن است بدون دخالت شما برداشت شوند. فقط در صورتی آن را شارژ کنید که بدانید این کلیدها متعلق به چه کسی است.</string>
+    <string name="login_logging_selfie_unsuccessful_shared">این کلید برای همه کیف‌پول‌های این رایانه مشترک است</string>
+    <string name="desktop_journal_password_title">گذرواژه گزارش</string>
+    <string name="desktop_journal_password_set_description">گذرواژه‌ای تعیین کنید که از گزارش ورودها محافظت می‌کند. این گذرواژه باید با گذرواژه‌هایی که کیف‌پول‌های شما را باز می‌کنند متفاوت باشد</string>
+    <string name="desktop_journal_password_access_description">برای باز کردن گزارش ورودها، گذرواژه گزارش را وارد کنید</string>
+    <string name="desktop_journal_password_disable_description">برای خاموش کردن آن، گذرواژه گزارش را وارد کنید</string>
+    <string name="desktop_delete_contacts_password_title">گذرواژه حذف مخاطبین</string>
+    <string name="desktop_delete_contacts_password_set_description">وارد کردن این گذرواژه در صفحه قفل‌گشایی، دفترچه آدرس شما را فوراً از این رایانه حذف می‌کند. این گذرواژه باید با گذرواژه‌های دیگر شما متفاوت باشد</string>
+    <string name="desktop_delete_contacts_password_disable_description">برای خاموش کردن آن، گذرواژه حذف مخاطبین را وارد کنید</string>
+    <string name="desktop_delete_contacts_terms_warning">با تعیین این گذرواژه تأیید می‌کنید که هدف آن را می‌دانید: محافظت از حریم خصوصی شما. وارد کردن آن در صفحه قفل‌گشایی، دفترچه آدرس رمزارز ذخیره‌شده در این رایانه را فوراً و بازگشت‌ناپذیر حذف می‌کند. دفترچه آدرس فقط به‌صورت محلی ذخیره می‌شود و بدون نسخه پشتیبان قابل بازیابی نیست.</string>
+    <string-array name="desktop_delete_contacts_terms">
+        <item>می‌دانم که این گذرواژه برای حذف فوری دفترچه آدرس رمزارز استفاده می‌شود.</item>
+        <item>می‌دانم که پس از وارد کردن این گذرواژه، دفترچه آدرس حذف می‌شود و بدون نسخه پشتیبان قابل بازیابی نیست.</item>
+    </string-array>
     <string name="sign_message_title">امضای پیام</string>
     <string name="sign_message_intro">امضا ثابت می‌کند که آدرس متعلق به شماست. صرافی‌ها هنگام افزودن آدرس برداشت آن را درخواست می‌کنند. امضا هیچ دسترسی به دارایی‌های شما نمی‌دهد.</string>
     <string name="sign_message_message">پیام</string>
@@ -2645,7 +2752,7 @@
     <string name="sign_message_format_bip322_description">استاندارد جدید، برای Taproot هم کار می‌کند</string>
     <string name="sign_message_format_info">استاندارد، امضای کلاسیک پیام بیت‌کوین است که تقریباً همه صرافی‌ها و کیف‌پول‌ها آن را می‌پذیرند. BIP-322 قالب جدیدتری است که از آدرس‌های Taproot هم پشتیبانی می‌کند. قالبی را انتخاب کنید که صرافی درخواست می‌کند.</string>
     <string name="sign_message_taproot_only">برای آدرس‌های Taproot فقط BIP-322 در دسترس است.</string>
-    <string name="sign_message_trezor_taproot">Trezor نمی‌تواند برای آدرس‌های Taproot پیام امضا کند. از آدرس بیت‌کوین نوع دیگری، مثلاً Native SegWit، استفاده کنید.</string>
+    <string name="sign_message_hardware_taproot">کیف پول سخت‌افزاری نمی‌تواند برای آدرس‌های Taproot پیام امضا کند. از آدرس بیت‌کوین نوع دیگری، مثلاً Native SegWit، استفاده کنید.</string>
     <string name="sign_message_select_address_hint">آدرسی را که در صرافی وارد کرده‌اید انتخاب کنید.</string>
     <string name="sign_message_current_receive_address">آدرس دریافت فعلی</string>
     <string name="sign_message_used">استفاده‌شده</string>

@@ -12,11 +12,12 @@ object SignMessageFormats {
     fun available(accountType: AccountType, derivation: TokenType.Derivation): List<MessageSignatureFormat> =
         when (derivation) {
             TokenType.Derivation.Bip44, TokenType.Derivation.Bip49 -> listOf(Standard)
-            TokenType.Derivation.Bip84 -> if (accountType.isTrezor) listOf(Standard) else listOf(Standard, Bip322)
-            // Trezor firmware does not sign messages for Taproot.
-            TokenType.Derivation.Bip86 -> if (accountType.isTrezor) emptyList() else listOf(Bip322)
+            TokenType.Derivation.Bip84 ->
+                if (accountType.signsStandardOnly) listOf(Standard) else listOf(Standard, Bip322)
+            // Trezor firmware and the released Ledger Bitcoin app do not sign BIP-322, so nothing for Taproot.
+            TokenType.Derivation.Bip86 -> if (accountType.signsStandardOnly) emptyList() else listOf(Bip322)
         }
 
-    private val AccountType.isTrezor: Boolean
-        get() = this is AccountType.TrezorDevice
+    private val AccountType.signsStandardOnly: Boolean
+        get() = this is AccountType.TrezorDevice || this is AccountType.LedgerDevice
 }

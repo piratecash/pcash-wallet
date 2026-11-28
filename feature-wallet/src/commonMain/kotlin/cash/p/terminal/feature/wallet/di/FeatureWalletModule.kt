@@ -174,6 +174,7 @@ import cash.p.terminal.core.managers.DefaultBitcoinKitDatabaseOperations
 import io.horizontalsystems.bitcoincore.core.IConnectionManager
 import cash.p.terminal.core.managers.EvmLabelManager
 import cash.p.terminal.core.managers.EvmSignerFactory
+import cash.p.terminal.core.managers.DeviceSignerFactory
 import cash.p.terminal.data.repository.EvmTransactionRepository
 import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
 import cash.p.terminal.core.managers.NetworkErrorTracker
@@ -262,9 +263,12 @@ import cash.p.terminal.modules.transactionInfo.transactionInfoViewModel
 import cash.p.terminal.modules.transactions.CheckAmlIncomingTransactionUseCase
 import cash.p.terminal.modules.transactions.ITransactionRecordRepository
 import cash.p.terminal.modules.transactions.SelectContactViewModel
+import cash.p.terminal.modules.transactions.SwapProviderRecordResolver
 import cash.p.terminal.modules.transactions.TransactionFilterService
 import cash.p.terminal.modules.transactions.TransactionItem
 import cash.p.terminal.modules.transactions.TransactionRecordRepository
+import cash.p.terminal.modules.transactions.TransactionRecordSearchMatcher
+import cash.p.terminal.modules.transactions.TransactionSearchVisibility
 import cash.p.terminal.modules.transactions.TransactionSyncStateRepository
 import cash.p.terminal.modules.transactions.TransactionViewItemFactory
 import cash.p.terminal.modules.transactions.TransactionsRateRepository
@@ -296,12 +300,14 @@ import cash.p.terminal.modules.coin.overview.TokenWalletActions
 import cash.p.terminal.modules.displayoptions.DisplayOptionsViewModel
 import cash.p.terminal.modules.managewallets.ManageWalletsTokenWalletActions
 import cash.p.terminal.core.adapters.zcash.ZcashSingleUseAddressManager
+import cash.p.terminal.core.adapters.zcash.ZcashTransparentIndexStore
 import cash.p.terminal.core.adapters.zcash.server.ZcashServerProber
 import cash.p.terminal.core.adapters.zcash.server.ZcashServerProberImpl
 import cash.p.terminal.core.adapters.zcash.server.ZcashServerSelector
 import cash.p.terminal.core.adapters.zcash.session.ZcashDatabaseFailureReporter
 import cash.p.terminal.core.adapters.zcash.session.ZcashDatabaseFiles
 import cash.p.terminal.core.adapters.zcash.session.ZcashSessionManager
+import cash.p.terminal.core.adapters.zcash.session.ZcashAddressSearch
 import cash.p.terminal.core.adapters.zcash.session.ZcashSyncScheduler
 import cash.p.terminal.core.adapters.zcash.session.ZcashWalletOpener
 import cash.p.terminal.core.adapters.zcash.session.ZcashWalletOpenerImpl
@@ -389,6 +395,8 @@ val featureWalletModule = module {
     singleOf(::ZcashSyncScheduler)
     singleOf(::ZcashSessionManager)
     singleOf(::ZcashSingleUseAddressStorage)
+    singleOf(::ZcashTransparentIndexStore)
+    singleOf(::ZcashAddressSearch)
     factory { (accountId: String) -> ZcashSingleUseAddressManager(storage = get(), accountId = accountId) }
     factory<LogsDao> { get<StorageRouter>().sessionLevel.logsDao() }
     singleOf(::UserLevelLogScope) bind LogScope::class
@@ -437,6 +445,7 @@ val featureWalletModule = module {
     singleOf(::BitcoinKitDatabaseManager)
     singleOf(::LitecoinKitPool)
     factoryOf(::SolanaWalletManager)
+    singleOf(::DeviceSignerFactory)
     singleOf(::SolanaKitManager)
     singleOf(::StellarKitManager)
     singleOf(::ThorchainKitManagers)
@@ -664,6 +673,9 @@ val featureWalletModule = module {
     singleOf(::PendingMultiSwapStorage)
     singleOf(::UpdateSwapProviderTransactionsStatusUseCase)
     singleOf(::SyncPendingMultiSwapUseCase)
+    factoryOf(::SwapProviderRecordResolver)
+    factoryOf(::TransactionRecordSearchMatcher)
+    factoryOf(::TransactionSearchVisibility)
     factoryOf(::TransactionRecordRepository) bind ITransactionRecordRepository::class
     factoryOf(::TransactionViewItemFactory)
     factoryOf(::TransactionsRateRepository)

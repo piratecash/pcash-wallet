@@ -37,7 +37,7 @@ class RescanZcashUseCase(
                 // Only NONE (nothing erased) is a safe unchanged rollback. A PARTIAL erase has
                 // already destroyed data, so it commits to the restore just like ALL — otherwise
                 // the reconstruct-on-failure path would resume half-erased data as ExistingWallet.
-                if (clearZCashWalletDataUseCase(account.id) == ZcashEraseResult.NONE) {
+                if (clearZCashWalletDataUseCase(account.id, eraseIssuedAddresses = false) == ZcashEraseResult.NONE) {
                     throw ZcashRescanException("Failed to erase Zcash wallet data for account ${account.id}")
                 }
 

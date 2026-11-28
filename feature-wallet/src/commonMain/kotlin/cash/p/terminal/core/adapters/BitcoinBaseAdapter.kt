@@ -28,17 +28,25 @@ import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
 import cash.p.terminal.modules.transactions.FilterTransactionType
+import cash.p.terminal.modules.transactions.TimestampRange
 import cash.p.terminal.modules.transactions.TransactionLockInfo
 import cash.p.terminal.resources.Res
-import cash.p.terminal.resources.send_trezor_time_lock_not_supported
+import cash.p.terminal.resources.send_hardware_time_lock_not_supported
+import cash.p.terminal.ledger.bitcoin.LedgerBtcSigner
+import cash.p.terminal.ledger.domain.LedgerAppAccess
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.IAdapter
+import cash.p.terminal.wallet.IHardwarePublicKeyStorage
 import cash.p.terminal.wallet.IBalanceAdapter
 import cash.p.terminal.wallet.IReceiveAdapter
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.BalanceData
+import cash.p.terminal.wallet.entities.HardwarePublicKey
+import cash.p.terminal.wallet.hardware.HardwareAddressLocator
+import cash.p.terminal.wallet.hardware.HardwareAddressPosition
+import cash.p.terminal.wallet.entities.TokenType
 import co.touchlab.kermit.Logger
 import cash.p.terminal.core.managers.NetworkErrorTracker
 import cash.p.terminal.core.managers.appendNetworkErrors
@@ -60,6 +68,7 @@ import io.horizontalsystems.bitcoincore.storage.UnspentOutputInfo
 import io.horizontalsystems.bitcoincore.storage.UtxoFilters
 import io.horizontalsystems.core.IBackgroundManager
 import io.horizontalsystems.core.BackgroundManagerState
+import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.hodler.HodlerOutputData
 import io.horizontalsystems.hodler.HodlerPlugin
 import cash.p.terminal.core.toRawHexString
@@ -80,6 +89,8 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.rx2.await
+import kotlinx.coroutines.rx2.awaitSingleOrNull
+import kotlinx.coroutines.runBlocking
 import org.koin.java.KoinJavaComponent.get
 import org.koin.java.KoinJavaComponent.inject
 import java.math.BigDecimal
@@ -95,7 +106,7 @@ abstract class BitcoinBaseAdapter(
     protected val decimal: Int = 8,
     protected val feeRateProvider: IFeeRateProvider? = null
 ) : IAdapter, ITransactionsAdapter, IBalanceAdapter, IReceiveAdapter, ISendBitcoinAdapter,
-    OfflineTransactionAdapter<SignedOfflineBitcoinTransaction> {
+    OfflineTransactionAdapter<SignedOfflineBitcoinTransaction>, HardwareAddressLocator {
 
     private val backgroundKeepAliveManager: BackgroundKeepAliveManager
             by inject(BackgroundKeepAliveManager::class.java)
@@ -173,6 +184,17 @@ abstract class BitcoinBaseAdapter(
     override val isMainNet: Boolean = true
 
     override val isAddressHistorySupported: Boolean = true
+
+    override suspend fun locate(address: String): HardwareAddressPosition? {
+        if (address == kit.receiveAddress()) {
+            val key = kit.receivePublicKey()
+            return HardwareAddressPosition(change = !key.external, index = key.index)
+        }
+        return listOf(false, true).firstNotNullOfOrNull { change ->
+            kit.usedAddresses(change).firstOrNull { it.address == address }
+                ?.let { HardwareAddressPosition(change, it.index) }
+        }
+    }
 
     protected val balanceUpdatedSubject: PublishSubject<Unit> = PublishSubject.create()
     protected val lastBlockUpdatedSubject: PublishSubject<Unit> = PublishSubject.create()
@@ -331,14 +353,29 @@ abstract class BitcoinBaseAdapter(
         }
     }
 
+    override suspend fun getOldestTransactionTimestamp(
+        token: Token?,
+        transactionType: FilterTransactionType,
+        address: String?,
+    ): Long? {
+        if (address != null) return null
+        val filter = try {
+            getBitcoinTransactionTypeFilter(transactionType)
+        } catch (e: UnsupportedFilterException) {
+            return null
+        }
+        return kit.oldestTransactionTimestamp(filter).awaitSingleOrNull()
+    }
+
     override suspend fun getTransactions(
         from: TransactionRecord?,
         token: Token?,
         limit: Int,
         transactionType: FilterTransactionType,
         address: String?,
+        period: TimestampRange?,
     ) = when (address) {
-        null -> getTransactionsAsync(from, limit, transactionType)
+        null -> getTransactionsAsync(from, limit, transactionType, period)
         else -> emptyList<TransactionRecord>()
     }
 
@@ -347,7 +384,8 @@ abstract class BitcoinBaseAdapter(
     private suspend fun getTransactionsAsync(
         from: TransactionRecord?,
         limit: Int,
-        transactionType: FilterTransactionType
+        transactionType: FilterTransactionType,
+        period: TimestampRange?,
     ): List<TransactionRecord> {
         val filter = try {
             getBitcoinTransactionTypeFilter(transactionType)
@@ -358,7 +396,9 @@ abstract class BitcoinBaseAdapter(
         var cursorUid = from?.uid
         do {
             val count = limit - visible.size
-            val page = kit.transactions(cursorUid, filter, count).map { it.map(::transactionRecord) }.await()
+            val page = kit.transactions(cursorUid, filter, count, period?.since, period?.until)
+                .map { it.map(::transactionRecord) }
+                .await()
             visible += page.filter { it.replacedByHash == null }
             cursorUid = page.lastOrNull()?.uid
         } while (visible.size < limit && page.size == count)
@@ -542,16 +582,16 @@ abstract class BitcoinBaseAdapter(
         )
     }
 
-    protected val isTrezorAccount: Boolean
-        get() = wallet.account.type is AccountType.TrezorDevice
+    protected val isHardwareDeviceAccount: Boolean
+        get() = wallet.account.type is AccountType.HardwareDevice
 
     /**
-     * Trezor cannot build the time-locked P2SH script the Hodler plugin needs, so reject a
-     * Hodler-carrying send on a Trezor account instead of signing a transaction it cannot honor.
+     * A hardware device cannot build the time-locked P2SH script the Hodler plugin needs, so reject
+     * a Hodler-carrying send instead of signing a transaction it cannot honor.
      */
-    private fun rejectHodlerForTrezor(pluginData: Map<Byte, IPluginData>?) {
-        if (isTrezorAccount && pluginData?.containsKey(HodlerPlugin.id) == true) {
-            throw LocalizedException(Res.string.send_trezor_time_lock_not_supported)
+    private fun rejectHodlerForHardwareDevice(pluginData: Map<Byte, IPluginData>?) {
+        if (isHardwareDeviceAccount && pluginData?.containsKey(HodlerPlugin.id) == true) {
+            throw LocalizedException(Res.string.send_hardware_time_lock_not_supported)
         }
     }
 
@@ -567,7 +607,7 @@ abstract class BitcoinBaseAdapter(
         changeToFirstInput: Boolean,
         utxoFilters: UtxoFilters
     ): FullTransaction {
-        rejectHodlerForTrezor(pluginData)
+        rejectHodlerForHardwareDevice(pluginData)
         val sortingType = getTransactionSortingType(transactionSorting)
 
         return kit.send(
@@ -605,6 +645,7 @@ abstract class BitcoinBaseAdapter(
         val bitcoinRequest = requireNotNull(request as? OfflineBitcoinSignRequest) {
             "Unsupported offline sign request"
         }
+        rejectHodlerForHardwareDevice(bitcoinRequest.pluginData)
         val transaction = kit.createSignedTransaction(
             address = bitcoinRequest.address,
             memo = bitcoinRequest.memo,
@@ -706,7 +747,7 @@ abstract class BitcoinBaseAdapter(
     }
 
     override fun validate(address: String, pluginData: Map<Byte, IPluginData>?) {
-        rejectHodlerForTrezor(pluginData)
+        rejectHodlerForHardwareDevice(pluginData)
         kit.validateAddress(address, pluginData ?: mapOf())
     }
 
@@ -839,6 +880,42 @@ abstract class BitcoinBaseAdapter(
         @JvmStatic
         protected val hardwareSigners: BitcoinHardwareSigners
             get() = get(BitcoinHardwareSigners::class.java)
+
+        /**
+         * The USB signer for [wallet]'s device vendor; [trezorCoin] is the Trezor coin name. Bind the
+         * result to the kit once it is built, so the signer can read previous transactions from it.
+         */
+        @JvmStatic
+        protected fun buildHardwareDeviceBtcSigner(wallet: Wallet, trezorCoin: String): BitcoinDeviceSigner {
+            val token = wallet.token
+            return when (wallet.account.type) {
+                is AccountType.LedgerDevice -> {
+                    val appAccess: LedgerAppAccess by inject(LedgerAppAccess::class.java)
+                    val previousTransactions = KitBtcPreviousTransactionProvider()
+                    val signer = LedgerBtcSigner(
+                        appAccess = appAccess,
+                        account = wallet.account,
+                        hardwarePublicKey = hardwarePublicKey(wallet.account.id, token.blockchainType, token.type),
+                        previousTransactions = previousTransactions,
+                    )
+                    HardwareDeviceBtcSigner(signer, signer, previousTransactions)
+                }
+
+                else -> hardwareSigners.trezorSigner(wallet.account.id, token.blockchainType, token.type, trezorCoin)
+            }
+        }
+
+        private fun hardwarePublicKey(
+            accountId: String,
+            blockchainType: BlockchainType,
+            tokenType: TokenType
+        ): HardwarePublicKey {
+            val hardwarePublicKeyStorage: IHardwarePublicKeyStorage
+                    by inject(IHardwarePublicKeyStorage::class.java)
+            return runBlocking {
+                requireNotNull(hardwarePublicKeyStorage.getKey(accountId, blockchainType, tokenType))
+            }
+        }
     }
 
 }

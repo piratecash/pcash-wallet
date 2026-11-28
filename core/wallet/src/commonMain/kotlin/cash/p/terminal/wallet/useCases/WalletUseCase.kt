@@ -99,7 +99,7 @@ class WalletUseCase(
         }
         val hardwareId = when (val type = account.type) {
             is AccountType.HardwareCard -> type.cardId
-            is AccountType.TrezorDevice -> type.deviceId
+            is AccountType.HardwareDevice -> type.deviceId
             else -> error("Not a hardware wallet account")
         }
         val allKeysCreated = scanToAddUseCase.addTokensByScan(
@@ -158,11 +158,11 @@ class WalletUseCase(
         return adapterManager.getReceiveAdapterForWallet(wallet)
     }
 
-    suspend fun getOneTimeReceiveAddress(token: Token): String {
+    /** `null` when no single-use address could be issued: the regular address must not stand in for it. */
+    suspend fun getOneTimeReceiveAddress(token: Token): String? {
         val adapter = getReceiveAdapter(token)
         requireNotNull(adapter) { "WalletUseCase: adapter for $token is not found" }
 
         return (adapter as? OneTimeReceiveAdapter)?.generateOneTimeAddress()
-            ?: adapter.receiveAddress
     }
 }

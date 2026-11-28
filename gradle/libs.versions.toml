@@ -36,6 +36,8 @@ composeResources = "1.12.1"
 composeMaterial3 = "1.12.0-alpha03"
 leakcanaryAndroid = "3.0-alpha-9"
 material = "1.13.0"
+# On upgrade past 1.14.11: mockk#1567 lets clearAllStubsFromMemory() free mocks, so remove the maxHeapSize workaround
+# in feature-wallet/build.gradle.kts (it explains what replaces it).
 mockk = "1.14.9"
 powermockApiMockito2 = "2.0.9"
 powermockModuleJunit4 = "2.0.9"
@@ -72,23 +74,24 @@ secp256k1 = "0.24.0"
 
 tonKotlin = "0.5.0" # updated for ktor 3.x compatibility
 orgJson = "20250517"
-piratecash-ton = "v2.0.0-pcash.24"
+piratecash-ton = "v2.0.0-pcash.25"
 beam-sdk = "v0.3.2"
 openpnp-capture-java = "v0.0.30-2-pcash.2"
 # The version openpnp-capture-java resolves to: its jnidispatch natives are the ones packaged.
 jna = "5.13.0"
-piratecash-bitcoin = "v0.1.0-pcash.49"
+piratecash-bitcoin = "v0.1.0-pcash.50"
 
 hd-wallet-kit = "1.0.2"
-stellar-kit = "v2.0.0-pcash.6"
+stellar-kit = "v2.0.0-pcash.7"
 thorchain-kit = "1.4.0"
 trezor-kit = "1.4.2"
-piratecash-ethereum = "v1.0.0-pcash.11"
-piratecash-solana = "v2.0.0-pcash.8"
+ledger-kit = "0.6.9"
+piratecash-ethereum = "v1.0.0-pcash.13"
+piratecash-solana = "v2.0.0-pcash.9"
 monero-kit-android = "v0.18.3.4-pcash.27"
 netcipher = "2.1.0"
 solanakt = "v1.0.0-pcash.5"
-piratecash-tron = "v2.0.0-pcash.7"
+piratecash-tron = "v2.0.0-pcash.8"
 tangem-sdk = "3.9.2-pcash.5"
 gson = "2.13.2"
 retrofit = "3.0.0"
@@ -101,7 +104,7 @@ android-core-ktx = "1.18.0"
 twitterText = "3.1.0"
 workRuntimeKtx = "2.11.2"
 workRxjava2 = "2.11.2"
-zcashSdkKmp = "v1.6.3"
+zcashSdkKmp = "v1.6.5"
 junitJupiter = "6.0.3"
 google-play-core = "2.1.0"
 bitcoinj = "0.17"
@@ -225,6 +228,7 @@ room-paging = { group = "androidx.room", name = "room-paging", version.ref = "ro
 sqlite-bundled = { group = "androidx.sqlite", name = "sqlite-bundled", version.ref = "sqlite" }
 datastore-preferences-core = { group = "androidx.datastore", name = "datastore-preferences-core", version.ref = "datastore" }
 
+paging-common = { group = "androidx.paging", name = "paging-common", version.ref = "paging" }
 paging-runtime = { group = "androidx.paging", name = "paging-runtime-ktx", version.ref = "paging" }
 paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging" }
 profileinstaller = { module = "androidx.profileinstaller:profileinstaller", version.ref = "profileinstaller" }
@@ -257,6 +261,7 @@ hd-wallet-kit = { group = "com.github.piratecash.hd-wallet-kit-android", name = 
 stellar-kit = { group = "com.github.piratecash.stellar-kit-android", name = "stellarkit", version.ref = "stellar-kit" }
 thorchain-kit = { group = "com.github.piratecash.thorchain-kit-android", name = "thorchainkit", version.ref = "thorchain-kit" }
 trezor-kit = { group = "com.github.piratecash", name = "trezor-kit-android", version.ref = "trezor-kit" }
+ledger-kit = { group = "com.github.piratecash.ledger-kit", name = "ledgerkit", version.ref = "ledger-kit" }
 solana-kit = { group = "com.github.piratecash.solana-kit-android", name = "solanakit", version.ref = "piratecash-solana" }
 monero-kit = { group = "com.github.piratecash.monero-kit-android", name = "monerokit", version.ref = "monero-kit-android" }
 netcipher = { group = "info.guardianproject.netcipher", name = "netcipher", version.ref = "netcipher" }

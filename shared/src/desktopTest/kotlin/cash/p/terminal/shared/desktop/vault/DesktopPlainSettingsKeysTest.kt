@@ -1,6 +1,7 @@
 package cash.p.terminal.shared.desktop.vault
 
 import cash.p.terminal.shared.desktop.DesktopWalletSettingsStorage
+import cash.p.terminal.shared.desktop.journal.DesktopLoggingSettings
 import cash.p.terminal.shared.desktop.vault.VaultLevelsFixture.Companion.DURESS_ACCOUNT
 import cash.p.terminal.shared.desktop.vault.VaultLevelsFixture.Companion.MAIN_ACCOUNT
 import io.horizontalsystems.core.DesktopSettingsStore
@@ -31,11 +32,13 @@ class DesktopPlainSettingsKeysTest {
     @Test
     fun levelAndAccountSettings_written_leaveNoKeyInTheOpenSettingsFile() = runBlocking<Unit> {
         fixture.mainWithDuress()
+        val settingsStore = DesktopSettingsStore(settingsFile, scope)
         val storage = DesktopWalletSettingsStorage(
-            DesktopSettingsStore(settingsFile, scope),
+            settingsStore,
             DesktopAccountSettings(fixture.vault),
             mockk(relaxed = true),
         )
+        val logging = DesktopLoggingSettings(fixture.vault, settingsStore)
 
         storage.zcashAccountIds = setOf(MAIN_ACCOUNT, DURESS_ACCOUNT)
         storage.nonRecommendedAccountAlertDismissedAccounts = setOf(MAIN_ACCOUNT)
@@ -44,13 +47,16 @@ class DesktopPlainSettingsKeysTest {
         storage.dismissedNftVersionHints = setOf("$DURESS_ACCOUNT:W5")
         DesktopLevelSettings(fixture.vault).setFlag(0, "aml_check_received_enabled", true)
         storage.transactionHideEnabled = true
+        logging.setLogSuccessfulLoginsEnabled(0, true)
+        logging.setLogIntoDuressModeEnabled(0, true)
+        logging.setDeleteAllAuthDataOnDuressEnabled(0, true)
 
         val content = String(settingsFile.readBytes(), Charsets.ISO_8859_1)
         assertTrue("transactionHideEnabled" in content, "the control setting must land in the file")
         listOf(
             "zcashAccountIds", "nonRecommendedAccountAlertDismissedAccounts", "zcashIronwoodMigrationTxIds",
             "bitcoinReplacementLinks", "nftVersionHintsDismissed", "aml_check_received_enabled", MAIN_ACCOUNT,
-            DURESS_ACCOUNT,
+            DURESS_ACCOUNT, "log.successful", "log.duress", "log.duressWipe",
         ).forEach { assertFalse(it in content, "$it must not be in the open settings file") }
     }
 }

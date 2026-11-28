@@ -60,6 +60,7 @@ class ThorchainAdapter(
 
     private val kit = thorchainKitWrapper.thorchainKit
     private val nativeFee = thorchainKitWrapper.nativeFee
+    private val deviceSigner = thorchainKitWrapper.deviceSigner
     private val network = kit.network
     private val coroutineScope = CoroutineScope(dispatcherProvider.default + SupervisorJob())
 
@@ -145,22 +146,23 @@ class ThorchainAdapter(
 
     override suspend fun send(amount: BigDecimal, address: String, memo: String?): String {
         checkFeeCovered(amount)
-        return submitted { kit.send(Address.fromString(address, network), amount.toBaseUnits(), denom, memo, signer()) }
+        val recipient = Address.fromString(address, network)
+        return submitted { signing().send(kit, recipient, amount.toBaseUnits(), denom, memo) }
     }
 
     // MsgDeposit: a swap into the protocol's own module, used when the quote names no inbound vault.
     suspend fun deposit(asset: String, amount: BigDecimal, memo: String): String {
         checkFeeCovered(amount)
-        return submitted { kit.deposit(Asset.fromString(asset), amount.toBaseUnits(), memo, signer()) }
+        return submitted { signing().deposit(kit, Asset.fromString(asset), amount.toBaseUnits(), memo) }
     }
 
     override suspend fun signOffline(request: OfflineSignRequest): SignedOfflineThorchainTransaction {
         require(request is OfflineThorchainSignRequest) { "OfflineThorchainSignRequest is required" }
         checkFeeCovered(request.amount)
-        val signed = kit.signSend(
+        val signed = signing().signSend(
+            kit,
             Address.fromString(request.address, network),
             request.amount.toBaseUnits(),
-            signer(),
             denom,
             request.memo,
         )
@@ -221,8 +223,9 @@ class ThorchainAdapter(
             e.txHash.thorchainTxHash()
         }
 
-    // Derived per call so the private key is not held for the adapter's lifetime.
-    private fun signer() = Signer.getInstance(wallet.account.type.thorchainSeed(), network)
+    // A seed signer is derived per call so the private key is not held for the adapter's lifetime.
+    private fun signing(): ThorchainSigning = deviceSigner?.let(ThorchainSigning::Device)
+        ?: ThorchainSigning.Seed(Signer.getInstance(wallet.account.type.thorchainSeed(), network))
 
     private fun balance(bankDenom: String) = kit.getDenomBalance(bankDenom).toAmount()
 

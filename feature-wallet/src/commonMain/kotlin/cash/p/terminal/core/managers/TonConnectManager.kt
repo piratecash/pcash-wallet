@@ -89,7 +89,7 @@ class TonConnectManager(
         } else {
             combine(live.values.map { it.dApps }) { it.flatMap { list -> list } }
         }
-    }
+    }.map { dApps -> dApps.filter(::isVisible) }
 
     private val _pendingSendRequest = MutableStateFlow<SignTransaction?>(null)
     val pendingSendRequest: StateFlow<SignTransaction?> = _pendingSendRequest.asStateFlow()
@@ -187,8 +187,11 @@ class TonConnectManager(
         return request.takeIf { _pendingSendRequest.compareAndSet(it, null) }
     }
 
-    private fun isVisible(request: SignTransaction): Boolean =
-        accountManager.account(TonConnectWalletId.parse(request.dApp.walletId).accountId) != null
+    private fun isVisible(request: SignTransaction): Boolean = isVisible(request.dApp)
+
+    /** The kit holds the sessions of every level; only wallets loaded for the current one may surface. */
+    private fun isVisible(dApp: DAppEntity): Boolean =
+        accountManager.account(TonConnectWalletId.parse(dApp.walletId).accountId) != null
 
     /** Chain time decides whether a message is accepted; null when it cannot be fetched. */
     suspend fun networkTimeSeconds(): Long? = try {

@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -22,10 +24,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.modules.balance.ui.HideBalanceToggle
 import cash.p.terminal.resources.Button_Search
@@ -41,6 +45,9 @@ import cash.p.terminal.resources.ic_outgoingraw
 import cash.p.terminal.resources.Transactions_Filter
 import cash.p.terminal.resources.ic_manage_2_24
 import cash.p.terminal.resources.ic_search
+import cash.p.terminal.resources.ic_calendar_24
+import cash.p.terminal.resources.transactions_calendar_period_selected
+import cash.p.terminal.resources.transactions_calendar_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import cash.p.terminal.core.rememberPremiumToggle
@@ -55,6 +62,7 @@ import cash.p.terminal.modules.transactionInfo.TransactionInfoPage
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.compose.components.ListEmptyView
+import cash.p.terminal.ui_compose.TransparentModalBottomSheet
 import cash.p.terminal.ui_compose.ColorName
 import cash.p.terminal.ui_compose.ColoredValue
 import cash.p.terminal.ui_compose.components.AppBar
@@ -65,13 +73,17 @@ import cash.p.terminal.ui_compose.components.SnackbarDuration
 import cash.p.terminal.ui_compose.components.subhead1_grey
 import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 @Composable
 fun TransactionsScreen(
     navigation: HSNavigation,
     paddingValues: PaddingValues,
     viewModel: TransactionsViewModel,
-    onShowAllTransactionsClicked: () -> Unit
+    onShowAllTransactionsClicked: () -> Unit,
+    onHiddenCalendarClick: () -> Unit,
+    onHiddenSearchClick: () -> Unit,
 ) {
     val accountsViewModel = koinViewModel<BalanceAccountsViewModel>()
 
@@ -82,7 +94,6 @@ fun TransactionsScreen(
     val offlineSignedState = offlineSignedViewModel.uiState
 
     val uiState = viewModel.uiState
-    val syncing = uiState.syncing
     val transactions = uiState.transactions
     val accountViewItemId =
         (accountsViewModel.balanceScreenState as? BalanceScreenState.HasAccount)?.accountViewItem?.id
@@ -92,14 +103,19 @@ fun TransactionsScreen(
     val hud = LocalHudMessenger.current
     val amlDismissedMessage = stringResource(Res.string.aml_promo_dismiss_hud)
     val setAmlCheckEnabled = navigation.rememberPremiumToggle(viewModel::setAmlCheckEnabled)
+    // Hidden transactions are revealed by PIN first, then the calendar or the search opens.
+    val onCalendarClick = if (uiState.transactionsHidden) onHiddenCalendarClick else viewModel::onCalendarClick
+    val onSearchClick = if (uiState.transactionsHidden) onHiddenSearchClick else viewModel::onSearchClick
+    val selectedType = filterTypes?.firstOrNull { it.selected }?.item ?: FilterTransactionType.All
 
     Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column(modifier = Modifier.padding(bottom = paddingValues.calculateBottomPadding())) {
             TransactionsAppBar(
                 uiState = uiState,
-                syncing = syncing,
                 showFilterAlertDot = showFilterAlertDot,
-                onSearchClick = viewModel::onSearchClick,
+                // The offline-signed tab is not an on-chain history; the period stays applied to the others.
+                onCalendarClick = onCalendarClick.takeUnless { offlineSignedSelected },
+                onSearchClick = onSearchClick,
                 onSearchClose = viewModel::onSearchClose,
                 onSearchQueryChange = viewModel::onSearchQueryChange,
                 onFilterClick = {
@@ -139,6 +155,11 @@ fun TransactionsScreen(
                     },
                 )
             } else {
+                AppliedPeriodBar(
+                    period = uiState.period,
+                    onClick = viewModel::onCalendarClick,
+                    onBackToLatest = viewModel::onBackToLatest,
+                )
                 Crossfade(uiState.viewState, label = "") { viewState ->
                     when (viewState) {
                         ViewState.Loading -> {
@@ -151,23 +172,12 @@ fun TransactionsScreen(
                         ViewState.Success -> {
                             transactions?.let { transactionItems ->
                                 if (transactionItems.isEmpty() && !uiState.hasHiddenTransactions) {
-                                    if (uiState.searchQuery.isNotBlank()) {
-                                        if (uiState.searchScanning) {
-                                            SearchInProgressView()
-                                        } else {
-                                            SearchEmptyResultsView()
-                                        }
-                                    } else if (uiState.syncing) {
-                                        ListEmptyView(
-                                            text = stringResource(Res.string.Transactions_WaitForSync),
-                                            icon = Res.drawable.ic_clock
-                                        )
-                                    } else {
-                                        ListEmptyView(
-                                            text = stringResource(Res.string.Transactions_EmptyList),
-                                            icon = Res.drawable.ic_outgoingraw
-                                        )
-                                    }
+                                    TransactionsEmptyContent(
+                                        uiState = uiState,
+                                        tab = selectedType,
+                                        onSearchFurther = viewModel::searchFurther,
+                                        onChangePeriod = viewModel::onCalendarClick,
+                                    )
                                 } else {
                                     TransactionListContent(
                                         uiState = uiState,
@@ -183,7 +193,8 @@ fun TransactionsScreen(
                                         },
                                         willShow = viewModel::willShow,
                                         onReachBottom = viewModel::onBottomReached,
-                                        onClickShowAll = onShowAllTransactionsClicked
+                                        onClickShowAll = onShowAllTransactionsClicked,
+                                        onSearchFurther = viewModel::searchFurther,
                                     ) {
                                         AmlCheckPromoBanner(
                                             amlCheckEnabled = uiState.amlCheckEnabled,
@@ -219,18 +230,85 @@ fun TransactionsScreen(
             onDismiss = { showAmlInfoSheet = false }
         )
     }
+
+    TransactionCalendarBottomSheet(
+        period = uiState.period,
+        onApply = viewModel::onPeriodSelect,
+        onDismiss = viewModel::onCalendarDismiss,
+    )
+}
+
+/** Hosts [TransactionCalendarSheet] while [TransactionPeriodUiState.sheetVisible]. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun TransactionCalendarBottomSheet(
+    period: TransactionPeriodUiState,
+    onApply: (TransactionPeriod) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    if (!period.sheetVisible) return
+    val scope = rememberCoroutineScope()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val hideThen: (() -> Unit) -> Unit = { action ->
+        scope.launch { sheetState.hide() }.invokeOnCompletion { action() }
+    }
+    TransparentModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
+        TransactionCalendarSheet(
+            today = LocalDate.now(),
+            appliedPeriod = period.period,
+            onApply = { selected -> hideThen { onApply(selected) } },
+            onClose = { hideThen(onDismiss) },
+        )
+    }
 }
 
 @Composable
+internal fun AppliedPeriodBar(
+    period: TransactionPeriodUiState,
+    onClick: () -> Unit,
+    onBackToLatest: () -> Unit,
+) {
+    val applied = period.period ?: return
+    TransactionPeriodBar(
+        text = transactionPeriodBarText(applied, period.oldestDate),
+        onClick = onClick,
+        onBackToLatest = onBackToLatest,
+    )
+}
+
+@Composable
+private fun TransactionsEmptyContent(
+    uiState: TransactionsUiState,
+    tab: FilterTransactionType,
+    onSearchFurther: () -> Unit,
+    onChangePeriod: () -> Unit,
+) {
+    when {
+        uiState.searchQuery.isNotBlank() -> SearchWithoutRowsView(uiState, onSearchFurther)
+        uiState.syncing -> ListEmptyView(
+            text = stringResource(Res.string.Transactions_WaitForSync),
+            icon = Res.drawable.ic_clock
+        )
+        uiState.period.active -> TransactionPeriodEmptyView(tab = tab, onChangePeriod = onChangePeriod)
+        else -> ListEmptyView(
+            text = stringResource(Res.string.Transactions_EmptyList),
+            icon = Res.drawable.ic_outgoingraw
+        )
+    }
+}
+
+/** A null [onCalendarClick] hides the calendar. */
+@Composable
 private fun TransactionsAppBar(
     uiState: TransactionsUiState,
-    syncing: Boolean,
     showFilterAlertDot: Boolean,
+    onCalendarClick: (() -> Unit)?,
     onSearchClick: () -> Unit,
     onSearchClose: () -> Unit,
     onSearchQueryChange: (String) -> Unit,
     onFilterClick: () -> Unit,
 ) {
+    val calendarItems = listOfNotNull(onCalendarClick?.let { calendarMenuItem(uiState.period.active, it) })
     if (uiState.searchActive) {
         AppBar(
             title = {
@@ -242,13 +320,14 @@ private fun TransactionsAppBar(
             navigationIcon = {
                 HsBackButton(onClick = onSearchClose)
             },
+            menuItems = calendarItems,
             showSpinner = false
         )
     } else {
         AppBar(
             title = stringResource(Res.string.Transactions_Title),
-            showSpinner = syncing,
-            menuItems = listOf(
+            showSpinner = uiState.syncing,
+            menuItems = calendarItems + listOf(
                 MenuItem(
                     title = TranslatableString.ResString(Res.string.Button_Search),
                     icon = Res.drawable.ic_search,
@@ -264,6 +343,15 @@ private fun TransactionsAppBar(
         )
     }
 }
+
+private fun calendarMenuItem(active: Boolean, onClick: () -> Unit) = MenuItem(
+    title = TranslatableString.ResString(
+        if (active) Res.string.transactions_calendar_period_selected else Res.string.transactions_calendar_title
+    ),
+    icon = Res.drawable.ic_calendar_24,
+    showAlertDot = active,
+    onClick = onClick,
+)
 
 private fun onTransactionClick(
     transactionViewItem: TransactionViewItem,
@@ -354,6 +442,21 @@ private fun OfflineSignedTransactionsTabContent(
 }
 
 @Composable
+private fun SearchWithoutRowsView(uiState: TransactionsUiState, onSearchFurther: () -> Unit) {
+    val pausedCount = uiState.searchPausedCount
+    when {
+        uiState.searchScanning -> SearchInProgressView()
+        pausedCount != null -> SearchPausedView(
+            scannedCount = pausedCount,
+            hasResults = false,
+            inPeriod = uiState.period.active,
+            onSearchFurther = onSearchFurther,
+        )
+        else -> SearchEmptyResultsView()
+    }
+}
+
+@Composable
 private fun TransactionListContent(
     uiState: TransactionsUiState,
     onClickTransaction: (TransactionViewItem) -> Unit,
@@ -363,6 +466,7 @@ private fun TransactionListContent(
     onReachBottom: () -> Unit,
     accountViewItemId: String? = null,
     onClickShowAll: () -> Unit = {},
+    onSearchFurther: () -> Unit = {},
     amlPromoContent: @Composable () -> Unit = {}
 ) {
     val transactionItems = uiState.transactions ?: return
@@ -398,6 +502,19 @@ private fun TransactionListContent(
             )
             if (uiState.hasHiddenTransactions) {
                 transactionsHiddenBlock(transactionItems.isNotEmpty(), onClickShowAll)
+            }
+            uiState.searchPausedCount?.let { count ->
+                item {
+                    SearchPausedView(
+                        scannedCount = count,
+                        hasResults = true,
+                        inPeriod = uiState.period.active,
+                        onSearchFurther = onSearchFurther,
+                    )
+                }
+            }
+            if (uiState.period.showsEndFooter) {
+                item { TransactionPeriodEndFooter() }
             }
         }
         HideBalanceOverlay(
@@ -444,3 +561,73 @@ private fun HideBalanceOverlay(
 
 private const val OFFLINE_SIGNED_TRANSACTION_LIST_ID = "offline-signed"
 private const val UNKNOWN_VALUE = "---"
+
+private val PreviewPeriod = TransactionPeriodUiState(
+    period = TransactionPeriod(LocalDate.of(2026, 8, 1), LocalDate.of(2026, 8, 28)),
+)
+
+private fun previewUiState(
+    period: TransactionPeriodUiState = TransactionPeriodUiState(),
+    searchActive: Boolean = false,
+) =
+    TransactionsUiState(
+        transactions = emptyMap(),
+        viewState = ViewState.Success,
+        transactionListId = null,
+        syncing = false,
+        hasHiddenTransactions = false,
+        searchActive = searchActive,
+        searchQuery = if (searchActive) "0x7a2f" else "",
+        period = period,
+    )
+
+@Composable
+private fun TransactionsHeaderPreview(uiState: TransactionsUiState, tab: FilterTransactionType? = null) {
+    ComposeAppTheme {
+        Column(modifier = Modifier.background(ComposeAppTheme.colors.backgroundBase)) {
+            TransactionsAppBar(
+                uiState = uiState,
+                showFilterAlertDot = false,
+                onCalendarClick = {},
+                onSearchClick = {},
+                onSearchClose = {},
+                onSearchQueryChange = {},
+                onFilterClick = {},
+            )
+            AppliedPeriodBar(period = uiState.period, onClick = {}, onBackToLatest = {})
+            tab?.let { TransactionPeriodEmptyView(tab = it, onChangePeriod = {}) }
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun TransactionsAppBarPreview() {
+    TransactionsHeaderPreview(previewUiState())
+}
+
+@Preview
+@Composable
+private fun TransactionsPeriodAppliedPreview() {
+    TransactionsHeaderPreview(previewUiState(PreviewPeriod))
+}
+
+@Preview
+@Composable
+private fun TransactionsPeriodEmptyPreview() {
+    TransactionsHeaderPreview(previewUiState(PreviewPeriod), tab = FilterTransactionType.Incoming)
+}
+
+@Preview
+@Composable
+private fun TransactionsSearchWithPeriodPreview() {
+    TransactionsHeaderPreview(
+        previewUiState(
+            period = TransactionPeriodUiState(
+                period = TransactionPeriod(null, LocalDate.of(2026, 11, 12)),
+                oldestDate = LocalDate.of(2021, 3, 3),
+            ),
+            searchActive = true,
+        )
+    )
+}

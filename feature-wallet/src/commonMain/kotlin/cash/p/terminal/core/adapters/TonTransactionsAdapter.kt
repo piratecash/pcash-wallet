@@ -8,6 +8,7 @@ import cash.p.terminal.entities.LastBlockInfo
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.ton.TonTransactionRecord
 import cash.p.terminal.modules.transactions.FilterTransactionType
+import cash.p.terminal.modules.transactions.TimestampRange
 import cash.p.terminal.modules.transactions.FilterTransactionType.All
 import cash.p.terminal.modules.transactions.FilterTransactionType.Approve
 import cash.p.terminal.modules.transactions.FilterTransactionType.Incoming
@@ -43,17 +44,28 @@ class TonTransactionsAdapter(
     override val lastBlockUpdatedFlowable: Flowable<Unit>
         get() = Flowable.empty()
 
+    override suspend fun getOldestTransactionTimestamp(
+        token: Token?,
+        transactionType: FilterTransactionType,
+        address: String?,
+    ): Long? = try {
+        tonKit.oldestEventTimestamp(getTagQuery(token, transactionType, address))
+    } catch (e: NotSupportedException) {
+        null
+    }
+
     override suspend fun getTransactions(
         from: TransactionRecord?,
         token: Token?,
         limit: Int,
         transactionType: FilterTransactionType,
         address: String?,
+        period: TimestampRange?,
     ): List<TransactionRecord> = try {
         val tagQuery = getTagQuery(token, transactionType, address)
         val beforeLt = (from as? TonTransactionRecord)?.lt
 
-        tonKit.events(tagQuery, beforeLt, limit = limit)
+        tonKit.events(tagQuery, beforeLt, limit = limit, sinceTimestamp = period?.since, untilTimestamp = period?.until)
             .map {
                 tonTransactionConverter.createTransactionRecord(it)
             }

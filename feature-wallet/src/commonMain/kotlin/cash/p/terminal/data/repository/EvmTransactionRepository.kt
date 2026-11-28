@@ -4,6 +4,7 @@ import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.EvmKitWrapper
 import cash.p.terminal.core.managers.KitPlatformContexts
 import cash.p.terminal.modules.evmfee.estimateNativeTransferFee
+import cash.p.terminal.modules.transactions.TimestampRange
 import cash.p.terminal.wallet.Account
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.erc20kit.core.Erc20Kit
@@ -118,8 +119,13 @@ class EvmTransactionRepository(
     suspend fun getFullTransactionsAsync(
         tags: List<List<String>>,
         fromHash: ByteArray? = null,
-        limit: Int? = null
-    ): List<FullTransaction> = evmKit.getFullTransactionsAsync(tags, fromHash, limit).await()
+        limit: Int? = null,
+        period: TimestampRange? = null,
+    ): List<FullTransaction> =
+        evmKit.getFullTransactionsAsync(tags, fromHash, limit, period?.since, period?.until).await()
+
+    suspend fun getOldestTransactionTimestamp(tags: List<List<String>>): Long? =
+        evmKit.getOldestTransactionTimestamp(tags)
 
     fun getFullTransactionsFlowable(tags: List<List<String>>): Flow<List<FullTransaction>> =
         evmKit.getFullTransactionsFlowable(tags).asFlow()

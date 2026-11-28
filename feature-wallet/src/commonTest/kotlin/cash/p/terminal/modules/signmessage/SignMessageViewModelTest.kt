@@ -1,7 +1,10 @@
 package cash.p.terminal.modules.signmessage
 
 import cash.p.terminal.core.adapters.BitcoinAdapter
+import cash.p.terminal.ledger.domain.LedgerRejectedException
+import cash.p.terminal.ledgerkit.apdu.LedgerException
 import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ledger_update_app
 import cash.p.terminal.resources.sign_message_failed
 import cash.p.terminal.resources.sign_message_not_ready
 import cash.p.terminal.wallet.Account
@@ -107,6 +110,41 @@ class SignMessageViewModelTest {
     }
 
     @Test
+    fun sign_ledgerAppTooOld_showsUpdateAppText() = runTest(dispatcher) {
+        every { Translator.getString(Res.string.ledger_update_app, *anyVararg()) } returns UPDATE_APP
+        coEvery { adapter.signMessage(any(), any(), any()) } throws LedgerException.AppVersionTooOld("Bitcoin", "2.2.4", "2.3.0")
+        val viewModel = viewModel(TokenType.Derivation.Bip84, LEDGER)
+        viewModel.onMessageChange("hello")
+
+        viewModel.sign()
+
+        assertEquals(UPDATE_APP, viewModel.uiState.error)
+        assertFalse(viewModel.uiState.signing)
+    }
+
+    @Test
+    fun sign_cancelledOnDevice_showsNoError() = runTest(dispatcher) {
+        coEvery { adapter.signMessage(any(), any(), any()) } throws LedgerRejectedException()
+        val viewModel = viewModel(TokenType.Derivation.Bip84, LEDGER)
+        viewModel.onMessageChange("hello")
+
+        viewModel.sign()
+
+        assertNull(viewModel.uiState.error)
+        assertFalse(viewModel.uiState.signing)
+    }
+
+    @Test
+    fun sign_emptyMessage_doesNotCallAdapter() = runTest(dispatcher) {
+        val viewModel = viewModel(TokenType.Derivation.Bip84)
+
+        viewModel.sign()
+
+        coVerify(exactly = 0) { adapter.signMessage(any(), any(), any()) }
+        assertNull(viewModel.uiState.error)
+    }
+
+    @Test
     fun sign_adapterNotReady_showsNotReady() {
         every { adapterManager.getAdapterForWallet<BitcoinAdapter>(any()) } returns null
         val viewModel = viewModel(TokenType.Derivation.Bip84)
@@ -163,5 +201,7 @@ class SignMessageViewModelTest {
         const val SIGNATURE = "c2lnbmF0dXJl"
         const val FAILED = "failed"
         const val NOT_READY = "not ready"
+        const val UPDATE_APP = "update app"
+        val LEDGER = AccountType.LedgerDevice("ledger-id", "nanoSP", "wallet-key")
     }
 }

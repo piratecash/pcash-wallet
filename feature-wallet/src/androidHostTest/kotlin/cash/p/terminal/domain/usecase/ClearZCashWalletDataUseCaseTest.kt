@@ -2,6 +2,8 @@ package cash.p.terminal.domain.usecase
 
 import cash.p.terminal.core.managers.AndroidKitPlatformContexts
 import android.content.Context
+import cash.p.terminal.core.adapters.zcash.ZcashTransparentIndexStore
+import cash.p.terminal.core.adapters.zcash.session.ZcashAddressSearch
 import cash.p.terminal.core.adapters.zcash.session.ZcashDatabaseFiles
 import cash.p.terminal.core.adapters.zcash.session.ZcashDbKeyProvider
 import cash.p.terminal.core.adapters.zcash.session.ZcashSessionManager
@@ -33,6 +35,8 @@ class ClearZCashWalletDataUseCaseTest {
     private val sessionManager = mockk<ZcashSessionManager>()
     private val dbKeyProvider = mockk<ZcashDbKeyProvider>(relaxed = true)
     private val addressStorage = mockk<ZcashSingleUseAddressStorage>(relaxed = true)
+    private val indexStore = mockk<ZcashTransparentIndexStore>(relaxed = true)
+    private val addressSearch = mockk<ZcashAddressSearch>(relaxed = true)
 
     @Before
     fun setUp() {
@@ -56,20 +60,60 @@ class ClearZCashWalletDataUseCaseTest {
     fun invoke_drainTimesOut_touchesNothing() = runTest {
         coEvery { sessionManager.closeForErase(ACCOUNT_ID) } returns false
 
-        assertEquals(ZcashEraseResult.NONE, useCase().invoke(ACCOUNT_ID))
+        assertEquals(ZcashEraseResult.NONE, useCase().invoke(ACCOUNT_ID, eraseIssuedAddresses = true))
 
         assertTrue(databasePaths().all { it.exists() })
         verify(exactly = 0) { dbKeyProvider.drop(any()) }
         coVerify(exactly = 0) { addressStorage.deleteAccountAddresses(any()) }
+        coVerify(exactly = 0) { addressSearch.clear(any()) }
     }
 
     @Test
     fun invoke_sessionClosed_erasesEveryArtifact() = runTest {
-        assertEquals(ZcashEraseResult.ALL, useCase().invoke(ACCOUNT_ID))
+        assertEquals(ZcashEraseResult.ALL, useCase().invoke(ACCOUNT_ID, eraseIssuedAddresses = true))
 
         assertTrue(databasePaths().none { it.exists() })
         verify(exactly = 1) { dbKeyProvider.drop(ACCOUNT_ID) }
         coVerify(exactly = 1) { addressStorage.deleteAccountAddresses(ACCOUNT_ID) }
+        coVerify(exactly = 1) { indexStore.clear(ACCOUNT_ID) }
+        coVerify(exactly = 1) { addressSearch.clear(ACCOUNT_ID) }
+    }
+
+    @Test
+    fun invoke_issuedAddressesKept_erasesTheDatabaseOnly() = runTest {
+        assertEquals(ZcashEraseResult.ALL, useCase().invoke(ACCOUNT_ID, eraseIssuedAddresses = false))
+
+        assertTrue(databasePaths().none { it.exists() })
+        verify(exactly = 1) { dbKeyProvider.drop(ACCOUNT_ID) }
+        coVerify(exactly = 0) { addressStorage.deleteAccountAddresses(any()) }
+        coVerify(exactly = 0) { indexStore.clear(any()) }
+        coVerify(exactly = 1) { addressSearch.clear(ACCOUNT_ID) }
+    }
+
+    @Test
+    fun invoke_rescanSearchProgressNotCleared_deletesNothing() = runTest {
+        databaseFiles.markPristine(ACCOUNT_ID)
+        coEvery { addressSearch.clear(ACCOUNT_ID) } throws RuntimeException("locked")
+
+        assertEquals(ZcashEraseResult.NONE, useCase().invoke(ACCOUNT_ID, eraseIssuedAddresses = false))
+
+        assertTrue(databasePaths().all { it.exists() })
+        assertTrue(databaseFiles.isPristine(ACCOUNT_ID))
+        verify(exactly = 0) { dbKeyProvider.drop(any()) }
+        coVerify(exactly = 0) { addressStorage.deleteAccountAddresses(any()) }
+        coVerify(exactly = 0) { indexStore.clear(any()) }
+    }
+
+    @Test
+    fun invoke_deletionSearchProgressNotCleared_stillErasesTheWallet() = runTest {
+        coEvery { addressSearch.clear(ACCOUNT_ID) } throws RuntimeException("locked")
+
+        assertEquals(ZcashEraseResult.PARTIAL, useCase().invoke(ACCOUNT_ID, eraseIssuedAddresses = true))
+
+        assertTrue(databasePaths().none { it.exists() })
+        verify(exactly = 1) { dbKeyProvider.drop(ACCOUNT_ID) }
+        coVerify(exactly = 1) { addressStorage.deleteAccountAddresses(ACCOUNT_ID) }
+        coVerify(exactly = 1) { indexStore.clear(ACCOUNT_ID) }
     }
 
     /**
@@ -82,7 +126,7 @@ class ClearZCashWalletDataUseCaseTest {
         every { dbKeyProvider.drop(ACCOUNT_ID) } returns false
         coEvery { addressStorage.deleteAccountAddresses(ACCOUNT_ID) } throws RuntimeException("locked")
 
-        assertEquals(ZcashEraseResult.PARTIAL, useCase().invoke(ACCOUNT_ID))
+        assertEquals(ZcashEraseResult.PARTIAL, useCase().invoke(ACCOUNT_ID, eraseIssuedAddresses = true))
 
         assertTrue(databasePaths().none { it.exists() })
     }
@@ -91,7 +135,7 @@ class ClearZCashWalletDataUseCaseTest {
     fun invoke_databaseFileSurvives_reportsPartial() = runTest {
         makeDatabaseUndeletable()
 
-        assertEquals(ZcashEraseResult.PARTIAL, useCase().invoke(ACCOUNT_ID))
+        assertEquals(ZcashEraseResult.PARTIAL, useCase().invoke(ACCOUNT_ID, eraseIssuedAddresses = true))
 
         coVerify(exactly = 1) { addressStorage.deleteAccountAddresses(ACCOUNT_ID) }
     }
@@ -100,7 +144,7 @@ class ClearZCashWalletDataUseCaseTest {
     fun invoke_dbKeyCommitFails_reportsPartial() = runTest {
         every { dbKeyProvider.drop(ACCOUNT_ID) } returns false
 
-        assertEquals(ZcashEraseResult.PARTIAL, useCase().invoke(ACCOUNT_ID))
+        assertEquals(ZcashEraseResult.PARTIAL, useCase().invoke(ACCOUNT_ID, eraseIssuedAddresses = true))
     }
 
     @Test
@@ -109,7 +153,7 @@ class ClearZCashWalletDataUseCaseTest {
         every { dbKeyProvider.drop(ACCOUNT_ID) } returns false
         coEvery { addressStorage.deleteAccountAddresses(ACCOUNT_ID) } throws RuntimeException("locked")
 
-        assertEquals(ZcashEraseResult.PARTIAL, useCase().invoke(ACCOUNT_ID))
+        assertEquals(ZcashEraseResult.PARTIAL, useCase().invoke(ACCOUNT_ID, eraseIssuedAddresses = true))
     }
 
     @Test
@@ -120,7 +164,7 @@ class ClearZCashWalletDataUseCaseTest {
             true
         }
 
-        useCase().invoke(ACCOUNT_ID)
+        useCase().invoke(ACCOUNT_ID, eraseIssuedAddresses = true)
 
         assertTrue(databaseIntactWhileClosing)
         coVerifyOrder {
@@ -133,7 +177,7 @@ class ClearZCashWalletDataUseCaseTest {
     fun invoke_sessionClosed_erasesThePristineMark() = runTest {
         databaseFiles.markPristine(ACCOUNT_ID)
 
-        assertEquals(ZcashEraseResult.ALL, useCase().invoke(ACCOUNT_ID))
+        assertEquals(ZcashEraseResult.ALL, useCase().invoke(ACCOUNT_ID, eraseIssuedAddresses = true))
 
         assertFalse(databaseFiles.isPristine(ACCOUNT_ID))
     }
@@ -143,7 +187,7 @@ class ClearZCashWalletDataUseCaseTest {
         databaseFiles.markPristine(ACCOUNT_ID)
         coEvery { sessionManager.closeForErase(ACCOUNT_ID) } returns false
 
-        assertEquals(ZcashEraseResult.NONE, useCase().invoke(ACCOUNT_ID))
+        assertEquals(ZcashEraseResult.NONE, useCase().invoke(ACCOUNT_ID, eraseIssuedAddresses = true))
 
         assertTrue(databaseFiles.isPristine(ACCOUNT_ID))
     }
@@ -153,6 +197,8 @@ class ClearZCashWalletDataUseCaseTest {
         databaseFiles = databaseFiles,
         dbKeyProvider = dbKeyProvider,
         zcashSingleUseAddressStorage = addressStorage,
+        transparentIndexStore = indexStore,
+        addressSearch = addressSearch,
     )
 
     /** A non-empty directory in place of a database file: `File.delete` refuses it. */

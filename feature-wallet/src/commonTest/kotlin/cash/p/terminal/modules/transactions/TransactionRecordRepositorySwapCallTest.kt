@@ -157,6 +157,8 @@ class TransactionRecordRepositorySwapCallTest {
             pendingRepository = pendingRepository,
             pendingConverter = mockk(relaxed = true),
             pendingTransactionMatcher = PendingTransactionMatcher(),
+            searchMatcher = testSearchMatcher(noSwapProviders),
+            searchVisibility = testSearchVisibility(noSwapProviders),
             locallyCreatedTransactionRepository = mockk(relaxed = true),
             dispatcherProvider = TestDispatcherProvider(dispatcher, this),
         )

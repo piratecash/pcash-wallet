@@ -55,6 +55,38 @@
     <string name="trezor_wallet">Trezor 钱包</string>
     <string name="connect_trezor">连接 Trezor</string>
     <string name="trezor_setup_description">使用 USB 数据线连接您的 Trezor，然后在设备上确认。</string>
+    <string name="ledger_wallet">Ledger 钱包</string>
+    <string name="connect_ledger">连接 Ledger</string>
+    <string name="ledger_setup_description">使用 USB 数据线连接您的 Ledger 并解锁，然后在设备上确认打开每个应用。</string>
+    <string name="ledger_usb_permission">请在系统对话框中允许访问 Ledger</string>
+    <string name="ledger_opening_app">%1$d / %2$d：请在 Ledger 上确认打开 %3$s 应用</string>
+    <string name="ledger_not_added_title">未添加</string>
+    <string name="ledger_not_added_description">%1$s：应用未安装、版本过旧或打开被拒绝。请通过 Ledger Live 安装或更新，然后在币种管理中添加该网络。</string>
+    <string name="ledger_identity_mismatch">连接的是另一台 Ledger 或另一个密码短语</string>
+    <string name="ledger_update_app">请通过 Ledger Live 更新 %1$s 应用</string>
+    <string name="ledger_install_app">请通过 Ledger Live 安装 %1$s 应用</string>
+    <string name="ledger_install_identity_app">为确认是同一台 Ledger，请通过 Ledger Live 安装以下任一应用：%1$s</string>
+    <string name="ledger_not_found">未找到 Ledger。请用 USB 数据线连接并解锁。</string>
+    <string name="ledger_usb_permission_denied">USB 访问 Ledger 被拒绝</string>
+    <string name="ledger_device_locked">请解锁您的 Ledger</string>
+    <string name="ledger_device_not_set_up">Ledger 尚未设置。请通过 Ledger Live 完成设置并安装应用，然后重新连接</string>
+    <string name="ledger_no_supported_apps">未从此 Ledger 添加任何支持的网络</string>
+    <string name="ledger_connect_failed">连接 Ledger 失败</string>
+    <string name="ledger_rejected">已在 Ledger 上拒绝</string>
+    <string name="ledger_signing_failed">Ledger 无法签署交易</string>
+    <string name="ledger_blind_signing_required">请在 Ledger 的 %1$s 应用设置中开启 Blind signing，然后重试</string>
+    <string name="ledger_data_too_large">消息过大，Ledger 无法处理</string>
+    <string name="ledger_zcash_reopen_app">请在 Ledger 上关闭并重新打开 Zcash 应用，然后重试</string>
+    <string name="ledger_ton_single_message">Ledger 每笔 TON 交易只能签署一条消息</string>
+    <string name="ledger_tron_settings_required">请在 Ledger 的 Tron 应用设置中开启 Transactions data（用于备注）或 Custom contracts（用于其他合约调用），然后重试</string>
+    <string name="ledger_ton_blind_signing_required">请在 Ledger 的 TON 应用设置中开启 Allow blind sign，然后重试</string>
+    <string name="ledger_verify_address">在 Ledger 上验证地址</string>
+    <string name="ledger_monero_confirm_view_key">请在 Ledger 的 Monero 应用中允许导出查看密钥</string>
+    <string name="ledger_waiting_for_device">正在等待 Ledger…</string>
+    <string name="ledger_sync_paused_open_app">%1$s 同步已暂停。请在 Ledger 上打开 %1$s 应用以继续。</string>
+    <string name="ledger_sync_finishing_wait">Ledger 正在完成 %1$s 同步。您的操作将自动继续。</string>
+    <string name="ledger_device_request_wait">请在 Ledger 上确认 %1$s 请求。您的操作将自动继续。</string>
+    <string name="ledger_confirm_opening_app">请在 Ledger 上确认打开 %1$s 应用</string>
     <string name="trezor_not_initialized_title">设备未设置</string>
     <string name="trezor_not_initialized_description">此 Trezor 尚未设置。请在设备上完成设置，然后重新连接。</string>
     <string name="trezor_not_initialized_cta">设置指南</string>
@@ -248,6 +280,33 @@
     <!--Market Search-->
     <string name="EmptyResults">未发现结果</string>
     <string name="transactions_empty_search_results">未找到交易</string>
+    <string name="transactions_search_not_found_in_last">在最近的 %1$s 笔交易中未找到</string>
+    <string name="transactions_search_no_more_in_last">在最近的 %1$s 笔交易中没有其他匹配项</string>
+    <string name="transactions_search_continue">继续搜索</string>
+    <string name="transactions_calendar_title">日历</string>
+    <string name="transactions_calendar_mode_to_date">截至日期</string>
+    <string name="transactions_calendar_mode_period">时间段</string>
+    <string name="transactions_calendar_show_up_to">显示至</string>
+    <string name="transactions_calendar_to_date_hint">列表从当天的最后一笔交易开始。若当天没有交易，则从之前最近的一笔开始。</string>
+    <string name="transactions_calendar_from">从</string>
+    <string name="transactions_calendar_to">至</string>
+    <string name="transactions_calendar_show">显示交易</string>
+    <string name="transactions_calendar_back_to_latest">返回最新</string>
+    <string name="transactions_calendar_period_range">从 %1$s\n至 %2$s</string>
+    <string name="transactions_calendar_period_day">在 %1$s</string>
+    <string name="transactions_calendar_period_up_to">截至 %1$s</string>
+    <string name="transactions_calendar_period_end">这是所选时间段内的全部交易</string>
+    <string name="transactions_calendar_period_empty_all">所选时间段内没有交易</string>
+    <string name="transactions_calendar_period_empty_incoming">所选时间段内没有收到的交易</string>
+    <string name="transactions_calendar_period_empty_outgoing">所选时间段内没有发送的交易</string>
+    <string name="transactions_calendar_period_empty_swap">所选时间段内没有兑换</string>
+    <string name="transactions_calendar_period_empty_approve">所选时间段内没有授权</string>
+    <string name="transactions_calendar_change_period">更改时间段</string>
+    <string name="transactions_calendar_previous_month">上个月</string>
+    <string name="transactions_calendar_next_month">下个月</string>
+    <string name="transactions_calendar_period_selected">日历，已选择时间段</string>
+    <string name="transactions_search_not_found_in_period">在所选时间段的 %1$s 笔交易中未找到</string>
+    <string name="transactions_search_no_more_in_period">在所选时间段的 %1$s 笔交易中没有其他匹配项</string>
     <string name="Market_Filters">高级搜索</string>
     <string name="Market_AdvancedSearch_Results">搜索结果</string>
     <string name="Market_Search_Hint">搜索</string>
@@ -600,6 +659,7 @@
 
     <string name="connect">连接</string>
     <string name="connect_trezor_to_add_message">您需要连接 Trezor 以添加代币</string>
+    <string name="connect_ledger_to_add_message">您需要连接 Ledger 以添加代币</string>
     <!--EthereumTransaction-->
     <string name="EthereumTransaction_Warning_Title">警告</string>
     <string name="EthereumTransaction_Error_Title">出错</string>
@@ -677,7 +737,33 @@
     <string name="unsupported_address">不支持的地址</string>
     <string name="unexpected_error">Unexpected error</string>
     <string name="unsupported_token">不支持的代币</string>
-    <string name="zec_transparent_used">在创建兑换时会使用临时 t 地址：%s。该地址会提供给兑换服务提供商，如果兑换未完成，则需要用于退款。使用 t 地址可能会导致交易部分去匿名化。</string>
+    <string name="zec_refund_plate">退款使用临时 t 地址 %1$s。</string>
+    <string name="zec_refund_address_title">临时退款地址</string>
+    <string name="zec_refund_notice_direct">如果兑换未成功，%1$s 会将 ZEC 退回到此地址。该地址是透明地址，可在区块链上查看。</string>
+    <string name="zec_refund_notice_via_pcash">如果兑换未成功，%1$s 会通过 P.CASH 服务器将 ZEC 退回到此地址。该地址是透明地址，可在区块链上查看。</string>
+    <string name="zec_refund_notice_restore">每次兑换都会获得新地址。仅通过助记词恢复后，地址可能重复，退款可能无法自动找到。为避免这种情况，请做好备份。丢失的退款可通过 ZEC 设置中的地址搜索找回。</string>
+    <string name="zec_refund_address_copy">复制地址</string>
+    <string name="zec_refund_address_explorer">在浏览器中查看</string>
+    <string name="zec_refund_address_error">无法获取退款地址</string>
+    <string name="zec_address_search_title">地址搜索</string>
+    <plurals name="zec_address_search_addresses">
+        <item quantity="other">%1$s 个地址</item>
+    </plurals>
+    <string name="zec_address_search_running">进行中 · %1$d%</string>
+    <string name="zec_address_search_description">查找兑换服务商退回到临时地址、但用助记词恢复后看不到的退款。</string>
+    <string name="zec_address_search_info">查找兑换服务商退回到临时地址的退款：仅用助记词恢复后，钱包看不到这些地址。从备份恢复后无需搜索。\n\n发现交易的地址，之后由钱包自动检查。空地址不会被记住。如果退款在检查日期之后到账，请点击“%1$s”。</string>
+    <string name="zec_address_search_checked">已检查</string>
+    <string name="zec_address_search_more">再检查</string>
+    <plurals name="zec_address_search_total">
+        <item quantity="other">共将检查 %1$s 个地址。</item>
+    </plurals>
+    <string name="zec_address_search_long">搜索大约需要 %1$d 分钟。</string>
+    <string name="zec_address_search_start">开始搜索</string>
+    <string name="zec_address_search_check_all_again">全部重新检查</string>
+    <string name="zec_address_search_progress">已检查 %1$s / %2$s</string>
+    <string name="zec_address_search_found">找到有交易的地址</string>
+    <string name="zec_address_search_hint">可以关闭：搜索会继续，应用重启后也会继续。</string>
+    <string name="zec_address_search_stop">停止</string>
     <string name="swap_yifi_memo_unsupported">兑换提供商要求提供存款备注（memo），但该备注无法从此网络发送。请选择其他提供商。</string>
     <string name="swap_provider_order_failed">提供商未能创建兑换。请刷新报价，或返回选择其他提供商。</string>
     <!-- Swap Settings -->
@@ -813,6 +899,7 @@
     <string name="Transactions_ContractCreation">合约创建</string>
     <string name="Transactions_ContractDeploy">Contract Deploy</string>
     <string name="Transactions_To">接收人%s</string>
+    <string name="transactions_to_self">给自己</string>
     <string name="Transactions_From">发送人%s</string>
     <string name="Transaction_Unlimited_CoinCode">无限%s</string>
     <string name="Transaction_Unlimited">无限</string>
@@ -1277,6 +1364,7 @@
     <string name="transaction_error_invalid_derivation_path">派生路径无效</string>
     <!--Hud texts-->
     <string name="Hud_Text_NoInternet">没有网络</string>
+    <string name="zcash_server_unavailable">服务器不可用，请重试。</string>
     <string name="Hud_Text_Copied">已复制</string>
     <string name="Hud_Text_Created">已创建</string>
     <string name="Hud_Text_Restored">已恢复</string>
@@ -1321,6 +1409,7 @@
     <string name="ManageAccounts_ImportWallet">恢复自</string>
     <string name="ManageAccounts_WatchAddress">观察地址</string>
     <string name="add_via_trezor">通过 Trezor 添加</string>
+    <string name="add_via_ledger">通过 Ledger 添加</string>
     <!-- Import Wallet -->
     <string name="ImportWallet_BackupFile">从文件</string>
     <string name="ImportWallet_BackupFile_Description">从备份文件导入.</string>
@@ -1526,7 +1615,7 @@
     <string name="Coin_Tab_Market">市场</string>
     <string name="Coin_Tab_Details">分析</string>
     <string name="Coin_Tab_Tweets">推文</string>
-    <string name="typical_fee"><![CDATA[典型费用 < 0.001 ZEC]]></string>
+    <string name="typical_fee"><![CDATA[典型费用 < 0.0001 ZEC]]></string>
     <string name="CoinPage_TimeDuration_Hour">1H</string>
     <string name="CoinPage_TimeDuration_Day">1天</string>
     <string name="CoinPage_TimeDuration_Week">7天</string>
@@ -2078,7 +2167,7 @@
     <string name="auth_info_successful">成功</string>
     <string name="auth_info_unsuccessful">失败</string>
     <string name="auth_info_duress_mode">(胁迫模式)</string>
-    <string name="auth_info_entrance_to">进入 %s</string>
+    <string name="auth_info_entrance_to">进入 %1$s</string>
     <string name="auth_info_seconds_ago">(%d秒前)</string>
     <string name="auth_info_minutes_ago">(%d分钟前)</string>
     <string name="auth_info_hours_ago">(%d小时前)</string>
@@ -2178,19 +2267,22 @@
     <string name="adding_tokens">正在添加代币</string>
     <string name="scan_to_add_message">您需要扫描卡片以添加代币</string>
     <string name="error_hardware_wallet_some_tokens_not_found">部分代币无法添加</string>
+    <string name="error_hardware_wallet_token_unavailable">%1$s 不支持此项。您可以在助记词钱包中使用</string>
     <string name="send_error_address_unavailable">地址不可用</string>
     <string name="send_error_amount_unavailable">金额不可用</string>
     <string name="send_error_fee_rate_unavailable">费率不可用</string>
     <string name="send_error_balance_unavailable">余额不可用</string>
     <string name="litecoin_mweb_invalid_amount">无效的 Litecoin MWEB 金额</string>
     <string name="litecoin_hardware_extended_public_key_required">硬件 Litecoin 钱包需要扩展公钥</string>
-    <string name="send_trezor_mweb_not_supported">Trezor 不支持 MWEB。请将莱特币发送到普通（非 MWEB）地址。</string>
-    <string name="send_trezor_time_lock_not_supported">Trezor 不支持时间锁定交易。</string>
+    <string name="send_hardware_mweb_not_supported">此硬件钱包不支持 MWEB。请将莱特币发送到普通（非 MWEB）地址。</string>
+    <string name="send_hardware_time_lock_not_supported">此硬件钱包不支持时间锁定交易。</string>
     <string name="send_trezor_zcash_memo_not_supported">Trezor 无法为 Zcash 交易添加备注。请删除备注后继续。</string>
     <string name="send_memo_too_long">备注过长：%1$d/%2$d 字节</string>
     <string name="send_trezor_zcash_transparent_only">Trezor 只能将 Zcash 发送到透明地址。</string>
     <string name="send_trezor_zcash_unified_no_transparent_receiver">该统一地址不包含透明接收方，因此 Trezor 无法向其发送转账。</string>
     <string name="send_trezor_zcash_firmware_required">%1$s 需要 %2$s 或更高版本的固件才能发送到 Zcash 统一地址。请更新设备后重试——应用会在您下次进行 Zcash 交易时重新检查固件版本。</string>
+    <string name="send_ledger_zcash_sapling_not_supported">Ledger 无法向 Sapling 地址发送 Zcash。请使用统一地址或透明地址。</string>
+    <string name="send_ledger_zcash_transaction_too_large">该交易过大，Ledger 无法签名。请发送较小的金额。</string>
     <string name="send_failed_offline_prompt_title">交易未发送</string>
     <string name="send_failed_offline_prompt_message">离线签署交易并稍后发送？</string>
 
@@ -2602,6 +2694,19 @@
     <string name="desktop_password_save_failed">无法保存密码，请重试</string>
     <string name="tron_controlled_by_others_title">其他人可能控制此账户</string>
     <string name="tron_controlled_by_others_warning">此账户的权限已被更改：其他密钥可能控制该账户。您转入的资金可能在未经您同意的情况下被提取。仅当您知道这些密钥属于谁时才向其充值。</string>
+    <string name="login_logging_selfie_unsuccessful_shared">此开关对这台电脑上的所有钱包通用</string>
+    <string name="desktop_journal_password_title">日志密码</string>
+    <string name="desktop_journal_password_set_description">设置一个用于保护登录日志的密码。它必须与用于解锁钱包的密码不同</string>
+    <string name="desktop_journal_password_access_description">输入日志密码以打开登录日志</string>
+    <string name="desktop_journal_password_disable_description">输入日志密码以将其关闭</string>
+    <string name="desktop_delete_contacts_password_title">删除联系人密码</string>
+    <string name="desktop_delete_contacts_password_set_description">在解锁界面输入此密码会立即从这台电脑上删除您的地址簿。它必须与您的其他密码不同</string>
+    <string name="desktop_delete_contacts_password_disable_description">输入删除联系人密码以将其关闭</string>
+    <string name="desktop_delete_contacts_terms_warning">设置此密码即表示您明白其用途：保护您的隐私。在解锁界面输入它会立即且不可恢复地删除这台电脑上保存的加密地址簿。地址簿仅保存在本地，没有备份就无法恢复。</string>
+    <string-array name="desktop_delete_contacts_terms">
+        <item>我明白此密码用于立即删除加密地址簿。</item>
+        <item>我明白输入此密码后地址簿将被删除，没有备份就无法恢复。</item>
+    </string-array>
     <string name="sign_message_title">签名消息</string>
     <string name="sign_message_intro">签名可以证明该地址属于您。交易所在您添加提现地址时会要求提供签名。签名不会授予对您资金的任何访问权限。</string>
     <string name="sign_message_message">消息</string>
@@ -2612,7 +2717,7 @@
     <string name="sign_message_format_bip322_description">新标准，也适用于 Taproot</string>
     <string name="sign_message_format_info">标准是经典的比特币消息签名，几乎所有交易所和钱包都支持。BIP-322 是较新的格式，也支持 Taproot 地址。请选择交易所要求的格式。</string>
     <string name="sign_message_taproot_only">Taproot 地址仅支持 BIP-322。</string>
-    <string name="sign_message_trezor_taproot">Trezor 无法为 Taproot 地址签名消息。请使用其他类型的比特币地址，例如 Native SegWit。</string>
+    <string name="sign_message_hardware_taproot">硬件钱包无法为 Taproot 地址签名消息。请使用其他类型的比特币地址，例如 Native SegWit。</string>
     <string name="sign_message_select_address_hint">请选择您在交易所填写的地址。</string>
     <string name="sign_message_current_receive_address">当前收款地址</string>
     <string name="sign_message_used">已使用</string>
