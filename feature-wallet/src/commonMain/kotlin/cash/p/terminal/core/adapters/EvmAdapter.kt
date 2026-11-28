@@ -1,5 +1,6 @@
 package cash.p.terminal.core.adapters
 
+import cash.p.terminal.core.IBalanceFetchState
 import cash.p.terminal.core.ICoinManager
 import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.data.repository.EvmTransactionRepository
@@ -20,7 +21,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
 import java.math.BigDecimal
 
-class EvmAdapter(evmTransactionRepository: EvmTransactionRepository, coinManager: ICoinManager) :
+class EvmAdapter(evmTransactionRepository: EvmTransactionRepository, coinManager: ICoinManager) : IBalanceFetchState,
     BaseEvmAdapter(evmTransactionRepository, decimal, coinManager) {
 
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
@@ -78,6 +79,9 @@ class EvmAdapter(evmTransactionRepository: EvmTransactionRepository, coinManager
 
     override val balanceData: BalanceData
         get() = BalanceData(balanceInBigDecimal(evmTransactionRepository.accountState?.balance, decimal))
+
+    override val balanceFetched: Boolean
+        get() = evmTransactionRepository.accountState != null
 
     override val balanceUpdatedFlow: Flow<Unit>
         get() = evmTransactionRepository.accountStateFlowable.map { }.asFlow()

@@ -1,9 +1,11 @@
 package cash.p.terminal.core.adapters
 
 import cash.p.terminal.core.INativeBalanceProvider
+import cash.p.terminal.core.ITokenTransferCostEstimator
 import cash.p.terminal.core.OfflineSignRequest
 import cash.p.terminal.core.OfflineSolanaSignRequest
 import cash.p.terminal.core.SignedOfflineSolanaTransaction
+import cash.p.terminal.core.TokenTransferCost
 import cash.p.terminal.core.managers.SolanaKitWrapper
 import cash.p.terminal.core.toRawHexString
 import cash.p.terminal.wallet.AdapterState
@@ -22,7 +24,8 @@ class SplAdapter(
     wallet: Wallet,
     private val mintAddressString: String
 ) : BaseSolanaAdapter(solanaKitWrapper, wallet.decimal),
-    INativeBalanceProvider {
+    INativeBalanceProvider,
+    ITokenTransferCostEstimator {
 
     private val mintAddress = Address(mintAddressString)
 
@@ -73,6 +76,14 @@ class SplAdapter(
     override val nativeBalanceUpdatedFlow: Flow<Unit>
         get() = solanaKit.balanceFlow.map { }
 
+    override val nativeBalanceLoaded: Boolean
+        get() = solanaKit.balance != null
+
+    // ITokenTransferCostEstimator
+
+    override suspend fun estimateTransferCost() =
+        TokenTransferCost(fee = SolanaKit.fee, requiredBalance = TRANSFER_REQUIRED_BALANCE)
+
     override suspend fun send(amount: BigDecimal, to: Address): FullTransaction {
         val signer = signer ?: throw SolanaSignerNotInitializedException()
 
@@ -107,4 +118,11 @@ class SplAdapter(
         is SolanaKit.SyncState.Syncing -> AdapterState.Syncing()
     }
 
+    companion object {
+        /** Rent-exempt minimum of an SPL token account (165 bytes). */
+        private val TOKEN_ACCOUNT_RENT = BigDecimal("0.00203928")
+
+        // The sender pays the rent when the recipient has no account for this token yet.
+        val TRANSFER_REQUIRED_BALANCE: BigDecimal = SolanaKit.fee + TOKEN_ACCOUNT_RENT
+    }
 }

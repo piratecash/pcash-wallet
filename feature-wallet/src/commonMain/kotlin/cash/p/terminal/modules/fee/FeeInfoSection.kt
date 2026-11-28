@@ -27,6 +27,7 @@ import cash.p.terminal.resources.Swap_AvailableBalance
 import cash.p.terminal.resources.fee
 import cash.p.terminal.resources.fee_warning_low_balance
 import cash.p.terminal.resources.swap_balance_for_fees
+import cash.p.terminal.resources.swap_fee_balance_may_be_short
 import cash.p.terminal.resources.swap_insufficient_fee_balance
 
 @Composable
@@ -43,11 +44,12 @@ fun FeeInfoSection(
     feeTitle: String? = null,
     feeLoading: Boolean = false,
     feeWarningData: NetworkFeeWarningData? = null,
+    warningText: String? = null,
     insufficientFeeText: String? = null,
     feeDetails: @Composable () -> Unit = {},
 ) {
     val isNativeCoinSwap = feeCoinBalance == null
-    val feeWarningText = feeWarningData?.let {
+    val feeWarningText = warningText ?: feeWarningData?.let {
         stringResource(Res.string.fee_warning_low_balance, it.balanceThreshold)
     }
     val showWarning = feeWarningText != null && !insufficientFeeBalance
@@ -105,6 +107,13 @@ fun FeeInfoSection(
             modifier = Modifier.padding(horizontal = 32.dp),
         )
     }
+}
+
+@Composable
+internal fun feeBalanceMayBeShortText(feeToken: Token?, required: BigDecimal?, balanceHidden: Boolean): String? {
+    if (feeToken == null || required == null) return null
+    val amount = CoinValue(feeToken, required).getFormattedFull().orHide(balanceHidden)
+    return stringResource(Res.string.swap_fee_balance_may_be_short, feeToken.coin.code, amount)
 }
 
 @Composable

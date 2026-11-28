@@ -81,6 +81,9 @@ object SendSolanaModule {
         val amountCaution: HSCaution?,
         val addressError: Throwable?,
         val canBeSend: Boolean,
+        val insufficientFeeBalance: Boolean,
+        /** SOL a token transfer may need, set when the balance may fall short of it. */
+        val feeBalanceRequired: BigDecimal?,
         val showAddressInput: Boolean,
         val address: Address?,
         val isPoisonAddress: Boolean = false,

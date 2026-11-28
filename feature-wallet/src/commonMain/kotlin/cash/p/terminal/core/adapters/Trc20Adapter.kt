@@ -2,9 +2,12 @@ package cash.p.terminal.core.adapters
 
 import cash.p.terminal.core.ICoinManager
 import cash.p.terminal.core.INativeBalanceProvider
+import cash.p.terminal.core.ITokenTransferCostEstimator
+import cash.p.terminal.core.TokenTransferCost
 import cash.p.terminal.core.managers.EvmLabelManager
 import cash.p.terminal.core.managers.TronKitWrapper
 import cash.p.terminal.entities.transactionrecords.tron.TronTransactionRecord
+import cash.p.terminal.modules.send.tron.toTronFeeBreakdown
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
@@ -18,13 +21,14 @@ import kotlinx.coroutines.flow.map
 import org.koin.java.KoinJavaComponent.inject
 import java.math.BigDecimal
 import java.math.BigInteger
+import kotlin.random.Random
 
 class Trc20Adapter(
     tronKitWrapper: TronKitWrapper,
     contractAddress: String,
     wallet: Wallet,
     baseToken: Token,
-) : BaseTronAdapter(tronKitWrapper, wallet.decimal), INativeBalanceProvider {
+) : BaseTronAdapter(tronKitWrapper, wallet.decimal), INativeBalanceProvider, ITokenTransferCostEstimator {
 
     private val contractAddress: Address = Address.fromBase58(contractAddress)
 
@@ -77,6 +81,19 @@ class Trc20Adapter(
 
     override val nativeBalanceUpdatedFlow: Flow<Unit>
         get() = tronKit.trxBalanceFlow.map { }
+
+    // ITokenTransferCostEstimator
+
+    override val transferAlwaysCostsNative = false
+
+    // A fresh recipient: storing a new token holder costs the most energy.
+    override suspend fun estimateTransferCost(): TokenTransferCost {
+        val recipient = Address.fromRawWithoutPrefix(Random.nextBytes(20), tronKit.network.addressPrefixByte)
+        val total = estimateFee(BigDecimal.ONE.movePointLeft(decimal), recipient)
+            .toTronFeeBreakdown(TronAdapter.decimal)
+            .totalFee
+        return TokenTransferCost(fee = total, requiredBalance = total)
+    }
 
     override fun transferContract(amount: BigDecimal, to: Address): Contract =
         tronKit.transferTrc20TriggerSmartContract(contractAddress, to, scaleUp(amount))

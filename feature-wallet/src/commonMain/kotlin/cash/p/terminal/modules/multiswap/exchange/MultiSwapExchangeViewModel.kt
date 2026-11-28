@@ -29,7 +29,6 @@ import cash.p.terminal.modules.multiswap.sideIn
 import cash.p.terminal.modules.multiswap.sideIntermediate
 import cash.p.terminal.modules.multiswap.sideOut
 import cash.p.terminal.wallet.IAccountManager
-import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
@@ -66,7 +65,7 @@ class MultiSwapExchangeViewModel(
     private val syncPendingMultiSwapUseCase: SyncPendingMultiSwapUseCase,
     private val assetFiatRateService: AssetFiatRateService,
     currencyManager: CurrencyManager,
-    adapterManager: IAdapterManager,
+    private val tokenBalanceService: TokenBalanceService,
     private val balanceHiddenManager: IBalanceHiddenManager,
     private val walletManager: IWalletManager,
     private val walletUseCase: WalletUseCase,
@@ -91,7 +90,6 @@ class MultiSwapExchangeViewModel(
 
     private var currentSwap: PendingMultiSwap? = null
     private val currency = currencyManager.baseCurrency
-    private val tokenBalanceService = TokenBalanceService(adapterManager, marketKit)
 
     val leg2BalanceStateFlow: ServiceStateFlow<TokenBalanceService.State>
         get() = tokenBalanceService.stateFlow

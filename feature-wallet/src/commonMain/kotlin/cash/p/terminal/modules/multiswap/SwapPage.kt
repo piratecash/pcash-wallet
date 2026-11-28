@@ -60,6 +60,7 @@ import cash.p.terminal.entities.CoinValue
 import cash.p.terminal.modules.multiswap.action.ActionCreate
 import cash.p.terminal.modules.multiswap.action.ISwapProviderAction
 import cash.p.terminal.modules.fee.FeeInfoSection
+import cash.p.terminal.modules.fee.feeBalanceMayBeShortText
 import cash.p.terminal.modules.send.tron.TronResourcesSection
 import cash.p.terminal.modules.fee.QuoteInfoRow
 import cash.p.terminal.modules.multiswap.providers.IMultiSwapProvider
@@ -757,6 +758,8 @@ private fun SwapFeeInfo(uiState: SwapUiState, controller: SwapScreenController) 
         insufficientFeeBalance = uiState.insufficientFeeBalance,
         onBalanceClicked = controller::toggleBalance,
         feeTitle = stringResource(Res.string.estimated_fee),
+        feeLoading = uiState.networkFeeLoading,
+        warningText = feeBalanceMayBeShortText(feeToken, uiState.feeBalanceRequired, uiState.balanceHidden),
     )
 }
 

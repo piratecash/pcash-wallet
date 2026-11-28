@@ -1,5 +1,6 @@
 package cash.p.terminal.modules.multiswap.exchange
 
+import cash.p.terminal.modules.multiswap.TokenBalanceService
 import cash.p.terminal.core.storage.PendingMultiSwapStorage
 import cash.p.terminal.core.usecase.FetchSwapQuotesUseCase
 import cash.p.terminal.core.usecase.SyncPendingMultiSwapUseCase
@@ -42,6 +43,7 @@ import io.mockk.coVerify
 import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
+import io.reactivex.Flowable
 import io.mockk.slot
 import io.mockk.unmockkAll
 import io.mockk.verify
@@ -117,6 +119,7 @@ class MultiSwapExchangeViewModelTest {
         every { walletManager.activeWalletsFlow } returns activeWalletsFlow
         every { marketKit.token(any()) } returns testToken
         every { adapterManager.getAdapterForToken<IBalanceAdapter>(any()) } returns balanceAdapter
+        every { adapterManager.adaptersReadyObservable } returns Flowable.never()
         every { adapterManager.getAdjustedBalanceDataForToken(any()) } returns BalanceData(BigDecimal("10.0"))
         every { balanceAdapter.balanceState } returns AdapterState.Synced
         every { balanceAdapter.balanceUpdatedFlow } returns balanceUpdatedFlow
@@ -932,7 +935,13 @@ class MultiSwapExchangeViewModelTest {
             syncPendingMultiSwapUseCase = syncPendingMultiSwapUseCase,
             assetFiatRateService = assetFiatRateService,
             currencyManager = currencyManager,
-            adapterManager = adapterManager,
+            tokenBalanceService = TokenBalanceService(
+                adapterManager = adapterManager,
+                marketKit = marketKit,
+                transferCostCache = mockk(relaxed = true),
+                accountManager = accountManager,
+                offlineOperationGate = mockk(relaxed = true),
+            ),
             balanceHiddenManager = balanceHiddenManager,
             walletManager = walletManager,
             walletUseCase = walletUseCase,

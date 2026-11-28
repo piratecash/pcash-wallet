@@ -128,6 +128,7 @@ fun SendConfirmationScreen(
     sendCaution: HSCaution? = null,
     windowInsets: WindowInsets = NavigationBarDefaults.windowInsets,
     insufficientFeeText: String? = null,
+    feeWarningText: String? = null,
     assetContent: (@Composable () -> Unit)? = null,
     recipientDomain: String? = null,
 ) {
@@ -266,6 +267,7 @@ fun SendConfirmationScreen(
                     onBalanceClicked = onBalanceClicked,
                     feeWarningData = feeWarningData,
                     insufficientFeeText = insufficientFeeText,
+                    warningText = feeWarningText,
                 )
 
                 if (!memo.isNullOrBlank()) {

@@ -36,7 +36,6 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.manager.IConnectivityManager
-import cash.p.terminal.wallet.IAdapterManager
 import kotlin.reflect.KClass
 import androidx.lifecycle.viewmodel.CreationExtras
 
@@ -188,10 +187,12 @@ class SwapViewModel(
             availableBalance = balanceState.balance,
             displayBalance = balanceState.displayBalance,
             networkFee = fee,
+            networkFeeLoading = balanceState.feeLoading,
             networkFeeFiatAmount = networkFeeFiatAmount,
             feeToken = feeToken,
             feeCoinBalance = balanceState.feeCoinBalance,
             insufficientFeeBalance = balanceState.insufficientFeeBalance,
+            feeBalanceRequired = balanceState.feeBalanceRequired,
             balanceHidden = quoteState.tokenIn?.let {
                 balanceHiddenManager.isWalletBalanceHidden(it.tokenQuery.id)
             } ?: balanceHiddenManager.balanceHidden,
@@ -333,6 +334,7 @@ class SwapViewModel(
         timeout = timerState.timeout,
         route = quoteState.multiSwapRoute,
         tokenOutAction = quoteState.tokenOutAction,
+        insufficientFeeBalance = balanceState.insufficientFeeBalance,
     )
 
     fun refreshExpiredMultiSwapRoute() {
@@ -381,7 +383,13 @@ class SwapViewModel(
         multiSwapRouteRefreshState == MultiSwapRouteRefreshState.Failed -> ButtonState.Refresh
         multiSwapRouteRefreshState == MultiSwapRouteRefreshState.Refreshing || uiState.quoting || uiState.timeout ->
             ButtonState.Quoting
-        isMultiSwapRouteReady(uiState.quoting, uiState.timeout, route, uiState.tokenOutAction) -> ButtonState.Enabled
+        isMultiSwapRouteReady(
+            uiState.quoting,
+            uiState.timeout,
+            route,
+            uiState.tokenOutAction,
+            uiState.insufficientFeeBalance,
+        ) -> ButtonState.Enabled
         else -> ButtonState.Disabled
     }
 
@@ -522,7 +530,7 @@ class SwapViewModel(
             val swapQuoteService: SwapQuoteService by inject(SwapQuoteService::class.java)
             val marketKit: MarketKitWrapper by inject(MarketKitWrapper::class.java)
             val assetFiatRateService: AssetFiatRateService by inject(AssetFiatRateService::class.java)
-            val tokenBalanceService = TokenBalanceService(getKoinInstance<IAdapterManager>(), marketKit)
+            val tokenBalanceService = getKoinInstance<TokenBalanceService>()
             val priceImpactService = PriceImpactService()
 
             return SwapViewModel(
@@ -553,9 +561,10 @@ internal fun isMultiSwapRouteReady(
     timeout: Boolean,
     route: MultiSwapRoute?,
     tokenOutAction: ISwapProviderAction?,
+    insufficientFeeBalance: Boolean,
 ): Boolean {
     val settledRoute = settledMultiSwapRoute(quoting, route)
-    return !timeout && tokenOutAction == null && settledRoute != null &&
+    return !timeout && tokenOutAction == null && !insufficientFeeBalance && settledRoute != null &&
         settledRoute.leg1Quotes.contains(settledRoute.selectedLeg1Quote)
         && settledRoute.leg2Quotes.contains(settledRoute.selectedLeg2Quote)
 }
@@ -611,10 +620,12 @@ data class SwapUiState(
     val availableBalance: BigDecimal?,
     val displayBalance: BigDecimal?,
     val networkFee: BigDecimal?,
+    val networkFeeLoading: Boolean,
     val networkFeeFiatAmount: BigDecimal?,
     val feeToken: Token?,
     val feeCoinBalance: BigDecimal?,
     val insufficientFeeBalance: Boolean,
+    val feeBalanceRequired: BigDecimal?,
     val balanceHidden: Boolean,
     val refundNotice: ZcashRefundNotice?,
     val refundAddressError: Boolean,

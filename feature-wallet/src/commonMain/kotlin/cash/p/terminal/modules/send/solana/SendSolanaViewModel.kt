@@ -7,8 +7,10 @@ import androidx.lifecycle.viewModelScope
 import cash.p.terminal.resources.Error
 import cash.p.terminal.resources.Hud_Text_NoInternet
 import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.Swap_ErrorInsufficientBalance
 import cash.p.terminal.resources.send_error_address_unavailable
 import cash.p.terminal.resources.send_error_amount_unavailable
+import cash.p.terminal.resources.swap_insufficient_fee_balance
 import io.horizontalsystems.core.collectWith
 import cash.p.terminal.modules.send.hardwareWalletCaution
 import cash.p.terminal.modules.send.isHardwareWalletCancelled
@@ -19,6 +21,7 @@ import cash.p.terminal.core.LocalizedException
 import cash.p.terminal.core.OfflineSolanaSignRequest
 import cash.p.terminal.core.OfflineTransactionAdapter
 import cash.p.terminal.core.SignedOfflineSolanaTransaction
+import cash.p.terminal.core.adapters.SplAdapter
 import cash.p.terminal.manager.IConnectivityManager
 import cash.p.terminal.core.managers.OfflineSignedTransactionRepository
 import cash.p.terminal.core.managers.OfflineTransactionPayloadEncoder
@@ -34,6 +37,8 @@ import cash.p.terminal.modules.contacts.ContactsRepository
 import cash.p.terminal.modules.send.SendConfirmationData
 import cash.p.terminal.modules.send.SendErrorInsufficientBalance
 import cash.p.terminal.modules.send.SendResult
+import cash.p.terminal.modules.send.TokenFeeStatus
+import cash.p.terminal.modules.send.tokenFeeStatus
 import cash.p.terminal.modules.xrate.XRateService
 import cash.p.terminal.modules.send.offline.OfflineSignCapableViewModel
 import cash.p.terminal.modules.send.offline.OfflineSigningController
@@ -135,16 +140,50 @@ class SendSolanaViewModel(
 
     override fun createState(): SendSolanaModule.SendUiState {
         val poison = isAddressSuspicious(addressState.address?.hex)
+        val feeStatus = tokenTransferFeeStatus()
         return SendSolanaModule.SendUiState(
             availableBalance = amountState.availableBalance,
             amountCaution = amountState.amountCaution,
             addressError = addressState.addressError,
-            canBeSend = amountState.canBeSend && addressState.canBeSend && (!poison || riskAccepted),
+            canBeSend = amountState.canBeSend && addressState.canBeSend && (!poison || riskAccepted) &&
+                feeStatus != TokenFeeStatus.CertainlyShort,
+            insufficientFeeBalance = feeStatus == TokenFeeStatus.CertainlyShort,
+            feeBalanceRequired = SplAdapter.TRANSFER_REQUIRED_BALANCE.takeIf { feeStatus == TokenFeeStatus.MaybeShort },
             showAddressInput = showAddressInput,
             address = addressState.address,
             isPoisonAddress = poison,
             riskAccepted = riskAccepted,
         )
+    }
+
+    // Native SOL is checked against the amount in send(); a token transfer pays only SOL fees and rent.
+    private fun tokenTransferFeeStatus(): TokenFeeStatus =
+        if (sendToken.type == TokenType.Native) {
+            TokenFeeStatus.Sufficient
+        } else {
+            tokenFeeStatus(
+                transferAlwaysCostsNative = true,
+                nativeBalance = feeCoinBalance,
+                nativeBalanceLoaded = feeCoinBalanceLoaded,
+                fee = SolanaKit.fee,
+                requiredBalance = SplAdapter.TRANSFER_REQUIRED_BALANCE,
+            )
+        }
+
+    // The confirmation can stay open while another transaction spends either balance.
+    private fun checkBalancesAtSend() {
+        val available = adapterManager.getAdjustedBalanceData(wallet)?.available
+        if (sendToken.type == TokenType.Native) {
+            if (decimalAmount + SolanaKit.fee > (available ?: solBalance)) throw EvmError.InsufficientBalanceWithFee
+            return
+        }
+        if (available != null && decimalAmount > available) {
+            throw LocalizedException(Res.string.Swap_ErrorInsufficientBalance)
+        }
+        refreshFeeCoinBalance(feeToken)
+        if (tokenTransferFeeStatus() == TokenFeeStatus.CertainlyShort) {
+            throw LocalizedException(Res.string.swap_insufficient_fee_balance, feeToken.coin.code)
+        }
     }
 
     fun onEnterAmount(amount: BigDecimal?) {
@@ -205,13 +244,7 @@ class SendSolanaViewModel(
             val solanaAddress = addressState.solanaAddress
                 ?: throw LocalizedException(Res.string.send_error_address_unavailable)
 
-            val totalSolAmount =
-                (if (sendToken.type == TokenType.Native) decimalAmount else BigDecimal.ZERO) + SolanaKit.fee
-
-            val availableBalance = adapterManager.getAdjustedBalanceData(wallet)?.available
-                ?: solBalance
-            if (totalSolAmount > availableBalance)
-                throw EvmError.InsufficientBalanceWithFee
+            checkBalancesAtSend()
 
             // 1. Create pending transaction draft BEFORE sending
             val sdkBalance = adapterManager.getBalanceAdapterForWallet(wallet)
@@ -283,7 +316,7 @@ class SendSolanaViewModel(
 
     private fun createCaution(error: Throwable) = error.hardwareWalletCaution() ?: when (error) {
         is UnknownHostException -> HSCaution(TranslatableString.ResString(Res.string.Hud_Text_NoInternet))
-        is LocalizedException -> HSCaution(TranslatableString.ResString(error.errorTextRes))
+        is LocalizedException -> HSCaution(TranslatableString.ResString(error.errorTextRes, *error.formatArgs))
         is EvmError.InsufficientBalanceWithFee -> SendErrorInsufficientBalance(
             feeToken.coin.code, solBalance.toPlainString()
         )

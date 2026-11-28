@@ -21,6 +21,7 @@ import cash.p.terminal.core.managers.TermsManager
 import cash.p.terminal.core.managers.ThorchainAccountManagers
 import cash.p.terminal.core.managers.TimePasswordProvider
 import cash.p.terminal.core.managers.TokenAutoEnableManager
+import cash.p.terminal.core.managers.TokenTransferCostCache
 import cash.p.terminal.core.managers.TonAccountManager
 import cash.p.terminal.core.managers.TronAccountManager
 import cash.p.terminal.core.AccountTokenSupport
@@ -124,6 +125,7 @@ import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.PassphraseValidator
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
+import kotlin.time.TimeSource
 import org.koin.core.module.dsl.viewModel
 import cash.p.terminal.wallet.managers.UserManager
 import io.horizontalsystems.ethereumkit.ens.EnsResolver
@@ -434,6 +436,8 @@ val featureWalletModule = module {
     singleOf(::SpamManager)
     singleOf(::AddressCheckManager)
     singleOf(::OfflineOperationGate)
+    singleOf(::TokenTransferCostCache)
+    single<TimeSource.WithComparableMarks> { TimeSource.Monotonic }
     singleOf(::BackgroundKeepAliveManager)
     singleOf(::NetworkErrorTracker)
     singleOf(::AddressLabelManager)
