@@ -6,8 +6,10 @@ import cash.p.terminal.core.ZcashRescanException
 import cash.p.terminal.core.managers.AdapterManager
 import cash.p.terminal.core.managers.OfflineKey
 import cash.p.terminal.core.managers.OfflineModeManager
+import cash.p.terminal.core.managers.RestoreSettingType
 import cash.p.terminal.core.managers.RestoreSettings
 import cash.p.terminal.core.managers.RestoreSettingsManager
+import cash.p.terminal.core.managers.RestoreSettingsTestFixture
 import cash.p.terminal.domain.usecase.ClearZCashWalletDataUseCase
 import cash.p.terminal.domain.usecase.ZcashEraseResult
 import cash.p.terminal.wallet.Account
@@ -66,13 +68,13 @@ class RescanZcashUseCaseTest {
         assertFailsWith<ZcashRescanException> { useCase(account, newHeight) }
 
         coVerify(exactly = 0) { adapterManager.rescanZcashAccount(any(), any()) }
-        coVerify(exactly = 0) { clearZCashWalletDataUseCase(any()) }
+        coVerify(exactly = 0) { clearZCashWalletDataUseCase(any(), any()) }
     }
 
     @Test
     fun invoke_eraseNone_abortsWithoutMutatingState() = runTest(dispatcher) {
         wireRescanRunsClearData()
-        coEvery { clearZCashWalletDataUseCase(accountId) } returns ZcashEraseResult.NONE
+        coEvery { clearZCashWalletDataUseCase(accountId, eraseIssuedAddresses = false) } returns ZcashEraseResult.NONE
 
         assertFailsWith<ZcashRescanException> { useCase(account, newHeight) }
 
@@ -83,7 +85,7 @@ class RescanZcashUseCaseTest {
     @Test
     fun invoke_eraseAll_persistsHeightAndRemovesId() = runTest(dispatcher) {
         wireRescanRunsClearData()
-        coEvery { clearZCashWalletDataUseCase(accountId) } returns ZcashEraseResult.ALL
+        coEvery { clearZCashWalletDataUseCase(accountId, eraseIssuedAddresses = false) } returns ZcashEraseResult.ALL
         val savedSettings = RestoreSettings()
         every { restoreSettingsManager.settings(account, BlockchainType.Zcash) } returns savedSettings
         every { localStorage.zcashAccountIds } returns setOf(accountId)
@@ -98,7 +100,8 @@ class RescanZcashUseCaseTest {
     @Test
     fun invoke_erasePartial_stillCommitsRescan() = runTest(dispatcher) {
         wireRescanRunsClearData()
-        coEvery { clearZCashWalletDataUseCase(accountId) } returns ZcashEraseResult.PARTIAL
+        coEvery { clearZCashWalletDataUseCase(accountId, eraseIssuedAddresses = false) } returns
+            ZcashEraseResult.PARTIAL
         every { restoreSettingsManager.settings(account, BlockchainType.Zcash) } returns RestoreSettings()
         every { localStorage.zcashAccountIds } returns setOf(accountId)
 
@@ -106,5 +109,35 @@ class RescanZcashUseCaseTest {
 
         verify { restoreSettingsManager.save(any(), account, BlockchainType.Zcash) }
         verify { localStorage.zcashAccountIds = emptySet() }
+    }
+
+    @Test
+    fun invoke_issueIndexStored_keepsItBesideTheNewHeight() = runTest(dispatcher) {
+        val settingsFixture = RestoreSettingsTestFixture()
+        settingsFixture.manager().save(
+            RestoreSettings().apply {
+                birthdayHeight = 2_000_000
+                this[RestoreSettingType.ZcashTransparentIssueIndex] = "41"
+            },
+            account,
+            BlockchainType.Zcash,
+        )
+        wireRescanRunsClearData()
+        coEvery { clearZCashWalletDataUseCase(accountId, eraseIssuedAddresses = false) } returns ZcashEraseResult.ALL
+        every { localStorage.zcashAccountIds } returns setOf(accountId)
+        val rescan = RescanZcashUseCase(
+            adapterManager,
+            clearZCashWalletDataUseCase,
+            settingsFixture.manager(),
+            localStorage,
+            dispatcherProvider,
+            offlineModeManager,
+        )
+
+        rescan(account, newHeight)
+
+        val saved = settingsFixture.manager().settings(account, BlockchainType.Zcash)
+        assertEquals(newHeight, saved.birthdayHeight)
+        assertEquals("41", saved[RestoreSettingType.ZcashTransparentIssueIndex])
     }
 }

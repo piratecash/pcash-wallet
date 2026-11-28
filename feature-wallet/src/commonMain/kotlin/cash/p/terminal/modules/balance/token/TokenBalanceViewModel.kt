@@ -10,6 +10,9 @@ import cash.p.terminal.core.ISendMoneroAdapter
 import cash.p.terminal.core.MoneroSpendReadiness
 import cash.p.terminal.core.adapters.zcash.ZcashAdapter
 import cash.p.terminal.core.adapters.zcash.convertZatoshiToZec
+import cash.p.terminal.core.adapters.zcash.session.ZcashAddressSearch
+import cash.p.terminal.core.adapters.zcash.session.ZcashSyncScheduler
+import cash.p.terminal.core.adapters.zcash.session.ZcashAddressSearchState
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.isCustom
 import cash.p.terminal.core.isEligibleForMoneroFullWalletRecovery
@@ -61,7 +64,10 @@ import cash.p.terminal.modules.transactions.forQuery
 import cash.p.terminal.modules.transactions.pausedCountText
 import cash.p.terminal.modules.transactions.showsOnlySpinner
 import cash.p.terminal.modules.transactions.TransactionItem
+import cash.p.terminal.modules.transactions.TransactionCalendarController
+import cash.p.terminal.modules.transactions.TransactionPeriod
 import cash.p.terminal.modules.transactions.TransactionSearchController
+import cash.p.terminal.modules.transactions.hiddenFlagChanges
 import cash.p.terminal.modules.transactions.TransactionViewItem
 import cash.p.terminal.modules.transactions.TransactionViewItemFactory
 import cash.p.terminal.modules.transactions.addressMetadataChangesFlow
@@ -102,10 +108,13 @@ import co.touchlab.kermit.Logger
 import io.horizontalsystems.core.IAppNumberFormatter
 import io.horizontalsystems.core.ViewModelUiState
 import io.horizontalsystems.core.entities.BlockchainType
+import io.horizontalsystems.core.helpers.DateHelper
 import io.horizontalsystems.core.hoursUntil
 import io.horizontalsystems.core.logger.AppLogger
 import java.math.BigDecimal
 import java.time.Instant
+import java.util.Date
+import kotlin.math.roundToInt
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -143,7 +152,7 @@ class TokenBalanceViewModel(
     private val numberFormatter: IAppNumberFormatter,
     private val contactsRepository: ContactsRepository,
     private val offlineModeManager: OfflineModeManager,
-) : ViewModelUiState<TokenBalanceUiState>(), TransactionSearchController.Host {
+) : ViewModelUiState<TokenBalanceUiState>(), TransactionSearchController.Host, TransactionCalendarController.Host {
 
     private val logger = AppLogger("TokenBalanceViewModel-${wallet.coin.code}")
     private val stackingType: StackingType? = when {
@@ -165,7 +174,9 @@ class TokenBalanceViewModel(
     private val title = wallet.token.coin.name
 
     private val searchController = TransactionSearchController(viewModelScope, this)
+    private val calendarController = TransactionCalendarController(viewModelScope, this)
     private var appliedSearchQuery = ""
+    private var historyExhausted = false
     private var searchScanState: SearchScanState = SearchScanState.Idle
 
     private var balanceViewItem: BalanceViewItem? = null
@@ -229,8 +240,18 @@ class TokenBalanceViewModel(
         networkSettings.isNetworkFeeWarningDismissed(wallet.token.blockchainType.uid)
     private var offlineSince: Long? = null
 
+    private val addressSearchSupported = wallet.token.blockchainType == BlockchainType.Zcash &&
+        TokenType.AddressSpecType.Transparent in wallet.account.type.zcashAddressSpecs()
+    private var addressSearchState: ZcashAddressSearchState? = null
+    private var addressSearchMore = ZcashAddressSearch.DEFAULT_MORE.toString()
+
+    /** Null hides the row: not a transparent Zcash wallet, or the search has no starting point yet. */
+    var addressSearchUiState by mutableStateOf<ZcashAddressSearchUiState?>(null)
+        private set
+
     init {
         observeMoneroAdapter()
+        if (addressSearchSupported) observeAddressSearch()
 
         viewModelScope.launch {
             marketFavoritesManager.favoriteCoinUids.collect { uids ->
@@ -362,6 +383,24 @@ class TokenBalanceViewModel(
         }
 
         viewModelScope.launch {
+            transactionHiddenManager.transactionHiddenFlow.hiddenFlagChanges().collect { hidden ->
+                // A re-hidden screen must not keep showing the revealed history through a period or search.
+                if (hidden) {
+                    calendarController.onLeave()
+                    searchController.onSearchClose()
+                }
+                emitState()
+            }
+        }
+
+        viewModelScope.launch {
+            transactionsService.historyExhaustedFlow.collect {
+                historyExhausted = it
+                emitState()
+            }
+        }
+
+        viewModelScope.launch {
             totalBalance.stateFlow.collectLatest { totalBalanceValue ->
                 updateSecondaryValue(totalBalanceValue)
             }
@@ -473,12 +512,30 @@ class TokenBalanceViewModel(
         if (appliedSearchQuery == query) return
 
         appliedSearchQuery = query
+        openReloadWindow()
+        transactionsService.setSearchQuery(appliedSearchQuery.ifBlank { null })
+    }
+
+    fun onCalendarClick() = calendarController.onCalendarClick()
+    fun onCalendarDismiss() = calendarController.onSheetDismiss()
+    fun onPeriodSelect(period: TransactionPeriod) = calendarController.apply(period)
+    fun onBackToLatest() = calendarController.clear()
+
+    override fun onCalendarStateChanged() = emitState()
+
+    override suspend fun applyPeriod(period: TransactionPeriod?) {
+        openReloadWindow()
+        transactionsService.setPeriod(period)
+    }
+
+    override suspend fun oldestTimestamp(): Long? = transactionsService.oldestTimestamp()
+
+    private fun openReloadWindow() {
         transactions = if (appliedSearchQuery.isEmpty()) null else emptyMap()
         searchScanState = SearchScanState.Scanning.forQuery(appliedSearchQuery)
         // Reopen the "please wait" window (see updateTransactions()) so the reload to the full list can't flash empty.
         if (appliedSearchQuery.isEmpty()) syncing = true
         emitState()
-        transactionsService.setSearchQuery(appliedSearchQuery.ifBlank { null })
     }
 
     private suspend fun refreshTransactionsFromCache() {
@@ -565,6 +622,8 @@ class TokenBalanceViewModel(
         searchScanning = searchScanState == SearchScanState.Scanning,
         searchPausedCount = searchScanState.pausedCountText(numberFormatter),
         searchEmptyResult = isFinalSearchEmptyResult(),
+        period = calendarController.uiState(historyExhausted),
+        transactionsHidden = transactionHiddenManager.transactionHiddenFlow.value.transactionHidden,
         offlineSince = offlineSince,
         moneroHardwareWallet = moneroHardwareWallet,
         moneroLedgerWallet = wallet.account.type is AccountType.LedgerDevice,
@@ -1048,6 +1107,70 @@ class TokenBalanceViewModel(
         totalBalance.stop()
     }
 
+    fun onAddressSearchMoreChange(text: String) {
+        addressSearchMore = text.filter(Char::isDigit).take(ADDRESS_SEARCH_MORE_DIGITS)
+        publishAddressSearch()
+    }
+
+    fun startAddressSearch() {
+        val more = addressSearchMoreOrNull() ?: return
+        viewModelScope.launch {
+            addressSearch().start(wallet.account.id, more)
+            wakeSyncScheduler()
+        }
+    }
+
+    fun checkAllAddressesAgain() {
+        viewModelScope.launch {
+            addressSearch().checkAllAgain(wallet.account.id)
+            wakeSyncScheduler()
+        }
+    }
+
+    fun stopAddressSearch() {
+        viewModelScope.launch { addressSearch().stop(wallet.account.id) }
+    }
+
+    private fun addressSearch(): ZcashAddressSearch = getKoinInstance()
+
+    // Otherwise the first chunk waits out the scheduler's idle poll.
+    private fun wakeSyncScheduler() = getKoinInstance<ZcashSyncScheduler>().wakeUp()
+
+    private fun observeAddressSearch() {
+        viewModelScope.launch {
+            addressSearch().state(wallet.account.id).collect {
+                addressSearchState = it
+                publishAddressSearch()
+            }
+        }
+    }
+
+    private fun addressSearchMoreOrNull(): Int? =
+        addressSearchMore.toIntOrNull()?.takeIf { it in 1..ZcashAddressSearch.MAX_MORE }
+
+    private fun publishAddressSearch() {
+        addressSearchUiState = addressSearchState?.let { state ->
+            val more = addressSearchMoreOrNull()
+            val total = more?.let { state.checkedThrough + it }
+            val target = state.target ?: state.checkedThrough
+            ZcashAddressSearchUiState(
+                running = state.running,
+                checked = state.checkedThrough,
+                checkedText = formatCount(state.checkedThrough),
+                checkedDate = state.checkedAt?.let { DateHelper.formatDate(Date(it), "dd.MM") },
+                targetText = formatCount(target),
+                percent = if (target > 0) (state.checkedThrough * 100.0 / target).roundToInt() else 0,
+                foundText = formatCount(state.found),
+                moreText = addressSearchMore,
+                total = total,
+                totalText = total?.let(::formatCount),
+                longSearchMinutes = more?.let(ZcashAddressSearch::longSearchMinutes),
+            )
+        }
+    }
+
+    private fun formatCount(value: Int): String = numberFormatter.format(value.toBigDecimal(), 0, 0)
+
     fun setAmlCheckEnabled(enabled: Boolean) {
         amlStatusManager.setEnabled(enabled)
     }
@@ -1092,6 +1215,7 @@ class TokenBalanceViewModel(
             walletHasTransactions = false
         }
         transactionsService.setTransactionType(type)
+        calendarController.onSelectionChanged()
         emitState()
     }
 
@@ -1101,3 +1225,6 @@ class TokenBalanceViewModel(
         emitState()
     }
 }
+
+/** Enough for [ZcashAddressSearch.MAX_MORE]. */
+private const val ADDRESS_SEARCH_MORE_DIGITS = 6

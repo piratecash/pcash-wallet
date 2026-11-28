@@ -6,6 +6,9 @@ import cash.p.terminal.ledger.bitcoin.LedgerBtcApp
 object LedgerAppRequirements {
     const val ZCASH_APP = "Zcash"
 
+    // Bitcoin 2.2.2-2.2.4 fail to sign messages of some lengths.
+    const val BITCOIN_MESSAGE_SIGNING_MIN_VERSION = "2.3.0"
+
     private const val ANY_VERSION = "0"
 
     // Bitcoin 2.1.0 is the first app speaking the wallet-policy protocol.

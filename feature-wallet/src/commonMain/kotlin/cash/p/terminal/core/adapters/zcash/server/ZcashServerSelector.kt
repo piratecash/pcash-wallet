@@ -31,6 +31,8 @@ private val QUARANTINE_MINUTES = listOf(10L, 20L, 40L, 60L)
 private const val RANGE_BLOCKS = 10
 private const val LATENCY_SAMPLES = 3
 private const val BREAK_PENALTY_MS = 1_000L
+/** Above twice the 8 s probe timeout over [HYSTERESIS]: fewer stale samples always win over any latency. */
+private const val STALE_SAMPLE_PENALTY_MS = 60_000L
 private const val HYSTERESIS = 0.7
 private const val MAIN_CHAIN = "main"
 private const val SAPLING_ACTIVATION_HEIGHT = 419_200
@@ -184,7 +186,8 @@ class ZcashServerSelector(
 
     private fun score(url: String, health: ZcashServerHealth): Long {
         val probe = requireNotNull(health.probe)
-        return probe.infoMs + probe.rangeMs + BREAK_PENALTY_MS * records.recentBreaks(url, now())
+        return probe.infoMs + probe.rangeMs + BREAK_PENALTY_MS * records.recentBreaks(url, now()) +
+            STALE_SAMPLE_PENALTY_MS * health.staleSamples
     }
 
     private fun now() = uptimeProvider.uptime
@@ -192,8 +195,10 @@ class ZcashServerSelector(
 
 private data class ScoredServer(val url: String, val score: Long)
 
-private data class ZcashServerHealth(val probe: ServerProbe?, val lag: Int) {
-    val rejection: String? = probe?.rejection(lag)
+private class Measurement(val probe: ServerProbe, val staleSamples: Int)
+
+private data class ZcashServerHealth(val probe: ServerProbe?, val lag: Int, val staleSamples: Int) {
+    val rejection: String? = probe?.rejection(lag, staleSamples)
     val admitted: Boolean get() = probe != null && rejection == null
 }
 
@@ -206,7 +211,10 @@ private fun ServerProbe.chainMismatch(): String? = when {
 
 private fun ServerProbe.isCatchingUp() = estimatedHeight - blockHeight > MAX_CATCH_UP_BLOCKS
 
-private fun ServerProbe.rejection(lag: Int): String? = chainMismatch() ?: when {
+/** A balancer can route a connection to a backend whose `GetLatestBlock` lags far behind its info. */
+
+private fun ServerProbe.rejection(lag: Int, staleSamples: Int): String? = chainMismatch() ?: when {
+    staleSamples == LATENCY_SAMPLES -> "stale tip $latestHeight"
     rangeBlocksReceived < RANGE_BLOCKS -> "range $rangeBlocksReceived/$RANGE_BLOCKS"
     isCatchingUp() -> "catching up"
     lag > MAX_LAG_BLOCKS -> "lag $lag"
@@ -217,23 +225,39 @@ private fun ServerProbe.rejection(lag: Int): String? = chainMismatch() ?: when {
  * Lag is measured against the median height of servers on our chain that claim to be at the tip,
  * so neither a far-ahead server nor a foreign chain rejects the rest.
  */
-private fun assess(probes: Map<String, ServerProbe?>): Map<String, ZcashServerHealth> {
-    val heights = probes.values.filterNotNull()
+private fun assess(measurements: Map<String, Measurement?>): Map<String, ZcashServerHealth> {
+    val heights = measurements.values.mapNotNull { it?.probe }
         .filter { it.chainMismatch() == null && !it.isCatchingUp() }
         .map { it.blockHeight }
         .sorted()
     val medianHeight = heights.getOrNull(heights.size / 2)
-    return probes.mapValues { (_, probe) ->
+    return measurements.mapValues { (_, measurement) ->
+        val probe = measurement?.probe
         val lag = if (probe == null || medianHeight == null) 0 else (medianHeight - probe.blockHeight).coerceAtLeast(0)
-        ZcashServerHealth(probe, lag)
+        ZcashServerHealth(probe, lag, measurement?.staleSamples ?: 0)
     }
 }
 
-/** Median of three latencies; the kit needs at least one block per call, so the repeats fetch just one. */
-private suspend fun ZcashServerProber.measure(url: String, transport: Transport): ServerProbe? = try {
-    val first = probe(url, transport, RANGE_BLOCKS)
-    val latencies = listOf(first.infoMs) + List(LATENCY_SAMPLES - 1) { probe(url, transport, 1).infoMs }
-    first.copy(infoMs = latencies.sorted()[LATENCY_SAMPLES / 2])
+/**
+ * Median of three latencies; the kit needs at least one block per call, so the repeats fetch just one.
+ * Each probe is a new connection that a balancer may route to a lagging backend, so staleness is
+ * counted per sample against the freshest height the server reported: neither a block arriving
+ * between probes nor a backend lagging in both heights may hide it.
+ */
+private suspend fun ZcashServerProber.measure(url: String, transport: Transport): Measurement? = try {
+    val probes = coroutineScope {
+        List(LATENCY_SAMPLES) { index -> async { probe(url, transport, if (index == 0) RANGE_BLOCKS else 1) } }
+            .awaitAll()
+    }
+    val first = probes.first()
+    val tip = probes.maxOf { it.blockHeight }
+    Measurement(
+        probe = first.copy(
+            infoMs = probes.map { it.infoMs }.sorted()[LATENCY_SAMPLES / 2],
+            latestHeight = probes.minOf { it.latestHeight },
+        ),
+        staleSamples = probes.count { tip - it.latestHeight > MAX_LAG_BLOCKS },
+    )
 } catch (e: CancellationException) {
     throw e
 } catch (_: Exception) {
@@ -286,6 +310,7 @@ private class ZcashServerRecords {
                 probe == null -> "unreachable"
                 else -> "info ${probe.infoMs}ms, range ${probe.rangeMs}ms, lag ${serverHealth.lag}"
             },
+            serverHealth?.staleSamples?.takeIf { it > 0 }?.let { "stale $it/$LATENCY_SAMPLES" },
             "breaks/1h ${recentBreaks(url, now)}",
             serverHealth?.rejection?.let { "rejected: $it" },
             quarantineLeft?.let { "quarantined ${(it + MINUTE_MS - 1) / MINUTE_MS}m left" },

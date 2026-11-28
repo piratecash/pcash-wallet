@@ -34,7 +34,7 @@ internal class CollapseOperation(private val environment: StorageEnvironment, pr
     fun finish(safe: OpenSafe) {
         val intent = freeEnvelopes(safe)
         intent.levels.forEach {
-            environment.slots.erase(it.slot)
+            environment.eraseSlot(it.slot)
             checkpoint(StorageCheckpoint.COLLAPSE_SLOT_ERASED)
         }
         val meta = safe.meta

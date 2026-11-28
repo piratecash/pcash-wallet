@@ -49,7 +49,7 @@ class LedgerAppAccess(
         account: Account,
         query: TokenQuery,
         block: suspend (LedgerTransport) -> T,
-    ): T = userOperations.run { withLedgerApp(account, query, admit = {}, switchApp = true, block) }
+    ): T = withLedgerAppAtLeast(account, query, minVersion = null, block)
 
     /**
      * [withLedgerApp] that runs only if [admit], called once the device is held, does not throw.
@@ -61,12 +61,29 @@ class LedgerAppAccess(
         admit: () -> Unit,
         switchApp: Boolean,
         block: suspend (LedgerTransport) -> T,
+    ): T = withLedgerApp(account, query, admit, switchApp, minVersion = null, block)
+
+    private suspend fun <T> withLedgerAppAtLeast(
+        account: Account,
+        query: TokenQuery,
+        minVersion: String?,
+        block: suspend (LedgerTransport) -> T,
+    ): T = userOperations.run { withLedgerApp(account, query, admit = {}, switchApp = true, minVersion, block) }
+
+    /** [minVersion] replaces the app's usual minimum from [LedgerAppRequirements]; null keeps it. */
+    private suspend fun <T> withLedgerApp(
+        account: Account,
+        query: TokenQuery,
+        admit: () -> Unit,
+        switchApp: Boolean,
+        minVersion: String?,
+        block: suspend (LedgerTransport) -> T,
     ): T {
         val storedKey = checkNotNull(storedKeyFor(account, query)) { "No Ledger key stored for ${query.id}" }
         // A token may live on its chain's key; the device is asked for the key that was stored.
         val keyQuery = storedKey.tokenQuery
         val fetcher = checkNotNull(fetchers.fetcherFor(keyQuery)) { "Ledger cannot serve ${keyQuery.id}" }
-        val minVersion = LedgerAppRequirements.minVersion(fetcher.appName)
+        val requiredVersion = minVersion ?: LedgerAppRequirements.minVersion(fetcher.appName)
         val checkedBlock: suspend (LedgerTransport) -> T = { transport ->
             if (!fetcher.holdsKey(transport, keyQuery, storedKey.key.value, storedKey.publicKey)) {
                 forgetProof(account.id)
@@ -77,9 +94,9 @@ class LedgerAppAccess(
         }
         return try {
             if (switchApp) {
-                session.withApp(fetcher.appName, minVersion, admit, checkedBlock)
+                session.withApp(fetcher.appName, requiredVersion, admit, checkedBlock)
             } else {
-                session.withOpenApp(fetcher.appName, minVersion, admit, checkedBlock)
+                session.withOpenApp(fetcher.appName, requiredVersion, admit, checkedBlock)
             }
         } catch (error: LedgerException) {
             throw error.forApp(fetcher.appName)
@@ -91,8 +108,16 @@ class LedgerAppAccess(
         account: Account,
         query: TokenQuery,
         block: suspend (LedgerTransport) -> T,
+    ): T = signWithLedgerApp(account, query, minVersion = null, block)
+
+    /** [signWithLedgerApp] for an operation that needs [minVersion] of the app instead of its usual minimum. */
+    suspend fun <T> signWithLedgerApp(
+        account: Account,
+        query: TokenQuery,
+        minVersion: String?,
+        block: suspend (LedgerTransport) -> T,
     ): T = try {
-        withLedgerApp(account, query, block)
+        withLedgerAppAtLeast(account, query, minVersion, block)
     } catch (error: LedgerException.MalformedResponse) {
         throw LedgerSigningFailedException(error.message.orEmpty())
     } catch (error: LedgerException.InvalidRequest) {

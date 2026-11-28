@@ -42,6 +42,7 @@ import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
 import cash.p.terminal.modules.transactions.FilterTransactionType
+import cash.p.terminal.modules.transactions.TimestampRange
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.Swap_ErrorInsufficientBalance
 import cash.p.terminal.resources.send_trezor_zcash_firmware_required
@@ -152,6 +153,7 @@ class ZcashAdapter(
     private val offlineModeManager: OfflineModeManager by inject(OfflineModeManager::class.java)
     private val uptimeProvider: UptimeProvider by inject(UptimeProvider::class.java)
     private val accountManager: IAccountManager by inject(IAccountManager::class.java)
+    private val transparentIndexStore: ZcashTransparentIndexStore by inject(ZcashTransparentIndexStore::class.java)
 
     private val adapterStateUpdatedSubject: PublishSubject<Unit> = PublishSubject.create()
     private val lastBlockUpdatedSubject: PublishSubject<Unit> = PublishSubject.create()
@@ -199,8 +201,8 @@ class ZcashAdapter(
 
     /**
      * Only the transparent spec risks reuse: shielded and unified addresses are meant to be shown
-     * again. A failed discovery or a failed selector call both fall back to [receiveAddress], since
-     * the address already on screen must not be replaced by an error page.
+     * again. A failed discovery, index preparation or selector call falls back to [receiveAddress],
+     * since the address already on screen must not be replaced by an error page.
      */
     override suspend fun freshReceiveAddress(): String {
         if (addressSpecTyped != AddressSpecType.Transparent) return super.freshReceiveAddress()
@@ -208,11 +210,14 @@ class ZcashAdapter(
         // not reopen the session [subscribeToBackground] released — park until it may be held.
         backgroundManager.stateFlow.first { mayHoldSession() }
         acquireSession()
-        discoverCurrentEpoch()
         return try {
+            // Before the floor is read: preparation is what sets it after a restore.
+            transparentIndexStore.prepare(sessionOrThrow())
+            discoverCurrentEpoch()
             val found = transparentAddressMutex.withLock {
                 val excluded = singleUseAddressManager.getAllAddresses()
-                requireWallet { zcash, id -> zcash.nextUnusedTransparentAddress(id, excluded) }
+                val floor = transparentIndexStore.recreatedThrough(wallet.account.id)
+                requireWallet { zcash, id -> zcash.nextUnusedTransparentAddress(id, excluded, floor) }
             }?.takeIf { it.certified }
             discoveryState.lastSelectorError = null
             found?.address ?: receiveAddress
@@ -238,6 +243,7 @@ class ZcashAdapter(
             sessionOrThrow().discoverForEpoch(epoch)
             val laterEpoch = backgroundManager.foregroundEpoch.value
             if (laterEpoch > epoch) sessionOrThrow().discoverForEpoch(laterEpoch)
+            transparentIndexStore.raiseFromHistory(sessionOrThrow())
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
@@ -476,7 +482,7 @@ class ZcashAdapter(
             onLocalState(state)
         }
         if (previous?.transactions != state.transactions) {
-            transactionsProvider.onTransactions(state.transactions)
+            transactionsProvider.onTransactions(state.transactions.mapNotNull { it.inPools(sourcePools) })
         }
         if (previous?.latestHeight != state.latestHeight) onLatestHeight(state.latestHeight)
         appliedSessionState = state
@@ -936,7 +942,7 @@ class ZcashAdapter(
     /** Resolved before the pending row is registered, so the caller knows what is about to move. */
     suspend fun shieldingTarget(): ShieldingTarget = requireWallet { zcash, id ->
         val transparent = zcash.balance(id, SHIELDING_CONFIRMATIONS)[Pool.TRANSPARENT].available
-        check(transparent > SHIELDING_THRESHOLD) { "Nothing to shield" }
+        if (transparent <= 0) throw LocalizedException(Res.string.Swap_ErrorInsufficientBalance)
         val shielded = requireNotNull(ownAddresses?.unified ?: ownAddresses?.orchard) {
             "No shielded receiver to shield into"
         }
@@ -956,15 +962,22 @@ class ZcashAdapter(
     }
 
     override suspend fun generateOneTimeAddress(): String? = try {
+        // Rows recreated after a restore must exist first, or the SDK would hand out an issued index again.
+        transparentIndexStore.prepare(sessionOrThrow())
         transparentAddressMutex.withLock {
             val address = requireWallet { zcash, id -> zcash.nextTransparentAddress(id) }
-            address?.also { singleUseAddressManager.saveNewAddress(it) }
-        } ?: singleUseAddressManager.getNextAddress()
+            address?.also { issued ->
+                // The index first: an unsent row is reused after a restart, so the backup must already cover it.
+                requireWallet { zcash, id -> zcash.transparentAddressIndex(id, issued) }
+                    ?.let { transparentIndexStore.raise(wallet.account.id, it) }
+                singleUseAddressManager.saveNewAddress(issued)
+            }
+        }
     } catch (error: CancellationException) {
         throw error
     } catch (error: Throwable) {
         zcashLogger.w { "Single-use transparent address failed error=${error.zcashErrorName}" }
-        singleUseAddressManager.getNextAddress()
+        null
     }
 
     // endregion
@@ -1091,12 +1104,19 @@ class ZcashAdapter(
         limit: Int,
         transactionType: FilterTransactionType,
         address: String?,
+        period: TimestampRange?,
     ): List<TransactionRecord> {
         val fromParams = from?.let { Triple(it.transactionHash, it.timestamp, it.transactionIndex) }
         return transactionsProvider
-            .getTransactions(fromParams, transactionType, address, limit)
+            .getTransactions(fromParams, transactionType, address, limit, period)
             .map(::getTransactionRecord)
     }
+
+    override suspend fun getOldestTransactionTimestamp(
+        token: Token?,
+        transactionType: FilterTransactionType,
+        address: String?,
+    ): Long? = transactionsProvider.oldestTimestamp(transactionType, address)
 
     override fun getTransactionRecordsFlow(
         token: Token?,
@@ -1140,7 +1160,7 @@ class ZcashAdapter(
             from = null,
             to = transaction.recipient?.let(::listOf),
             changeAddresses = null,
-            sentToSelf = false,
+            sentToSelf = !isIronwoodMigration && !transaction.isIncoming && transaction.keptInAccount,
             memo = transaction.memo,
             source = wallet.transactionSource,
             replaceable = false,
@@ -1156,6 +1176,10 @@ class ZcashAdapter(
     /** The SDK's value counts the fee when funds leave; a transaction that only pays the fee keeps it. */
     private val Transaction.amountWithoutFee: Long
         get() = (value + fee).takeIf { it < 0 } ?: value
+
+    /** Nothing left the account but the fee: the funds only moved between its own pools or addresses. */
+    private val Transaction.keptInAccount: Boolean
+        get() = fee > 0 && poolValues.isNotEmpty() && poolValues.values.sum() + fee >= 0
 
     // endregion
 
@@ -1207,7 +1231,6 @@ class ZcashAdapter(
     companion object {
         private const val CONFIRMATIONS_THRESHOLD = 10
         private const val SHIELDING_CONFIRMATIONS = 1
-        private const val SHIELDING_THRESHOLD = 100_000L
         private const val DIAG_INTERVAL_MS = 30_000L
         private const val DEFAULT_TREZOR_DEVICE_NAME = "Trezor"
 
@@ -1232,6 +1255,17 @@ private fun ExternalSigningRefusal.toZcashError(): ZcashAdapter.ZcashError =
     }
 
 /** Which pools an address spec spends from; Unified holds Orchard and its Ironwood change. */
+/** The wallet's own view of an account transaction; null when it never touched the wallet's pools. */
+internal fun Transaction.inPools(pools: PoolSet): Transaction? {
+    if (poolValues.isEmpty()) return this
+    val own = poolValues.filterKeys { it in pools }
+    if (own.isEmpty()) return null
+    val value = own.values.sum()
+    // Unconfirmed rows are incoming-only: the paying wallet's pending draft stands for its side.
+    if (height == 0 && value <= 0) return null
+    return copy(value = value, isChange = isChange && own.size == poolValues.size)
+}
+
 internal fun AddressSpecType?.pools(): PoolSet = when (this) {
     null, AddressSpecType.Shielded -> PoolSet.of(Pool.SAPLING)
     AddressSpecType.Transparent -> PoolSet.of(Pool.TRANSPARENT)

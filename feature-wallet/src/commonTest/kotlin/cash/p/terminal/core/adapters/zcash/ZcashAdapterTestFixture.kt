@@ -84,6 +84,9 @@ abstract class ZcashAdapterTestFixture {
     protected val accountManager = mockk<IAccountManager>(relaxed = true)
     protected val restoreSettingsManager = mockk<RestoreSettingsManager>(relaxed = true)
     protected val serverManager = mockk<ZcashServerManager>(relaxed = true)
+    protected val transparentIndexStore = mockk<ZcashTransparentIndexStore>(relaxed = true) {
+        coEvery { recreatedThrough(any()) } returns null
+    }
     private val serverSelector = mockk<ZcashServerSelector> { every { statusRows() } returns emptyMap() }
 
     /** In-memory stand-in for the persisted set, so a restart can be simulated. */
@@ -116,6 +119,7 @@ abstract class ZcashAdapterTestFixture {
                 single { restoreSettingsManager }
                 single { serverManager }
                 single { serverSelector }
+                single { transparentIndexStore }
                 single<UptimeProvider> { mockk { every { uptime } returns 0L } }
             })
         }
