@@ -165,6 +165,7 @@ private val TransactionRecord.titleResource: StringResource
             is StellarTransactionRecord.Type.Send -> Res.string.Transactions_Send
             is StellarTransactionRecord.Type.Receive -> Res.string.Transactions_Receive
             is StellarTransactionRecord.Type.ChangeTrust -> Res.string.Transactions_ChangeTrust
+            is StellarTransactionRecord.Type.Swap -> swapTitle
             is StellarTransactionRecord.Type.Unsupported -> Res.string.Transactions_StellarTransaction
         }
 

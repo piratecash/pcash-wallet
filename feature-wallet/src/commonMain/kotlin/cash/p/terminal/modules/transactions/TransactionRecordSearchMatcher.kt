@@ -219,6 +219,11 @@ class TransactionRecordSearchMatcher(
                 addValue(type.value)
             }
 
+            is StellarTransactionRecord.Type.Swap -> {
+                addValue(type.valueIn)
+                addValue(type.valueOut)
+            }
+
             is StellarTransactionRecord.Type.Unsupported -> add(type.type)
         }
     }

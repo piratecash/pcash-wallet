@@ -182,7 +182,7 @@ class TransactionInfoViewItemFactory(
                         itemSections.add(
                             TransactionViewItemFactoryHelper.getSendSectionItems(
                                 value = transactionType.value,
-                                toAddress = listOf(transactionType.to),
+                                toAddress = transactionType.to?.let(::listOf),
                                 coinPrice = rates[transactionType.value.coinUid],
                                 hideAmount = transactionItem.hideAmount,
                                 sentToSelf = transactionType.sentToSelf,
@@ -210,6 +210,19 @@ class TransactionInfoViewItemFactory(
                                     Translator.getString(Res.string.Transactions_OperationType),
                                     Translator.getString(Res.string.Transactions_OperationType_ChangeTrust)
                                 )
+                            )
+                        )
+                    }
+
+                    is StellarTransactionRecord.Type.Swap -> {
+                        itemSections.add(
+                            getSwapEventSectionItems(
+                                valueIn = transactionType.valueIn,
+                                valueOut = transactionType.valueOut,
+                                rates = rates,
+                                amount = null,
+                                hideAmount = transactionItem.hideAmount,
+                                hasRecipient = false
                             )
                         )
                     }
