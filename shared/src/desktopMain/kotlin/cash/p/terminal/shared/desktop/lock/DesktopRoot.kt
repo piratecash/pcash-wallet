@@ -61,7 +61,11 @@ import org.koin.compose.koinInject
  * above the two, so unlocking returns to the screen the user left, within one storage session.
  */
 @Composable
-fun DesktopRoot(wipeFailed: Boolean, modifier: Modifier = Modifier) {
+fun DesktopRoot(
+    wipeFailed: Boolean,
+    modifier: Modifier = Modifier,
+    menu: @Composable (DesktopVaultState, HSNavigation) -> Unit = { _, _ -> },
+) {
     val vault = koinInject<DesktopVault>()
     val languageManager = koinInject<DesktopLanguageManager>()
     val vaultState by vault.state.collectAsStateWithLifecycle()
@@ -87,6 +91,7 @@ fun DesktopRoot(wipeFailed: Boolean, modifier: Modifier = Modifier) {
         wipeFailed = wipeFailed,
         enteringHiddenWallet = enteringHiddenWallet,
         modifier = modifier,
+        menu = menu,
     )
     (wipeProgress as? WipeProgress.RestartManually)?.let {
         RestartManuallyDialog(outcome = it.outcome, onConfirm = appExit::request)
@@ -104,6 +109,7 @@ internal fun DesktopRootContent(
     wipeFailed: Boolean,
     modifier: Modifier = Modifier,
     enteringHiddenWallet: Boolean = false,
+    menu: @Composable (DesktopVaultState, HSNavigation) -> Unit = { _, _ -> },
 ) {
     var vaultGeneration by remember { mutableIntStateOf(0) }
     LaunchedEffect(vaultState) {
@@ -128,6 +134,8 @@ internal fun DesktopRootContent(
                             // As on Android: a level change while the app is up returns to the main screen.
                             levelChanges.collect { navigation.removeLastUntil(root::class, inclusive = false) }
                         }
+                        // In every vault state: one menu bar per session, never swapped on lock or unlock.
+                        menu(vaultState, navigation)
                         val appState = rememberSaveableStateHolder()
                         if (vaultState is DesktopVaultState.Unlocked) {
                             appState.SaveableStateProvider(APP_STATE_KEY) { appContent(navigation) }

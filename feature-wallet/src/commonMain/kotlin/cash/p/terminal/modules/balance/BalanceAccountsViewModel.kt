@@ -29,7 +29,7 @@ class BalanceAccountsViewModel(accountManager: IAccountManager) : ViewModel() {
                     BalanceScreenState.HasAccount(
                         AccountViewItem(
                             isWatchAccount = activeAccountState.account!!.isWatchAccount,
-                            isCoinManagerEnabled = activeAccountState.account?.type !is AccountType.MnemonicMonero,
+                            isCoinManagerEnabled = activeAccountState.account?.type?.supportsCoinManager == true,
                             name = activeAccountState.account!!.name,
                             id = activeAccountState.account!!.id,
                             type = activeAccountState.account!!.type
@@ -42,6 +42,9 @@ class BalanceAccountsViewModel(accountManager: IAccountManager) : ViewModel() {
         }
     }
 }
+
+val AccountType.supportsCoinManager: Boolean
+    get() = this !is AccountType.MnemonicMonero
 
 data class AccountViewItem(
     val isWatchAccount: Boolean,
