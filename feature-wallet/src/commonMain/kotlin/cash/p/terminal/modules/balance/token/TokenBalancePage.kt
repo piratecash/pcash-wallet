@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import cash.p.terminal.core.getKoinInstance
+import cash.p.terminal.core.nft.NftCollectionsRepository
 import cash.p.terminal.core.usecase.GetRestoreHeightForWalletUseCase
 import cash.p.terminal.feature.wallet.SecretActionAuthorizer
 import cash.p.terminal.feature.wallet.WalletPlatformPages
@@ -15,6 +16,14 @@ import cash.p.terminal.modules.balance.token.addresspoisoning.AddressPoisoningVi
 import cash.p.terminal.modules.balance.token.addresspoisoning.AddressPoisoningViewScreen
 import cash.p.terminal.modules.balance.token.creationblock.CreationBlockScreen
 import cash.p.terminal.modules.balance.token.creationblock.CreationBlockViewModel
+import cash.p.terminal.modules.signmessage.SignMessagePage
+import cash.p.terminal.modules.nft.NftCollectionPage
+import cash.p.terminal.modules.nft.NftCollectionSource
+import cash.p.terminal.modules.nft.NftCollectionsViewModel
+import cash.p.terminal.modules.nft.NftPreviewPage
+import cash.p.terminal.modules.nft.NftSectionTitle
+import cash.p.terminal.modules.nft.manage.NftManagePage
+import cash.p.terminal.modules.nft.ui.NftCollectionsSection
 import cash.p.terminal.modules.offline.OfflineModeToggleViewModel
 import cash.p.terminal.modules.transactions.TransactionsViewModel
 import cash.p.terminal.navigation.HSNavigation
@@ -29,6 +38,7 @@ import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.birthday_height_rescan
 import cash.p.terminal.resources.birthday_height_rescan_confirm_text
 import cash.p.terminal.resources.birthday_height_rescan_confirm_title
+import cash.p.terminal.resources.nft_collection
 import cash.p.terminal.ui_compose.components.rememberHudMessenger
 import cash.p.terminal.ui_compose.components.showNotSupportedOnPlatform
 import cash.p.terminal.wallet.AccountOrigin
@@ -42,6 +52,8 @@ import org.koin.core.parameter.parametersOf
 
 class TokenBalancePage(val input: Wallet) : HSPage() {
 
+    private val nftSource = NftCollectionSource.SingleWallet(input)
+
     @Composable
     override fun GetContent(navigation: HSNavigation) {
         val transactionsViewModel: TransactionsViewModel = koinViewModel(
@@ -51,15 +63,29 @@ class TokenBalancePage(val input: Wallet) : HSPage() {
         val viewModel: TokenBalanceViewModel = koinViewModel { parametersOf(input) }
         val offlineModeToggleViewModel: OfflineModeToggleViewModel =
             koinViewModel { parametersOf(input) }
+        val nftViewModel: NftCollectionsViewModel? =
+            if (koinInject<NftCollectionsRepository>().supportsSection(input)) {
+                koinViewModel { parametersOf(nftSource) }
+            } else {
+                null
+            }
         val secretActionAuthorizer: SecretActionAuthorizer = koinInject()
         val hud = rememberHudMessenger()
         val showAllTransactions = secretActionAuthorizer.rememberHiddenTransactionsAuthorization(navigation) {
             viewModel.showAllTransactions(true)
         }
+        val showAllThenCalendar = secretActionAuthorizer.rememberHiddenTransactionsAuthorization(navigation) {
+            viewModel.showAllTransactions(true)
+            viewModel.onCalendarClick()
+        }
+        val showAllThenSearch = secretActionAuthorizer.rememberHiddenTransactionsAuthorization(navigation) {
+            viewModel.showAllTransactions(true)
+            viewModel.onSearchClick()
+        }
 
         OfflineModeErrorEffect(offlineModeToggleViewModel)
 
-        ResumeEffects(viewModel, navigation)
+        ResumeEffects(viewModel, nftViewModel, navigation)
 
         BalanceHideOnFlipHandling()
         viewModel.refreshTransactionDisplaySettings()
@@ -77,19 +103,52 @@ class TokenBalancePage(val input: Wallet) : HSPage() {
                 viewModel.toggleTotalType()
                 hud.vibrate()
             },
-            onRefresh = viewModel::refresh,
+            onRefresh = {
+                viewModel.refresh()
+                nftViewModel?.refresh()
+            },
             refreshing = viewModel.refreshing,
             onSettingsClick = { navigation.slideFromRight(AssetSettingsPage(input)) },
             onGoOnline = offlineModeToggleViewModel::goOnline,
+            onHiddenCalendarClick = showAllThenCalendar,
+            onHiddenSearchClick = showAllThenSearch,
+            nftSection = nftViewModel?.let { { NftSection(it, navigation) } },
         )
     }
 
     @Composable
-    private fun ResumeEffects(viewModel: TokenBalanceViewModel, navigation: HSNavigation) {
+    private fun NftSection(viewModel: NftCollectionsViewModel, navigation: HSNavigation) {
+        val state = viewModel.uiState
+        val openAll = { navigation.slideFromRight(NftCollectionPage(nftSource)) }
+        NftCollectionsSection(
+            title = {
+                NftSectionTitle(
+                    title = stringResource(Res.string.nft_collection),
+                    hidden = state.hidden,
+                    onClick = openAll,
+                    badgeCount = state.totalCount,
+                )
+            },
+            items = state.items,
+            hidden = state.hidden,
+            onItemClick = { navigation.slideFromRight(NftPreviewPage(it, nftSource)) },
+            onShowAll = openAll,
+            allCollectionsHidden = state.allCollectionsHidden,
+            onManage = { navigation.slideFromRight(NftManagePage(nftSource)) },
+        )
+    }
+
+    @Composable
+    private fun ResumeEffects(
+        viewModel: TokenBalanceViewModel,
+        nftViewModel: NftCollectionsViewModel?,
+        navigation: HSNavigation,
+    ) {
         PageResumeEffect(
             onResume = {
                 viewModel.startStatusChecker()
                 viewModel.onResume()
+                nftViewModel?.onResume()
             },
             onPause = {
                 viewModel.stopStatusChecker()
@@ -119,10 +178,11 @@ class AssetSettingsPage(val wallet: Wallet) : HSPage() {
         val setAmlCheckEnabled = navigation.rememberPremiumToggle(viewModel::setAmlCheckEnabled)
 
         // Zcash created-in-app wallets have no history before their creation checkpoint, so
-        // editing the birthday height is meaningful only for restored (imported) Zcash wallets.
+        // editing the birthday height is meaningful only for restored and hardware (existing) wallets.
         val creationBlockVisible = wallet.token.blockchainType == BlockchainType.Monero ||
             (wallet.token.blockchainType == BlockchainType.Zcash &&
-                wallet.account.origin == AccountOrigin.Restored)
+                (wallet.account.origin == AccountOrigin.Restored || wallet.account.isHardwareWalletAccount))
+        val signMessageVisible = wallet.token.blockchainType == BlockchainType.Bitcoin && !wallet.account.isWatchAccount
         val getRestoreHeight = remember { getKoinInstance<GetRestoreHeightForWalletUseCase>() }
         val currentHeightText by produceState<String?>(null, wallet, creationBlockVisible) {
             value = if (creationBlockVisible) getRestoreHeight(wallet)?.toString() else null
@@ -150,6 +210,18 @@ class AssetSettingsPage(val wallet: Wallet) : HSPage() {
             creationBlockVisible = creationBlockVisible,
             currentHeightText = currentHeightText,
             onCreationBlockClick = { navigation.slideFromRight(CreationBlockPage(wallet)) },
+            addressSearchRow = viewModel.addressSearchUiState?.takeIf { creationBlockVisible }?.let { state ->
+                {
+                    ZcashAddressSearchRow(
+                        uiState = state,
+                        onMoreChange = viewModel::onAddressSearchMoreChange,
+                        onStart = viewModel::startAddressSearch,
+                        onCheckAllAgain = viewModel::checkAllAddressesAgain,
+                        onStop = viewModel::stopAddressSearch,
+                    )
+                }
+            },
+            onSignMessageClick = { navigation.slideFromRight(SignMessagePage(wallet)) }.takeIf { signMessageVisible },
         )
     }
 }

@@ -14,5 +14,6 @@ interface PremiumPlatformSettings {
     @Composable
     fun rememberAuthorizationInfoAction(navigation: HSNavigation): () -> Unit
 
-    fun pushNotificationsPage(): HSPage
+    /** Null where push notifications are unavailable; the row is then hidden. */
+    fun pushNotificationsPage(): HSPage?
 }

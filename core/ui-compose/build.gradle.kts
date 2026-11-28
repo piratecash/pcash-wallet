@@ -57,6 +57,7 @@ kotlin {
                 implementation(libs.compose.multiplatform.foundation)
                 implementation(libs.compose.multiplatform.material)
                 implementation(libs.compose.multiplatform.material3)
+                implementation(libs.compose.multiplatform.ui.tooling.preview)
                 implementation(libs.coil.compose)
                 implementation(libs.coil.svg)
                 implementation(libs.jetbrains.lifecycle.runtime.compose)
@@ -95,6 +96,8 @@ kotlin {
             dependencies {
                 // Dispatchers.Main on desktop (ModalOverlayTracker grace) comes from Swing.
                 implementation(libs.kotlinx.coroutines.swing)
+                implementation(libs.jna)
+                implementation(libs.kermit)
             }
         }
 

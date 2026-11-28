@@ -99,6 +99,10 @@ data class Account(
     }
 }
 
+/** One line with no edge whitespace: blank lines are dropped, the remaining lines are joined by a space. */
+fun String.normalizedAccountName(): String =
+    lineSequence().map(String::trim).filter(String::isNotEmpty).joinToString(" ")
+
 fun Account.canBeDuplicated(): Boolean =
     type is SeedAccountType || type is AccountType.MnemonicMonero
 
@@ -120,7 +124,7 @@ fun Account.premiumEligibility(): PremiumAccountEligibility {
         type is SeedAccountType && !hasAnyBackup -> PremiumAccountEligibility.NO_BACKUP
         type is SeedAccountType && hasAnyBackup -> PremiumAccountEligibility.ELIGIBLE
         type is AccountType.HardwareCard -> PremiumAccountEligibility.ELIGIBLE
-        type is AccountType.TrezorDevice -> PremiumAccountEligibility.ELIGIBLE
+        type is AccountType.HardwareDevice -> PremiumAccountEligibility.ELIGIBLE
         else -> PremiumAccountEligibility.WRONG_TYPE
     }
 }
@@ -353,14 +357,38 @@ sealed class AccountType : CommonParcelable {
     }
 
     @CommonParcelize
+    sealed class HardwareDevice : AccountType() {
+        abstract val deviceId: String
+        abstract val model: String
+        abstract val walletPublicKey: String
+    }
+
+    @CommonParcelize
     data class TrezorDevice(
-        val deviceId: String,
-        val model: String,
+        override val deviceId: String,
+        override val model: String,
         val firmwareVersion: String,
-        val walletPublicKey: String
-    ) : AccountType() {
+        override val walletPublicKey: String
+    ) : HardwareDevice() {
         override fun equals(other: Any?): Boolean {
             return other is TrezorDevice &&
+                    deviceId == other.deviceId &&
+                    walletPublicKey == other.walletPublicKey
+        }
+
+        override fun hashCode(): Int {
+            return deviceId.hashCode()
+        }
+    }
+
+    @CommonParcelize
+    data class LedgerDevice(
+        override val deviceId: String,
+        override val model: String,
+        override val walletPublicKey: String
+    ) : HardwareDevice() {
+        override fun equals(other: Any?): Boolean {
+            return other is LedgerDevice &&
                     deviceId == other.deviceId &&
                     walletPublicKey == other.walletPublicKey
         }
@@ -402,6 +430,7 @@ sealed class AccountType : CommonParcelable {
 
             is HardwareCard -> "Hardware card"
             is TrezorDevice -> "Trezor Device"
+            is LedgerDevice -> "Ledger Device"
             is MnemonicMonero -> "Monero Wallet"
             is HdExtendedKey -> {
                 when (this.hdExtendedKey.derivedType) {
@@ -450,14 +479,14 @@ sealed class AccountType : CommonParcelable {
 
     val canAddTokens: Boolean
         get() = when (this) {
-            is SeedAccountType, is EvmPrivateKey, is TrezorDevice, is HardwareCard -> true
+            is SeedAccountType, is EvmPrivateKey, is HardwareDevice, is HardwareCard -> true
             else -> false
         }
 
     val supportsWalletConnect: Boolean
         get() = when (this) {
             is HardwareCard,
-            is TrezorDevice,
+            is HardwareDevice,
             is SeedAccountType,
             is EvmPrivateKey -> true
 
@@ -497,7 +526,7 @@ sealed class AccountType : CommonParcelable {
 }
 
 val AccountType.isHardwareWalletType: Boolean
-    get() = this is AccountType.HardwareCard || this is AccountType.TrezorDevice
+    get() = this is AccountType.HardwareCard || this is AccountType.HardwareDevice
 
 val HDWallet.Purpose.derivation: Derivation
     get() = when (this) {

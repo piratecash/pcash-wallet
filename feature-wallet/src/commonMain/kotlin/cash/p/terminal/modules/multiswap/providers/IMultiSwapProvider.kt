@@ -5,7 +5,6 @@ import cash.p.terminal.modules.multiswap.ISwapQuote
 import cash.p.terminal.modules.multiswap.action.ActionCreate
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionResult
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionSettings
-import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.useCases.WalletUseCase
 import java.math.BigDecimal
@@ -22,6 +21,10 @@ interface IMultiSwapProvider {
     val walletUseCase: WalletUseCase
 
     val mevProtectionAvailable: Boolean
+
+    /** The final quote creates an order signed with the account key, before the deposit is signed. */
+    val signsOrderWithAccountKey: Boolean
+        get() = false
 
     val riskType: ProviderRiskType
         get() = ProviderRiskType.Auto
@@ -66,7 +69,12 @@ interface IMultiSwapProvider {
         }
     }
 
-    suspend fun getWarningMessage(tokenIn: Token, tokenOut: Token): TranslatableString? = null
+    /** Null when the order does not carry a temporary refund address; throws [ZcashRefundAddressUnavailable]. */
+    suspend fun temporaryRefundAddress(tokenIn: Token, tokenOut: Token): String? = null
+
+    /** The order is created through the P.CASH server, which forwards the refund address to the provider. */
+    val createsOrderThroughPcashServer: Boolean
+        get() = false
 
     fun getProviderTransactionId(): String? = null
 

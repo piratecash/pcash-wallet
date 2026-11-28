@@ -10,6 +10,8 @@ import cash.p.terminal.entities.ActiveAccount
 import cash.p.terminal.entities.AddressLabel
 import cash.p.terminal.entities.BlockchainSettingRecord
 import cash.p.terminal.entities.EnabledWalletCache
+import cash.p.terminal.entities.NftCollectionPrefRecord
+import cash.p.terminal.entities.NftItemRecord
 import cash.p.terminal.entities.OfflineBlockchain
 import cash.p.terminal.entities.PoisonAddress
 import cash.p.terminal.entities.EvmMethodLabel
@@ -40,7 +42,7 @@ import io.horizontalsystems.core.storage.LogEntry
 const val APP_DATABASE_NAME = "db_p_cash"
 
 @Database(
-    version = 124,
+    version = 127,
     exportSchema = false,
     entities = [
         EnabledWallet::class,
@@ -73,7 +75,9 @@ const val APP_DATABASE_NAME = "db_p_cash"
         LocallyCreatedTransactionRecord::class,
         OfflineSignedTransactionEntity::class,
         OfflineBlockchain::class,
-        StackingCache::class
+        StackingCache::class,
+        NftItemRecord::class,
+        NftCollectionPrefRecord::class
     ]
 )
 @TypeConverters(DatabaseConverters::class)

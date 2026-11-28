@@ -27,12 +27,15 @@ import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.MarketKitWrapper
 import io.horizontalsystems.core.CurrencyManager
+import io.horizontalsystems.core.IAppNumberFormatter
 import cash.p.terminal.wallet.IWalletManager
+import cash.p.terminal.wallet.managers.IBalanceHiddenManager
 
 class SwapSelectCoinViewModel(
     private val otherSelectedToken: Token?,
     private val activeAccount: Account,
     private val dispatcherProvider: DispatcherProvider,
+    private val balanceHiddenManager: IBalanceHiddenManager,
 ) : ViewModel() {
     private val coinsProvider = FullCoinsProvider(
         getKoinInstance<MarketKitWrapper>(),
@@ -42,13 +45,18 @@ class SwapSelectCoinViewModel(
     private val adapterManager = getKoinInstance<IAdapterManager>()
     private val currencyManager = getKoinInstance<CurrencyManager>()
     private val marketKit = getKoinInstance<MarketKitWrapper>()
+    private val numberFormatter = getKoinInstance<IAppNumberFormatter>()
     private var query = ""
 
     private var coinBalanceItems = listOf<CoinBalanceItem>()
 
+    // Lets an amount revealed here re-hide on the next tap even when global visibility is on.
+    private val balanceToggledHere = mutableSetOf<String>()
+
     var uiState by mutableStateOf(
         SwapSelectCoinUiState(
             coinBalanceItems = coinBalanceItems,
+            balanceHidden = balanceHiddenManager.balanceHidden,
             loading = true
         )
     )
@@ -59,6 +67,22 @@ class SwapSelectCoinViewModel(
             reloadItems()
             emitState(loading = false)
         }
+        viewModelScope.launch {
+            balanceHiddenManager.anyWalletVisibilityChangedFlow.collect {
+                emitState(loading = uiState.loading)
+            }
+        }
+    }
+
+    fun toggleBalanceHidden() {
+        balanceToggledHere.clear()
+        balanceHiddenManager.toggleBalanceHidden()
+    }
+
+    fun toggleItemBalanceHidden(item: CoinBalanceItem) {
+        val id = item.token.tokenQuery.id
+        balanceToggledHere += id
+        balanceHiddenManager.toggleWalletBalanceHidden(id)
     }
 
     fun setQuery(q: String) {
@@ -171,8 +195,23 @@ class SwapSelectCoinViewModel(
 
     private fun emitState(loading: Boolean = false) {
         uiState = SwapSelectCoinUiState(
-            coinBalanceItems = coinBalanceItems,
+            coinBalanceItems = coinBalanceItems.map(::withBalanceVisibility),
+            balanceHidden = balanceHiddenManager.balanceHidden,
             loading = loading
+        )
+    }
+
+    private fun withBalanceVisibility(item: CoinBalanceItem): CoinBalanceItem {
+        val balance = item.balance ?: return item
+        val id = item.token.tokenQuery.id
+        val hidden = balanceHiddenManager.isWalletBalanceHidden(id)
+        return item.copy(
+            balanceText = numberFormatter.formatCoinShort(balance, item.token.coin.code, 8),
+            fiatBalanceText = item.fiatBalanceValue?.let {
+                numberFormatter.formatFiatShort(it.value, it.currency.symbol, 2)
+            },
+            balanceHidden = hidden,
+            balanceClickToggles = hidden || id in balanceToggledHere
         )
     }
 
@@ -193,5 +232,6 @@ class SwapSelectCoinViewModel(
 
 data class SwapSelectCoinUiState(
     val coinBalanceItems: List<CoinBalanceItem>,
+    val balanceHidden: Boolean,
     val loading: Boolean = true
 )

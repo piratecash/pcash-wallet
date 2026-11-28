@@ -3,23 +3,29 @@ package cash.p.terminal.modules.walletconnect.request
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import cash.p.terminal.modules.offline.OfflineOperationBlockedException
+import cash.p.terminal.modules.send.signingErrorText
 import cash.p.terminal.modules.sendevmtransaction.SectionViewItem
+import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.modules.walletconnect.WCDelegate
+import cash.p.terminal.modules.walletconnect.WCManager
+import cash.p.terminal.modules.walletconnect.WCVerifyAlert
 import cash.p.terminal.strings.helpers.TranslatableString
 import com.reown.walletkit.client.Wallet
 import io.horizontalsystems.core.ViewModelUiState
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class WCRequestViewModel(
     private val sessionRequest: Wallet.Model.SessionRequest,
-    private val wcAction: AbstractWCAction
+    private val wcAction: AbstractWCAction,
+    private val wcManager: WCManager,
 ) : ViewModelUiState<WCRequestUiState>() {
 
     private var approveInProgress = false
     private var finish: Boolean = false
-    private var error: Throwable? = null
+    private var errorText: String? = null
+    private var verifyAlert: WCVerifyAlert? = null
 
     private var actionState = wcAction.stateFlow.value
 
@@ -32,6 +38,11 @@ class WCRequestViewModel(
             }
         }
 
+        viewModelScope.launch {
+            verifyAlert = wcManager.getRequestVerifyAlert(sessionRequest.request.id)
+            emitState()
+        }
+
         wcAction.start(viewModelScope)
     }
 
@@ -41,25 +52,27 @@ class WCRequestViewModel(
         runnable = !approveInProgress && actionState.runnable,
         approveButtonTitle = wcAction.getApproveButtonTitle(),
         contentItems = actionState.items,
-        error = error
+        errorText = errorText,
+        verifyAlert = verifyAlert,
     )
 
     fun errorShown() {
-        error = null
+        errorText = null
         emitState()
     }
 
     fun approve() = viewModelScope.launch(Dispatchers.Default) {
-        error = null
+        errorText = null
         approveInProgress = true
         emitState()
 
         val actionResult = try {
             wcAction.performAction()
-        } catch (e: OfflineOperationBlockedException) {
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
             approveInProgress = false
-            error = e
-            emitState()
+            showError(e)
             return@launch
         }
 
@@ -74,14 +87,13 @@ class WCRequestViewModel(
             },
             onErrorResult = {
                 approveInProgress = false
-                error = it
-                emitState()
+                showError(it)
             }
         )
     }
 
     fun reject() = viewModelScope.launch(Dispatchers.Default) {
-        error = null
+        errorText = null
 
         WCDelegate.rejectRequest(
             sessionRequest.topic,
@@ -90,12 +102,15 @@ class WCRequestViewModel(
                 finish = true
                 emitState()
             },
-            onErrorResult = {
-                error = it
-                emitState()
-            }
+            onErrorResult = ::showError
         )
 
+        emitState()
+    }
+
+    // A cancellation on the device resets the screen without a message.
+    private fun showError(error: Throwable) {
+        errorText = error.signingErrorText(error.message ?: error.javaClass.simpleName)
         emitState()
     }
 
@@ -105,7 +120,7 @@ class WCRequestViewModel(
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return WCRequestViewModel(sessionRequest, wcAction) as T
+            return WCRequestViewModel(sessionRequest, wcAction, getKoinInstance()) as T
         }
     }
 }
@@ -116,5 +131,6 @@ data class WCRequestUiState(
     val runnable: Boolean,
     val approveButtonTitle: TranslatableString,
     val contentItems: List<SectionViewItem>,
-    val error: Throwable? = null
+    val errorText: String? = null,
+    val verifyAlert: WCVerifyAlert? = null,
 )

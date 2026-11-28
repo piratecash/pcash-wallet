@@ -149,6 +149,44 @@ class ZcashAdapterSourcePoolsTest : ZcashAdapterTestFixture() {
         assertEquals(PoolSet.of(Pool.TRANSPARENT), plannedOptions.single().sourcePools)
     }
 
+    @Test
+    fun shieldingTarget_transparentBelowOldLimit_targetsWholeTransparentBalance() = runTest(dispatcher) {
+        coEvery { zcashWallet.balance(any(), any()) } returns
+            poolBalance(Pool.TRANSPARENT to Balance(available = 40_670))
+        startAdapter(AddressSpecType.Transparent)
+
+        assertEquals(40_670L, adapter.shieldingTarget().amount)
+    }
+
+    @Test
+    fun shieldingTarget_noConfirmedTransparent_reportsInsufficientBalance() = runTest(dispatcher) {
+        coEvery { zcashWallet.balance(any(), any()) } returns
+            poolBalance(Pool.TRANSPARENT to Balance(available = 0))
+        startAdapter(AddressSpecType.Transparent)
+
+        val failure = failureOf { adapter.shieldingTarget() }
+
+        assertEquals(
+            Res.string.Swap_ErrorInsufficientBalance,
+            (failure as LocalizedException).errorTextRes,
+        )
+    }
+
+    @Test
+    fun proposeShielding_feeAboveAmount_reportsInsufficientBalance() = runTest(dispatcher) {
+        prepareFailure = { throw ZcashException("No feasible note selection found") }
+        startAdapter(AddressSpecType.Transparent)
+
+        val failure = failureOf {
+            adapter.proposeShielding(ZcashAdapter.ShieldingTarget(address = SHIELDED_RECIPIENT, amount = 20_000L))
+        }
+
+        assertEquals(
+            Res.string.Swap_ErrorInsufficientBalance,
+            (failure.cause as LocalizedException).errorTextRes,
+        )
+    }
+
     // endregion
 
     // region Shortfall is refused, never topped up from another pool
@@ -159,7 +197,16 @@ class ZcashAdapterSourcePoolsTest : ZcashAdapterTestFixture() {
 
         adapter.send(AMOUNT, RECIPIENT, memo = "")
 
-        coVerify(exactly = 1) { session.broadcastReserved(any(), HEIGHT, requireOwnInputs = true) }
+        coVerify(exactly = 1) { session.broadcastReserved(any(), HEIGHT, requireOwnInputs = true, any()) }
+    }
+
+    @Test
+    fun send_enteredAddress_isRememberedWithTheBroadcast() = runTest(dispatcher) {
+        startAdapter(AddressSpecType.Transparent)
+
+        adapter.send(AMOUNT, RECIPIENT, memo = "")
+
+        coVerify(exactly = 1) { session.broadcastReserved(any(), HEIGHT, true, listOf(RECIPIENT)) }
     }
 
     @Test

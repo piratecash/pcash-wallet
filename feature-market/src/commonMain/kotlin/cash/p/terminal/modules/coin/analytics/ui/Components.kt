@@ -41,6 +41,7 @@ import cash.p.terminal.ui_compose.components.headline1_bran
 import cash.p.terminal.ui_compose.components.subhead1_grey
 import cash.p.terminal.ui_compose.components.subhead1_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
+import cash.p.terminal.ui.compose.components.coinIconPlate
 import io.horizontalsystems.chartview.ChartMinimal
 
 @Composable
@@ -148,7 +149,7 @@ private fun BoxItemCell(
             Image(
                 painter = boxItem.image.painter(),
                 contentDescription = null,
-                modifier = Modifier.size(32.dp),
+                modifier = Modifier.size(32.dp).coinIconPlate(),
             )
             HSpacer(16.dp)
             subhead2_grey(

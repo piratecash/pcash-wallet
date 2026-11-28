@@ -25,6 +25,7 @@ import androidx.navigationevent.compose.rememberNavigationEventDispatcherOwner
 import cash.p.terminal.core.WalletOnboardingStorage
 import cash.p.terminal.core.rememberTermsAcceptedAction
 import cash.p.terminal.modules.intro.IntroScreen
+import cash.p.terminal.modules.tonconnect.TonConnectRequestEffects
 import cash.p.terminal.navigation.AppPages
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
@@ -38,6 +39,8 @@ import cash.p.terminal.shared.desktop.DesktopWipeCoordinator
 import cash.p.terminal.shared.desktop.WipeProgress
 import cash.p.terminal.shared.desktop.rememberDesktopDarkTheme
 import cash.p.terminal.shared.desktop.vault.DesktopVault
+import cash.p.terminal.shared.main.ScreenCaptureProtectedEffect
+import cash.p.terminal.shared.main.ScreenCaptureProtection
 import cash.p.terminal.shared.desktop.vault.DesktopStorageSession
 import cash.p.terminal.shared.desktop.vault.DesktopVaultState
 import cash.p.terminal.shared.desktop.vault.UnlockOutcome
@@ -81,6 +84,8 @@ fun DesktopRoot(
         rootPage = { DesktopMainPage() },
         appContent = { navigation ->
             OpenCreateWalletForNewHiddenWallet(navigation)
+            // Desktop has no dApp-opened session to return to, so the outcome needs no handling.
+            TonConnectRequestEffects(navigation) { _, _ -> }
             PcashApp(navigation)
         },
         wipeFailed = wipeFailed,
@@ -136,6 +141,10 @@ internal fun DesktopRootContent(
                             appState.SaveableStateProvider(APP_STATE_KEY) { appContent(navigation) }
                         }
                     }
+                }
+                // As on Android while locked: the password screens stay out of screen capture.
+                if (vaultState !is DesktopVaultState.Unlocked) {
+                    ScreenCaptureProtectedEffect(koinInject<ScreenCaptureProtection>())
                 }
                 when (vaultState) {
                     DesktopVaultState.NoVault -> LockScreen { FirstRunGate() }

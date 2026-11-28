@@ -38,6 +38,8 @@ import cash.p.terminal.core.managers.TronHardwareSigners
 import cash.p.terminal.core.managers.EvmKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.EvmSyncSourceManager
 import cash.p.terminal.core.managers.KitPlatformContexts
+import cash.p.terminal.core.managers.TonConnectManager
+import cash.p.terminal.core.managers.TonConnectStorage
 import cash.p.terminal.core.managers.KitStorageNaming
 import cash.p.terminal.core.managers.SolanaKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.SolanaRpcSourceManager
@@ -48,8 +50,30 @@ import cash.p.terminal.core.managers.TrezorAttachments
 import cash.p.terminal.core.providers.AddressResolutionConfig
 import cash.p.terminal.core.providers.ZcashFallbackAddressProvider
 import cash.p.terminal.core.NonFatalReporter
+import cash.p.terminal.core.adapters.zcash.session.DesktopZcashBlockDownloadPolicy
+import cash.p.terminal.core.adapters.zcash.session.ZcashBlockDownloadPolicy
 import cash.p.terminal.core.adapters.zcash.session.ZcashDbKeyProvider
 import cash.p.terminal.shared.desktop.vault.DesktopZcashDbKeyProvider
+import cash.p.terminal.shared.desktop.vault.VaultLoginEvents
+import cash.p.terminal.shared.desktop.journal.DesktopLoggingSettings
+import cash.p.terminal.shared.desktop.journal.DesktopLoginJournal
+import cash.p.terminal.shared.desktop.journal.DesktopLoginCameraAccess
+import cash.p.terminal.shared.desktop.journal.DesktopLoginJournalSecrets
+import cash.p.terminal.shared.desktop.journal.DesktopLoginPhotoExporter
+import cash.p.terminal.shared.desktop.journal.DesktopPremiumPlatformSettings
+import cash.p.terminal.shared.desktop.journal.DesktopLoginRecordRepository
+import cash.p.terminal.shared.desktop.journal.DesktopSelfieCamera
+import cash.p.terminal.shared.desktop.journal.FailedAttemptRecorder
+import cash.p.terminal.shared.desktop.journal.JournalQueue
+import cash.p.terminal.shared.desktop.journal.SelfieCamera
+import cash.p.terminal.feature.logging.photo.LoginPhotoExporter
+import cash.p.terminal.feature.logging.photo.LoginPhotoSource
+import cash.p.terminal.feature.logging.settings.LoginCameraAccess
+import cash.p.terminal.modules.premium.settings.PremiumPlatformSettings
+import cash.p.terminal.feature.logging.settings.LoginJournalSecrets
+import cash.p.terminal.modules.contacts.ContactsRepository
+import io.horizontalsystems.core.ILoggingSettings
+import io.horizontalsystems.core.ILoginRecordRepository
 import cash.p.terminal.wallet.FallbackAddressProvider
 import cash.p.terminal.core.storage.AccountsStorage
 import cash.p.terminal.core.storage.StorageRouter
@@ -175,7 +199,20 @@ internal val desktopWalletModule = module {
             lazy { get<OfflineModeManager>() },
             lazy { get<BitcoinKitDatabaseManager>() },
             lazy { get<AmlStatusManager>() },
+            lazy { get<TonConnectManager>() },
             get(),
+        )
+    }
+    singleOf(::DesktopTonConnectStorage) bind TonConnectStorage::class
+    single {
+        TonConnectManager(
+            adapterFactory = get(),
+            appName = "P.cash Wallet",
+            appVersion = get<DesktopAppVersion>().name,
+            storage = get(),
+            accountManager = get(),
+            router = get(),
+            dispatcherProvider = get(),
         )
     }
     singleOf(::DesktopLogGate)
@@ -202,6 +239,24 @@ internal val desktopWalletModule = module {
     single<AddressResolutionConfig> { DesktopAddressResolutionConfig }
     single<IThirdKeyboard> { DesktopThirdKeyboard }
     singleOf(::DesktopBeamResetMarker) bind BeamResetMarker::class
+    singleOf(::JournalQueue)
+    singleOf(::DesktopSelfieCamera) bind SelfieCamera::class
+    singleOf(::FailedAttemptRecorder)
+    singleOf(::DesktopLoginRecordRepository) binds arrayOf(ILoginRecordRepository::class, LoginPhotoSource::class)
+    singleOf(::DesktopLoggingSettings) bind ILoggingSettings::class
+    singleOf(::DesktopLoginJournalSecrets) bind LoginJournalSecrets::class
+    singleOf(::DesktopLoginCameraAccess) bind LoginCameraAccess::class
+    singleOf(::DesktopLoginPhotoExporter) bind LoginPhotoExporter::class
+    singleOf(::DesktopPremiumPlatformSettings) bind PremiumPlatformSettings::class
+    single {
+        // Lazy: premium and contacts read the storage, which opens only at the first unlock.
+        DesktopLoginJournal(
+            get(), get(),
+            lazy { get<CheckPremiumUseCase>() },
+            lazy { get<ContactsRepository>() },
+            get(), get(), get(), get(),
+        )
+    } bind VaultLoginEvents::class
     singleOf(::DesktopWalletPages) binds
         arrayOf(AppPages::class, WalletPages::class, WalletPlatformPages::class, WalletSendPages::class)
     singleOf(::DesktopSecretActionAuthorizer) bind SecretActionAuthorizer::class
@@ -215,7 +270,7 @@ internal val desktopWalletModule = module {
     single<BalanceHideOnFlipHandler> { DesktopBalanceHideOnFlipHandler }
     single<HardwareWalletKeyProvisioner> { DesktopNoHardwareKeyProvisioner }
     single<ScanToAddUseCase> { DesktopNoHardwareScanToAdd }
-    single<BalancePlatformActions> { DesktopBalancePlatformActions }
+    singleOf(::DesktopBalancePlatformActions) bind BalancePlatformActions::class
     singleOf(::DesktopSystemInfoManager) bind ISystemInfoManager::class
     singleOf(::DesktopStatusReportBuildInfo) bind StatusReportBuildInfo::class
     singleOf(::DesktopStatusReportExporter) bind StatusReportExporter::class
@@ -235,6 +290,7 @@ internal val desktopWalletModule = module {
     singleOf(::DesktopSolanaKitDatabaseKeyProvider) bind SolanaKitDatabaseKeyProvider::class
     singleOf(::DesktopStellarKitDatabaseKeyProvider) bind StellarKitDatabaseKeyProvider::class
     singleOf(::DesktopZcashDbKeyProvider) bind ZcashDbKeyProvider::class
+    singleOf(::DesktopZcashBlockDownloadPolicy) bind ZcashBlockDownloadPolicy::class
     singleOf(::DesktopBeamKitDatabaseKeyProvider) bind BeamKitDatabaseKeyProvider::class
     single<NonFatalReporter> { DesktopNonFatalReporter }
     single<TorSyncState> { DesktopTorSyncState }

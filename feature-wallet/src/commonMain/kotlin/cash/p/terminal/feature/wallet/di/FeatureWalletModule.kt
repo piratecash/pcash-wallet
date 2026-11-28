@@ -23,9 +23,17 @@ import cash.p.terminal.core.managers.TimePasswordProvider
 import cash.p.terminal.core.managers.TokenAutoEnableManager
 import cash.p.terminal.core.managers.TonAccountManager
 import cash.p.terminal.core.managers.TronAccountManager
+import cash.p.terminal.core.AccountTokenSupport
 import cash.p.terminal.core.managers.UserLevelLogScope
 import cash.p.terminal.core.managers.WalletActivator
 import cash.p.terminal.core.managers.WordsManager
+import cash.p.terminal.core.nft.NftCollectionPrefsRepository
+import cash.p.terminal.core.nft.NftCollectionsRepository
+import cash.p.terminal.core.nft.NftGramHintsRepository
+import cash.p.terminal.core.nft.NftLottieLoader
+import cash.p.terminal.core.nft.NftProvider
+import cash.p.terminal.core.nft.NftTrustedCollectionsRepository
+import cash.p.terminal.core.nft.TonNftProvider
 import cash.p.terminal.core.managers.ZcashBirthdayProvider
 import cash.p.terminal.core.providers.PredefinedBlockchainSettingsProvider
 import cash.p.terminal.core.providers.ZcashDatabaseFilesMarker
@@ -65,6 +73,19 @@ import cash.p.terminal.modules.createaccount.passphraseterms.PassphraseTermsView
 import cash.p.terminal.modules.importwallet.ImportWalletViewModel
 import cash.p.terminal.modules.intro.IntroViewModel
 import cash.p.terminal.modules.markdown.MarkdownViewModel
+import cash.p.terminal.modules.nft.NftCollectionsViewModel
+import cash.p.terminal.modules.nft.NftGramHintsViewModel
+import cash.p.terminal.modules.nft.NftPreviewViewModel
+import cash.p.terminal.modules.tonconnect.TonConnectListViewModel
+import cash.p.terminal.modules.tonconnect.TonConnectNewViewModel
+import cash.p.terminal.modules.tonconnect.TonConnectSendRequestViewModel
+import cash.p.terminal.modules.xtransaction.helpers.TransactionInfoHelper
+import cash.p.terminal.modules.nft.manage.NftManageViewModel
+import cash.p.terminal.modules.nft.NftOwnerWalletResolver
+import cash.p.terminal.modules.nft.NftTransferAvailabilityProvider
+import cash.p.terminal.modules.nft.renew.NftDomainRenewViewModel
+import cash.p.terminal.modules.nft.burn.NftBurnViewModel
+import cash.p.terminal.modules.nft.renew.NftDomainRenewalViewModel
 import cash.p.terminal.modules.manageaccount.ManageAccountViewModel
 import cash.p.terminal.modules.manageaccount.backupconfirmkey.BackupConfirmKeyViewModel
 import cash.p.terminal.modules.manageaccount.backupkey.BackupKeyViewModel
@@ -153,6 +174,7 @@ import cash.p.terminal.core.managers.DefaultBitcoinKitDatabaseOperations
 import io.horizontalsystems.bitcoincore.core.IConnectionManager
 import cash.p.terminal.core.managers.EvmLabelManager
 import cash.p.terminal.core.managers.EvmSignerFactory
+import cash.p.terminal.core.managers.DeviceSignerFactory
 import cash.p.terminal.data.repository.EvmTransactionRepository
 import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
 import cash.p.terminal.core.managers.NetworkErrorTracker
@@ -175,6 +197,8 @@ import cash.p.terminal.core.providers.FeeRateProvider
 import cash.p.terminal.core.providers.PendingAccountProvider
 import cash.p.terminal.core.providers.PendingAccountProviderImpl
 import cash.p.terminal.core.storage.LocallyCreatedTransactionStorage
+import cash.p.terminal.core.storage.NftCollectionPrefStorage
+import cash.p.terminal.core.storage.NftItemStorage
 import cash.p.terminal.core.storage.OfflineModeStorage
 import cash.p.terminal.core.storage.PendingTransactionStorage
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
@@ -239,9 +263,12 @@ import cash.p.terminal.modules.transactionInfo.transactionInfoViewModel
 import cash.p.terminal.modules.transactions.CheckAmlIncomingTransactionUseCase
 import cash.p.terminal.modules.transactions.ITransactionRecordRepository
 import cash.p.terminal.modules.transactions.SelectContactViewModel
+import cash.p.terminal.modules.transactions.SwapProviderRecordResolver
 import cash.p.terminal.modules.transactions.TransactionFilterService
 import cash.p.terminal.modules.transactions.TransactionItem
 import cash.p.terminal.modules.transactions.TransactionRecordRepository
+import cash.p.terminal.modules.transactions.TransactionRecordSearchMatcher
+import cash.p.terminal.modules.transactions.TransactionSearchVisibility
 import cash.p.terminal.modules.transactions.TransactionSyncStateRepository
 import cash.p.terminal.modules.transactions.TransactionViewItemFactory
 import cash.p.terminal.modules.transactions.TransactionsRateRepository
@@ -267,17 +294,20 @@ import cash.p.terminal.modules.balance.BalanceViewItemFactory
 import cash.p.terminal.modules.balance.balanceViewModel
 import cash.p.terminal.modules.balance.token.addresspoisoning.AddressPoisoningViewModel
 import cash.p.terminal.modules.balance.token.creationblock.CreationBlockViewModel
+import cash.p.terminal.modules.signmessage.SignMessageViewModel
 import cash.p.terminal.modules.balance.token.tokenBalanceViewModel
 import cash.p.terminal.modules.coin.overview.TokenWalletActions
 import cash.p.terminal.modules.displayoptions.DisplayOptionsViewModel
 import cash.p.terminal.modules.managewallets.ManageWalletsTokenWalletActions
 import cash.p.terminal.core.adapters.zcash.ZcashSingleUseAddressManager
+import cash.p.terminal.core.adapters.zcash.ZcashTransparentIndexStore
 import cash.p.terminal.core.adapters.zcash.server.ZcashServerProber
 import cash.p.terminal.core.adapters.zcash.server.ZcashServerProberImpl
 import cash.p.terminal.core.adapters.zcash.server.ZcashServerSelector
 import cash.p.terminal.core.adapters.zcash.session.ZcashDatabaseFailureReporter
 import cash.p.terminal.core.adapters.zcash.session.ZcashDatabaseFiles
 import cash.p.terminal.core.adapters.zcash.session.ZcashSessionManager
+import cash.p.terminal.core.adapters.zcash.session.ZcashAddressSearch
 import cash.p.terminal.core.adapters.zcash.session.ZcashSyncScheduler
 import cash.p.terminal.core.adapters.zcash.session.ZcashWalletOpener
 import cash.p.terminal.core.adapters.zcash.session.ZcashWalletOpenerImpl
@@ -307,6 +337,9 @@ import cash.p.terminal.core.ISendBitcoinAdapter
 import cash.p.terminal.core.utils.AddressUriParser
 import cash.p.terminal.entities.Address
 import cash.p.terminal.modules.address.AddressParserViewModel
+import cash.p.terminal.core.ISendTonAdapter
+import cash.p.terminal.modules.address.NftTransferAddressQualifier
+import cash.p.terminal.modules.address.nftTransferAddressViewModel
 import cash.p.terminal.modules.address.tokenAddressViewModel
 import cash.p.terminal.modules.amount.AmountInputViewModel2
 import cash.p.terminal.modules.amount.amountInputModeViewModel
@@ -362,6 +395,8 @@ val featureWalletModule = module {
     singleOf(::ZcashSyncScheduler)
     singleOf(::ZcashSessionManager)
     singleOf(::ZcashSingleUseAddressStorage)
+    singleOf(::ZcashTransparentIndexStore)
+    singleOf(::ZcashAddressSearch)
     factory { (accountId: String) -> ZcashSingleUseAddressManager(storage = get(), accountId = accountId) }
     factory<LogsDao> { get<StorageRouter>().sessionLevel.logsDao() }
     singleOf(::UserLevelLogScope) bind LogScope::class
@@ -410,6 +445,7 @@ val featureWalletModule = module {
     singleOf(::BitcoinKitDatabaseManager)
     singleOf(::LitecoinKitPool)
     factoryOf(::SolanaWalletManager)
+    singleOf(::DeviceSignerFactory)
     singleOf(::SolanaKitManager)
     singleOf(::StellarKitManager)
     singleOf(::ThorchainKitManagers)
@@ -438,6 +474,16 @@ val featureWalletModule = module {
     singleOf(::BitcoinReplacementRegistry)
     singleOf(::CoinManager) bind ICoinManager::class
     singleOf(::OfflineModeStorage)
+    singleOf(::NftItemStorage)
+    singleOf(::NftCollectionPrefStorage)
+    singleOf(::NftCollectionPrefsRepository)
+    singleOf(::TonNftProvider) bind NftProvider::class
+    singleOf(::NftTrustedCollectionsRepository)
+    single { NftCollectionsRepository(get(), getAll(), get(), get(), get()) }
+    singleOf(::NftOwnerWalletResolver)
+    singleOf(::NftTransferAvailabilityProvider)
+    singleOf(::NftLottieLoader)
+    singleOf(::NftGramHintsRepository)
     factoryOf(::SwapProviderTransactionsStorage)
     factoryOf(::SwapTransactionMatcher)
     singleOf(::ContactsRepository)
@@ -502,6 +548,42 @@ val featureWalletModule = module {
     viewModel { (blockchain: Blockchain) -> AddRpcViewModel(blockchain, get()) }
 
     viewModel { (url: String) -> MarkdownViewModel(url, get(), get()) }
+    viewModel { params -> NftCollectionsViewModel(params.get(), get(), get(), get(), get(), get()) }
+    viewModel { params -> NftManageViewModel(params.get(), get(), get(), get(), get()) }
+    viewModelOf(::TonConnectListViewModel)
+    viewModel { params -> TonConnectNewViewModel(params.get(), get(), get(), get(), get(), get()) }
+    viewModel { params ->
+        TonConnectSendRequestViewModel(params.get(), get(), get(), get(), get(), get(), get(), get(), get())
+    }
+    factoryOf(::TransactionInfoHelper)
+    viewModel { params -> NftPreviewViewModel(params.get(), params.get(), get(), get(), get(), get(), get()) }
+    viewModelOf(::NftDomainRenewalViewModel)
+    viewModelOf(::NftGramHintsViewModel)
+    viewModel { params ->
+        NftDomainRenewViewModel(
+            domains = params.get(),
+            namesRevealed = params.get(),
+            walletResolver = get(),
+            adapterManager = get(),
+            balanceHiddenManager = get(),
+            offlineOperationGate = get(),
+            xRateService = XRateService(get(), get<CurrencyManager>().baseCurrency),
+            dispatcherProvider = get(),
+        )
+    }
+    viewModel { params ->
+        NftBurnViewModel(
+            item = params[0],
+            domain = params[1],
+            namesRevealed = params[2],
+            walletResolver = get(),
+            adapterManager = get(),
+            balanceHiddenManager = get(),
+            offlineOperationGate = get(),
+            xRateService = XRateService(get(), get<CurrencyManager>().baseCurrency),
+            dispatcherProvider = get(),
+        )
+    }
     viewModelOf(::IntroViewModel)
     viewModelOf(::BackupAlertViewModel)
     viewModelOf(::CreateAdvancedAccountViewModel)
@@ -591,6 +673,9 @@ val featureWalletModule = module {
     singleOf(::PendingMultiSwapStorage)
     singleOf(::UpdateSwapProviderTransactionsStatusUseCase)
     singleOf(::SyncPendingMultiSwapUseCase)
+    factoryOf(::SwapProviderRecordResolver)
+    factoryOf(::TransactionRecordSearchMatcher)
+    factoryOf(::TransactionSearchVisibility)
     factoryOf(::TransactionRecordRepository) bind ITransactionRecordRepository::class
     factoryOf(::TransactionViewItemFactory)
     factoryOf(::TransactionsRateRepository)
@@ -632,6 +717,7 @@ val featureWalletModule = module {
     factoryOf(::BalanceCache)
     factoryOf(::BalanceAdapterRepository)
     factoryOf(::BalanceViewItemFactory)
+    singleOf(::AccountTokenSupport)
     factoryOf(::ManageWalletsTokenWalletActions) bind TokenWalletActions::class
     factoryOf(::TotalService)
     factoryOf(::TotalBalance)
@@ -656,6 +742,7 @@ val featureWalletModule = module {
         AddressPoisoningViewModel(coinUid, isPirate, blockchainType, get(), get(), get(), get())
     }
     viewModel { (wallet: Wallet) -> CreationBlockViewModel(wallet, get(), get(), get(), get(), get()) }
+    viewModel { (wallet: Wallet) -> SignMessageViewModel(wallet, get()) }
     viewModel { (coinUid: String) -> BchAddressTypeSelectViewModel(coinUid, get()) }
     viewModel { (coinUid: String) -> DerivationSelectViewModel(coinUid, get()) }
     viewModel { (termTitles: Array<String>) -> PassphraseTermsViewModel(termTitles, get()) }
@@ -675,6 +762,7 @@ val featureWalletModule = module {
     viewModel { (tokenQuery: TokenQuery, coinCode: String, initial: Address?) ->
         tokenAddressViewModel(tokenQuery, coinCode, initial)
     }
+    viewModel(NftTransferAddressQualifier) { (adapter: ISendTonAdapter) -> nftTransferAddressViewModel(adapter) }
     viewModel { params -> sendBitcoinViewModel(params[0], params[1], params[2], params[3]) }
     viewModel { params -> sendZCashViewModel(params[0], params[1], params[2], params[3]) }
     viewModel { params -> sendEvmViewModel(params[0], params[1], params[2], params[3]) }

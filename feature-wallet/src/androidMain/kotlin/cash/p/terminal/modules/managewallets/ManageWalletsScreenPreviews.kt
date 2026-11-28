@@ -63,6 +63,19 @@ private fun ManageWalletsScreenPreview() {
                 enabled = true,
                 label = "BASE",
                 hasInfo = true
+            ),
+            CoinViewItem(
+                item = Token(
+                    coin = Coin("Zcash", "Zcash", "ZEC"),
+                    blockchain = Blockchain(BlockchainType.Zcash, "Zcash", null),
+                    type = TokenType.Native,
+                    decimals = 8
+                ),
+                imageSource = ImageSource.Local(Res.drawable.ic_placeholder),
+                title = "ZEC",
+                subtitle = "Zcash",
+                enabled = false,
+                available = false
             )
         )
 
@@ -71,6 +84,12 @@ private fun ManageWalletsScreenPreview() {
                 coinName = "Bitcoin",
                 coinUid = "bitcoin",
                 items = listOf(items[0]),
+                isExpanded = false
+            ),
+            CoinGroup(
+                coinName = "Zcash",
+                coinUid = "zcash",
+                items = listOf(items[3]),
                 isExpanded = false
             ),
             CoinGroup(

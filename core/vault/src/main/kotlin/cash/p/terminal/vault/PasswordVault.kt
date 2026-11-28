@@ -22,20 +22,31 @@ sealed interface CreateResult {
 sealed interface UnlockResult {
     class Success(val session: VaultSession) : UnlockResult
     data object WrongPassword : UnlockResult
+    /** No envelope opens, but the password matches an erase tag. */
+    data object EraseContacts : UnlockResult
     data object Corrupted : UnlockResult
     data object LegacyFormat : UnlockResult
 }
 
-/** Not safe for concurrent [create]/[sealEnvelope]/[freeEnvelope]: the caller serializes them. */
+/**
+ * Not safe for concurrent writes ([create], [sealEnvelope], [freeEnvelopes], erase tag setters): the caller serializes
+ * them. Without [eraseTagsFile] the vault has no erase tags.
+ */
 class PasswordVault internal constructor(
     private val file: File,
     private val kdfParams: Argon2Params,
     private val crypto: VaultCrypto,
+    eraseTagsFile: File? = null,
 ) {
-    constructor(file: File, kdfParams: Argon2Params = Argon2Params.DEFAULT) : this(file, kdfParams, DefaultVaultCrypto)
+    constructor(
+        file: File,
+        kdfParams: Argon2Params = Argon2Params.DEFAULT,
+        eraseTagsFile: File? = null,
+    ) : this(file, kdfParams, DefaultVaultCrypto, eraseTagsFile)
 
     private val secureRandom = SecureRandom()
-    private val directory: Path get() = file.toPath().toAbsolutePath().parent
+    private val storage = AtomicFile(file)
+    private val eraseTags = eraseTagsFile?.let(::EraseTags)
 
     fun exists(): Boolean = file.exists()
 
@@ -51,10 +62,7 @@ class PasswordVault internal constructor(
         var result: CreateResult = CreateResult.Failed
         try {
             prepareStorage(created)
-            deleteOrphanTemps()
-            val bytes = VaultFileFormat.encode(newVaultFile(envelopes.root, password, payload))
-            // A hard link publishes the complete file and fails if the target exists, in one atomic step.
-            writeAndPublish(bytes) { temp -> Files.createLink(file.toPath(), temp) }
+            storage.createNew(VaultFileFormat.encode(newVaultFile(envelopes.root, password, payload)))
             result = created
         } catch (e: FileAlreadyExistsException) {
             result = CreateResult.AlreadyExists
@@ -68,24 +76,23 @@ class PasswordVault internal constructor(
         return result
     }
 
-    /** Runs Argon2 once and tries every envelope whichever one opens, so the work does not reveal the position. */
+    /**
+     * Runs Argon2 once and tries every envelope whichever one opens, so the work does not reveal the position.
+     * An envelope always wins over an erase tag.
+     */
     fun unlock(password: CharArray): UnlockResult {
-        val bytes = readBytes() ?: return UnlockResult.Corrupted
+        val bytes = storage.read() ?: return UnlockResult.Corrupted
         if (VaultFileFormat.isLegacy(bytes)) return UnlockResult.LegacyFormat
         val vault = VaultFileFormat.decode(bytes) ?: return UnlockResult.Corrupted
 
-        val kek = password.withUtf8Bytes { crypto.deriveKek(it, vault.salt, vault.params) }
-        val plaintexts = try {
-            vault.envelopes.mapIndexed { index, envelope ->
-                crypto.openEnvelope(envelope, kek, VaultFileFormat.envelopeAad(vault.params, vault.salt, index))
+        return withKek(password, vault.salt, vault.params) { kek ->
+            val session = openSession(vault, kek)
+            when {
+                session != null -> UnlockResult.Success(session)
+                eraseTags?.matchesAny(kek) == true -> UnlockResult.EraseContacts
+                else -> UnlockResult.WrongPassword
             }
-        } finally {
-            kek.fill(0)
         }
-        val index = plaintexts.indexOfFirst { it != null }
-        val session = plaintexts.getOrNull(index)?.let { VaultSession(index, VaultFileFormat.decodePayload(it)) }
-        plaintexts.forEach { it?.fill(0) }
-        return session?.let(UnlockResult::Success) ?: UnlockResult.WrongPassword
     }
 
     /** Throws [IOException] when the file cannot answer: "not in use" must not be assumed. */
@@ -94,9 +101,39 @@ class PasswordVault internal constructor(
             result.session.close()
             true
         }
+        UnlockResult.EraseContacts -> true
         UnlockResult.WrongPassword -> false
         UnlockResult.Corrupted, UnlockResult.LegacyFormat -> throw IOException("Vault file is unusable")
     }
+
+    /** Creates the erase tags file with random tags when it is missing or unreadable as tags. */
+    fun ensureEraseTags() {
+        eraseTags?.ensure()
+    }
+
+    /** Verifies [password] for [slot] and nothing else. Takes the Argon2 parameters and salt from the vault file. */
+    fun eraseTag(password: CharArray, slot: Int): ByteArray {
+        requireEraseTags(slot)
+        return withFileKek(password) { EraseTags.tag(it, slot) }
+    }
+
+    /** From here the lock screen erases contacts with the tag's password. Throws [IOException], keeping the file. */
+    fun publishEraseTag(slot: Int, tag: ByteArray) = requireEraseTags(slot).publish(slot, tag)
+
+    /** Constant-time. */
+    fun eraseTagEquals(slot: Int, expected: ByteArray): Boolean = requireEraseTags(slot).equalsAt(slot, expected)
+
+    /** A vault without erase tags has nothing to clear. Throws [IOException] and keeps the file on failure. */
+    fun clearEraseTag(slot: Int) {
+        require(slot in 0 until SLOT_COUNT) { "Slot $slot is out of range" }
+        eraseTags?.clear(slot)
+    }
+
+    fun matchesEraseTag(password: CharArray, slot: Int): Boolean = eraseTagEquals(slot, eraseTag(password, slot))
+
+    /** Argon2id at the cost of the vault file with a salt of the caller's: no cheaper to guess than the vault. */
+    fun passwordVerifier(password: CharArray, salt: ByteArray): ByteArray =
+        withKek(password, salt, usableVault().params) { it.copyOf() }
 
     /** Takes the Argon2 parameters and salt from the file. Throws [IOException] and keeps the file on failure. */
     fun sealEnvelope(index: Int, password: CharArray, payload: EnvelopePayload) =
@@ -108,18 +145,29 @@ class PasswordVault internal constructor(
 
     private inline fun replaceEnvelopes(indices: Collection<Int>, envelope: (VaultFile) -> ByteArray) {
         indices.forEach { require(it in 0 until ENVELOPE_COUNT) { "Envelope $it is out of range" } }
-        val vault = readBytes()?.let(VaultFileFormat::decode) ?: throw IOException("Vault file is unusable")
+        val vault = usableVault()
         val envelopes = vault.envelopes.toMutableList().apply { indices.forEach { set(it, envelope(vault)) } }
-        deleteOrphanTemps()
-        writeAndPublish(VaultFileFormat.encode(VaultFile(vault.params, vault.salt, envelopes))) { temp ->
-            Files.move(temp, file.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
-        }
+        storage.replace(VaultFileFormat.encode(VaultFile(vault.params, vault.salt, envelopes)))
     }
 
-    private fun readBytes(): ByteArray? = try {
-        Files.readAllBytes(file.toPath())
-    } catch (e: NoSuchFileException) {
-        null
+    private fun usableVault(): VaultFile =
+        storage.read()?.let(VaultFileFormat::decode) ?: throw IOException("Vault file is unusable")
+
+    private fun openSession(vault: VaultFile, kek: ByteArray): VaultSession? {
+        val plaintexts = vault.envelopes.mapIndexed { index, envelope ->
+            crypto.openEnvelope(envelope, kek, VaultFileFormat.envelopeAad(vault.params, vault.salt, index))
+        }
+        val index = plaintexts.indexOfFirst { it != null }
+        val session = plaintexts.getOrNull(index)?.let { VaultSession(index, VaultFileFormat.decodePayload(it)) }
+        plaintexts.forEach { it?.fill(0) }
+        return session
+    }
+
+    private fun requireEraseTags(): EraseTags = checkNotNull(eraseTags) { "This vault has no erase tags file" }
+
+    private fun requireEraseTags(slot: Int): EraseTags {
+        require(slot in 0 until SLOT_COUNT) { "Slot $slot is out of range" }
+        return requireEraseTags()
     }
 
     private fun newVaultFile(rootEnvelope: Int, password: CharArray, payload: EnvelopePayload): VaultFile {
@@ -137,12 +185,30 @@ class PasswordVault internal constructor(
         payload: EnvelopePayload,
     ): ByteArray {
         val plaintext = VaultFileFormat.encodePayload(payload)
+        try {
+            val aad = VaultFileFormat.envelopeAad(params, salt, index)
+            return withKek(password, salt, params) { AesGcm.encrypt(plaintext, it, aad) }
+        } finally {
+            plaintext.fill(0)
+        }
+    }
+
+    private inline fun <T> withFileKek(password: CharArray, block: (ByteArray) -> T): T {
+        val vault = usableVault()
+        return withKek(password, vault.salt, vault.params, block)
+    }
+
+    private inline fun <T> withKek(
+        password: CharArray,
+        salt: ByteArray,
+        params: Argon2Params,
+        block: (ByteArray) -> T,
+    ): T {
         val kek = password.withUtf8Bytes { crypto.deriveKek(it, salt, params) }
         try {
-            return AesGcm.encrypt(plaintext, kek, VaultFileFormat.envelopeAad(params, salt, index))
+            return block(kek)
         } finally {
             kek.fill(0)
-            plaintext.fill(0)
         }
     }
 
@@ -152,7 +218,49 @@ class PasswordVault internal constructor(
         return Allocation(root = shuffled.first(), pool = shuffled.drop(1 + decoys).toSet())
     }
 
-    private inline fun writeAndPublish(bytes: ByteArray, publish: (Path) -> Unit) {
+    private fun randomKey(): ByteArray = randomBytes(EnvelopePayload.KEY_SIZE)
+
+    private fun randomBytes(size: Int): ByteArray = ByteArray(size).also(secureRandom::nextBytes)
+
+    private inline fun <T> CharArray.withUtf8Bytes(block: (ByteArray) -> T): T {
+        val bytes = toUtf8Bytes()
+        try {
+            return block(bytes)
+        } finally {
+            bytes.fill(0)
+        }
+    }
+
+    private class Allocation(val root: Int, val pool: Set<Int>)
+
+    companion object {
+        const val ENVELOPE_COUNT = 32
+        const val SLOT_COUNT = 24
+
+        private const val DECOYS_MIN = 3
+        private const val DECOYS_MAX = 8
+    }
+}
+
+/** Temp file + fsync + publish in the same directory, so the file is always either the old or the new content. */
+internal class AtomicFile(private val file: File) {
+    private val directory: Path get() = file.toPath().toAbsolutePath().parent
+
+    fun read(): ByteArray? = try {
+        Files.readAllBytes(file.toPath())
+    } catch (e: NoSuchFileException) {
+        null
+    }
+
+    // A hard link publishes the complete file and fails if the target exists, in one atomic step.
+    fun createNew(bytes: ByteArray) = write(bytes) { temp -> Files.createLink(file.toPath(), temp) }
+
+    fun replace(bytes: ByteArray) = write(bytes) { temp ->
+        Files.move(temp, file.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
+    }
+
+    private inline fun write(bytes: ByteArray, publish: (Path) -> Unit) {
+        deleteOrphanTemps()
         val temp = Files.createTempFile(directory, "${file.name}.", ".tmp")
         try {
             FileOutputStream(temp.toFile()).use {
@@ -177,7 +285,7 @@ class PasswordVault internal constructor(
         }
     }
 
-    // A temp left by a crash could still hold an envelope of a password that has since been changed.
+    // A temp left by a crash could still hold an envelope or a tag of a password that has since been changed.
     private fun deleteOrphanTemps() {
         val isOrphan = { candidate: Path ->
             candidate.fileName.toString().let { it.startsWith("${file.name}.") && it.endsWith(".tmp") }
@@ -185,28 +293,5 @@ class PasswordVault internal constructor(
         Files.newDirectoryStream(directory, isOrphan).use { orphans ->
             orphans.forEach(Files::deleteIfExists)
         }
-    }
-
-    private fun randomKey(): ByteArray = randomBytes(EnvelopePayload.KEY_SIZE)
-
-    private fun randomBytes(size: Int): ByteArray = ByteArray(size).also(secureRandom::nextBytes)
-
-    private inline fun <T> CharArray.withUtf8Bytes(block: (ByteArray) -> T): T {
-        val bytes = toUtf8Bytes()
-        try {
-            return block(bytes)
-        } finally {
-            bytes.fill(0)
-        }
-    }
-
-    private class Allocation(val root: Int, val pool: Set<Int>)
-
-    companion object {
-        const val ENVELOPE_COUNT = 32
-        const val SLOT_COUNT = 24
-
-        private const val DECOYS_MIN = 3
-        private const val DECOYS_MAX = 8
     }
 }

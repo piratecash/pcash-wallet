@@ -30,6 +30,7 @@ import cash.p.terminal.modules.multiswap.providers.ThorChainSwapStatusRepository
 import cash.p.terminal.modules.multiswap.providers.UnstoppableProvidersFactory
 import cash.p.terminal.modules.multiswap.providers.YiFiProvider
 import cash.p.terminal.modules.multiswap.providers.YiFiTokenResolver
+import cash.p.terminal.modules.multiswap.providers.ZcashRefundAddressReservation
 import cash.p.terminal.modules.multiswap.providers.backendswap.BackendSwapAssetResolver
 import cash.p.terminal.modules.multiswap.providers.backendswap.BackendSwapProvidersFactory
 import cash.p.terminal.modules.multiswap.providers.backendswap.BackendSwapProvidersRepository
@@ -48,6 +49,7 @@ val swapProvidersModule = module {
     factoryOf(::SwapQuoteService)
     singleOf(::SwapProviderTransactionFactory)
     singleOf(::OffChainSwapProviderSupport)
+    singleOf(::ZcashRefundAddressReservation)
 
     singleOf(::ChangeNowProvider)
     singleOf(::QuickexProvider)
@@ -105,7 +107,8 @@ val swapProvidersModule = module {
         SwapSelectCoinViewModel(
             otherSelectedToken = otherSelectedToken,
             activeAccount = activeAccount,
-            dispatcherProvider = get()
+            dispatcherProvider = get(),
+            balanceHiddenManager = get(),
         )
     }
 }

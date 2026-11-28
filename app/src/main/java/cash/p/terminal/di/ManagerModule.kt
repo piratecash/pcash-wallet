@@ -46,6 +46,8 @@ import cash.p.terminal.core.IRateAppManager
 import cash.p.terminal.core.NonFatalReporter
 import cash.p.terminal.core.ITorManager
 import cash.p.terminal.core.WalletOnboardingStorage
+import cash.p.terminal.core.adapters.zcash.session.AndroidZcashBlockDownloadPolicy
+import cash.p.terminal.core.adapters.zcash.session.ZcashBlockDownloadPolicy
 import cash.p.terminal.core.adapters.zcash.session.ZcashDbKeyProvider
 import cash.p.terminal.core.adapters.zcash.session.ZcashDbKeyProviderImpl
 import cash.p.terminal.core.deeplink.DeeplinkParser
@@ -70,6 +72,8 @@ import cash.p.terminal.core.managers.BtcBlockchainManager
 import cash.p.terminal.core.managers.DeviceFlipDetector
 import cash.p.terminal.core.managers.EffectiveMonitoredChains
 import android.content.Context
+import android.hardware.usb.UsbManager
+import io.horizontalsystems.core.common.usb.AndroidUsbPermissionRequester
 import android.net.ConnectivityManager as AndroidConnectivityManager
 import cash.p.terminal.core.managers.ConnectivityManager
 import cash.p.terminal.core.notifications.NotificationDeduplicator
@@ -118,6 +122,8 @@ import cash.p.terminal.core.managers.MoneroDeviceWalletNative
 import cash.p.terminal.core.managers.MoneroDeviceWalletFileStore
 import cash.p.terminal.core.managers.MoneroDeviceWalletProvisioner
 import cash.p.terminal.core.managers.MoneroTrezorReadiness
+import cash.p.terminal.core.managers.MoneroDeviceOperationGateway
+import cash.p.terminal.core.managers.MoneroLedgerOperationGateway
 import cash.p.terminal.core.managers.MoneroTrezorOperationGateway
 import cash.p.terminal.core.managers.TrezorAttachments
 import cash.p.terminal.core.managers.UsbTrezorAttachments
@@ -132,6 +138,8 @@ import cash.p.terminal.core.managers.AndroidStellarKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.SystemInfoManager
 import cash.p.terminal.core.managers.TonConnectDatabaseKeyProvider
 import cash.p.terminal.core.managers.TonConnectManager
+import cash.p.terminal.core.managers.TonConnectStorage
+import cash.p.terminal.core.managers.AndroidTonConnectStorage
 import cash.p.terminal.core.managers.TonKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.AndroidTonKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.TorManager
@@ -288,6 +296,7 @@ val managerModule = module {
     single<AddressResolutionConfig> { AppConfigProvider }
     singleOf(::CrashlyticsNonFatalReporter) bind NonFatalReporter::class
     singleOf(::ZcashDbKeyProviderImpl) bind ZcashDbKeyProvider::class
+    singleOf(::AndroidZcashBlockDownloadPolicy) bind ZcashBlockDownloadPolicy::class
     singleOf(::TonFallbackAddressProvider)
     single<FallbackAddressProvider> {
         CompositeFallbackAddressProvider(
@@ -384,6 +393,7 @@ val managerModule = module {
     singleOf(::AndroidStellarKitDatabaseKeyProvider) bind StellarKitDatabaseKeyProvider::class
     singleOf(::AndroidTonKitDatabaseKeyProvider) bind TonKitDatabaseKeyProvider::class
     singleOf(::TonConnectDatabaseKeyProvider)
+    singleOf(::AndroidTonConnectStorage) bind TonConnectStorage::class
     single { MarketApiConfig(AppConfigProvider.marketApiBaseUrl, MarketApiConfig.API_KEY) }
     factoryOf(::RemoveMoneroWalletFilesUseCase) bind IRemoveMoneroWalletFilesUseCase::class
     singleOf(::GetTonAddressUseCaseImpl) bind GetTonAddressUseCase::class
@@ -408,9 +418,9 @@ val managerModule = module {
     singleOf(::RateAppManager) bind IRateAppManager::class
     singleOf(::WCSessionStorage)
     single {
-        WCManager(accountManager = get()).also {
+        WCManager(accountManager = get(), dispatcherProvider = get()).also {
             it.addWcHandler(WCHandlerEvm(get(), get()))
-            it.addWcHandler(WCHandlerStellar(get()))
+            it.addWcHandler(WCHandlerStellar(get(), get()))
         }
     }
     singleOf(::WCSessionManager)
@@ -419,12 +429,17 @@ val managerModule = module {
     singleOf(::Mnemonic)
 
     singleOf(::DefaultMoneroNativeWalletRuntime) bind MoneroNativeWalletRuntime::class
-    singleOf(::MoneroTrezorOperationGateway) bind MoneroHardwareGateway::class
+    singleOf(::MoneroTrezorOperationGateway)
+    singleOf(::MoneroLedgerOperationGateway)
+    singleOf(::MoneroDeviceOperationGateway) bind MoneroHardwareGateway::class
     singleOf(::UsbTrezorAttachments) bind TrezorAttachments::class
+
     singleOf(::MoneroTrezorReadiness)
     singleOf(::DefaultMoneroDeviceWalletNative) bind MoneroDeviceWalletNative::class
     single { MoneroDeviceWalletFileStore.create(get()) }
     singleOf(::MoneroDeviceWalletProvisioner)
+    single { get<Context>().getSystemService(Context.USB_SERVICE) as UsbManager }
+    singleOf(::AndroidUsbPermissionRequester)
     singleOf(::SilentCameraManager) bind ISilentPhotoCapture::class
     singleOf(::CurrentDateProvider) bind ICurrentDateProvider::class
     singleOf(::AndroidUptimeProvider) bind UptimeProvider::class
@@ -495,11 +510,10 @@ val managerModule = module {
     } bind BeamKitDatabaseKeyProvider::class
     single {
         TonConnectManager(
-            context = get(),
             adapterFactory = get(),
             appName = "P.cash Wallet",
             appVersion = AppConfigProvider.appVersion,
-            databaseKeyProvider = get(),
+            storage = get(),
             accountManager = get(),
             router = get(),
             dispatcherProvider = get(),

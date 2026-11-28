@@ -37,6 +37,17 @@ class AccountsStorageTest {
     }
 
     @Test
+    fun allAccounts_nameSavedWithBlankLines_isListedWithSingleLineName() {
+        val records = mutableListOf<AccountRecord>()
+        every { dao.insert(capture(records)) } just Runs
+        every { dao.getAll(0) } returns records
+
+        storage.save(watchAccount("Wallet 11\n\n\n", AccountType.EvmAddress("0x")))
+
+        assertEquals(listOf("Wallet 11"), storage.allAccounts(0).map { it.name })
+    }
+
+    @Test
     fun save_zcashSaplingSpendingKey_roundTripsBackToTheSameType() {
         assertRoundTrip(AccountType.ZCashSaplingKey(SPENDING_KEY))
     }
@@ -52,6 +63,45 @@ class AccountsStorageTest {
 
         assertEquals("zcash_sapling_key", record.type)
         assertEquals(SPENDING_KEY, record.key?.value)
+    }
+
+    @Test
+    fun save_ledgerDevice_storesDeviceIdModelAndWalletPublicKey() {
+        val record = savedRecord(AccountType.LedgerDevice("ledger-id", "nanoSP", "wallet-key"))
+
+        assertEquals("ledger_device", record.type)
+        assertEquals("ledger-id@nanoSP", record.key?.value)
+        assertEquals("wallet-key", record.passphrase?.value)
+    }
+
+    @Test
+    fun loadAccount_ledgerDevice_restoresAllFields() {
+        val restored = roundTrip(AccountType.LedgerDevice("ledger-id", "nanoSP", "wallet-key"))
+
+        assertEquals(
+            listOf("ledger-id", "nanoSP", "wallet-key"),
+            (restored as AccountType.LedgerDevice).let { listOf(it.deviceId, it.model, it.walletPublicKey) }
+        )
+    }
+
+    @Test
+    fun save_trezorDevice_keepsExistingRecordFormat() {
+        val record = savedRecord(AccountType.TrezorDevice("trezor-id", "T3T1", "2.8.1", "wallet-key"))
+
+        assertEquals("trezor_device", record.type)
+        assertEquals("trezor-id@T3T1@2.8.1", record.key?.value)
+        assertEquals("wallet-key", record.passphrase?.value)
+    }
+
+    @Test
+    fun loadAccount_trezorDevice_restoresAllFields() {
+        val restored = roundTrip(AccountType.TrezorDevice("trezor-id", "T3T1", "2.8.1", "wallet-key"))
+
+        assertEquals(
+            listOf("trezor-id", "T3T1", "2.8.1", "wallet-key"),
+            (restored as AccountType.TrezorDevice)
+                .let { listOf(it.deviceId, it.model, it.firmwareVersion, it.walletPublicKey) }
+        )
     }
 
     @Test
@@ -114,10 +164,13 @@ class AccountsStorageTest {
     )
 
     private fun assertRoundTrip(accountType: AccountType) {
+        assertEquals(accountType, roundTrip(accountType))
+    }
+
+    private fun roundTrip(accountType: AccountType): AccountType? {
         val record = savedRecord(accountType)
         every { dao.loadAccount(ACCOUNT_ID) } returns record
-
-        assertEquals(accountType, storage.loadAccount(ACCOUNT_ID)?.type)
+        return storage.loadAccount(ACCOUNT_ID)?.type
     }
 
     private fun savedRecord(accountType: AccountType): AccountRecord {

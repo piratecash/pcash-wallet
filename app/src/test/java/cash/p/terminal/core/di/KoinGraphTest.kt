@@ -13,6 +13,7 @@ import cash.p.terminal.modules.balance.token.TokenBalanceService
 import cash.p.terminal.modules.balance.token.TokenBalanceViewModel
 import cash.p.terminal.modules.balance.token.TokenTransactionsService
 import cash.p.terminal.modules.balance.token.creationblock.CreationBlockViewModel
+import cash.p.terminal.modules.signmessage.SignMessageViewModel
 import cash.p.terminal.modules.transactions.SelectContactViewModel
 import cash.p.terminal.modules.receive.viewmodels.DerivationSelectViewModel
 import cash.p.terminal.modules.receive.viewmodels.BchAddressTypeSelectViewModel
@@ -54,6 +55,12 @@ import cash.p.terminal.modules.configuredtoken.ConfiguredTokenInfoViewModel
 import cash.p.terminal.modules.evmnetwork.EvmNetworkViewModel
 import cash.p.terminal.modules.evmnetwork.addrpc.AddRpcViewModel
 import cash.p.terminal.modules.multiswap.SwapSelectCoinViewModel
+import cash.p.terminal.ledger.domain.LedgerAddressVerification
+import cash.p.terminal.ledger.domain.LedgerAppKeyFetchers
+import cash.p.terminal.ledger.ui.LedgerVerifyAddressViewModel
+import cash.p.terminal.ledger.ui.LedgerWalletViewModel
+import cash.p.terminal.ledgerkit.LedgerSession
+import cash.p.terminal.ledgerkit.transport.LedgerTransportProvider
 import cash.p.terminal.wallet.Account
 import io.horizontalsystems.core.entities.BlockchainType
 import cash.p.terminal.modules.createaccount.passphraseterms.PassphraseTermsViewModel
@@ -61,6 +68,13 @@ import cash.p.terminal.modules.manageaccount.safetyrules.SafetyRulesModule
 import cash.p.terminal.modules.manageaccount.safetyrules.SafetyRulesViewModel
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
 import cash.p.terminal.modules.manageaccounts.ManageAccountsViewModel
+import cash.p.terminal.modules.nft.NftCollectionSource
+import cash.p.terminal.modules.nft.NftCollectionsViewModel
+import cash.p.terminal.modules.nft.manage.NftManageViewModel
+import cash.p.terminal.modules.nft.NftPreviewViewModel
+import cash.p.terminal.modules.nft.renew.NftDomainRenewViewModel
+import cash.p.terminal.modules.nft.burn.NftBurnViewModel
+import cash.p.terminal.entities.NftItemRecord
 import cash.p.terminal.modules.address.AddressParserChain
 import cash.p.terminal.modules.watchaddress.WatchAddressViewModel
 import cash.p.terminal.modules.watchaddress.selectblockchains.SelectBlockchainsViewModel
@@ -225,6 +239,8 @@ import cash.p.terminal.modules.send.address.EnterAddressValidator
 import cash.p.terminal.core.address.AddressCheckManager
 import cash.p.terminal.modules.sendevmtransaction.SendEvmTransactionViewItemFactory
 import cash.p.terminal.modules.address.AddressViewModel as SendAddressViewModel
+import cash.p.terminal.modules.tonconnect.TonConnectSendRequestViewModel
+import io.horizontalsystems.tonkit.models.SignTransaction
 
 class KoinGraphTest : KoinTest {
 
@@ -261,6 +277,7 @@ class KoinGraphTest : KoinTest {
             definition<ConfiguredTokenInfoViewModel>(Token::class),
             definition<SafetyRulesViewModel>(SafetyRulesModule.SafetyRulesMode::class, List::class),
             definition<ManageAccountsViewModel>(ManageAccountsModule.Mode::class),
+            *nftInjections(),
             definition<ConnectMiniAppViewModel>(ConnectMiniAppDeeplinkInput::class),
             definition<BlockchainStatusViewModel>(BlockchainStatusProvider::class),
             definition<SwapSelectCoinViewModel>(Token::class, Account::class),
@@ -280,6 +297,7 @@ class KoinGraphTest : KoinTest {
             *coinSubPageInjections(),
             definition<TransactionPollingManager>(List::class),
             definition<VersionChangelogViewModel>(ChangelogRequest::class),
+            definition<TonConnectSendRequestViewModel>(SignTransaction::class),
         )
 
         fullModule.verify(
@@ -418,6 +436,14 @@ class KoinGraphTest : KoinTest {
     /** These send classes are internal to feature-wallet; a rename fails here with ClassNotFoundException. */
     private fun internalClass(name: String) = Class.forName("cash.p.terminal.modules.$name").kotlin
 
+    private fun nftInjections() = arrayOf(
+        definition<NftCollectionsViewModel>(NftCollectionSource::class),
+        definition<NftManageViewModel>(NftCollectionSource::class),
+        definition<NftPreviewViewModel>(NftCollectionSource::class, NftItemRecord::class),
+        definition<NftDomainRenewViewModel>(List::class, Boolean::class),
+        definition<NftBurnViewModel>(NftItemRecord::class, String::class, Boolean::class),
+    )
+
     private fun walletInjections() = arrayOf(
         definition<WatchAddressViewModel>(AddressParserChain::class),
         definition<SelectBlockchainsViewModel>(AccountType::class),
@@ -432,6 +458,7 @@ class KoinGraphTest : KoinTest {
         definition<OfflineModeToggleViewModel>(Wallet::class),
         definition<TokenBalanceViewModel>(Wallet::class),
         definition<CreationBlockViewModel>(Wallet::class),
+        definition<SignMessageViewModel>(Wallet::class),
         definition<ReceiveAddressViewModel>(Wallet::class),
         definition<ReceiveMoneroViewModel>(Wallet::class),
         definition<ReceiveStellarAssetViewModel>(Wallet::class),
@@ -448,6 +475,16 @@ class KoinGraphTest : KoinTest {
         definition<ChooseContactViewModel>(BlockchainType::class),
         definition<AddressCheckTokenSelectorViewModel>(Blockchain::class),
         definition<UnifiedAddressCheckerViewModel>(String::class),
+        *ledgerInjections(),
+    )
+
+    // The session is built from the build variant's LedgerConnector; verifiers come via getAll().
+    private fun ledgerInjections() = arrayOf(
+        definition<LedgerSession>(LedgerTransportProvider::class),
+        definition<LedgerAppKeyFetchers>(List::class),
+        definition<LedgerAddressVerification>(List::class),
+        definition<LedgerWalletViewModel>(String::class),
+        definition<LedgerVerifyAddressViewModel>(Wallet::class),
     )
 
     private fun marketMetricsInjections() = arrayOf(

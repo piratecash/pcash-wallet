@@ -8,6 +8,7 @@ import cash.p.terminal.modules.displayoptions.DisplayDiffOptionType
 import cash.p.terminal.modules.displayoptions.DisplayPricePeriod
 import cash.p.terminal.modules.transactions.Filter
 import cash.p.terminal.modules.transactions.FilterTransactionType
+import cash.p.terminal.modules.transactions.TransactionPeriodUiState
 import cash.p.terminal.modules.transactions.TransactionViewItem
 import cash.p.terminal.wallet.Wallet
 import org.jetbrains.compose.resources.StringResource
@@ -89,9 +90,13 @@ class TokenBalanceModule {
         val searchActive: Boolean = false,
         val searchQuery: String = "",
         val searchScanning: Boolean = false,
+        val searchPausedCount: String? = null,
         val searchEmptyResult: Boolean = false,
+        val period: TransactionPeriodUiState = TransactionPeriodUiState(),
+        val transactionsHidden: Boolean = false,
         val offlineSince: Long? = null,
         val moneroHardwareWallet: Boolean = false,
+        val moneroLedgerWallet: Boolean = false,
         val moneroSpendReadiness: MoneroSpendReadiness? = null,
         val moneroKeyImageSyncInProgress: Boolean = false,
         val moneroKeyImageSyncError: StringResource? = null,

@@ -1,7 +1,6 @@
 package cash.p.terminal.modules.send.tron
 
 import cash.p.terminal.resources.ic_arrow_up_right_12
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,21 +10,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
@@ -51,19 +42,13 @@ import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonPrimaryDefault
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
-import cash.p.terminal.ui_compose.components.HSpacer
 import cash.p.terminal.ui_compose.components.HsBackButton
-import cash.p.terminal.ui_compose.components.HsIconButton
 import cash.p.terminal.ui_compose.components.rememberHudMessenger
 import io.horizontalsystems.core.Translator
-import cash.p.terminal.ui_compose.components.InfoBottomSheet
-import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.SnackbarDuration
 import cash.p.terminal.ui_compose.components.TextImportantError
 import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.VSpacer
-import cash.p.terminal.ui_compose.components.subhead1_leah
-import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import kotlinx.coroutines.delay
 import kotlin.reflect.KClass
@@ -75,15 +60,12 @@ import cash.p.terminal.resources.Error
 import cash.p.terminal.resources.FeeInfo_TronActivationFee_Description
 import cash.p.terminal.resources.FeeInfo_TronActivationFee_Title
 import cash.p.terminal.resources.FeeInfo_TronFee_Title
-import cash.p.terminal.resources.FeeInfo_TronResourcesConsumed_Description
-import cash.p.terminal.resources.FeeInfo_TronResourcesConsumed_Title
 import cash.p.terminal.resources.Send_Confirmation_Send_Button
 import cash.p.terminal.resources.Send_Confirmation_Title
 import cash.p.terminal.resources.Send_Confirmation_To
 import cash.p.terminal.resources.Send_Confirmation_YouSend
 import cash.p.terminal.resources.Send_Sending
 import cash.p.terminal.resources.Send_Success
-import cash.p.terminal.resources.ic_info_20
 import cash.p.terminal.resources.send_confirmation_sync_error_warning
 import cash.p.terminal.resources.send_confirmation_syncing_warning
 import cash.p.terminal.core.getKoinInstance
@@ -142,8 +124,7 @@ private fun TronOnlineConfirmation(
     val address = confirmationData.address
     val contact = confirmationData.contact
     val fee = confirmationData.fee
-    val activationFee = confirmationData.activationFee
-    val resourcesConsumed = confirmationData.resourcesConsumed
+    val feeBreakdown = confirmationData.feeBreakdown
     val memo = confirmationData.memo
 
     val hud = rememberHudMessenger()
@@ -242,6 +223,7 @@ private fun TronOnlineConfirmation(
                 CellUniversalLawrenceSection(topSectionItems)
 
                 VSpacer(height = 16.dp)
+                TronResourcesSection(uiState.resources, sendViewModel.balanceHidden)
 
                 val feePrimary = if (fee != null) {
                     getKoinInstance<IAppNumberFormatter>().formatCoinFull(fee, feeCoin.code, feeCoinMaxAllowedDecimals)
@@ -266,10 +248,11 @@ private fun TronOnlineConfirmation(
                     onBalanceClicked = rememberBalanceToggle(sendViewModel::toggleHideBalance),
                     feeTitle = stringResource(Res.string.FeeInfo_TronFee_Title),
                     feeWarningData = sendViewModel.inlineFeeWarningData,
+                    feeDetails = { TronFeeBreakdownRows(feeBreakdown, feeCoin.code, feeCoinMaxAllowedDecimals) },
                 )
 
                 val additionalItems = buildList<@Composable () -> Unit> {
-                    activationFee?.let {
+                    feeBreakdown?.activationFee?.let {
                         add {
                             HSFeeRaw(
                                 title = stringResource(Res.string.FeeInfo_TronActivationFee_Title),
@@ -280,15 +263,6 @@ private fun TronOnlineConfirmation(
                                 amountInputType = amountInputType,
                                 rate = feeCoinRate,
                                 navigation = navigation
-                            )
-                        }
-                    }
-                    resourcesConsumed?.let {
-                        add {
-                            ResourcesConsumed(
-                                title = stringResource(Res.string.FeeInfo_TronResourcesConsumed_Title),
-                                value = it,
-                                info = stringResource(Res.string.FeeInfo_TronResourcesConsumed_Description),
                             )
                         }
                     }
@@ -390,46 +364,6 @@ private fun SendButton(
                 enabled = enabled
             )
         }
-    }
-}
-
-@Composable
-private fun ResourcesConsumed(
-    title: String,
-    value: String,
-    info: String
-) {
-    var showInfoDialog by remember { mutableStateOf(false) }
-
-    RowUniversal(
-        modifier = Modifier.padding(horizontal = 16.dp),
-    ) {
-        subhead2_grey(text = title)
-        Spacer(modifier = Modifier.width(8.dp))
-        HsIconButton(
-            modifier = Modifier.size(20.dp),
-            onClick = { showInfoDialog = true }
-        ) {
-            Image(
-                painter = painterResource(Res.drawable.ic_info_20),
-                contentDescription = null
-            )
-        }
-
-        HSpacer(16.dp)
-        subhead1_leah(
-            modifier = Modifier.weight(1f),
-            text = value,
-            textAlign = TextAlign.Right
-        )
-    }
-
-    if (showInfoDialog) {
-        InfoBottomSheet(
-            title = title,
-            text = info,
-            onDismiss = { showInfoDialog = false }
-        )
     }
 }
 

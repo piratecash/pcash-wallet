@@ -2,6 +2,7 @@ package cash.p.terminal.core.adapters
 
 import cash.p.terminal.core.managers.TronKitWrapper
 import cash.p.terminal.modules.transactions.FilterTransactionType
+import cash.p.terminal.modules.transactions.TimestampRange
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenType
@@ -10,8 +11,11 @@ import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.tronkit.TronKit
 import io.horizontalsystems.tronkit.models.TransactionTag
 import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.slot
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -28,6 +32,7 @@ class TronTransactionsAdapterTest {
             every { this@mockk.tronKit } returns this@TronTransactionsAdapterTest.tronKit
         },
         transactionConverter = mockk(relaxed = true),
+        dispatcherProvider = mockk { every { io } returns Dispatchers.Unconfined },
     )
     private val token = Token(
         coin = Coin(uid = "trc10-$assetId", name = "TRC10", code = "TRC10"),
@@ -72,12 +77,32 @@ class TronTransactionsAdapterTest {
         )
     }
 
+    @Test
+    fun getTransactions_period_passesMillisecondBoundsToKit() = runTest {
+        coEvery { tronKit.getFullTransactionsBefore(any(), any(), any(), any(), any()) } returns emptyList()
+
+        adapter.getTransactions(null, token, 20, FilterTransactionType.All, null, TimestampRange(1_000, 2_000))
+
+        coVerify { tronKit.getFullTransactionsBefore(listOf(allTrc10Tags), null, 20, 1_000_000L, 2_000_000L) }
+    }
+
+    @Test
+    fun getOldestTransactionTimestamp_kitReturnsMillis_returnsSecondsForSameFilters() = runTest {
+        val filters = slot<List<List<String>>>()
+        coEvery { tronKit.getOldestTransactionTimestamp(capture(filters)) } returns 1_700_000_123_456L
+
+        val oldest = adapter.getOldestTransactionTimestamp(token, FilterTransactionType.Incoming, null)
+
+        assertEquals(1_700_000_123L, oldest)
+        assertEquals(listOf(allTrc10Tags, listOf(incomingTag)), filters.captured)
+    }
+
     private suspend fun captureFilters(
         transactionType: FilterTransactionType,
     ): List<List<String>> {
         var capturedFilters = emptyList<List<String>>()
         coEvery {
-            tronKit.getFullTransactionsBefore(any(), any(), any())
+            tronKit.getFullTransactionsBefore(any(), any(), any(), any(), any())
         } answers {
             capturedFilters = firstArg()
             emptyList()

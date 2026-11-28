@@ -12,8 +12,10 @@ import cash.p.terminal.core.managers.sanitizeNetworkUrl
 import cash.p.terminal.core.managers.warningSanitized
 import cash.p.terminal.wallet.AdapterStoppedException
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.zcash.BlockDownload
 import cash.p.zcash.BroadcastResult
 import cash.p.zcash.MempoolEvent
+import cash.p.zcash.Pool
 import cash.p.zcash.PoolBalance
 import cash.p.zcash.PoolSet
 import cash.p.zcash.ServerConfig
@@ -45,6 +47,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.time.Clock
 import kotlin.time.TimeSource
 
 sealed interface ZcashSessionResult<out T> {
@@ -107,6 +110,9 @@ internal data class ZcashSessionState(
 ) {
     val transactions: List<Transaction>
         get() = minedTransactions + unconfirmedTransactions.values
+
+    /** A lagging server must not move the chain tip back: it decides the fee and the confirmations. */
+    fun withLatestHeight(height: Int) = copy(latestHeight = maxOf(latestHeight, height))
 }
 
 /**
@@ -119,7 +125,7 @@ class ZcashSession internal constructor(
     val dbAccountId: Int,
     networkPaused: Boolean,
     dispatcherProvider: DispatcherProvider,
-    private val supportsTransparent: Boolean,
+    internal val supportsTransparent: Boolean,
     /**
      * False for a pristine account: its database already holds every address it ever issued, so
      * only the steady walk is owed.
@@ -169,6 +175,11 @@ class ZcashSession internal constructor(
     /** Touched only by the sync pass; passes never overlap. */
     private var networkFailureStreak = 0
 
+    private val transparentIndexGate = Mutex()
+
+    @Volatile
+    private var transparentIndexPrepared = false
+
     /**
      * Sync status and the local snapshot have one publication point. Consumers that react to
      * `Synced` therefore cannot observe the previous balance, history or chain height beside it.
@@ -210,9 +221,11 @@ class ZcashSession internal constructor(
     }
 
     /** Runs one sync pass. Only [ZcashSyncScheduler] calls it — syncs are serialized SDK-wide. */
-    suspend fun sync(): ZcashSessionResult<ZcashPassOutcome> = supervisorScope {
+    suspend fun sync(
+        blockDownload: BlockDownload = BlockDownload(),
+    ): ZcashSessionResult<ZcashPassOutcome> = supervisorScope {
         var generation = 0
-        val collector = async(start = CoroutineStart.LAZY) { collectSync(generation) }
+        val collector = async(start = CoroutineStart.LAZY) { collectSync(generation, blockDownload) }
         val operation = enter(collector)
         if (operation == null) {
             collector.cancel()
@@ -233,12 +246,12 @@ class ZcashSession internal constructor(
     }
 
     /** A pass that ends without reaching Synced or Failed was stopped. */
-    private suspend fun collectSync(generation: Int): ZcashPassOutcome {
+    private suspend fun collectSync(generation: Int, blockDownload: BlockDownload): ZcashPassOutcome {
         logger.info("sync: start gen=$generation")
         val progress = SyncProgressLog(logger)
         var outcome: ZcashPassOutcome = ZcashPassOutcome.Cancelled
         try {
-            wallet.sync(listOf(dbAccountId)).collect { state ->
+            wallet.sync(listOf(dbAccountId), blockDownload = blockDownload).collect { state ->
                 onSyncState(state, generation, progress)?.let { outcome = it }
             }
         } catch (e: CancellationException) {
@@ -276,11 +289,25 @@ class ZcashSession internal constructor(
         rawTransaction: ByteArray,
         height: Int,
         requireOwnInputs: Boolean,
+        recipientAddresses: List<String> = emptyList(),
     ): ZcashSessionResult<BroadcastResult> = withOperation {
         reserveOrNotBroadcast(rawTransaction, requireOwnInputs)
+        rememberSentAddresses(rawTransaction, recipientAddresses)
         publishLocalState(readLocalState())
         wallet.broadcast(dbAccountId, rawTransaction, height, requireOwnInputs).also {
             if (it.inputsReleased) readReportingFailure { publishLocalState(readLocalState()) }
+        }
+    }
+
+    /** Only history shows these addresses, so failing to keep them must not stop the send. */
+    private suspend fun rememberSentAddresses(rawTransaction: ByteArray, addresses: List<String>) {
+        if (addresses.isEmpty()) return
+        try {
+            wallet.rememberSentAddresses(dbAccountId, rawTransaction, addresses)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            logger.warningSanitized("Remembering the sent addresses failed", e)
         }
     }
 
@@ -290,6 +317,16 @@ class ZcashSession internal constructor(
         throw e
     } catch (e: Throwable) {
         throw NotBroadcastException(e)
+    }
+
+    /** Runs [prepare] once per session; a failed run is not remembered, so the next caller retries it. */
+    internal suspend fun prepareTransparentIndexOnce(prepare: suspend (ZcashWallet) -> Unit) {
+        if (!supportsTransparent || transparentIndexPrepared) return
+        transparentIndexGate.withLock {
+            if (transparentIndexPrepared) return
+            check(withOperation(prepare) is ZcashSessionResult.Success) { "Zcash wallet session is unavailable" }
+            transparentIndexPrepared = true
+        }
     }
 
     /**
@@ -512,7 +549,7 @@ class ZcashSession internal constructor(
         return when (state) {
             is SyncState.Syncing -> {
                 progress.onSyncing(state)
-                publishState(generation) { it.copy(syncState = state, latestHeight = state.target) }
+                publishState(generation) { it.copy(syncState = state).withLatestHeight(state.target) }
                 null
             }
 
@@ -622,21 +659,23 @@ class ZcashSession internal constructor(
         when (event) {
             // An epoch only opens a new observation window; it proves nothing about mining, so
             // it must not drop anything from the set.
-            is MempoolEvent.Epoch -> _state.update { it.copy(latestHeight = event.height) }
+            is MempoolEvent.Epoch -> _state.update { it.withLatestHeight(event.height) }
             is MempoolEvent.Unconfirmed -> rememberIncoming(event)
         }
     }
 
     /**
-     * Only incoming transactions: an event about our own spend carries neither the recipient nor
-     * the fee, and its memo belongs to the note being spent. Outgoing ones are the pending rows'
-     * job.
+     * Only transactions some pool of ours receives in: an event about our own spend carries neither
+     * the recipient nor the fee, and its memo belongs to the note being spent. Outgoing ones are the
+     * pending rows' job; a move between our own pools is incoming for the receiving wallet.
      */
     private fun rememberIncoming(event: MempoolEvent.Unconfirmed) {
-        val received = event.amounts.filter { it.account == dbAccountId }.sumOf { it.value }
-        if (received <= 0 || isKnown(event.txid)) return
+        val poolValues = event.notes.filter { it.account == dbAccountId }
+            .groupingBy { it.pool }
+            .fold(0L) { sum, note -> sum + note.value }
+        if (poolValues.values.none { it > 0 } || isKnown(event.txid)) return
 
-        val transaction = unconfirmedTransaction(event, received)
+        val transaction = unconfirmedTransaction(event, poolValues)
         _state.update {
             it.copy(unconfirmedTransactions = it.unconfirmedTransactions + (event.txid to transaction))
         }
@@ -660,18 +699,20 @@ class ZcashSession internal constructor(
      * Height `0` is what marks the row unmined for the whole history pipeline, so an unconfirmed
      * transaction needs no separate model and no second mapping.
      */
-    private fun unconfirmedTransaction(event: MempoolEvent.Unconfirmed, received: Long) = Transaction(
-        id = 0,
-        txid = event.txid,
-        height = 0,
-        time = System.currentTimeMillis() / 1000,
-        value = received,
-        memo = event.notes.firstOrNull { it.account == dbAccountId && it.memo != null }?.memo,
-        fee = 0,
-        totalReceived = received,
-        isChange = false,
-        recipient = null,
-    )
+    private fun unconfirmedTransaction(event: MempoolEvent.Unconfirmed, poolValues: Map<Pool, Long>) =
+        Transaction(
+            id = 0,
+            txid = event.txid,
+            height = 0,
+            time = Clock.System.now().epochSeconds,
+            value = poolValues.values.sum(),
+            memo = event.notes.firstOrNull { it.account == dbAccountId && it.value > 0 && it.memo != null }?.memo,
+            fee = 0,
+            totalReceived = poolValues.values.filter { it > 0 }.sum(),
+            isChange = false,
+            recipient = null,
+            poolValues = poolValues,
+        )
 
     private fun List<Transaction>.txids() = mapTo(mutableSetOf()) { it.txid }
 

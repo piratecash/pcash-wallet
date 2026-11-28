@@ -33,6 +33,7 @@ import cash.p.terminal.ui_compose.components.HudHelper
 import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import cash.p.terminal.modules.walletconnect.WCVerifyAlertCard
 
 @Composable
 fun WcRequestScreen(
@@ -47,9 +48,9 @@ fun WcRequestScreen(
     val uiState = viewModel.uiState
     val view = LocalView.current
 
-    LaunchedEffect(uiState.error) {
-        uiState.error?.let {
-            HudHelper.showErrorMessage(view, it.message ?: it.javaClass.simpleName)
+    LaunchedEffect(uiState.errorText) {
+        uiState.errorText?.let {
+            HudHelper.showErrorMessage(view, it)
             viewModel.errorShown()
         }
     }
@@ -100,6 +101,8 @@ fun WcRequestScreen(
                 .fillMaxWidth()
         ) {
             VSpacer(12.dp)
+
+            WCVerifyAlertCard(uiState.verifyAlert, Modifier.padding(horizontal = 16.dp))
 
             uiState.contentItems.forEach { sectionViewItem ->
                 SectionView(

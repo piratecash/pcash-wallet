@@ -1,1 +1,1 @@
-Bitcoin, Ethereum, Monero, Zcash, BEAM, Tangem & Trezor hardware wallet support
+Bitcoin, Ethereum, Monero, Zcash, BEAM, Tangem, Trezor & Ledger support

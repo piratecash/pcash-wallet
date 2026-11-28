@@ -25,6 +25,7 @@ import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.policy.HardwareWalletTokenPolicy
 import cash.p.terminal.modules.transactions.FilterTransactionType
+import cash.p.terminal.modules.transactions.TimestampRange
 import cash.p.terminal.modules.transactions.TransactionStatus as RecordTransactionStatus
 import io.horizontalsystems.bitcoincore.BitcoinCore
 import io.horizontalsystems.bitcoincore.core.IPluginData
@@ -749,6 +750,38 @@ class LitecoinAdapterTest {
     }
 
     @Test
+    fun getTransactions_mwebPeriod_returnsOnlyTransactionsInsidePeriod() = runTest {
+        val adapter = createMwebAdapter()
+        every { kit.mwebState } returns mwebState(
+            MwebSyncState(1_000, 1_000, 1_000),
+            transactions = mwebHistoryTransactions()
+        )
+
+        val records = adapter.getTransactions(
+            from = null,
+            token = null,
+            limit = 10,
+            transactionType = FilterTransactionType.All,
+            address = null,
+            period = TimestampRange(since = 10_000, until = 10_100),
+        )
+
+        assertEquals(listOf("mweb-incoming:receive-output"), records.map { it.uid })
+    }
+
+    @Test
+    fun getOldestTransactionTimestamp_mwebTypeFilter_returnsOldestMatching() = runTest {
+        val adapter = createMwebAdapter()
+        every { kit.mwebState } returns mwebState(
+            MwebSyncState(1_000, 1_000, 1_000),
+            transactions = mwebHistoryTransactions()
+        )
+
+        assertEquals(10_000L, adapter.getOldestTransactionTimestamp(null, FilterTransactionType.All, null))
+        assertEquals(10_100L, adapter.getOldestTransactionTimestamp(null, FilterTransactionType.Outgoing, null))
+    }
+
+    @Test
     fun getTransactions_mwebOutgoingFilter_returnsOnlyOutgoing() = runTest {
         val adapter = createMwebAdapter()
         every { kit.mwebState } returns mwebState(
@@ -1308,6 +1341,90 @@ class LitecoinAdapterTest {
         }
         verify(exactly = 0) { kit.validateAddress(any(), any()) }
     }
+
+    @Test
+    fun validate_ledgerHodlerPlugin_throwsUnsupported() {
+        val adapter = createPublicAdapter(account = ledgerAccount())
+        every { kit.isMwebAddress(PUBLIC_ADDRESS) } returns false
+
+        assertFailsWith<LocalizedException> {
+            adapter.validate(PUBLIC_ADDRESS, hodlerPluginData())
+        }
+        verify(exactly = 0) { kit.validateAddress(any(), any()) }
+    }
+
+    @Test
+    fun send_ledgerHodlerPlugin_throwsUnsupported() = runTest {
+        val adapter = createPublicAdapter(account = ledgerAccount())
+        every { kit.isMwebAddress(PUBLIC_ADDRESS) } returns false
+
+        assertFailsWith<LocalizedException> {
+            adapter.send(
+                amount = BigDecimal.ONE,
+                address = PUBLIC_ADDRESS,
+                memo = null,
+                feeRate = 1,
+                unspentOutputs = null,
+                pluginData = hodlerPluginData(),
+                transactionSorting = null,
+                rbfEnabled = false,
+                changeToFirstInput = false,
+                utxoFilters = UtxoFilters()
+            )
+        }
+        coVerify(exactly = 0) {
+            kit.send(
+                address = any(),
+                memo = any(),
+                value = any(),
+                senderPay = any(),
+                feeRate = any(),
+                sortType = any(),
+                unspentOutputs = any(),
+                pluginData = any(),
+                rbfEnabled = any(),
+                changeToFirstInput = any(),
+                filters = any(),
+            )
+        }
+    }
+
+    @Test
+    fun signOffline_trezorHodlerPlugin_throwsUnsupported() = runTest {
+        assertSignOfflineRejectsHodler(trezorAccount())
+    }
+
+    @Test
+    fun signOffline_ledgerHodlerPlugin_throwsUnsupported() = runTest {
+        assertSignOfflineRejectsHodler(ledgerAccount())
+    }
+
+    private suspend fun assertSignOfflineRejectsHodler(account: Account) {
+        val adapter = createPublicAdapter(account = account)
+        every { kit.isMwebAddress(PUBLIC_ADDRESS) } returns false
+
+        assertFailsWith<LocalizedException> {
+            adapter.signOffline(
+                OfflineBitcoinSignRequest(
+                    amount = BigDecimal.ONE,
+                    address = PUBLIC_ADDRESS,
+                    memo = null,
+                    feeRate = 1,
+                    unspentOutputs = null,
+                    pluginData = hodlerPluginData(),
+                    transactionSorting = TransactionDataSortMode.Shuffle,
+                    rbfEnabled = false,
+                    changeToFirstInput = false,
+                    utxoFilters = UtxoFilters(),
+                )
+            )
+        }
+        coVerify(exactly = 0) {
+            kit.createSignedTransaction(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
+        }
+    }
+
+    private fun hodlerPluginData() = mapOf(HodlerPlugin.id to mockk<IPluginData>(relaxed = true))
 
     @Test
     fun validate_publicInvalidNonMwebDestination_delegatesToPublicValidation() {
@@ -2392,6 +2509,18 @@ class LitecoinAdapterTest {
         level = 0,
         isBackedUp = false,
         isFileBackedUp = false
+    )
+
+    private fun ledgerAccount() = Account(
+        id = "ledger-account-id",
+        name = "Ledger",
+        type = AccountType.LedgerDevice(
+            deviceId = "ledger-device-1",
+            model = "nanoSP",
+            walletPublicKey = "ledger-public-key"
+        ),
+        origin = AccountOrigin.Created,
+        level = 0,
     )
 
     private fun mwebState(

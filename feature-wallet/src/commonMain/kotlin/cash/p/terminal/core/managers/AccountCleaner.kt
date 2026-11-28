@@ -2,9 +2,12 @@ package cash.p.terminal.core.managers
 
 import cash.p.terminal.core.storage.StorageRouter
 import cash.p.terminal.domain.usecase.ClearZCashWalletDataUseCase
+import cash.p.terminal.wallet.Account
+import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountCleaner
 import cash.p.terminal.wallet.AccountDeletionPreflight
 import cash.p.terminal.wallet.IAccountManager
+import cash.p.terminal.wallet.IAccountsStorage
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.Token
@@ -31,6 +34,7 @@ class AccountCleaner(
     private val thorchainKitManagers: ThorchainKitManagers,
     private val evmBlockchainManager: EvmBlockchainManager,
     private val deletionPreflight: AccountDeletionPreflight,
+    private val accountsStorage: IAccountsStorage,
 ) : IAccountCleaner {
 
     /** Storage rows go last: their failure must reach the caller without skipping the wipes above. */
@@ -65,7 +69,13 @@ class AccountCleaner(
         }
 
         if (isWalletActive(accountId, token)) return
-        clearWalletData(accountId, token.blockchainType)
+        if (token.blockchainType != BlockchainType.Monero) {
+            return clearWalletData(accountId, token.blockchainType, accountDeleted = false)
+        }
+
+        val account = liveOrStoredAccount(accountId) ?: return
+        // Only its device can recreate a device wallet: RescanMoneroUseCase applies its height instead.
+        if (account.type !is AccountType.HardwareDevice) clearMoneroWalletData(account)
     }
 
     /**
@@ -80,29 +90,35 @@ class AccountCleaner(
         bitcoinKitDatabaseManager.clearMweb(accountId)
     }
 
+    /** Account deletion only. */
     private suspend fun clearWalletDataForBlockchainIfInactive(
         accountId: String,
         blockchainType: BlockchainType
     ) {
         if (isWalletActive(accountId, blockchainType)) return
-        clearWalletData(accountId, blockchainType)
+        clearWalletData(accountId, blockchainType, accountDeleted = true)
     }
 
     private suspend fun clearWalletData(
         accountId: String,
-        blockchainType: BlockchainType
+        blockchainType: BlockchainType,
+        accountDeleted: Boolean,
     ) {
         when (blockchainType) {
-            is BlockchainType.Zcash -> clearZCashWalletDataUseCase.invoke(accountId)
-            is BlockchainType.Monero -> {
-                accountManager.account(accountId)?.let {
-                    removeMoneroWalletFilesUseCase(it)
-                    router.account(it.id)?.moneroFileDao()?.deleteAssociatedRecord(it.id)
-                }
-            }
-
+            is BlockchainType.Zcash ->
+                clearZCashWalletDataUseCase.invoke(accountId, eraseIssuedAddresses = accountDeleted)
+            is BlockchainType.Monero -> liveOrStoredAccount(accountId)?.let { clearMoneroWalletData(it) }
             else -> Unit
         }
+    }
+
+    // A tombstoned account is no longer in the live cache.
+    private fun liveOrStoredAccount(accountId: String): Account? =
+        accountManager.account(accountId) ?: accountsStorage.loadAccount(accountId)
+
+    private suspend fun clearMoneroWalletData(account: Account) {
+        removeMoneroWalletFilesUseCase(account)
+        router.account(account.id)?.moneroFileDao()?.deleteAssociatedRecord(account.id)
     }
 
     private fun isWalletActive(accountId: String, token: Token): Boolean {

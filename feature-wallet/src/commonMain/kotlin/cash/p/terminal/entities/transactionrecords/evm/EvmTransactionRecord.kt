@@ -1,6 +1,7 @@
 package cash.p.terminal.entities.transactionrecords.evm
 
 import cash.p.terminal.entities.TransactionValue
+import cash.p.terminal.entities.transactionrecords.LiquidityOperation
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.wallet.Token
@@ -33,6 +34,8 @@ class EvmTransactionRecord(
     val foreignTransaction: Boolean = false,
     val initiator: String? = null,
     val syncSource: String? = null, // Source that discovered this transaction (ETHERSCAN, ERC20_SYNCER, MERKLE, RPC)
+    liquidityOperation: LiquidityOperation? = null,
+    val swapDecodedFromCall: Boolean = false,
 ) : TransactionRecord(
     uid = transaction.hashString,
     transactionHash = transaction.hashString,
@@ -47,7 +50,8 @@ class EvmTransactionRecord(
     token = token,
     to = to?.let(::listOf),
     from = from,
-    sentToSelf = sentToSelf
+    sentToSelf = sentToSelf,
+    liquidityOperation = liquidityOperation,
 ) {
 
     sealed class Amount(val value: TransactionValue) {
@@ -110,6 +114,11 @@ class EvmTransactionRecord(
                 value is TransactionValue.NftValue && value2 is TransactionValue.NftValue ->
                     value.mintAddress == value2.mintAddress
 
+                value is TransactionValue.JettonValue && value2 is TransactionValue.JettonValue ->
+                    value.name == value2.name &&
+                            value.symbol == value2.symbol &&
+                            value.decimals == value2.decimals
+
                 else ->
                     false
             }
@@ -146,7 +155,7 @@ class EvmTransactionRecord(
 
                     is TransactionValue.RawValue -> value
                     is TransactionValue.NftValue -> value.copy(value = totalValue)
-                    is TransactionValue.JettonValue -> value
+                    is TransactionValue.JettonValue -> value.copy(value = totalValue)
                 }
 
                 if (totalValue > BigDecimal.ZERO) {

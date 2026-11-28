@@ -49,9 +49,15 @@ kotlin {
                 api(libs.jetbrains.lifecycle.viewmodel)
                 api(libs.rxjava)
                 implementation(libs.gson)
+                implementation(libs.kermit)
 
                 implementation(project.dependencies.platform(libs.koin.bom))
                 implementation(libs.koin.core)
+            }
+        }
+        androidMain {
+            dependencies {
+                implementation(libs.android.core.ktx)
             }
         }
         getByName("desktopMain") {
@@ -62,6 +68,7 @@ kotlin {
         commonTest {
             dependencies {
                 implementation(libs.junit)
+                implementation(libs.kotlinx.coroutines.test)
             }
         }
         getByName("desktopTest") {

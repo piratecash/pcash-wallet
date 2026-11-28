@@ -55,8 +55,8 @@ import cash.p.terminal.ui.compose.components.SectionTitleCell
 import cash.p.terminal.ui.compose.components.TransactionInfoAddressCell
 import cash.p.terminal.ui.compose.components.TransactionInfoContactCell
 import cash.p.terminal.ui.compose.components.TransactionInfoRbfCell
-import cash.p.terminal.ui_compose.components.TextImportantError
 import cash.p.terminal.ui_compose.components.TextImportantWarning
+import cash.p.terminal.ui_compose.components.TitleAndValueCell
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead1Italic_leah
 import cash.p.terminal.ui_compose.components.subhead1_grey
@@ -82,10 +82,12 @@ import cash.p.terminal.resources.Send_Confirmation_YouSend
 import cash.p.terminal.resources.Send_Sending
 import cash.p.terminal.resources.Send_Success
 import cash.p.terminal.resources.offline_transaction_sign_offline
+import cash.p.terminal.resources.send_confirmation_domain
 import cash.p.terminal.resources.send_confirmation_sync_error_warning
 import cash.p.terminal.resources.send_confirmation_syncing_warning
 import cash.p.terminal.resources.send_failed_offline_prompt_message
 import cash.p.terminal.resources.send_failed_offline_prompt_title
+import cash.p.terminal.core.CautionErrorBlock
 import cash.p.terminal.core.HSCaution
 import cash.p.terminal.core.getKoinInstance
 import io.horizontalsystems.core.IAppNumberFormatter
@@ -126,6 +128,8 @@ fun SendConfirmationScreen(
     sendCaution: HSCaution? = null,
     windowInsets: WindowInsets = NavigationBarDefaults.windowInsets,
     insufficientFeeText: String? = null,
+    assetContent: (@Composable () -> Unit)? = null,
+    recipientDomain: String? = null,
 ) {
     val closeUntil = sendEntryPoint ?: SendPage::class
     SendResultHud(
@@ -165,26 +169,39 @@ fun SendConfirmationScreen(
             ) {
                 Spacer(modifier = Modifier.height(12.dp))
                 val topSectionItems = buildList<@Composable () -> Unit> {
-                    add {
-                        SectionTitleCell(
-                            stringResource(Res.string.Send_Confirmation_YouSend),
-                            coin.name,
-                            Res.drawable.ic_arrow_up_right_12
-                        )
-                    }
-                    add {
-                        val coinAmount = getKoinInstance<IAppNumberFormatter>().formatCoinNotRounded(
-                            amount,
-                            coin.code,
-                            coinMaxAllowedDecimals
-                        )
-
-                        val currencyAmount = rate?.let { rate ->
-                            rate.copy(value = amount.times(rate.value))
-                                .getFormattedFull()
+                    if (assetContent != null) {
+                        add(assetContent)
+                    } else {
+                        add {
+                            SectionTitleCell(
+                                stringResource(Res.string.Send_Confirmation_YouSend),
+                                coin.name,
+                                Res.drawable.ic_arrow_up_right_12
+                            )
                         }
+                        add {
+                            val coinAmount = getKoinInstance<IAppNumberFormatter>().formatCoinNotRounded(
+                                amount,
+                                coin.code,
+                                coinMaxAllowedDecimals
+                            )
 
-                        ConfirmAmountCell(currencyAmount, coinAmount, coin)
+                            val currencyAmount = rate?.let { rate ->
+                                rate.copy(value = amount.times(rate.value))
+                                    .getFormattedFull()
+                            }
+
+                            ConfirmAmountCell(currencyAmount, coinAmount, coin)
+                        }
+                    }
+                    recipientDomain?.let { domain ->
+                        add {
+                            TitleAndValueCell(
+                                title = stringResource(Res.string.send_confirmation_domain),
+                                value = domain,
+                                minHeight = 48.dp,
+                            )
+                        }
                     }
                     add {
                         TransactionInfoAddressCell(
@@ -286,14 +303,7 @@ fun SendConfirmationScreen(
                         )
                     }
                 }
-                sendCaution?.let { caution ->
-                    val description = caution.getDescription()
-                    TextImportantError(
-                        modifier = Modifier.padding(bottom = 12.dp),
-                        text = description ?: caution.getString(),
-                        title = caution.getString().takeIf { description != null },
-                    )
-                }
+                sendCaution?.let { CautionErrorBlock(it, Modifier.padding(bottom = 12.dp)) }
                 SendButton(
                     modifier = Modifier.fillMaxWidth(),
                     sendResult = sendResult,

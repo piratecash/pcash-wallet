@@ -21,6 +21,7 @@ import cash.p.terminal.R
 import cash.p.terminal.core.isEvm
 import cash.p.terminal.modules.coin.overview.ui.Loading
 import cash.p.terminal.modules.evmfee.ButtonsGroupWithShade
+import cash.p.terminal.modules.send.signingErrorText
 import cash.p.terminal.modules.sendevmtransaction.TitleValue
 import cash.p.terminal.modules.sendevmtransaction.ValueType
 import cash.p.terminal.modules.sendevmtransaction.ViewItem
@@ -51,6 +52,7 @@ import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.logger.AppLogger
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
+import cash.p.terminal.modules.walletconnect.WCVerifyAlertCard
 
 class WCRequestPage : HSPage() {
     private val logger = AppLogger("wallet-connect request")
@@ -76,10 +78,7 @@ class WCRequestPage : HSPage() {
     }
 
     private fun showError(view: View, e: Throwable) {
-        HudHelper.showErrorMessage(
-            view,
-            e.message ?: e::class.java.simpleName
-        )
+        e.signingErrorText(e.message ?: e::class.java.simpleName)?.let { HudHelper.showErrorMessage(view, it) }
     }
 
     @Composable
@@ -113,7 +112,8 @@ class WCRequestPage : HSPage() {
                         logger,
                         blockchainType,
                         transaction,
-                        sessionRequestUI.peerUI.peerName
+                        sessionRequestUI.peerUI.peerName,
+                        sessionRequestUI.verifyAlert,
                     )
                 } else if (sessionRequestUI.method == "eth_signTransaction") {
                     val blockchainType = wcRequestEvmViewModel.blockchainType ?: return
@@ -135,7 +135,8 @@ class WCRequestPage : HSPage() {
                         blockchainType,
                         transaction,
                         sessionRequestUI.peerUI.peerName,
-                        evmKitWrapper
+                        evmKitWrapper,
+                        sessionRequestUI.verifyAlert,
                     )
                 } else {
                     WCNewSignRequestScreen(
@@ -229,6 +230,8 @@ fun WCNewSignRequestScreen(
                 .fillMaxWidth()
         ) {
             VSpacer(12.dp)
+
+            WCVerifyAlertCard(sessionRequestUI.verifyAlert, Modifier.padding(horizontal = 16.dp))
 
             MessageContent(
                 sessionRequestUI.param,

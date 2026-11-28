@@ -23,10 +23,14 @@ import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.managers.TransactionDisplayLevel
 import cash.p.terminal.wallet.managers.TransactionHiddenState
 import cash.p.terminal.wallet.transaction.TransactionSource
+import io.horizontalsystems.core.IAppNumberFormatter
+import io.mockk.clearMocks
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
+import io.mockk.verify
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNull
 import junit.framework.TestCase.assertTrue
@@ -36,6 +40,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -49,6 +54,7 @@ import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
+import java.time.LocalDate
 
 /**
  * Tests that wallet switch does not show stale transactions.
@@ -77,6 +83,10 @@ class TransactionsViewModelWalletSwitchTest : KoinTest {
     private val adapterManager = mockk<IAdapterManager>(relaxed = true)
     private val swapProviderTransactionsStorage = mockk<SwapProviderTransactionsStorage>(relaxed = true)
     private val contactsRepository = mockk<ContactsRepository>(relaxed = true)
+    private val numberFormatter = mockk<IAppNumberFormatter> {
+        every { format(any(), 0, 0, any(), any()) } answers { "#${firstArg<Number>()}" }
+    }
+    private val searchScanStateFlow = MutableStateFlow<SearchScanState>(SearchScanState.Idle)
 
     // Controllable flows
     private lateinit var activeWalletsFlow: MutableStateFlow<List<Wallet>>
@@ -147,8 +157,10 @@ class TransactionsViewModelWalletSwitchTest : KoinTest {
         every { transactionAdapterManager.adaptersReadyFlow } returns adaptersReadyFlow
         every { transactionAdapterManager.initializationFlow } returns initializationFlow
         every { service.transactionItemsFlow } returns transactionItemsFlow
-        every { service.searchScanStateFlow } returns MutableStateFlow(SearchScanState.Idle)
+        every { service.searchScanStateFlow } returns searchScanStateFlow
         every { service.syncingFlow } returns syncingFlow
+        every { service.historyExhaustedFlow } returns MutableStateFlow(false)
+        coEvery { service.oldestTimestamp() } returns null
         every { transactionFilterService.stateFlow } returns filterStateFlow
         every { transactionHiddenManager.transactionHiddenFlow } returns transactionHiddenFlow
         every { balanceHiddenManager.balanceHiddenFlow } returns MutableStateFlow(false)
@@ -343,7 +355,171 @@ class TransactionsViewModelWalletSwitchTest : KoinTest {
         )
     }
 
+    @Test
+    fun searchScanState_scanningThenPausedWithoutResults_neverShowsFinalNoResults() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        startSearch(viewModel)
+
+        searchScanStateFlow.value = SearchScanState.Scanning
+        advanceUntilIdle()
+        assertEquals(true, viewModel.uiState.searchScanning)
+        assertNull(viewModel.uiState.searchPausedCount)
+
+        searchScanStateFlow.value = SearchScanState.Paused(scannedCount = 12_345)
+        advanceUntilIdle()
+        assertEquals(false, viewModel.uiState.searchScanning)
+        assertEquals("#12300", viewModel.uiState.searchPausedCount)
+        assertEquals(emptyMap<String, List<TransactionViewItem>>(), viewModel.uiState.transactions)
+    }
+
+    @Test
+    fun searchScanState_pausedWithResults_keepsResultsAndReportsPausedCount() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        startSearch(viewModel)
+
+        transactionItemsFlow.value = listOf(createTransactionItem("match-1"))
+        searchScanStateFlow.value = SearchScanState.Paused(scannedCount = 20_000)
+        advanceUntilIdle()
+
+        assertEquals(listOf("match-1"), viewModel.uiState.transactions?.values?.flatten()?.map { it.uid })
+        assertEquals("#20000", viewModel.uiState.searchPausedCount)
+    }
+
+    @Test
+    fun searchFurther_pausedWithResults_keepsResultsWhileScanning() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        startSearch(viewModel)
+        transactionItemsFlow.value = listOf(createTransactionItem("match-1"))
+        searchScanStateFlow.value = SearchScanState.Paused(scannedCount = 10_000)
+        advanceUntilIdle()
+
+        viewModel.searchFurther()
+        searchScanStateFlow.value = SearchScanState.Scanning
+        advanceUntilIdle()
+
+        verify(exactly = 1) { service.searchFurther() }
+        assertEquals(true, viewModel.uiState.searchScanning)
+        assertEquals(listOf("match-1"), viewModel.uiState.transactions?.values?.flatten()?.map { it.uid })
+    }
+
+    @Test
+    fun searchScanState_finishedEmpty_clearsPausedCount() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        startSearch(viewModel)
+        searchScanStateFlow.value = SearchScanState.Paused(scannedCount = 10_000)
+        advanceUntilIdle()
+
+        searchScanStateFlow.value = SearchScanState.Finished
+        advanceUntilIdle()
+
+        assertEquals(false, viewModel.uiState.searchScanning)
+        assertNull(viewModel.uiState.searchPausedCount)
+    }
+
+    // region Calendar
+
+    @Test
+    fun onPeriodSelect_range_serviceReceivesPeriodAndListRestarts() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        val listIdBefore = viewModel.uiState.transactionListId
+
+        viewModel.onCalendarClick()
+        viewModel.onPeriodSelect(range)
+        advanceUntilIdle()
+
+        verify { service.set(any(), any(), any(), any(), any(), any(), range) }
+        assertEquals(range, viewModel.uiState.period.period)
+        assertTrue(listIdBefore != viewModel.uiState.transactionListId)
+    }
+
+    @Test
+    fun onBackToLatest_appliedPeriod_serviceReceivesNoPeriod() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        viewModel.onCalendarClick()
+        viewModel.onPeriodSelect(range)
+        advanceUntilIdle()
+        clearMocks(service, answers = false)
+
+        viewModel.onBackToLatest()
+        advanceUntilIdle()
+
+        verify(exactly = 1) { service.set(any(), any(), any(), any(), any(), any(), null) }
+        assertNull(viewModel.uiState.period.period)
+    }
+
+    @Test
+    fun filterTypeChange_appliedPeriod_keepsPeriod() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        viewModel.onCalendarClick()
+        viewModel.onPeriodSelect(range)
+        advanceUntilIdle()
+        clearMocks(service, answers = false)
+
+        filterStateFlow.value = filterStateFlow.value.copy(selectedTransactionType = FilterTransactionType.Incoming)
+        advanceUntilIdle()
+
+        verify { service.set(any(), any(), FilterTransactionType.Incoming, any(), any(), any(), range) }
+        assertEquals(range, viewModel.uiState.period.period)
+    }
+
+    @Test
+    fun transactionsHiddenAgain_periodAndSearch_clearsPeriodAndClosesSearch() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        startSearch(viewModel)
+        viewModel.onCalendarClick()
+        viewModel.onPeriodSelect(range)
+        advanceUntilIdle()
+
+        transactionHiddenFlow.value = transactionHiddenFlow.value.copy(transactionHidden = true, transactionHideEnabled = true)
+        advanceUntilIdle()
+
+        assertNull(viewModel.uiState.period.period)
+        assertEquals(false, viewModel.uiState.searchActive)
+        assertTrue(viewModel.uiState.transactionsHidden)
+    }
+
+    @Test
+    fun onLeave_appliedPeriod_clearsPeriod() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        viewModel.onCalendarClick()
+        viewModel.onPeriodSelect(range)
+        advanceUntilIdle()
+
+        viewModel.onLeave()
+        advanceUntilIdle()
+
+        assertNull(viewModel.uiState.period.period)
+        verify { service.set(any(), any(), any(), any(), any(), any(), null) }
+    }
+
+    @Test
+    fun onPeriodSelect_onlyToDatePeriod_requestsOldest() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        viewModel.onCalendarClick()
+        viewModel.onPeriodSelect(range)
+        advanceUntilIdle()
+        coVerify(exactly = 0) { service.oldestTimestamp() }
+
+        viewModel.onCalendarClick()
+        viewModel.onPeriodSelect(TransactionPeriod(from = null, to = range.to))
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) { service.oldestTimestamp() }
+    }
+
+    // endregion
+
     // region Helpers
+
+    private val range = TransactionPeriod(from = LocalDate.of(2026, 8, 1), to = LocalDate.of(2026, 8, 28))
+
+    private fun TestScope.startSearch(viewModel: TransactionsViewModel) {
+        advanceUntilIdle()
+        viewModel.onSearchClick()
+        viewModel.onSearchQueryChange("needle")
+        advanceUntilIdle()
+    }
 
     private fun CoroutineScope.createViewModel() = TransactionsViewModel(
         service = service,
@@ -358,6 +534,7 @@ class TransactionsViewModelWalletSwitchTest : KoinTest {
         adapterManager = adapterManager,
         swapProviderTransactionsStorage = swapProviderTransactionsStorage,
         contactsRepository = contactsRepository,
+        numberFormatter = numberFormatter,
         dispatcherProvider = TestDispatcherProvider(dispatcher, this),
     )
 

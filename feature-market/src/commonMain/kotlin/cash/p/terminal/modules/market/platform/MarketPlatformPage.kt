@@ -42,6 +42,7 @@ import cash.p.terminal.ui_compose.components.ImageSource
 import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.components.title3_leah
+import cash.p.terminal.ui.compose.components.coinIconPlate
 import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.chartview.chart.ChartViewModel
@@ -215,7 +216,8 @@ internal fun HeaderContent(title: String, description: String, image: ImageSourc
             modifier = Modifier
                 .align(Alignment.CenterVertically)
                 .padding(start = 24.dp)
-                .size(32.dp),
+                .size(32.dp)
+                .coinIconPlate(),
         )
     }
 }

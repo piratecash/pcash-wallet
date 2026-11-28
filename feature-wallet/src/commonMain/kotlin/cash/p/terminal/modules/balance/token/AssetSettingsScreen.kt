@@ -1,16 +1,11 @@
 package cash.p.terminal.modules.balance.token
 
 import cash.p.terminal.resources.ic_arrow_right
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -36,8 +31,8 @@ import cash.p.terminal.resources.Settings_Title
 import cash.p.terminal.resources.address_poisoning_view
 import cash.p.terminal.resources.display_options_price_period
 import cash.p.terminal.resources.ic_flask_20
-import cash.p.terminal.resources.ic_info_20
 import cash.p.terminal.resources.offline_mode_title
+import cash.p.terminal.resources.sign_message_title
 import cash.p.terminal.resources.transaction_filter
 import cash.p.terminal.ui_compose.Select
 import cash.p.terminal.ui_compose.components.AlertGroup
@@ -45,6 +40,7 @@ import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
 import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.HsSettingCell
+import cash.p.terminal.ui_compose.components.InfoIconButton
 import cash.p.terminal.ui_compose.components.InfoText
 import cash.p.terminal.ui_compose.components.SwitchWithText
 import cash.p.terminal.ui_compose.components.VSpacer
@@ -74,6 +70,8 @@ fun AssetSettingsScreen(
     creationBlockVisible: Boolean,
     currentHeightText: String?,
     onCreationBlockClick: () -> Unit,
+    addressSearchRow: (@Composable () -> Unit)? = null,
+    onSignMessageClick: (() -> Unit)? = null,
 ) {
     var showAmlInfoSheet by remember { mutableStateOf(false) }
     var showPeriodSelector by remember { mutableStateOf(false) }
@@ -102,6 +100,7 @@ fun AssetSettingsScreen(
             Modifier
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
+                .padding(bottom = 16.dp)
         ) {
             VSpacer(12.dp)
             AmlCheckRow(
@@ -158,18 +157,9 @@ fun AssetSettingsScreen(
                             }
                         },
                         extraIcon = {
-                            Icon(
-                                painter = painterResource(Res.drawable.ic_info_20),
-                                contentDescription = null,
-                                tint = ComposeAppTheme.colors.iconSecondary,
-                                modifier = Modifier
-                                    .padding(end = 8.dp)
-                                    .size(20.dp)
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = ripple(bounded = false, radius = 20.dp),
-                                        onClick = { showOfflineInfoSheet = true }
-                                    )
+                            InfoIconButton(
+                                onClick = { showOfflineInfoSheet = true },
+                                modifier = Modifier.padding(end = 8.dp),
                             )
                         }
                     )
@@ -187,19 +177,35 @@ fun AssetSettingsScreen(
                     )
                 }
             )
-            if (creationBlockVisible) {
+            onSignMessageClick?.let { onClick ->
                 VSpacer(24.dp)
                 CellUniversalLawrenceSection(
                     listOf {
                         HsSettingCell(
-                            title = stringResource(Res.string.Restore_BirthdayHeight),
+                            title = stringResource(Res.string.sign_message_title),
                             arrowPainter = painterResource(Res.drawable.ic_arrow_right),
-                            value = currentHeightText,
-                            onClick = onCreationBlockClick
+                            onClick = onClick
                         )
                     }
                 )
             }
+            if (creationBlockVisible) {
+                VSpacer(24.dp)
+                CellUniversalLawrenceSection(
+                    listOfNotNull<@Composable () -> Unit>(
+                        {
+                            HsSettingCell(
+                                title = stringResource(Res.string.Restore_BirthdayHeight),
+                                arrowPainter = painterResource(Res.drawable.ic_arrow_right),
+                                value = currentHeightText,
+                                onClick = onCreationBlockClick
+                            )
+                        },
+                        addressSearchRow,
+                    )
+                )
+            }
+            VSpacer(32.dp)
         }
     }
 

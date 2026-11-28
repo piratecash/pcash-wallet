@@ -1,6 +1,5 @@
 package cash.p.terminal.core.managers
 
-import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.entities.TransactionValue
 import cash.p.terminal.entities.transactionrecords.PendingTransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
@@ -13,7 +12,6 @@ import cash.p.terminal.wallet.entities.TokenType
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.litecoinkit.LitecoinKit
 import io.horizontalsystems.litecoinkit.mweb.address.MwebAddressCodec
-import io.horizontalsystems.tonkit.Address
 import java.math.BigDecimal
 import kotlin.math.abs
 
@@ -159,18 +157,14 @@ class PendingTransactionMatcher {
         val realAddress = realTo?.takeIf { it.isNotBlank() } ?: return false
 
         if (blockchainTypeUid == BlockchainType.Ton.uid) {
-            val normalizedPending = normalizeTonAddress(pendingAddress)
-            val normalizedReal = normalizeTonAddress(realAddress)
+            val normalizedPending = tonRawAddressOrNull(pendingAddress)
+            val normalizedReal = tonRawAddressOrNull(realAddress)
             if (normalizedPending != null || normalizedReal != null) {
                 return normalizedPending == normalizedReal
             }
         }
 
         return pendingAddress.equals(realAddress, ignoreCase = true)
-    }
-
-    private fun normalizeTonAddress(address: String): String? {
-        return tryOrNull { Address.parse(address).toRaw() }
     }
 
     private fun litecoinMwebPegInMatchScore(
@@ -288,10 +282,11 @@ class PendingTransactionMatcher {
                 ?.let { action ->
                     (action.type as? TonTransactionRecord.Action.Type.Swap)?.valueIn
                 }
-                ?: real.actions.firstOrNull { it.type is TonTransactionRecord.Action.Type.Send }
-                    ?.let { action ->
-                        (action.type as? TonTransactionRecord.Action.Type.Send)?.value
-                    }
+                // An NFT quantity of 1 would otherwise equal a pending send of 1 TON.
+                ?: real.actions.firstNotNullOfOrNull { action ->
+                    (action.type as? TonTransactionRecord.Action.Type.Send)?.value
+                        ?.takeUnless { it is TransactionValue.NftValue }
+                }
         }
 
         if (real is EvmTransactionRecord) {

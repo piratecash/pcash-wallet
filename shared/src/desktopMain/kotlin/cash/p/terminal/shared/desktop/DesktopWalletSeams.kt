@@ -1,5 +1,6 @@
 package cash.p.terminal.shared.desktop
 
+import cash.p.terminal.core.managers.TonConnectManager
 import androidx.compose.runtime.Composable
 import cash.p.terminal.core.NonFatalReporter
 import cash.p.terminal.core.StorageLockedException
@@ -91,8 +92,11 @@ object DesktopNoHardwareWallets : IHardwarePublicKeyStorage, HardwareWalletToken
 }
 
 object DesktopNoHardwareKeyProvisioner : HardwareWalletKeyProvisioner {
-    override suspend fun provisionPublicKeys(account: Account, tokenQueries: List<TokenQuery>) =
-        ProvisionResult.Failed(Translator.getString(Res.string.platform_not_supported_yet))
+    override suspend fun provisionPublicKeys(
+        account: Account,
+        tokenQueries: List<TokenQuery>,
+        moneroRestoreHeight: Long?,
+    ) = ProvisionResult.Failed(Translator.getString(Res.string.platform_not_supported_yet))
 }
 
 /** No device to scan on desktop, so a scan never adds a token. */
@@ -101,16 +105,16 @@ object DesktopNoHardwareScanToAdd : ScanToAddUseCase {
         false
 }
 
-/** No dApp connections or store rating on desktop; the app content is not composed while locked. */
-object DesktopBalancePlatformActions : BalancePlatformActions {
+/** TON Connect only (no WalletConnect, no store rating); the app content is not composed while locked. */
+class DesktopBalancePlatformActions(private val tonConnectManager: TonConnectManager) : BalancePlatformActions {
     override val appLocked: StateFlow<Boolean> = MutableStateFlow(false)
-    override val connectionsSupported = false
+    override val connectionsSupported = true
 
     override fun openConnectionLink(
         text: String,
         scope: CoroutineScope,
         onPairingResult: (paired: Boolean) -> Unit,
-    ) = false
+    ) = tonConnectManager.openConnectionLink(text, scope)
 
     override fun isOfflineTransaction(text: String) = false
     override fun onBalancePageActive() = Unit

@@ -44,7 +44,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,6 +61,8 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.core.MoneroSpendReadiness
@@ -69,6 +73,7 @@ import cash.p.terminal.modules.balance.BackupRequiredError
 import cash.p.terminal.modules.balance.BalanceViewItem
 import cash.p.terminal.modules.balance.BalanceViewModel
 import cash.p.terminal.modules.balance.ui.FlipHiddenBalanceInfoHost
+import cash.p.terminal.modules.balance.ui.HideBalanceToggle
 import cash.p.terminal.modules.blockchainstatus.BlockchainStatusButton
 import cash.p.terminal.modules.blockchainstatus.BlockchainStatusPage
 import cash.p.terminal.modules.coin.CoinPage
@@ -79,6 +84,7 @@ import cash.p.terminal.modules.offline.OperationAvailability
 import cash.p.terminal.modules.premium.settings.PremiumSettingsPage
 import cash.p.terminal.modules.receive.ReceivePage
 import cash.p.terminal.modules.send.SendResult
+import cash.p.terminal.modules.syncerror.closeSyncErrorDialogUnlessFailing
 import cash.p.terminal.modules.sendtokenselect.PrefilledData
 import cash.p.terminal.modules.syncerror.closeSyncErrorDialogUnlessFailing
 import cash.p.terminal.modules.syncerror.showSyncErrorDialog
@@ -89,6 +95,14 @@ import cash.p.terminal.modules.transactions.FilterTransactionType
 import cash.p.terminal.modules.transactions.FilterTypeTabs
 import cash.p.terminal.modules.transactions.SearchEmptyResultsView
 import cash.p.terminal.modules.transactions.SearchInProgressView
+import cash.p.terminal.modules.transactions.SearchPausedView
+import cash.p.terminal.modules.transactions.AppliedPeriodBar
+import cash.p.terminal.modules.transactions.TransactionCalendarBottomSheet
+import cash.p.terminal.modules.transactions.TransactionCalendarButton
+import cash.p.terminal.modules.transactions.TransactionPeriod
+import cash.p.terminal.modules.transactions.TransactionPeriodEmptyView
+import cash.p.terminal.modules.transactions.TransactionPeriodEndFooter
+import cash.p.terminal.modules.transactions.TransactionPeriodUiState
 import cash.p.terminal.modules.transactions.TransactionSearchField
 import cash.p.terminal.modules.transactions.TransactionViewItem
 import cash.p.terminal.modules.transactions.TransactionsViewModel
@@ -119,7 +133,6 @@ import cash.p.terminal.resources.Transactions_WaitForSync
 import cash.p.terminal.resources.aml_promo_dismiss_hud
 import cash.p.terminal.resources.balance_swap_backup_required_description
 import cash.p.terminal.resources.balance_zcash_migration_required
-import cash.p.terminal.resources.hide_balance
 import cash.p.terminal.resources.ic_arrow_down_left_24
 import cash.p.terminal.resources.ic_arrow_up_right_24
 import cash.p.terminal.resources.ic_attention_20
@@ -128,8 +141,6 @@ import cash.p.terminal.resources.ic_attention_red_24
 import cash.p.terminal.resources.ic_chart_24
 import cash.p.terminal.resources.ic_clock
 import cash.p.terminal.resources.ic_coins_stacking
-import cash.p.terminal.resources.ic_eye_20
-import cash.p.terminal.resources.ic_eye_off
 import cash.p.terminal.resources.ic_info_20
 import cash.p.terminal.resources.ic_manage_2_24
 import cash.p.terminal.resources.ic_outgoingraw
@@ -140,6 +151,7 @@ import cash.p.terminal.resources.ic_star_filled_20
 import cash.p.terminal.resources.ic_swap_24
 import cash.p.terminal.resources.monero_full_wallet_recovery
 import cash.p.terminal.resources.monero_full_wallet_recovery_warning
+import cash.p.terminal.resources.hardware_connect_device_to_sync
 import cash.p.terminal.resources.monero_prepare_trezor_description
 import cash.p.terminal.resources.monero_prepare_trezor_title
 import cash.p.terminal.resources.monero_updating_with_trezor
@@ -214,13 +226,15 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
+import kotlinx.coroutines.flow.drop
+import java.time.LocalDate
 
 private const val HEADER_CONTENT_TYPE = "token_balance_sticky_header"
 private const val PLACEHOLDER_CONTENT_TYPE = "token_balance_empty_placeholder"
 
 // Distinct type for the sticky header's Lazy key so it can never collide with the
 // transaction rows' String uid keys (an enum never equals a String).
-private enum class TokenBalanceLazyKey { SearchHeader }
+private enum class TokenBalanceLazyKey { NftSection, SearchHeader }
 
 @Composable
 fun TokenBalanceScreen(
@@ -235,9 +249,14 @@ fun TokenBalanceScreen(
     onRefresh: () -> Unit,
     onSettingsClick: () -> Unit,
     onGoOnline: () -> Unit,
+    onHiddenCalendarClick: () -> Unit,
+    onHiddenSearchClick: () -> Unit,
+    nftSection: (@Composable () -> Unit)? = null,
 ) {
     val hud = rememberHudMessenger()
     val pages = koinInject<WalletSendPages>()
+    // Hidden transactions are revealed by PIN first, then the calendar or the search opens.
+    val transactionsHidden = viewModel.uiState.transactionsHidden
     var showMoneroSendPreparation by rememberSaveable { mutableStateOf(false) }
     val setAmlCheckEnabled = navigation.rememberPremiumToggle(viewModel::setAmlCheckEnabled)
 
@@ -270,7 +289,7 @@ fun TokenBalanceScreen(
         refreshing = refreshing,
         onToggleFavorite = viewModel::toggleFavorite,
         onToggleBalanceVisibility = viewModel::toggleBalanceVisibility,
-        onSearchClick = viewModel::onSearchClick,
+        onSearchClick = if (transactionsHidden) onHiddenSearchClick else viewModel::onSearchClick,
         onSearchClose = viewModel::onSearchClose,
         onSearchQueryChange = viewModel::onSearchQueryChange,
         onSetTransactionType = viewModel::setTransactionType,
@@ -283,6 +302,7 @@ fun TokenBalanceScreen(
             transactionsViewModel.toggleTransactionInfoHidden(it.uid)
         },
         onBottomReached = viewModel::onBottomReached,
+        onSearchFurther = viewModel::searchFurther,
         onSetAmlCheckEnabled = setAmlCheckEnabled,
         onDismissAmlPromo = {
             viewModel.dismissAmlPromo()
@@ -314,14 +334,22 @@ fun TokenBalanceScreen(
         onRefresh = onRefresh,
         onSettingsClick = onSettingsClick,
         onGoOnline = onGoOnline,
+        nftSection = nftSection,
+        onCalendarClick = if (transactionsHidden) onHiddenCalendarClick else viewModel::onCalendarClick,
+        onCalendarDismiss = viewModel::onCalendarDismiss,
+        onPeriodSelect = viewModel::onPeriodSelect,
+        onBackToLatest = viewModel::onBackToLatest,
     )
 
     if (showMoneroSendPreparation) {
+        val ledgerWallet = viewModel.uiState.moneroLedgerWallet
         MoneroSendPreparationBottomSheet(
+            ledgerWallet = ledgerWallet,
             syncInProgress = viewModel.uiState.moneroKeyImageSyncInProgress,
             error = viewModel.uiState.moneroKeyImageSyncError,
             fullWalletRecoveryAvailable = viewModel.uiState.moneroFullWalletRecoveryAvailable,
-            onSync = viewModel::syncMoneroKeyImages,
+            // A Ledger is ready once an ordinary sync through it succeeds; there is no key image step.
+            onSync = if (ledgerWallet) onRefresh else viewModel::syncMoneroKeyImages,
             onFullWalletRecovery = viewModel::fullMoneroWalletRecovery,
             onDismiss = {
                 viewModel.cancelMoneroKeyImageSync()
@@ -362,6 +390,12 @@ internal fun TokenBalanceScreenContent(
     onRefresh: () -> Unit,
     onSettingsClick: () -> Unit,
     onGoOnline: () -> Unit,
+    nftSection: (@Composable () -> Unit)? = null,
+    onSearchFurther: () -> Unit = {},
+    onCalendarClick: () -> Unit = {},
+    onCalendarDismiss: () -> Unit = {},
+    onPeriodSelect: (TransactionPeriod) -> Unit = {},
+    onBackToLatest: () -> Unit = {},
 ) {
     val hud = rememberHudMessenger()
 
@@ -528,11 +562,17 @@ internal fun TokenBalanceScreenContent(
         val searchHeaderIndex = 1 +
                 (if (notSyncedSectionVisible) 1 else 0) +
                 (if (uiState.offlineSince != null) 1 else 0) +
-                (if (uiState.showAmlPromo) 1 else 0)
+                (if (uiState.showAmlPromo) 1 else 0) +
+                (if (nftSection != null) 1 else 0)
         LaunchedEffect(uiState.searchActive, searchHeaderIndex) {
             if (uiState.searchActive && listState.firstVisibleItemIndex < searchHeaderIndex) {
                 listState.animateScrollToItem(searchHeaderIndex)
             }
+        }
+        val appliedPeriod by rememberUpdatedState(uiState.period.period)
+        LaunchedEffect(listState) {
+            // The current value is skipped: re-entering the page keeps its restored scroll position.
+            snapshotFlow { appliedPeriod }.drop(1).collect { listState.scrollToItem(0) }
         }
         HSSwipeRefresh(
             refreshing = refreshing,
@@ -599,6 +639,10 @@ internal fun TokenBalanceScreenContent(
                         }
                     }
 
+                    nftSection?.let { section ->
+                        item(key = TokenBalanceLazyKey.NftSection) { section() }
+                    }
+
                     // NAMED contentType argument: stickyHeader's first positional param is `key`,
                     // so passing HEADER_CONTENT_TYPE positionally would set the key and leave
                     // contentType null, and stickyTransactionDate (which matches on contentType)
@@ -627,26 +671,15 @@ internal fun TokenBalanceScreenContent(
                                     onTransactionTypeClick = onSetTransactionType,
                                 )
                             }
-                            if (uiState.searchActive) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 4.dp, vertical = 12.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    HsBackButton(onClick = onSearchClose)
-                                    TransactionSearchField(
-                                        query = uiState.searchQuery,
-                                        onQueryChange = onSearchQueryChange,
-                                    )
-                                }
-                            } else {
-                                HideBalanceSearchRow(
-                                    hideBalance = !uiState.balanceViewItem.primaryValue.visible,
-                                    onToggleBalanceVisibility = onToggleBalanceVisibility,
-                                    onSearchClick = onSearchClick,
-                                )
-                            }
+                            HistoryControls(
+                                uiState = uiState,
+                                onToggleBalanceVisibility = onToggleBalanceVisibility,
+                                onCalendarClick = onCalendarClick,
+                                onBackToLatest = onBackToLatest,
+                                onSearchClick = onSearchClick,
+                                onSearchClose = onSearchClose,
+                                onSearchQueryChange = onSearchQueryChange,
+                            )
                             HorizontalDivider(
                                 thickness = 1.dp,
                                 color = ComposeAppTheme.colors.borderDivider,
@@ -684,6 +717,7 @@ internal fun TokenBalanceScreenContent(
                                 )
                                 val placeholder = transactionsPlaceholder(
                                     searchScanning = uiState.searchScanning,
+                                    searchPaused = uiState.searchPausedCount != null,
                                     searchEmptyResult = uiState.searchEmptyResult,
                                     loadFailed = uiState.transactionsLoadFailed,
                                     syncing = uiState.syncing,
@@ -693,6 +727,16 @@ internal fun TokenBalanceScreenContent(
                                     TransactionsPlaceholder.SearchInProgress ->
                                         Box(modifier = Modifier.padding(paddingValues)) {
                                             SearchInProgressView()
+                                        }
+
+                                    TransactionsPlaceholder.SearchPaused ->
+                                        Box(modifier = Modifier.padding(paddingValues)) {
+                                            SearchPausedView(
+                                                scannedCount = uiState.searchPausedCount.orEmpty(),
+                                                hasResults = false,
+                                                inPeriod = uiState.period.active,
+                                                onSearchFurther = onSearchFurther,
+                                            )
                                         }
 
                                     TransactionsPlaceholder.SearchEmpty ->
@@ -706,11 +750,20 @@ internal fun TokenBalanceScreenContent(
                                         paddingValues = paddingValues
                                     )
 
-                                    TransactionsPlaceholder.EmptyList -> ListEmptyView(
-                                        text = stringResource(Res.string.Transactions_EmptyList),
-                                        icon = Res.drawable.ic_outgoingraw,
-                                        paddingValues = paddingValues
-                                    )
+                                    TransactionsPlaceholder.EmptyList -> if (uiState.period.active) {
+                                        TransactionPeriodEmptyView(
+                                            tab = uiState.transactionFilterTypes.firstOrNull { it.selected }?.item
+                                                ?: FilterTransactionType.All,
+                                            onChangePeriod = onCalendarClick,
+                                            modifier = Modifier.padding(paddingValues),
+                                        )
+                                    } else {
+                                        ListEmptyView(
+                                            text = stringResource(Res.string.Transactions_EmptyList),
+                                            icon = Res.drawable.ic_outgoingraw,
+                                            paddingValues = paddingValues
+                                        )
+                                    }
 
                                     // The banner above already states the failure and carries the retry.
                                     TransactionsPlaceholder.None -> Unit
@@ -733,6 +786,19 @@ internal fun TokenBalanceScreenContent(
                                 onShowAllTransactionsClicked = onShowAllTransactionsClicked
                             )
                         }
+                        uiState.searchPausedCount?.let { count ->
+                            item {
+                                SearchPausedView(
+                                    scannedCount = count,
+                                    hasResults = true,
+                                    inPeriod = uiState.period.active,
+                                    onSearchFurther = onSearchFurther,
+                                )
+                            }
+                        }
+                        if (uiState.period.showsEndFooter) {
+                            item { TransactionPeriodEndFooter() }
+                        }
                     }
                 }
                 PinnedDateOverlay(offsetY = { headerHeightPx }, date = { currentStickyDate })
@@ -750,6 +816,12 @@ internal fun TokenBalanceScreenContent(
             onDismiss = { showAmlInfoSheet = false }
         )
     }
+
+    TransactionCalendarBottomSheet(
+        period = uiState.period,
+        onApply = onPeriodSelect,
+        onDismiss = onCalendarDismiss,
+    )
 
     // Show the flip "balance hidden" info sheet on the asset screen too, so a flip here explains
     // itself immediately instead of only once the user returns to the balance screen. Gate it off
@@ -787,42 +859,79 @@ private fun PinnedDateOverlay(offsetY: () -> Int, date: () -> String?) {
     }
 }
 
+// Tabs-row controls of the history: hide balance, calendar and search, or the search field; then the period.
+@Composable
+private fun HistoryControls(
+    uiState: TokenBalanceModule.TokenBalanceUiState,
+    onToggleBalanceVisibility: () -> Unit,
+    onCalendarClick: () -> Unit,
+    onBackToLatest: () -> Unit,
+    onSearchClick: () -> Unit,
+    onSearchClose: () -> Unit,
+    onSearchQueryChange: (String) -> Unit,
+) {
+    // The period bar brings its own 12dp top margin.
+    val rowBottomPadding = if (uiState.period.active) 0.dp else 12.dp
+    if (uiState.searchActive) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 4.dp, top = 12.dp, end = 4.dp, bottom = rowBottomPadding),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            HsBackButton(onClick = onSearchClose)
+            TransactionSearchField(
+                query = uiState.searchQuery,
+                onQueryChange = onSearchQueryChange,
+                modifier = Modifier.weight(1f),
+            )
+            TransactionCalendarButton(active = uiState.period.active, onClick = onCalendarClick)
+        }
+    } else {
+        HideBalanceSearchRow(
+            hideBalance = uiState.balanceViewItem?.primaryValue?.visible == false,
+            calendarActive = uiState.period.active,
+            bottomPadding = rowBottomPadding,
+            onToggleBalanceVisibility = onToggleBalanceVisibility,
+            onCalendarClick = onCalendarClick,
+            onSearchClick = onSearchClick,
+        )
+    }
+    if (uiState.period.active) {
+        AppliedPeriodBar(period = uiState.period, onClick = onCalendarClick, onBackToLatest = onBackToLatest)
+        VSpacer(12.dp)
+    }
+}
+
 @Composable
 private fun HideBalanceSearchRow(
     hideBalance: Boolean,
+    calendarActive: Boolean,
+    bottomPadding: Dp,
     onToggleBalanceVisibility: () -> Unit,
+    onCalendarClick: () -> Unit,
     onSearchClick: () -> Unit,
 ) {
     val hud = rememberHudMessenger()
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, end = 4.dp, top = 12.dp, bottom = 12.dp),
+            .padding(start = 16.dp, end = 4.dp, top = 12.dp, bottom = bottomPadding),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier.clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = {
-                    onToggleBalanceVisibility()
-                    hud.vibrate()
-                }
-            ),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            subhead2_grey(text = stringResource(Res.string.hide_balance))
-            HSpacer(8.dp)
-            Icon(
-                painter = painterResource(
-                    if (hideBalance) Res.drawable.ic_eye_off else Res.drawable.ic_eye_20
-                ),
-                contentDescription = null,
-                tint = ComposeAppTheme.colors.iconSecondary,
-                modifier = Modifier.size(20.dp)
-            )
-        }
+        HideBalanceToggle(
+            hidden = hideBalance,
+            onToggle = {
+                onToggleBalanceVisibility()
+                hud.vibrate()
+            }
+        )
         Spacer(modifier = Modifier.weight(1f))
+        TransactionCalendarButton(
+            active = calendarActive,
+            onClick = onCalendarClick,
+            inactiveTint = ComposeAppTheme.colors.iconSecondary,
+        )
         HsIconButton(onClick = onSearchClick) {
             Icon(
                 painter = painterResource(Res.drawable.ic_search),
@@ -1350,12 +1459,15 @@ internal fun shouldShowNotSyncedSection(
 private fun Map<String, List<TransactionViewItem>>?.hasTransactions(): Boolean =
     this?.values?.any { it.isNotEmpty() } == true
 
-internal enum class TransactionsPlaceholder { SearchInProgress, SearchEmpty, WaitForSync, EmptyList, None }
+internal enum class TransactionsPlaceholder {
+    SearchInProgress, SearchPaused, SearchEmpty, WaitForSync, EmptyList, None
+}
 
 // loadFailed wins over a search spinner: a query typed while the read is dead never reaches the
 // repository, so its scan state would otherwise hang over a screen that has already given up.
 internal fun transactionsPlaceholder(
     searchScanning: Boolean,
+    searchPaused: Boolean,
     searchEmptyResult: Boolean,
     loadFailed: Boolean,
     syncing: Boolean,
@@ -1363,6 +1475,7 @@ internal fun transactionsPlaceholder(
 ): TransactionsPlaceholder = when {
     loadFailed -> TransactionsPlaceholder.None
     searchScanning -> TransactionsPlaceholder.SearchInProgress
+    searchPaused -> TransactionsPlaceholder.SearchPaused
     searchEmptyResult -> TransactionsPlaceholder.SearchEmpty
     !transactionsKnown || syncing -> TransactionsPlaceholder.WaitForSync
     else -> TransactionsPlaceholder.EmptyList
@@ -1433,6 +1546,7 @@ private fun onSwapClicked(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MoneroSendPreparationBottomSheet(
+    ledgerWallet: Boolean,
     syncInProgress: Boolean,
     error: StringResource?,
     fullWalletRecoveryAvailable: Boolean,
@@ -1449,10 +1563,13 @@ fun MoneroSendPreparationBottomSheet(
         BottomSheetHeader(
             iconPainter = painterResource(Res.drawable.ic_attention_24),
             iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusWarning),
-            title = stringResource(Res.string.monero_prepare_trezor_title),
+            title = stringResource(
+                if (ledgerWallet) Res.string.hardware_connect_device_to_sync else Res.string.monero_prepare_trezor_title
+            ),
             onCloseClick = onDismiss,
         ) {
             MoneroSendPreparationContent(
+                ledgerWallet = ledgerWallet,
                 syncInProgress = syncInProgress,
                 error = error,
                 fullWalletRecoveryAvailable = fullWalletRecoveryAvailable,
@@ -1466,6 +1583,7 @@ fun MoneroSendPreparationBottomSheet(
 
 @Composable
 private fun MoneroSendPreparationContent(
+    ledgerWallet: Boolean,
     syncInProgress: Boolean,
     error: StringResource?,
     fullWalletRecoveryAvailable: Boolean,
@@ -1474,10 +1592,12 @@ private fun MoneroSendPreparationContent(
     onDismiss: () -> Unit,
 ) {
     Column {
-        body_leah(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-            text = stringResource(Res.string.monero_prepare_trezor_description),
-        )
+        if (!ledgerWallet) {
+            body_leah(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                text = stringResource(Res.string.monero_prepare_trezor_description),
+            )
+        }
         error?.let {
             TextImportantWarning(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
@@ -1670,4 +1790,54 @@ private fun StakingStatusBadge(status: TokenBalanceModule.StakingStatus) {
         background = color.copy(alpha = 0.1f),
         textColor = color
     )
+}
+
+@Composable
+private fun HistoryControlsPreview(period: TransactionPeriodUiState, searchActive: Boolean = false) {
+    ComposeAppTheme {
+        Column(modifier = Modifier.background(ComposeAppTheme.colors.backgroundBase)) {
+            HistoryControls(
+                uiState = TokenBalanceModule.TokenBalanceUiState(
+                    title = "Ethereum",
+                    balanceViewItem = null,
+                    transactions = emptyMap(),
+                    hasHiddenTransactions = false,
+                    searchActive = searchActive,
+                    searchQuery = if (searchActive) "0x7a2f" else "",
+                    period = period,
+                ),
+                onToggleBalanceVisibility = {},
+                onCalendarClick = {},
+                onBackToLatest = {},
+                onSearchClick = {},
+                onSearchClose = {},
+                onSearchQueryChange = {},
+            )
+        }
+    }
+}
+
+private val PreviewToDatePeriod = TransactionPeriodUiState(
+    period = TransactionPeriod(null, LocalDate.of(2026, 11, 12)),
+    oldestDate = LocalDate.of(2021, 3, 3),
+)
+
+@Preview
+@Composable
+private fun HistoryControlsNoPeriodPreview() {
+    HistoryControlsPreview(TransactionPeriodUiState())
+}
+
+@Preview
+@Composable
+private fun HistoryControlsPeriodPreview() {
+    HistoryControlsPreview(
+        TransactionPeriodUiState(period = TransactionPeriod(LocalDate.of(2026, 8, 1), LocalDate.of(2026, 8, 28)))
+    )
+}
+
+@Preview
+@Composable
+private fun HistoryControlsSearchWithDatePreview() {
+    HistoryControlsPreview(PreviewToDatePeriod, searchActive = true)
 }

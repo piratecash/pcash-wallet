@@ -15,9 +15,14 @@ import io.horizontalsystems.core.entities.BlockchainType
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
+import io.mockk.verify
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.math.BigDecimal
+import java.util.concurrent.Callable
+import java.util.concurrent.CyclicBarrier
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 class BalanceCacheTest {
 
@@ -67,9 +72,74 @@ class BalanceCacheTest {
         assertBigDecimalEquals("3", saved.balance)
     }
 
-    private fun wallet(): Wallet {
+    @Test
+    fun constructor_noLookup_doesNotReadDatabase() {
+        val dao = mockk<EnabledWalletsCacheDao>(relaxed = true)
+
+        BalanceCache(routerWith(dao))
+
+        verify(exactly = 0) { dao.getAll() }
+    }
+
+    @Test
+    fun getCache_repeatedLookups_readsDatabaseOnce() {
+        val dao = mockk<EnabledWalletsCacheDao> { every { getAll() } returns emptyList() }
+        val cache = BalanceCache(routerWith(dao))
+
+        cache.getCache(wallet("account-1"))
+        cache.getCache(wallet("account-2"))
+
+        verify(exactly = 1) { dao.getAll() }
+    }
+
+    @Test
+    fun getCache_storedAndUpdatedBalance_returnsUpdated() {
+        val wallet = wallet()
+        val dao = mockk<EnabledWalletsCacheDao>(relaxed = true) {
+            every { getAll() } returns listOf(cacheRow(wallet, "3"))
+        }
+        val cache = BalanceCache(routerWith(dao))
+        assertBigDecimalEquals("3", cache.getCache(wallet)?.available)
+
+        cache.setCache(wallet, BalanceData(available = BigDecimal("5")))
+
+        assertBigDecimalEquals("5", cache.getCache(wallet)?.available)
+    }
+
+    @Test
+    fun setCache_concurrentWritesOfDifferentWallets_keepsEveryWallet() {
+        val dao = mockk<EnabledWalletsCacheDao>(relaxed = true) { every { getAll() } returns emptyList() }
+        val cache = BalanceCache(routerWith(dao))
+        val wallets = List(WRITERS * WRITES_PER_THREAD) { wallet("account-$it") }
+        val start = CyclicBarrier(WRITERS)
+        val writers = wallets.chunked(WRITES_PER_THREAD).map { chunk ->
+            Callable {
+                start.await()
+                chunk.forEach { cache.setCache(it, BalanceData(available = BigDecimal.ONE)) }
+            }
+        }
+
+        val pool = Executors.newFixedThreadPool(WRITERS)
+        try {
+            pool.invokeAll(writers, WRITERS_TIMEOUT_SECONDS, TimeUnit.SECONDS).forEach { it.get() }
+        } finally {
+            pool.shutdownNow()
+        }
+
+        assertEquals(wallets.size, wallets.count { cache.getCache(it) != null })
+    }
+
+    private fun cacheRow(wallet: Wallet, balance: String) = EnabledWalletCache(
+        tokenQueryId = wallet.token.tokenQuery.id,
+        accountId = wallet.account.id,
+        balance = BigDecimal(balance),
+        balanceLocked = BigDecimal.ZERO,
+        stackingUnpaid = BigDecimal.ZERO
+    )
+
+    private fun wallet(accountId: String = "account-1"): Wallet {
         val account = mockk<Account> {
-            every { id } returns "account-1"
+            every { id } returns accountId
         }
         val token = Token(
             coin = Coin(uid = "zcash", name = "Zcash", code = "ZEC"),
@@ -85,5 +155,11 @@ class BalanceCacheTest {
 
     private fun assertBigDecimalEquals(expected: String, actual: BigDecimal?) {
         assertEquals(BigDecimal(expected).stripTrailingZeros(), actual?.stripTrailingZeros())
+    }
+
+    private companion object {
+        const val WRITERS = 8
+        const val WRITES_PER_THREAD = 200
+        const val WRITERS_TIMEOUT_SECONDS = 10L
     }
 }

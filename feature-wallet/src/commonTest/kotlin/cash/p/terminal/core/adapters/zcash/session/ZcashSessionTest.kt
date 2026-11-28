@@ -65,8 +65,10 @@ private const val TXID = "5f2c"
 private const val MEMO = "for the coffee"
 private const val RECEIVED = 120_000L
 private const val MINED_HEIGHT = 2_500_000
+private const val STALE_HEIGHT = 805_800
 private const val BROADCAST_HEIGHT = 3_428_200
 private val RAW = byteArrayOf(1, 2, 3)
+private val SENT_TO = listOf("u1EnteredRecipient")
 private val ACCEPTED = BroadcastResult(errorCode = 0, message = TXID)
 private val RELEASED = BroadcastResult(errorCode = -25, message = "refused", inputsReleased = true)
 private val KEPT = BroadcastResult(errorCode = -26, message = "refused", inputsReleased = false)
@@ -166,6 +168,13 @@ class ZcashSessionTest {
         txid = txid,
         amounts = listOf(MempoolAmount(account = DB_ACCOUNT_ID, value = value)),
         notes = listOf(MempoolNote(account = DB_ACCOUNT_ID, value = value, pool = Pool.ORCHARD, memo = MEMO)),
+        size = 512,
+    )
+
+    private fun ownNotes(vararg notes: MempoolNote) = MempoolEvent.Unconfirmed(
+        txid = TXID,
+        amounts = listOf(MempoolAmount(account = DB_ACCOUNT_ID, value = notes.sumOf { it.value })),
+        notes = notes.toList(),
         size = 512,
     )
 
@@ -491,6 +500,41 @@ class ZcashSessionTest {
     }
 
     @Test
+    fun broadcastReserved_recipientAddresses_remembersThemBetweenReservationAndBroadcast() = runTest {
+        coEvery { wallet.broadcast(any(), any(), any(), any()) } returns ACCEPTED
+        val session = session()
+
+        session.broadcastReserved(RAW, BROADCAST_HEIGHT, requireOwnInputs = true, SENT_TO)
+
+        coVerifyOrder {
+            wallet.reserveForBroadcast(DB_ACCOUNT_ID, RAW, true)
+            wallet.rememberSentAddresses(DB_ACCOUNT_ID, RAW, SENT_TO)
+            wallet.broadcast(DB_ACCOUNT_ID, RAW, BROADCAST_HEIGHT, true)
+        }
+    }
+
+    @Test
+    fun broadcastReserved_rememberingFails_stillBroadcasts() = runTest {
+        coEvery { wallet.rememberSentAddresses(any(), any(), any()) } throws ZcashException("db")
+        coEvery { wallet.broadcast(any(), any(), any(), any()) } returns ACCEPTED
+        val session = session()
+
+        val result = session.broadcastReserved(RAW, BROADCAST_HEIGHT, requireOwnInputs = true, SENT_TO)
+
+        assertEquals(ZcashSessionResult.Success(ACCEPTED), result)
+    }
+
+    @Test
+    fun broadcastReserved_noRecipientAddresses_remembersNothing() = runTest {
+        coEvery { wallet.broadcast(any(), any(), any(), any()) } returns ACCEPTED
+        val session = session()
+
+        session.broadcastReserved(RAW, BROADCAST_HEIGHT, requireOwnInputs = false)
+
+        coVerify(exactly = 0) { wallet.rememberSentAddresses(any(), any(), any()) }
+    }
+
+    @Test
     fun broadcastReserved_nodeReleasedTheInputs_publishesTheSpendableBalanceAgain() = runTest {
         val session = session()
         coEvery { wallet.balance(any(), any()) } returnsMany listOf(RESERVED_BALANCE, RELEASED_BALANCE)
@@ -560,6 +604,54 @@ class ZcashSessionTest {
         runCurrent()
 
         assertTrue(session.state.value.transactions.isEmpty())
+    }
+
+    @Test
+    fun transactions_crossPoolTransferEvent_remembersRowWithPoolValues() = runTest {
+        val session = session()
+        advanceUntilIdle()
+
+        mempoolEvents.emit(
+            ownNotes(
+                MempoolNote(DB_ACCOUNT_ID, -153_400, Pool.TRANSPARENT, null),
+                MempoolNote(DB_ACCOUNT_ID, 147_400, Pool.ORCHARD, null),
+            )
+        )
+        runCurrent()
+
+        val transaction = session.state.value.transactions.single()
+        assertEquals(mapOf(Pool.TRANSPARENT to -153_400L, Pool.ORCHARD to 147_400L), transaction.poolValues)
+        assertEquals(-6_000L, transaction.value)
+        assertEquals(147_400L, transaction.totalReceived)
+    }
+
+    @Test
+    fun transactions_samePoolSendWithChange_isNotShown() = runTest {
+        val session = session()
+        advanceUntilIdle()
+
+        mempoolEvents.emit(
+            ownNotes(
+                MempoolNote(DB_ACCOUNT_ID, -10_000, Pool.ORCHARD, MEMO),
+                MempoolNote(DB_ACCOUNT_ID, 4_000, Pool.ORCHARD, null),
+            )
+        )
+        runCurrent()
+
+        assertTrue(session.state.value.transactions.isEmpty())
+    }
+
+    @Test
+    fun latestHeight_epochBelowCurrentHeight_keepsCurrentHeight() = runTest {
+        val session = session()
+        advanceUntilIdle()
+        mempoolEvents.emit(MempoolEvent.Epoch(MINED_HEIGHT))
+        runCurrent()
+
+        mempoolEvents.emit(MempoolEvent.Epoch(STALE_HEIGHT))
+        runCurrent()
+
+        assertEquals(MINED_HEIGHT, session.state.value.latestHeight)
     }
 
     @Test

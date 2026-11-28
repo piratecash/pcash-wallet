@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
+import cash.p.terminal.modules.send.hardwareWalletCaution
 import cash.p.terminal.modules.send.isHardwareWalletCancelled
 import cash.p.terminal.resources.Error
 import cash.p.terminal.resources.Hud_Text_NoInternet
@@ -23,6 +24,7 @@ import cash.p.terminal.core.managers.OfflineTransactionPayloadEncoder
 import cash.p.terminal.core.providers.SharedAppConfig
 import cash.p.terminal.entities.OfflineSignedTransactionDraft
 import cash.p.terminal.entities.Address
+import cash.p.terminal.modules.address.AmountUnique
 import cash.p.terminal.modules.amount.SendAmountService
 import cash.p.terminal.modules.contacts.ContactsRepository
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionData
@@ -34,7 +36,8 @@ import cash.p.terminal.modules.send.offline.OfflineSignCapableViewModel
 import cash.p.terminal.modules.send.offline.OfflineSigningController
 import cash.p.terminal.modules.send.offline.OfflineTransactionFormat
 import cash.p.terminal.modules.xrate.XRateService
-import cash.p.terminal.core.HardwareWalletSupport
+import cash.p.terminal.core.isNative
+
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.Token
@@ -44,12 +47,11 @@ import cash.p.terminal.modules.send.BaseSendViewModel
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.ethereumkit.api.jsonrpc.JsonRpc
 import io.horizontalsystems.ethereumkit.models.Address as EvmAddress
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.koin.java.KoinJavaComponent.inject
 import co.touchlab.kermit.Logger
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.net.UnknownHostException
 
 private val logger = Logger.withTag("SendEvmViewModel")
@@ -92,6 +94,14 @@ internal class SendEvmViewModel(
     override var sendResult by mutableStateOf<SendResult?>(null)
         private set
 
+    /** The amount was moved to the corrected "100%"; the field shows it and its echo consumes it. */
+    var maxAmountUnique by mutableStateOf<AmountUnique?>(null)
+        private set
+
+    // Set once the confirmation has captured the amount, so the sent amount equals the shown one.
+    @Volatile
+    private var amountFrozen = false
+
     @Suppress("UNCHECKED_CAST")
     private val offlineSignAdapter = adapter as? OfflineTransactionAdapter<SignedOfflineEvmTransaction>
     override val offlineSigningController: OfflineSigningController<OfflineSignResult> by lazy {
@@ -124,27 +134,11 @@ internal class SendEvmViewModel(
         addressService.setAddress(address)
 
         sendTransactionService.stateFlow.collectWith(viewModelScope) {
+            followEstimatedLimit()
             emitState()
         }
 
         sendTransactionService.start(viewModelScope)
-
-        amountService.stateFlow.onEach { newAmountState ->
-            addressState.address?.let { address ->
-                val amount = newAmountState.amount ?: BigDecimal.ZERO
-                sendTransactionService.setSendTransactionData(
-                    SendTransactionData.Evm(
-                        adapter.getTransactionData(
-                            amount,
-                            EvmAddress(address.hex)
-                        ),
-                        null,
-                        amount = amount
-                    )
-                )
-            }
-        }.launchIn(viewModelScope)
-
     }
 
     override fun createState(): SendUiState {
@@ -174,7 +168,34 @@ internal class SendEvmViewModel(
     }
 
     fun onEnterAmount(amount: BigDecimal?) {
+        // Consumes the correction: either its own echo from the field or a newer amount superseding it.
+        maxAmountUnique = null
         amountService.setAmount(amount)
+    }
+
+    fun onAmountScreenResumed() {
+        amountFrozen = false
+        followEstimatedLimit()
+    }
+
+    // The "100%" reserve is an estimate made before the transaction exists; the service's estimate
+    // of the actual transaction is exact, so the limit (and a "100%" amount) follow it.
+    private fun followEstimatedLimit() {
+        if (amountFrozen || !wallet.token.type.isNative) return
+        val txState = sendTransactionService.stateFlow.value
+        if (txState.loading || txState.retryAvailable) return
+        val limit = txState.availableBalance?.setScale(coinMaxAllowedDecimals, RoundingMode.DOWN) ?: return
+        val current = amountService.stateFlow.value
+        if (limit.compareTo(current.availableBalance) == 0) return
+
+        val followMax = limit.signum() > 0 && current.amount?.compareTo(current.availableBalance) == 0
+        amountService.updateAvailableBalance(limit)
+        if (followMax) {
+            amountService.setAmount(limit)
+            maxAmountUnique = AmountUnique(limit)
+        }
+        // Not left to the collector: a confirmation opened before it runs would capture the old amount.
+        handleUpdatedAmountState(amountService.stateFlow.value)
     }
 
     fun onEnterAddress(address: Address?) {
@@ -195,7 +216,7 @@ internal class SendEvmViewModel(
                 onSendSuccess(addressState.address?.hex)
                 SendResult.Sent(sendResult.getRecordUid())
             } catch (e: Throwable) {
-                if (HardwareWalletSupport.isUserCancellation(e)) {
+                if (e.isHardwareWalletCancelled()) {
                     logger.i { "user cancelled" }
                     null
                 } else {
@@ -214,6 +235,7 @@ internal class SendEvmViewModel(
     }
 
     override fun getConfirmationData(): SendConfirmationData {
+        amountFrozen = true
         val address = addressState.address
             ?: throw LocalizedException(Res.string.send_error_address_unavailable)
         val amount = amountState.amount
@@ -266,19 +288,19 @@ internal class SendEvmViewModel(
     }
 
     private fun handleUpdatedAmountState(amountState: SendAmountService.State) {
+        val amountChanged = !amountState.amount.isSameAmount(this.amountState.amount)
         this.amountState = amountState
-        updateSendTransactionData()
+        if (amountChanged) updateSendTransactionData(amountState.amount ?: BigDecimal.ZERO)
         emitState()
     }
 
     private fun handleUpdatedAddressState(addressState: SendEvmAddressService.State) {
         this.addressState = addressState
-        updateSendTransactionData()
+        amountState.amount?.let(::updateSendTransactionData)
         emitState()
     }
 
-    private fun updateSendTransactionData() {
-        val amount = amountState.amount ?: return
+    private fun updateSendTransactionData(amount: BigDecimal) {
         val address = addressState.address ?: return
         viewModelScope.launch {
             sendTransactionService.setSendTransactionData(
@@ -287,16 +309,22 @@ internal class SendEvmViewModel(
                         amount,
                         EvmAddress(address.hex)
                     ),
-                    null
+                    null,
+                    amount = amount
                 )
             )
         }
     }
 
-    private fun createCaution(error: Throwable) = when (error) {
-        is UnknownHostException -> HSCaution(TranslatableString.ResString(Res.string.Hud_Text_NoInternet))
-        is LocalizedException -> HSCaution(TranslatableString.ResString(error.errorTextRes))
-        is JsonRpc.ResponseError.RpcError -> HSCaution(TranslatableString.PlainString(error.error.message))
-        else -> HSCaution(TranslatableString.PlainString(error.message ?: ""))
-    }
+    private fun BigDecimal?.isSameAmount(other: BigDecimal?) =
+        if (this == null || other == null) this == other else compareTo(other) == 0
+
+    private fun createCaution(error: Throwable) = error.hardwareWalletCaution()
+        ?: when (error) {
+            is UnknownHostException -> HSCaution(TranslatableString.ResString(Res.string.Hud_Text_NoInternet))
+            is LocalizedException -> HSCaution(TranslatableString.ResString(error.errorTextRes))
+            is JsonRpc.ResponseError.RpcError -> HSCaution(TranslatableString.PlainString(error.error.message))
+            else -> HSCaution(TranslatableString.PlainString(error.message ?: ""))
+        }
+
 }

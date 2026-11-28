@@ -20,6 +20,14 @@ interface BalanceSettingsStorage {
     var displayDiffOptionType: DisplayDiffOptionType
     val displayDiffOptionTypeFlow: StateFlow<DisplayDiffOptionType>
     var nonRecommendedAccountAlertDismissedAccounts: Set<String>
+    var showNftCollections: Boolean
+    val showNftCollectionsFlow: StateFlow<Boolean>
+
+    /** Entries are `accountId:version`. */
+    var dismissedNftVersionHints: Set<String>
+
+    /** Entries are `blockchainUid|collectionAddress`. */
+    var trustedNftCollections: Set<String>
 }
 
 interface TransactionSettingsStorage {

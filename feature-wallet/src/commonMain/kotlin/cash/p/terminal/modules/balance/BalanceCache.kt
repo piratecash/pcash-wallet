@@ -7,13 +7,15 @@ import cash.p.terminal.entities.EnabledWalletCache
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.BalanceData
 import cash.p.terminal.wallet.getUniqueKey
+import java.util.concurrent.atomic.AtomicReference
 
 class BalanceCache(private val router: StorageRouter) {
-    private var cacheMap: Map<String, BalanceData>
-
-    init {
-        cacheMap = convertToCacheMap(router.acrossAccounts { enabledWalletsCacheDao().getAll() })
+    // Read on first lookup, not at construction: screens build this on the main thread.
+    private val stored: Map<String, BalanceData> by lazy {
+        convertToCacheMap(router.acrossAccounts { enabledWalletsCacheDao().getAll() })
     }
+
+    private val updated = AtomicReference<Map<String, BalanceData>>(emptyMap())
 
     private fun convertToCacheMap(list: List<EnabledWalletCache>): Map<String, BalanceData> {
         return list.map {
@@ -32,7 +34,7 @@ class BalanceCache(private val router: StorageRouter) {
 
     fun getCache(wallet: Wallet): BalanceData? {
         val key = wallet.getUniqueKey()
-        return cacheMap[key]
+        return updated.get()[key] ?: stored[key]
     }
 
     fun setCache(balancesData: Map<Wallet, BalanceData>) {
@@ -45,7 +47,8 @@ class BalanceCache(private val router: StorageRouter) {
                 stackingUnpaid = balanceData.stackingUnpaid
             )
         }
-        cacheMap = cacheMap + convertToCacheMap(list)
+        val entries = convertToCacheMap(list)
+        updated.updateAndGet { it + entries }
 
         router.writePerStore(list, { it.accountId }) { enabledWalletsCacheDao().insertAll(it) }
     }

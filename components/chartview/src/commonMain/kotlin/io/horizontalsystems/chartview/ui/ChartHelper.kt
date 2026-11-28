@@ -81,13 +81,8 @@ class ChartHelper(
     private fun initDominanceCurve() {
         val dominanceValues = target.dominanceByTimestamp()
         if (dominanceValues.isNotEmpty()) {
-            dominanceCurve = CurveAnimator2(
-                dominanceValues,
-                minKey,
-                maxKey,
-                dominanceValues.minOf { it.value },
-                dominanceValues.maxOf { it.value }
-            )
+            val (min, max) = dominanceValues.flatRangeSafeExtremum()
+            dominanceCurve = CurveAnimator2(dominanceValues, minKey, maxKey, min, max)
         }
     }
 
@@ -225,12 +220,9 @@ class ChartHelper(
     }
 
     private fun setExtremum() {
-        minValue = target.minValue
-        maxValue = target.maxValue
-
-        if (minValue == maxValue) {
-            minValue *= 0.9f
-        }
+        val (min, max) = flatRangeSafe(target.minValue, target.maxValue)
+        minValue = min
+        maxValue = max
 
         minKey = target.startTimestamp
         maxKey = target.endTimestamp
@@ -274,13 +266,8 @@ class ChartHelper(
         } else if (dominanceCurve == null) {
             initDominanceCurve()
         } else {
-            dominanceCurve?.setTo(
-                dominanceValues,
-                minKey,
-                maxKey,
-                dominanceValues.minOf { it.value },
-                dominanceValues.maxOf { it.value }
-            )
+            val (min, max) = dominanceValues.flatRangeSafeExtremum()
+            dominanceCurve?.setTo(dominanceValues, minKey, maxKey, min, max)
         }
 
         if (target.rsi == null || target.rsi?.points.isNullOrEmpty()) {
@@ -432,3 +419,12 @@ class ChartHelper(
 
 }
 
+private fun Map<Long, Float>.flatRangeSafeExtremum(): Pair<Float, Float> =
+    flatRangeSafe(values.min(), values.max())
+
+/** A zero-height range makes the curve renderers divide by zero. */
+internal fun flatRangeSafe(min: Float, max: Float): Pair<Float, Float> = when {
+    min != max -> min to max
+    min == 0f -> 0f to 1f
+    else -> min * 0.9f to max
+}

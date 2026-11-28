@@ -8,7 +8,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import cash.p.terminal.core.HSCaution
 import cash.p.terminal.modules.multiswap.action.ISwapProviderAction
+import cash.p.terminal.modules.multiswap.action.ActionCreate
 import cash.p.terminal.modules.multiswap.providers.IMultiSwapProvider
+import cash.p.terminal.modules.multiswap.providers.ZcashRefundAddressReservation
+import cash.p.terminal.modules.multiswap.providers.ZcashRefundAddressUnavailable
 import cash.p.terminal.modules.multiswap.settings.SwapSettingRecipient
 import cash.p.terminal.modules.multiswap.exchange.ButtonState
 import cash.p.terminal.modules.multiswap.exchange.LegStatus
@@ -17,7 +20,6 @@ import cash.p.terminal.modules.multiswap.exchange.MultiSwapExchangePresentation
 import cash.p.terminal.modules.multiswap.exchange.MultiSwapExchangeUiState
 import cash.p.terminal.wallet.badge
 import cash.p.terminal.wallet.coinImageUrl
-import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
@@ -25,9 +27,11 @@ import cash.p.terminal.wallet.useCases.WalletUseCase
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.ViewModelUiState
 import io.horizontalsystems.core.entities.Currency
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.koin.java.KoinJavaComponent.inject
+import io.horizontalsystems.tronkit.models.AccountResources
 import java.math.BigDecimal
 import java.math.RoundingMode
 import cash.p.terminal.core.getKoinInstance
@@ -76,9 +80,15 @@ class SwapViewModel(
     private val currency = currencyManager.baseCurrency
     private val balanceHiddenManager: IBalanceHiddenManager by inject(IBalanceHiddenManager::class.java)
     private val walletUseCase: WalletUseCase by inject(WalletUseCase::class.java)
-    private var warningMessage: TranslatableString? = null
+    private val refundAddressReservation: ZcashRefundAddressReservation by inject(
+        ZcashRefundAddressReservation::class.java
+    )
+    private var refundNotice: ZcashRefundNotice? = null
+    private var refundAddressError = false
+    private var refundNoticeJob: Job? = null
 
     init {
+        refundAddressReservation.startSession()
         balanceService.start(viewModelScope)
         tronAccountWarningService.start(viewModelScope)
 
@@ -185,7 +195,8 @@ class SwapViewModel(
             balanceHidden = quoteState.tokenIn?.let {
                 balanceHiddenManager.isWalletBalanceHidden(it.tokenQuery.id)
             } ?: balanceHiddenManager.balanceHidden,
-            warningMessage = warningMessage,
+            refundNotice = refundNotice,
+            refundAddressError = refundAddressError,
             priceImpact = priceImpactState.priceImpact,
             priceImpactLevel = priceImpactState.priceImpactLevel,
             priceImpactCaution = priceImpactState.priceImpactCaution,
@@ -205,15 +216,25 @@ class SwapViewModel(
             quoteCautions = quoteState.quote?.cautions.orEmpty(),
             tokenOutAction = quoteState.tokenOutAction,
             tronAccountControlledByOthers = tronAccountControlledByOthers,
+            tronResources = balanceState.tronResources,
         )
     }
 
-    private fun fetchWarningMessageAsync() {
-        viewModelScope.launch {
-            warningMessage = obtainWarningMessage()
-            emitState() // Update UI again once warning is fetched
+    private fun fetchRefundNotice() {
+        refundNoticeJob?.cancel()
+        refundNoticeJob = viewModelScope.launch {
+            try {
+                refundNotice = obtainRefundNotice()
+                refundAddressError = false
+            } catch (_: ZcashRefundAddressUnavailable) {
+                refundNotice = null
+                refundAddressError = true
+            }
+            emitState() // Update UI again once the notice is fetched
         }
     }
+
+    fun onRetryRefundAddress() = fetchRefundNotice()
 
     private fun handleUpdatedNetworkState(networkState: NetworkAvailabilityService.State) {
         this.networkState = networkState
@@ -252,8 +273,8 @@ class SwapViewModel(
         fiatServiceOut.setToken(quoteState.tokenOut)
         fiatServiceOut.setAmount(displayAmountOut)
 
-        emitState() // Emit immediately so UI updates without waiting for warning
-        fetchWarningMessageAsync()
+        emitState() // Emit immediately so UI updates without waiting for the refund notice
+        fetchRefundNotice()
 
         if (quoteState.quote != null) {
             val elapsedMillis = System.currentTimeMillis() - quoteState.quote.createdAt
@@ -479,10 +500,11 @@ class SwapViewModel(
             SwapAmountDirection.Out -> quoteState.requestedAmountOut
         }
 
-    private suspend fun obtainWarningMessage(): TranslatableString? {
-        val quote = quoteState.quote ?: return null
-
-        return quote.provider.getWarningMessage(quote.tokenIn, quote.tokenOut)
+    // Until the wallet is created the transparent address cannot be issued; the quote refreshes after that.
+    private suspend fun obtainRefundNotice(): ZcashRefundNotice? {
+        val quote = quoteState.quote?.takeUnless { it.actionRequired is ActionCreate } ?: return null
+        val address = quote.provider.temporaryRefundAddress(quote.tokenIn, quote.tokenOut) ?: return null
+        return ZcashRefundNotice(address, quote.provider.title, quote.provider.createsOrderThroughPcashServer)
     }
 
     private fun fiatAmount(token: Token, amount: BigDecimal): BigDecimal? =
@@ -594,7 +616,8 @@ data class SwapUiState(
     val feeCoinBalance: BigDecimal?,
     val insufficientFeeBalance: Boolean,
     val balanceHidden: Boolean,
-    val warningMessage: TranslatableString?,
+    val refundNotice: ZcashRefundNotice?,
+    val refundAddressError: Boolean,
     val priceImpact: BigDecimal?,
     val priceImpactLevel: PriceImpactLevel?,
     val priceImpactCaution: HSCaution?,
@@ -614,12 +637,16 @@ data class SwapUiState(
     val quoteCautions: List<HSCaution>,
     val tokenOutAction: ISwapProviderAction? = null,
     val tronAccountControlledByOthers: Boolean = false,
+    val tronResources: AccountResources? = null,
 ) {
     private val requestedAmount: BigDecimal?
         get() = when (direction) {
             SwapAmountDirection.In -> amountIn
             SwapAmountDirection.Out -> requestedAmountOut
         }
+
+    val canProceed: Boolean
+        get() = !insufficientFeeBalance && !refundAddressError
 
     val currentStep: SwapStep
         get() {
@@ -639,6 +666,13 @@ data class SwapUiState(
             }
         }
 }
+
+/** The temporary transparent address the provider gets for a refund. */
+data class ZcashRefundNotice(
+    val address: String,
+    val providerTitle: String,
+    val viaPcashServer: Boolean,
+)
 
 sealed class SwapStep {
     data class InputRequired(val inputType: InputType) : SwapStep()

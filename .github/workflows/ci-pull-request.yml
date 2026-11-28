@@ -32,6 +32,13 @@ jobs:
         with:
           # Write from every branch: repeated pushes to a feature branch reuse its own outputs.
           cache-read-only: false
+      - name: Cache Robolectric android-all jars
+        # Robolectric downloads them itself, outside Gradle's retries and cache.
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.m2/repository/org/robolectric
+          key: robolectric-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
+          restore-keys: robolectric-${{ runner.os }}-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Run vault tests
@@ -44,7 +51,7 @@ jobs:
             | base64 --decode \
             > "$RUNNER_TEMP/firebase-dev.jks"
       - name: Run Unit tests
-        run: ./gradlew :app:testDebugUnitTest :core:core:testDebugUnitTest :core:wallet:testAndroidHostTest :core:wallet:desktopTest :core:market:testAndroidHostTest :core:market:desktopTest :core:navigation:testAndroidHostTest :core:navigation:desktopTest :components:chartview:desktopTest :feature-premium:testAndroidHostTest :feature-premium:desktopTest :feature-logging:testDebugUnitTest :feature-trezor:testDebugUnitTest :feature-tangem:testDebugUnitTest :feature-market:testAndroidHostTest :feature-market:desktopTest :shared:desktopTest :core:common:testAndroidHostTest :core:common:desktopTest :core:network:testAndroidHostTest :core:network:desktopTest :core:qr-multipart:testAndroidHostTest :core:ui-compose:desktopTest :feature-mini-app:testDebugUnitTest :feature-stacking:testAndroidHostTest :feature-stacking:desktopTest :config:lint:checks:test :feature-wallet:testAndroidHostTest :feature-wallet:desktopTest :core:storage:desktopTest --no-daemon --build-cache
+        run: ./gradlew :app:testDebugUnitTest :core:core:testDebugUnitTest :core:wallet:testAndroidHostTest :core:wallet:desktopTest :core:market:testAndroidHostTest :core:market:desktopTest :core:navigation:testAndroidHostTest :core:navigation:desktopTest :components:chartview:desktopTest :feature-premium:testAndroidHostTest :feature-premium:desktopTest :feature-logging:testAndroidHostTest :feature-logging:desktopTest :feature-trezor:testDebugUnitTest :feature-tangem:testDebugUnitTest :feature-market:testAndroidHostTest :feature-market:desktopTest :shared:desktopTest :core:common:testAndroidHostTest :core:common:desktopTest :core:network:testAndroidHostTest :core:network:desktopTest :core:qr-multipart:testAndroidHostTest :core:ui-compose:desktopTest :feature-mini-app:testDebugUnitTest :feature-stacking:testAndroidHostTest :feature-stacking:desktopTest :config:lint:checks:test :feature-wallet:testAndroidHostTest :feature-wallet:desktopTest :core:storage:desktopTest --no-daemon --build-cache
       - name: Build QA
         run: ./gradlew :app:assembleQa --stacktrace --no-daemon --build-cache
         env: &qa-build-env

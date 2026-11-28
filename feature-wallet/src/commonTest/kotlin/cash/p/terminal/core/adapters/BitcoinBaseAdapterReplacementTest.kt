@@ -7,8 +7,10 @@ import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
 import cash.p.terminal.modules.transactions.FilterTransactionType
+import cash.p.terminal.modules.transactions.TimestampRange
 import cash.p.terminal.wallet.WalletFactory
 import io.horizontalsystems.bitcoincore.BitcoinCore
+import io.horizontalsystems.bitcoincore.models.TransactionFilterType
 import io.horizontalsystems.bitcoincore.models.TransactionInfo
 import io.horizontalsystems.bitcoincore.models.TransactionInputInfo
 import io.horizontalsystems.bitcoincore.models.TransactionStatus
@@ -17,6 +19,7 @@ import io.horizontalsystems.bitcoinkit.BitcoinKit
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import io.reactivex.Maybe
 import io.reactivex.Single
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -227,6 +230,33 @@ class BitcoinBaseAdapterReplacementTest {
         assertVisibleWithWarning(transactions(limit = 3), uid = "uid-R", conflictingHash = "W")
     }
 
+    @Test
+    fun getTransactions_periodWithSupersededRecord_passesPeriodOnEveryRefill() = runTest {
+        rememberSpeedUp()
+        kitHolds(replacement, original, info("uid-1", "t1"), info("uid-2", "t2"), info("uid-3", "t3"))
+
+        createAdapter().getTransactions(null, null, 3, FilterTransactionType.All, null, TimestampRange(100, 200))
+
+        verify { kit.transactions(null, null, 3, 100, 200) }
+        verify { kit.transactions("uid-1", null, 1, 100, 200) }
+    }
+
+    @Test
+    fun getOldestTransactionTimestamp_incomingStored_returnsKitValueForSameFilter() = runTest {
+        every { kit.oldestTransactionTimestamp(TransactionFilterType.Incoming) } returns Maybe.just(1_700L)
+
+        val oldest = createAdapter().getOldestTransactionTimestamp(null, FilterTransactionType.Incoming, null)
+
+        assertEquals(1_700L, oldest)
+    }
+
+    @Test
+    fun getOldestTransactionTimestamp_nothingStored_returnsNull() = runTest {
+        every { kit.oldestTransactionTimestamp(any()) } returns Maybe.empty()
+
+        assertNull(createAdapter().getOldestTransactionTimestamp(null, FilterTransactionType.All, null))
+    }
+
     private suspend fun rememberSpeedUp() = registry.remember(
         wallet.account.id,
         wallet.token.blockchainType.uid,
@@ -234,7 +264,7 @@ class BitcoinBaseAdapterReplacementTest {
     )
 
     private fun kitHolds(vararg transactions: TransactionInfo) {
-        every { kit.transactions(any(), any(), any()) } answers {
+        every { kit.transactions(any(), any(), any(), any(), any()) } answers {
             val start = transactions.indexOfFirst { it.uid == firstArg<String?>() } + 1
             Single.just(transactions.drop(start).take(requireNotNull(thirdArg<Int?>())))
         }
@@ -248,6 +278,7 @@ class BitcoinBaseAdapterReplacementTest {
         syncMode = BitcoinCore.SyncMode.Full(),
         backgroundManager = mockk(relaxed = true),
         wallet = wallet,
+        dispatcherProvider = mockk(relaxed = true),
     )
 
     private fun assertVisibleWithWarning(page: List<TransactionRecord>, uid: String, conflictingHash: String) {

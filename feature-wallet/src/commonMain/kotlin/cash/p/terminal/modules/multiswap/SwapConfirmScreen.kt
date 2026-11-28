@@ -85,8 +85,10 @@ import cash.p.terminal.resources.monero_prepare_trezor_description
 import cash.p.terminal.resources.monero_updating_with_trezor
 import cash.p.terminal.resources.send_confirmation_sync_error_warning
 import cash.p.terminal.resources.send_confirmation_syncing_warning
+import cash.p.terminal.resources.swap_order_created_tap_card_again
 import cash.p.terminal.resources.swap_reapprove_action
 import cash.p.terminal.ui_compose.components.rememberHudMessenger
+import cash.p.terminal.ui.compose.components.coinIconPlate
 
 data class SwapConfirmNavigation(
     val navigation: HSNavigation,
@@ -238,7 +240,7 @@ private fun ColumnScope.SwapConfirmButtons(
     val moneroSpendReadiness = uiState.moneroSpendReadiness
     when {
         uiState.loading -> SwapLoadingButton()
-        uiState.criticalError != null -> RefreshSwapButton(stringResource(Res.string.Button_Refresh), actions.refresh)
+        uiState.criticalError != null || uiState.finalQuoteCancelled -> RefreshSwapButton(stringResource(Res.string.Button_Refresh), actions.refresh)
         moneroSpendReadiness != null && moneroSpendReadiness != MoneroSpendReadiness.Ready ->
             MoneroSpendReadinessStatus(
                 spendReadiness = moneroSpendReadiness,
@@ -357,6 +359,10 @@ private fun ReadySwapButton(
         AdapterStatus(runtime, actions.retryAdapter)
         // Disable button during swap and navigation delay (allow retry only on Failed).
         val swapInProgress = runtime.sendResult.isSwapInProgress
+        if (uiState.tapCardAgainHintVisible) {
+            TextImportantWarning(text = stringResource(Res.string.swap_order_created_tap_card_again))
+            VSpacer(height = 12.dp)
+        }
         ButtonPrimaryYellow(
             modifier = Modifier.fillMaxWidth(),
             title = stringResource(Res.string.Swap),
@@ -420,6 +426,7 @@ private fun SwapConfirmContent(
         SwapTransactionFields(uiState, navigation.navigation)
         SwapConfirmFeeInfo(
             uiState,
+            navigation.navigation,
             balanceParams,
             inlineFeeWarningData,
             hasFeeProblem,
@@ -494,6 +501,7 @@ private fun SwapTransactionFields(uiState: SwapConfirmUiState, navigation: HSNav
 @Composable
 private fun SwapConfirmFeeInfo(
     uiState: SwapConfirmUiState,
+    navigation: HSNavigation,
     balance: SwapConfirmBalanceParams,
     inlineFeeWarningData: NetworkFeeWarningData?,
     hasFeeProblem: Boolean,
@@ -513,6 +521,7 @@ private fun SwapConfirmFeeInfo(
         feeWarningData = inlineFeeWarningData,
         // Services put the caution message in the title.
         insufficientFeeText = uiState.feeCaution?.title,
+        feeDetails = { uiState.feeDetails.forEach { it.GetContent(navigation, true) } },
     )
 }
 
@@ -636,7 +645,7 @@ fun TokenRowPure(
 ) {
     CellUniversal(borderTop = borderTop) {
         HsImageCircle(
-            modifier = Modifier.size(32.dp),
+            modifier = Modifier.size(32.dp).coinIconPlate(),
             url = imageUrl,
             alternativeUrl = alternativeImageUrl,
             placeholder = imagePlaceholder

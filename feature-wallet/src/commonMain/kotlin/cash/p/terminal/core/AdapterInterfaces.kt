@@ -8,6 +8,7 @@ import cash.p.terminal.entities.OfflineTransactionOutpoint
 import cash.p.terminal.entities.TransactionDataSortMode
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.modules.transactions.FilterTransactionType
+import cash.p.terminal.modules.transactions.TimestampRange
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.IBalanceAdapter
 import cash.p.terminal.wallet.IReceiveAdapter
@@ -25,6 +26,7 @@ import cash.p.terminal.wallet.entities.TokenQuery
 import io.horizontalsystems.bitcoincore.storage.UtxoFilters
 import io.horizontalsystems.solanakit.models.FullTransaction
 import io.horizontalsystems.tonkit.FriendlyAddress
+import io.horizontalsystems.tronkit.models.AccountResources
 import io.horizontalsystems.tronkit.models.Contract
 import io.horizontalsystems.tronkit.network.CreatedTransaction
 import io.horizontalsystems.tronkit.network.NowBlock
@@ -52,6 +54,8 @@ interface ISendZcashAdapter : IBalanceAdapter, OfflineTransactionAdapter<SignedO
     fun stop()
 
     suspend fun validate(address: String): ZcashAdapter.ZCashAddressType
+    /** The form of [address] the signing device will show, so the user can compare the two. */
+    fun addressShownOnDevice(address: String): String
     /** Returns the txid of the broadcast transaction. */
     suspend fun send(amount: BigDecimal, address: String, memo: String): String
     /** What [send] would charge. */
@@ -66,6 +70,9 @@ sealed interface ZcashFeeEstimate {
 
     /** No selection of notes covers the amount and its fee, so [ISendZcashAdapter.send] would refuse it too. */
     data object InsufficientBalance : ZcashFeeEstimate
+
+    /** [ISendZcashAdapter.send] would refuse this payment with [reason], e.g. too large for the signing device. */
+    data class Refused(val reason: Exception) : ZcashFeeEstimate
 
     /** The plan failed for another reason, e.g. no server. */
     data object Unavailable : ZcashFeeEstimate
@@ -86,13 +93,23 @@ interface ITransactionsAdapter {
         limit: Int,
         transactionType: FilterTransactionType,
         address: String?,
+        period: TimestampRange? = null,
     ): List<TransactionRecord>
+
+    /** Seconds; null when no record matches or the source cannot tell. */
+    suspend fun getOldestTransactionTimestamp(
+        token: Token?,
+        transactionType: FilterTransactionType,
+        address: String?,
+    ): Long?
 
     suspend fun getTransactionsAfter(
         fromTransactionId: String?
     ): List<TransactionRecord> = emptyList()
 
     fun getRawTransaction(transactionHash: String): String? = null
+
+    suspend fun fetchMissingDetails(record: TransactionRecord) = Unit
 
     fun getTransactionRecordsFlow(
         token: Token?,
@@ -400,8 +417,21 @@ interface IMoneroReceiveAdapter : IReceiveAdapter, IMoneroHardwareWalletAdapter 
     suspend fun displayAddressOnDevice(addressIndex: Int)
 }
 
-/** [requiredTon] is all TON the transaction debits: the attached value plus every fee. */
-data class TonFeeEstimate(val fee: BigDecimal, val requiredTon: BigDecimal)
+/**
+ * [requiredTon] is all TON the transaction debits: the attached value plus every fee.
+ * [nftNotTransferred] is set when the emulated NFT transfer does not hand the item to the recipient.
+ */
+data class TonFeeEstimate(
+    val fee: BigDecimal,
+    val requiredTon: BigDecimal,
+    val nftNotTransferred: Boolean = false,
+)
+
+/**
+ * [broadcast] holds the addresses whose transaction was handed to the node; [error] stopped the rest.
+ * The outcome of the transaction that failed is unknown: the node may have accepted it.
+ */
+data class NftBroadcastResult(val broadcast: List<String>, val error: Throwable?)
 
 interface ISendTonAdapter : IBalanceAdapter {
     suspend fun send(amount: BigDecimal, address: FriendlyAddress, memo: String?)
@@ -409,6 +439,15 @@ interface ISendTonAdapter : IBalanceAdapter {
     suspend fun estimateFee(amount: BigDecimal, address: FriendlyAddress, memo: String?): TonFeeEstimate
     suspend fun estimateFeeWithPayload(amount: BigInteger, address: String, payload: String): TonFeeEstimate
     suspend fun fetchOfflineAnchor(): TonOfflineAnchor
+    suspend fun sendNftTransfer(nftAddress: String, address: FriendlyAddress, comment: String?)
+    suspend fun estimateNftTransferFee(nftAddress: String, address: FriendlyAddress, comment: String?): TonFeeEstimate
+    suspend fun estimateDomainRenewalFee(nftAddresses: List<String>): TonFeeEstimate
+
+    /** Sends one renewal message per domain, batched per transaction; stops at the first failure. */
+    suspend fun renewDomains(nftAddresses: List<String>): NftBroadcastResult
+
+    /** Blocking network call: run off the main thread. */
+    fun resolveDomain(domain: String): FriendlyAddress?
 }
 
 interface ISendMemoAdapter : IBalanceAdapter {
@@ -432,6 +471,10 @@ interface ILastKnownBalanceAdapter {
 
 interface ISendTronAdapter : IBalanceAdapter {
     val trxBalanceData: BalanceData
+    val accountResourcesFlow: StateFlow<AccountResources?>
+
+    suspend fun refreshAccountResources()
+    fun accountActivationFees(): List<Fee>
 
     suspend fun estimateFee(amount: BigDecimal, to: TronAddress): List<Fee>
     suspend fun estimateFee(transaction: CreatedTransaction): List<Fee>

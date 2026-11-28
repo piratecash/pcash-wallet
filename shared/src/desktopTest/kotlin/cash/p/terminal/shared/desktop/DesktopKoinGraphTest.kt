@@ -33,6 +33,7 @@ import cash.p.terminal.core.managers.SolanaKitManager
 import cash.p.terminal.core.managers.StellarKitManager
 import cash.p.terminal.core.managers.ThorchainKitManagers
 import cash.p.terminal.core.managers.TonKitManager
+import cash.p.terminal.core.managers.TonConnectManager
 import cash.p.terminal.core.managers.TransactionAdapterManager
 import cash.p.terminal.core.managers.TronKitManager
 import cash.p.terminal.core.managers.UserDeletedWalletManager
@@ -64,7 +65,6 @@ import org.koin.core.error.InstanceCreationException
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 import cash.p.terminal.modules.xrate.XRateService
-import cash.p.terminal.modules.premium.settings.PremiumPlatformSettings
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.modules.configuredtoken.ConfiguredTokenInfoViewModel
@@ -192,6 +192,13 @@ import cash.p.terminal.modules.manageaccount.safetyrules.SafetyRulesModule
 import cash.p.terminal.modules.manageaccount.safetyrules.SafetyRulesViewModel
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
 import cash.p.terminal.modules.manageaccounts.ManageAccountsViewModel
+import cash.p.terminal.modules.nft.NftCollectionSource
+import cash.p.terminal.modules.nft.NftCollectionsViewModel
+import cash.p.terminal.modules.nft.manage.NftManageViewModel
+import cash.p.terminal.modules.nft.NftPreviewViewModel
+import cash.p.terminal.modules.nft.renew.NftDomainRenewViewModel
+import cash.p.terminal.modules.nft.burn.NftBurnViewModel
+import cash.p.terminal.entities.NftItemRecord
 import cash.p.terminal.modules.market.SortingField
 import cash.p.terminal.modules.market.TopMarket
 import cash.p.terminal.modules.market.category.CoinCategoryMarketDataChartService
@@ -309,6 +316,12 @@ import cash.p.terminal.modules.unlinkaccount.UnlinkAccountViewModel
 import cash.p.terminal.modules.zcashconfigure.ZcashConfigureViewModel
 import cash.p.terminal.modules.settings.advancedsecurity.terms.HiddenWalletTermsViewModel
 import cash.p.terminal.shared.desktop.lock.ChangePasswordViewModel
+import cash.p.terminal.feature.logging.detail.LoggingDetailViewModel
+import cash.p.terminal.feature.logging.history.LoggingListViewModel
+import cash.p.terminal.feature.logging.settings.LoggingSettingsViewModel
+import cash.p.terminal.shared.desktop.journal.JournalSecretCheckViewModel
+import cash.p.terminal.shared.desktop.journal.JournalSecretKind
+import cash.p.terminal.shared.desktop.journal.JournalSecretPasswordViewModel
 import cash.p.terminal.shared.desktop.lock.DuressPasswordViewModel
 import cash.p.terminal.shared.desktop.lock.ConfirmPasswordViewModel
 import cash.p.terminal.shared.desktop.lock.CreatePasswordViewModel
@@ -377,6 +390,8 @@ import cash.p.terminal.modules.send.address.EnterAddressValidator
 import cash.p.terminal.core.address.AddressCheckManager
 import cash.p.terminal.modules.sendevmtransaction.SendEvmTransactionViewItemFactory
 import cash.p.terminal.modules.address.AddressViewModel as SendAddressViewModel
+import cash.p.terminal.modules.tonconnect.TonConnectSendRequestViewModel
+import io.horizontalsystems.tonkit.models.SignTransaction
 
 class DesktopKoinGraphTest {
 
@@ -389,13 +404,21 @@ class DesktopKoinGraphTest {
 
         desktopGraph.verify(
             extraTypes = providedOutsideTheGraph + builtFromInjectedParameters + stakingPageParameters +
-                notReachedOnDesktop + absentOnDesktop,
+                notReachedOnDesktop,
             injections = injectedParameters(
                 definition<PassphraseTermsViewModel>(Array<String>::class),
                 definition<HiddenWalletTermsViewModel>(Array<String>::class),
                 definition<DuressPasswordViewModel>(List::class),
+                definition<LoggingDetailViewModel>(Long::class),
+                definition<JournalSecretCheckViewModel>(JournalSecretKind::class),
+                definition<JournalSecretPasswordViewModel>(JournalSecretKind::class),
                 definition<SafetyRulesViewModel>(SafetyRulesModule.SafetyRulesMode::class, List::class),
                 definition<ManageAccountsViewModel>(ManageAccountsModule.Mode::class),
+                definition<NftCollectionsViewModel>(NftCollectionSource::class),
+                definition<NftManageViewModel>(NftCollectionSource::class),
+                definition<NftPreviewViewModel>(NftCollectionSource::class, NftItemRecord::class),
+                definition<NftDomainRenewViewModel>(List::class, Boolean::class),
+                definition<NftBurnViewModel>(NftItemRecord::class, String::class, Boolean::class),
                 definition<WatchAddressViewModel>(AddressParserChain::class),
                 definition<SelectBlockchainsViewModel>(AccountType::class),
                 definition<BackupConfirmKeyViewModel>(IRandomProvider::class),
@@ -407,6 +430,7 @@ class DesktopKoinGraphTest {
                 definition<EvmNetworkViewModel>(Blockchain::class),
                 definition<AddRpcViewModel>(Blockchain::class),
                 definition<SwapSelectCoinViewModel>(Token::class, Account::class),
+                definition<TonConnectSendRequestViewModel>(SignTransaction::class),
                 *marketInjections(),
                 *coinPageInjections(),
                 *walletPageInjections(),
@@ -497,6 +521,9 @@ class DesktopKoinGraphTest {
             SyncErrorViewModel::class to { parametersOf(wallet) },
             ContactsViewModel::class to { parametersOf(Mode.Full) },
             AddressCheckerViewModel::class to null,
+            LoggingSettingsViewModel::class to null,
+            LoggingListViewModel::class to null,
+            LoggingDetailViewModel::class to { parametersOf(1L) },
             AddressCheckBlockchainSelectorViewModel::class to null,
             UnifiedAddressCheckerViewModel::class to { parametersOf("address") },
             // Not BlockchainStatusViewModel: its init reads the locked log DB on IO; verify() covers it.
@@ -656,6 +683,8 @@ class DesktopKoinGraphTest {
             ForgotPasswordViewModel::class to null,
             ChangePasswordViewModel::class to null,
             ConfirmPasswordViewModel::class to null,
+            JournalSecretCheckViewModel::class to { parametersOf(JournalSecretKind.JOURNAL_PASSWORD) },
+            JournalSecretPasswordViewModel::class to { parametersOf(JournalSecretKind.DELETE_CONTACTS) },
             DesktopSecurityViewModel::class to null,
             DesktopAutoLockIntervalsViewModel::class to null,
             DesktopLanguageSettingsViewModel::class to null,
@@ -701,7 +730,6 @@ class DesktopKoinGraphTest {
             MoneroHardwareGateway::class,
             TrezorAttachments::class,
             AddressLabelManager::class,
-            BalancePlatformActions::class,
             ChartIndicatorManager::class,
             CoinManager::class,
             CryptoCompareProvider::class,
@@ -741,6 +769,8 @@ class DesktopKoinGraphTest {
 
         val lookedUpAfterTheFirstUnlock = listOf(
             CheckPremiumUseCase::class,
+            BalancePlatformActions::class,
+            TonConnectManager::class,
             IAdapterManager::class,
             TransactionAdapterManager::class,
             WalletServicesStarter::class,
@@ -845,8 +875,5 @@ class DesktopKoinGraphTest {
 
         /** GitHub release checks have no desktop screen that resolves them. */
         val notReachedOnDesktop = listOf(GithubApiConfig::class)
-
-        /** Resolved with `getOrNull`: desktop has no such feature and hides what needs it. */
-        val absentOnDesktop = listOf(PremiumPlatformSettings::class)
     }
 }

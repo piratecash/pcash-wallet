@@ -27,6 +27,7 @@ import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.LocalHostLifecycleOwner
 import cash.p.terminal.navigation.rememberSharedViewModelStoreNavEntryDecorator
 import cash.p.terminal.ui_compose.components.AppSnackbar
+import cash.p.terminal.ui_compose.components.HudAction
 import cash.p.terminal.ui_compose.components.LocalHudMessenger
 import cash.p.terminal.ui_compose.components.LocalUrlOpener
 import cash.p.terminal.ui_compose.components.UrlOpener
@@ -36,12 +37,14 @@ import kotlinx.coroutines.flow.collectLatest
 import org.jetbrains.compose.resources.painterResource
 
 private const val SNACKBAR_DURATION_MS = 3_000L
+private const val SNACKBAR_ACTION_DURATION_MS = 7_000L
 
 @Composable
 fun DesktopNavHost(
     navigation: HSNavigation,
     hudMessenger: DesktopHudMessenger,
     urlOpener: UrlOpener,
+    captureProtection: ScreenCaptureProtection,
     modifier: Modifier = Modifier,
 ) {
     val colors = BottomSheetColors(
@@ -72,7 +75,10 @@ fun DesktopNavHost(
                 ),
                 sceneStrategies = listOf(sheetStrategy),
                 entryProvider = { page ->
-                    NavEntry(page, page.contentKey(), page.metadata()) { page.Content(navigation) }
+                    NavEntry(page, page.contentKey(), page.metadata()) {
+                        if (!page.screenshotEnabled) ScreenCaptureProtectedEffect(captureProtection)
+                        page.Content(navigation)
+                    }
                 },
             )
             HudSnackbar(hudMessenger, Modifier.align(Alignment.BottomCenter))
@@ -86,7 +92,7 @@ private fun HudSnackbar(hudMessenger: DesktopHudMessenger, modifier: Modifier = 
     LaunchedEffect(hudMessenger) {
         hudMessenger.messages.collectLatest {
             message = it
-            delay(SNACKBAR_DURATION_MS)
+            delay(if (it?.action != null) SNACKBAR_ACTION_DURATION_MS else SNACKBAR_DURATION_MS)
             message = null
         }
     }
@@ -96,6 +102,12 @@ private fun HudSnackbar(hudMessenger: DesktopHudMessenger, modifier: Modifier = 
             variant = it.variant,
             icon = it.icon?.let { icon -> painterResource(icon) },
             modifier = modifier.padding(16.dp),
+            action = it.action?.let { action ->
+                HudAction(action.label) {
+                    action.onClick()
+                    message = null
+                }
+            },
         )
     }
 }

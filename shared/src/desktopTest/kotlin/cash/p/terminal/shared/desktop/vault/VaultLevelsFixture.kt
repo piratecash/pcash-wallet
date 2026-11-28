@@ -14,9 +14,14 @@ import cash.p.terminal.wallet.entities.EnabledWallet
 import cash.p.terminal.wallet.entities.SecretString
 import io.horizontalsystems.core.IEncryptionManager
 import io.horizontalsystems.sqlcipher.SqlCipherDriver
+import cash.p.terminal.core.TestDispatcherProvider
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
@@ -98,7 +103,13 @@ internal class VaultLevelsFixture {
     val checkpoints = TestCheckpoints()
     val driverFactory = RecordingDriverFactory()
     val walletLayer = base.walletLayer
-    val passwordVault: PasswordVault = PasswordVault(files.vaultFile, cheapArgon2)
+    val lockoutManager = base.lockoutManager
+    val passwordVault: PasswordVault = PasswordVault(files.vaultFile, cheapArgon2, files.actionsFile)
+    val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    val dispatcherProvider = TestDispatcherProvider(Dispatchers.Unconfined, scope)
+
+    /** What every vault of this fixture tells the journal; a test sets it before the first unlock. */
+    var loginEvents: VaultLoginEvents = VaultLoginEvents.None
     var vault: DesktopVault = newVault()
         private set
     private var decoys: Set<String> = emptySet()
@@ -222,12 +233,26 @@ internal class VaultLevelsFixture {
 
     suspend fun tearDown() {
         vault.close()
+        scope.cancel()
         stopKoin()
         base.tearDown()
     }
 
-    private fun newVault() =
-        base.vault(driverFactory = driverFactory, passwordVault = passwordVault, checkpoints = checkpoints)
+    private fun newVault() = DesktopVault(
+        files = files,
+        passwordVault = passwordVault,
+        lockoutManager = lockoutManager,
+        preferencesReset = base.preferencesReset,
+        dispatcherProvider = dispatcherProvider,
+        driverFactory = driverFactory,
+        checkpoints = checkpoints,
+        walletLayer = lazyOf(walletLayer),
+        loginEvents = lazyOf(object : VaultLoginEvents {
+            override fun onEntered(session: DesktopStorageSession) = loginEvents.onEntered(session)
+            override fun onFailedUnlock() = loginEvents.onFailedUnlock()
+            override fun onEraseContacts() = loginEvents.onEraseContacts()
+        }),
+    )
 
     private fun account(id: String) = Account(
         id = id,

@@ -57,6 +57,7 @@ kotlin {
 
                 implementation(libs.ton.kit)
                 implementation(libs.hd.wallet.kit)
+                implementation(libs.bitcoin.core)
                 implementation(libs.ethereum.kit)
                 implementation(libs.monero.kit)
                 implementation(libs.stellar.kit)

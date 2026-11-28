@@ -8,10 +8,14 @@ import cash.p.terminal.core.TransactionSettingsStorage
 import cash.p.terminal.core.MoneroSpendReadiness
 import cash.p.terminal.core.adapters.zcash.ZcashAdapter
 import cash.p.terminal.core.adapters.zcash.convertZatoshiToZec
+import cash.p.terminal.core.adapters.zcash.session.ZcashAddressSearch
+import cash.p.terminal.core.adapters.zcash.session.ZcashAddressSearchState
+import cash.p.terminal.core.adapters.zcash.session.ZcashSyncScheduler
 import cash.p.terminal.core.managers.AmlStatusManager
 import cash.p.terminal.core.managers.AddressLabelManager
 import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
+import cash.p.terminal.core.managers.NumberFormatter
 import cash.p.terminal.core.managers.OfflineKey
 import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.core.managers.PendingTransactionRegistrar
@@ -39,11 +43,13 @@ import cash.p.terminal.modules.transactions.Filter
 import cash.p.terminal.modules.transactions.FilterTransactionType
 import cash.p.terminal.modules.transactions.SearchScanState
 import cash.p.terminal.modules.transactions.TransactionItem
+import cash.p.terminal.modules.transactions.TransactionPeriod
 import cash.p.terminal.modules.transactions.TransactionViewItem
 import cash.p.terminal.modules.transactions.TransactionViewItemFactory
 import cash.p.terminal.premium.domain.PremiumSettings
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.trezor_connect_failed
+import cash.p.terminal.resources.hardware_connect_device_to_sync
 import cash.p.terminal.resources.trezor_not_initialized_description
 import cash.p.terminal.manager.IConnectivityManager
 import cash.p.terminal.wallet.IAccountManager
@@ -93,6 +99,8 @@ import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import io.mockk.verify
 import java.math.BigDecimal
+import java.time.LocalDate
+import java.util.Locale
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.Dispatchers
@@ -154,6 +162,11 @@ class TokenBalanceViewModelTest : KoinTest {
     private val locallyCreatedTransactionRepository = mockk<LocallyCreatedTransactionRepository>(relaxed = true)
     private val pendingRegistrar = mockk<PendingTransactionRegistrar>(relaxed = true)
     private val evmBlockchainManager = mockk<EvmBlockchainManager>(relaxed = true)
+    private val addressSearchFlow = MutableStateFlow<ZcashAddressSearchState?>(null)
+    private val syncScheduler = mockk<ZcashSyncScheduler>(relaxed = true)
+    private val addressSearch = mockk<ZcashAddressSearch>(relaxed = true) {
+        every { state(any()) } returns addressSearchFlow
+    }
     private val addressLabelsChangedFlow = MutableSharedFlow<Unit>()
     private val addressLabelManager = mockk<AddressLabelManager>(relaxed = true) {
         every { labelsChangedFlow } returns addressLabelsChangedFlow
@@ -202,6 +215,8 @@ class TokenBalanceViewModelTest : KoinTest {
                 }
                 single { addressLabelManager }
                 single { evmBlockchainManager }
+                single { addressSearch }
+                single { syncScheduler }
             }
         )
     }
@@ -237,6 +252,8 @@ class TokenBalanceViewModelTest : KoinTest {
         every { transactionsService.searchScanStateFlow } returns searchScanStateFlow
         every { transactionsService.setSearchQuery(any()) } returns Unit
         every { transactionsService.refreshList() } returns Unit
+        every { transactionsService.historyExhaustedFlow } returns MutableStateFlow(false)
+        coEvery { transactionsService.oldestTimestamp() } returns null
         every { balanceService.balanceItemFlow } returns balanceItemFlow
         every { balanceService.balanceItem } returns null
         every { balanceHiddenManager.walletBalanceHiddenFlow(any()) } returns walletBalanceHiddenFlow
@@ -1506,6 +1523,87 @@ class TokenBalanceViewModelTest : KoinTest {
 
     // endregion
 
+    // region Calendar Tests
+
+    private val calendarRange = TransactionPeriod(from = LocalDate.of(2026, 8, 1), to = LocalDate.of(2026, 8, 28))
+
+    @Test
+    fun onPeriodSelect_range_serviceReceivesPeriod() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.onCalendarClick()
+        viewModel.onPeriodSelect(calendarRange)
+        advanceUntilIdle()
+
+        verify(exactly = 1) { transactionsService.setPeriod(calendarRange) }
+        assertEquals(calendarRange, viewModel.uiState.period.period)
+    }
+
+    @Test
+    fun onBackToLatest_appliedPeriod_serviceReceivesNoPeriod() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        viewModel.onCalendarClick()
+        viewModel.onPeriodSelect(calendarRange)
+        advanceUntilIdle()
+
+        viewModel.onBackToLatest()
+        advanceUntilIdle()
+
+        verify(exactly = 1) { transactionsService.setPeriod(null) }
+        assertEquals(null, viewModel.uiState.period.period)
+    }
+
+    @Test
+    fun setTransactionType_appliedPeriod_keepsPeriod() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        viewModel.onCalendarClick()
+        viewModel.onPeriodSelect(calendarRange)
+        advanceUntilIdle()
+
+        viewModel.setTransactionType(FilterTransactionType.Incoming)
+        advanceUntilIdle()
+
+        verify(exactly = 0) { transactionsService.setPeriod(null) }
+        assertEquals(calendarRange, viewModel.uiState.period.period)
+    }
+
+    @Test
+    fun transactionsHiddenAgain_periodAndSearch_clearsPeriodAndClosesSearch() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onSearchClick()
+        viewModel.onCalendarClick()
+        viewModel.onPeriodSelect(calendarRange)
+        advanceUntilIdle()
+
+        transactionHiddenFlow.value = createHiddenState(hidden = true)
+        advanceUntilIdle()
+
+        verify(exactly = 1) { transactionsService.setPeriod(null) }
+        assertEquals(null, viewModel.uiState.period.period)
+        assertEquals(false, viewModel.uiState.searchActive)
+        assertEquals(true, viewModel.uiState.transactionsHidden)
+    }
+
+    @Test
+    fun onPeriodSelect_toDatePeriod_requestsOldestOnce() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.onCalendarClick()
+        viewModel.onPeriodSelect(calendarRange)
+        advanceUntilIdle()
+        coVerify(exactly = 0) { transactionsService.oldestTimestamp() }
+
+        viewModel.onCalendarClick()
+        viewModel.onPeriodSelect(TransactionPeriod(from = null, to = calendarRange.to))
+        advanceUntilIdle()
+        coVerify(exactly = 1) { transactionsService.oldestTimestamp() }
+    }
+
+    // endregion
+
     // region Search Tests
 
     @Test
@@ -1579,6 +1677,66 @@ class TokenBalanceViewModelTest : KoinTest {
 
         assertEquals(false, viewModel.uiState.searchScanning)
         assertEquals(true, viewModel.uiState.searchEmptyResult)
+    }
+
+    @Test
+    fun searchScanState_scanningThenPausedWithoutResults_neverShowsFinalNoResults() = runTest(dispatcher) {
+        every { numberFormatter.format(any(), 0, 0, any(), any()) } answers { "#${firstArg<Number>()}" }
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onSearchClick()
+        viewModel.onSearchQueryChange("nothing-matches")
+        advanceUntilIdle()
+
+        searchScanStateFlow.value = SearchScanState.Scanning
+        advanceUntilIdle()
+        assertEquals(false, viewModel.uiState.searchEmptyResult)
+        assertEquals(null, viewModel.uiState.searchPausedCount)
+
+        searchScanStateFlow.value = SearchScanState.Paused(scannedCount = 12_345)
+        advanceUntilIdle()
+        assertEquals(false, viewModel.uiState.searchScanning)
+        assertEquals(false, viewModel.uiState.searchEmptyResult)
+        assertEquals("#12300", viewModel.uiState.searchPausedCount)
+    }
+
+    @Test
+    fun searchScanState_pausedWithResults_keepsResultsAndReportsPausedCount() = runTest(dispatcher) {
+        every { numberFormatter.format(any(), 0, 0, any(), any()) } answers { "#${firstArg<Number>()}" }
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onSearchClick()
+        viewModel.onSearchQueryChange("needle")
+        advanceUntilIdle()
+
+        transactionItemsFlow.value = listOf(createTransactionItem("match-1"))
+        searchScanStateFlow.value = SearchScanState.Paused(scannedCount = 20_000)
+        advanceUntilIdle()
+
+        assertEquals(1, viewModel.uiState.transactions?.values?.flatten()?.size)
+        assertEquals(false, viewModel.uiState.searchEmptyResult)
+        assertEquals("#20000", viewModel.uiState.searchPausedCount)
+    }
+
+    @Test
+    fun searchFurther_pausedWithResults_keepsResultsWhileScanning() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onSearchClick()
+        viewModel.onSearchQueryChange("needle")
+        advanceUntilIdle()
+        transactionItemsFlow.value = listOf(createTransactionItem("match-1"))
+        searchScanStateFlow.value = SearchScanState.Paused(scannedCount = 10_000)
+        advanceUntilIdle()
+
+        viewModel.searchFurther()
+        searchScanStateFlow.value = SearchScanState.Scanning
+        advanceUntilIdle()
+
+        verify(exactly = 1) { transactionsService.searchFurther() }
+        assertEquals(true, viewModel.uiState.searchScanning)
+        assertEquals(1, viewModel.uiState.transactions?.values?.flatten()?.size)
+        assertEquals(false, viewModel.uiState.searchEmptyResult)
     }
 
     @Test
@@ -1882,7 +2040,7 @@ class TokenBalanceViewModelTest : KoinTest {
         advanceUntilIdle()
 
         assertEquals(false, viewModel.uiState.moneroKeyImageSyncInProgress)
-        assertEquals(Res.string.trezor_connect_failed, viewModel.uiState.moneroKeyImageSyncError)
+        assertEquals(Res.string.hardware_connect_device_to_sync, viewModel.uiState.moneroKeyImageSyncError)
         assertEquals(true, viewModel.uiState.moneroKeyImageSyncRequired)
         assertEquals(emptyList<TokenBalanceModule.Event>(), events)
 
@@ -2032,7 +2190,7 @@ class TokenBalanceViewModelTest : KoinTest {
             readiness.value = MoneroSpendReadiness.ReconciliationFailed
             advanceUntilIdle()
 
-            assertEquals(Res.string.trezor_connect_failed, viewModel.uiState.moneroKeyImageSyncError)
+            assertEquals(Res.string.hardware_connect_device_to_sync, viewModel.uiState.moneroKeyImageSyncError)
             assertEquals(false, viewModel.uiState.moneroKeyImageSyncInProgress)
             assertEquals(emptyList<TokenBalanceModule.Event>(), events)
 
@@ -2097,6 +2255,91 @@ class TokenBalanceViewModelTest : KoinTest {
     // endregion
 
     // region Helper Methods
+
+    @Test
+    fun addressSearchUiState_searchRunning_showsCheckedOfTargetAndRoundedPercent() = runTest(dispatcher) {
+        setZcashTransparentWallet()
+        val viewModel = createViewModel()
+
+        addressSearchFlow.value = ZcashAddressSearchState(checkedThrough = 2360, target = 5520, checkedAt = null, found = 1)
+        advanceUntilIdle()
+
+        val state = checkNotNull(viewModel.addressSearchUiState)
+        assertEquals(true, state.running)
+        assertEquals(43, state.percent)
+        assertEquals("2,360", state.checkedText)
+        assertEquals("5,520", state.targetText)
+        assertEquals("1", state.foundText)
+    }
+
+    @Test
+    fun onAddressSearchMoreChange_input_validatesAndRecomputesTheTotal() = runTest(dispatcher) {
+        setZcashTransparentWallet()
+        val viewModel = createViewModel()
+        addressSearchFlow.value = ZcashAddressSearchState(checkedThrough = 520, target = null, checkedAt = null, found = 0)
+        advanceUntilIdle()
+
+        assertEquals(1020, viewModel.addressSearchUiState?.total)
+        assertEquals(null, viewModel.addressSearchUiState?.longSearchMinutes)
+
+        viewModel.onAddressSearchMoreChange("0")
+        assertEquals(null, viewModel.addressSearchUiState?.total)
+
+        viewModel.onAddressSearchMoreChange("1a2")
+        assertEquals("12", viewModel.addressSearchUiState?.moreText)
+        assertEquals(532, viewModel.addressSearchUiState?.total)
+
+        viewModel.onAddressSearchMoreChange("5000")
+        assertEquals(4, viewModel.addressSearchUiState?.longSearchMinutes)
+    }
+
+    @Test
+    fun startAddressSearch_validInput_startsWithThatCount() = runTest(dispatcher) {
+        setZcashTransparentWallet()
+        val viewModel = createViewModel()
+        addressSearchFlow.value = ZcashAddressSearchState(checkedThrough = 520, target = null, checkedAt = null, found = 0)
+        advanceUntilIdle()
+
+        viewModel.onAddressSearchMoreChange("")
+        viewModel.startAddressSearch()
+        advanceUntilIdle()
+        coVerify(exactly = 0) { addressSearch.start(any(), any()) }
+
+        viewModel.onAddressSearchMoreChange("700")
+        viewModel.startAddressSearch()
+        advanceUntilIdle()
+        coVerify(exactly = 1) { addressSearch.start(any(), 700) }
+        verify(exactly = 1) { syncScheduler.wakeUp() }
+    }
+
+    @Test
+    fun addressSearchUiState_notZcash_staysHidden() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        addressSearchFlow.value = ZcashAddressSearchState(checkedThrough = 520, target = null, checkedAt = null, found = 0)
+        advanceUntilIdle()
+
+        assertEquals(null, viewModel.addressSearchUiState)
+    }
+
+    private fun setZcashTransparentWallet() {
+        val token = Token(
+            coin = Coin(uid = "zcash", name = "Zcash", code = "ZEC"),
+            blockchain = Blockchain(BlockchainType.Zcash, "Zcash", null),
+            type = TokenType.AddressSpecTyped(TokenType.AddressSpecType.Unified),
+            decimals = 8,
+        )
+        val account = Account(
+            id = "zcash-account",
+            name = "Zcash",
+            type = AccountType.Mnemonic(emptyList(), ""),
+            origin = AccountOrigin.Restored,
+            level = 0,
+        )
+        testWallet = checkNotNull(WalletFactory(mockk(relaxed = true)).create(token, account, null))
+        // The real formatter: it rejects Int, which a pass-through mock would hide.
+        val formatter = NumberFormatter(mockk { every { currentLocale } returns Locale.US })
+        every { numberFormatter.format(any(), 0, 0, any(), any()) } answers { formatter.format(firstArg(), 0, 0) }
+    }
 
     private fun markSwapsByUidPrefix() {
         coEvery { transactionViewItemFactory.convertToViewItemCached(any(), any(), any()) } answers {

@@ -13,6 +13,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -44,6 +45,7 @@ import cash.p.terminal.modules.send.offline.rememberImportTransactionFile
 import cash.p.terminal.modules.settings.addresschecker.AddressCheckerPage
 import cash.p.terminal.modules.settings.appearance.AppearancePage
 import cash.p.terminal.modules.settings.donate.DonateTokenSelectPage
+import cash.p.terminal.modules.tonconnect.TonConnectMainPage
 import cash.p.terminal.modules.transactions.TransactionsScreen
 import cash.p.terminal.modules.transactions.TransactionsViewModel
 import cash.p.terminal.navigation.HSNavigation
@@ -81,7 +83,6 @@ import org.koin.compose.viewmodel.koinViewModel
 private val DESKTOP_HIDDEN_SETTINGS = setOf(
     SettingsAction.MiniApp,
     SettingsAction.WalletConnect,
-    SettingsAction.TonConnect,
     SettingsAction.SoftwareUpdate,
     SettingsAction.AdvancedSecurity,
     SettingsAction.RateApp,
@@ -102,6 +103,8 @@ class DesktopMainPage : HSPage() {
         )
     }
     private var chosenTab by mutableStateOf<MainDestination?>(null)
+    private var transactionsLeaves by mutableIntStateOf(0)
+    private var handledTransactionsLeaves = 0
     private val balanceRefreshRequests = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
     val selectedTab: MainDestination
@@ -109,6 +112,9 @@ class DesktopMainPage : HSPage() {
 
     fun selectTab(destination: MainDestination) {
         rememberedMainTab(destination)?.let { getKoinInstance<MainTabStorage>().mainTab = it }
+        if (selectedTab == MainDestination.Transactions && destination != MainDestination.Transactions) {
+            transactionsLeaves++
+        }
         chosenTab = destination
     }
 
@@ -124,6 +130,14 @@ class DesktopMainPage : HSPage() {
             MainDestination.entries.filter { it != MainDestination.Market || marketsTabEnabled }
         }
         val selectedDestination = shownTab(selectedTab, marketsTabEnabled)
+        val transactionsViewModel = rememberMainPageTransactionsViewModel(navigation)
+        // Kept on the page, so a leave followed by a lock before this runs is still applied on unlock.
+        LaunchedEffect(transactionsLeaves) {
+            if (transactionsLeaves != handledTransactionsLeaves) {
+                transactionsViewModel.onLeave()
+                handledTransactionsLeaves = transactionsLeaves
+            }
+        }
         ShowReleaseNotesAfterUpdate(navigation)
         MainNavigation(
             destinations = destinations,
@@ -171,6 +185,8 @@ private fun TransactionsPane(navigation: HSNavigation) {
         paddingValues = PaddingValues(),
         viewModel = rememberMainPageTransactionsViewModel(navigation),
         onShowAllTransactionsClicked = hud::showNotSupportedOnPlatform,
+        onHiddenCalendarClick = hud::showNotSupportedOnPlatform,
+        onHiddenSearchClick = hud::showNotSupportedOnPlatform,
     )
 }
 
@@ -237,6 +253,7 @@ private fun SettingsPane(navigation: HSNavigation) {
 private fun HSNavigation.openWalletSetting(action: SettingsAction, importTransactionFile: () -> Unit) {
     when (action) {
         SettingsAction.SwapProviders -> slideFromRight(SwapProvidersSettingsPage())
+        SettingsAction.TonConnect -> slideFromRight(TonConnectMainPage(null))
         SettingsAction.OfflineBroadcast -> slideFromRight(OfflineBroadcastInputPage())
         SettingsAction.ImportTransactionFile -> importTransactionFile()
         else -> Unit

@@ -12,6 +12,7 @@ import cash.p.terminal.R
 import cash.p.terminal.core.ethereum.evmSendErrorMessage
 import cash.p.terminal.core.managers.EvmKitWrapper
 import cash.p.terminal.modules.confirm.ConfirmTransactionScreen
+import cash.p.terminal.modules.send.signingErrorText
 import cash.p.terminal.modules.sendevmtransaction.SendEvmTransactionView
 import cash.p.terminal.modules.walletconnect.request.WCRequestPage
 import cash.p.terminal.modules.walletconnect.request.sendtransaction.WalletConnectTransaction
@@ -26,6 +27,9 @@ import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.logger.AppLogger
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.layout.padding
+import cash.p.terminal.modules.walletconnect.WCVerifyAlert
+import cash.p.terminal.modules.walletconnect.WCVerifyAlertCard
 
 @Composable
 fun WCSignEthereumTransactionRequestScreen(
@@ -35,6 +39,7 @@ fun WCSignEthereumTransactionRequestScreen(
     transaction: WalletConnectTransaction,
     peerName: String,
     evmKitWrapper: EvmKitWrapper,
+    verifyAlert: WCVerifyAlert?,
 ) {
     val viewModel = viewModel<WCSignEthereumTransactionRequestViewModel>(
         viewModelStoreOwner = navigation.viewModelStoreOwnerForPage(WCRequestPage::class),
@@ -71,7 +76,7 @@ fun WCSignEthereumTransactionRequestScreen(
                             delay(1200)
                         } catch (t: Throwable) {
                             logger.warning("failed", t)
-                            HudHelper.showErrorMessage(view, t.evmSendErrorMessage())
+                            t.signingErrorText(t.evmSendErrorMessage())?.let { HudHelper.showErrorMessage(view, it) }
                         }
 
                         navigation.navigateUp()
@@ -89,6 +94,7 @@ fun WCSignEthereumTransactionRequestScreen(
             )
         }
     ) {
+        WCVerifyAlertCard(verifyAlert, Modifier.padding(horizontal = 16.dp))
         SendEvmTransactionView(
             navigation,
             uiState.sectionViewItems,

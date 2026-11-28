@@ -2,25 +2,33 @@ package cash.p.terminal.core.adapters
 
 import cash.p.terminal.core.ITransactionsAdapter
 import cash.p.terminal.core.managers.MoneroKitWrapper
+import cash.p.terminal.core.managers.OfflineModeManager
+import cash.p.terminal.core.managers.isNetworkPaused
 import cash.p.terminal.entities.LastBlockInfo
 import cash.p.terminal.entities.TransactionValue
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.monero.MoneroTransactionRecord
 import cash.p.terminal.modules.transactions.FilterTransactionType
+import cash.p.terminal.modules.transactions.TimestampRange
+import cash.p.terminal.modules.transactions.filterInPeriod
+import cash.p.terminal.modules.transactions.oldestDatedTimestamp
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.transaction.TransactionSource
 import com.m2049r.xmrwallet.model.TransactionInfo
+import io.horizontalsystems.core.entities.BlockchainType
 import io.reactivex.Flowable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.rx2.asFlowable
 import java.math.BigDecimal
 
 class MoneroTransactionsAdapter(
     private val moneroKitWrapper: MoneroKitWrapper,
-    private val source: TransactionSource
+    private val source: TransactionSource,
+    private val offlineModeManager: OfflineModeManager,
 ) : ITransactionsAdapter {
 
     override val explorerTitle: String
@@ -36,10 +44,18 @@ class MoneroTransactionsAdapter(
         get() = moneroKitWrapper.lastBlockInfoFlow.map {}.asFlowable()
 
     override val transactionsState: AdapterState
-        get() = AdapterState.Synced
+        get() = if (offlineModeManager.isNetworkPaused(source.account, BlockchainType.Monero)) {
+            AdapterState.Synced
+        } else {
+            moneroKitWrapper.syncState.value
+        }
 
     override val transactionsStateUpdatedFlowable: Flowable<Unit>
-        get() = moneroKitWrapper.transactionsStateUpdatedFlow.asFlowable()
+        get() = merge(
+            moneroKitWrapper.syncState.map { },
+            offlineModeManager.effectiveFlow.map { },
+            moneroKitWrapper.transactionsStateUpdatedFlow,
+        ).asFlowable()
 
     override suspend fun getTransactions(
         from: TransactionRecord?,
@@ -47,9 +63,39 @@ class MoneroTransactionsAdapter(
         limit: Int,
         transactionType: FilterTransactionType,
         address: String?,
+        period: TimestampRange?,
     ): List<TransactionRecord> {
         val token = token ?: return emptyList()
 
+        val sortedTransactions = matchingTransactions(transactionType, address)
+            .filterInPeriod(period) { it.timestamp }
+            .sortedByDescending { it.timestamp }
+
+        val startIndex = if (from != null) {
+            val fromIndex = sortedTransactions.indexOfFirst { it.hash == from.transactionHash }
+            if (fromIndex >= 0) fromIndex + 1 else 0
+        } else {
+            0
+        }
+
+        val endIndex = minOf(startIndex + limit, sortedTransactions.size)
+        val pagedTransactions = sortedTransactions.subList(startIndex, endIndex)
+
+        return pagedTransactions.map { transactionInfo ->
+            convertToTransactionRecord(transactionInfo, token)
+        }
+    }
+
+    override suspend fun getOldestTransactionTimestamp(
+        token: Token?,
+        transactionType: FilterTransactionType,
+        address: String?,
+    ): Long? = token?.let { matchingTransactions(transactionType, address).oldestDatedTimestamp { it.timestamp } }
+
+    private fun matchingTransactions(
+        transactionType: FilterTransactionType,
+        address: String?,
+    ): List<TransactionInfo> {
         val moneroTransactions = moneroKitWrapper.getTransactions()
 
         val filteredByType = when (transactionType) {
@@ -67,29 +113,13 @@ class MoneroTransactionsAdapter(
             FilterTransactionType.Approve -> return emptyList()
         }
 
-        val filteredByAddress = if (address != null) {
+        return if (address != null) {
             filteredByType.filter { transactionInfo ->
                 transactionInfo.address == address ||
                         transactionInfo.transfers?.any { it.address == address } == true
             }
         } else {
             filteredByType
-        }
-
-        val sortedTransactions = filteredByAddress.sortedByDescending { it.timestamp }
-
-        val startIndex = if (from != null) {
-            val fromIndex = sortedTransactions.indexOfFirst { it.hash == from.transactionHash }
-            if (fromIndex >= 0) fromIndex + 1 else 0
-        } else {
-            0
-        }
-
-        val endIndex = minOf(startIndex + limit, sortedTransactions.size)
-        val pagedTransactions = sortedTransactions.subList(startIndex, endIndex)
-
-        return pagedTransactions.map { transactionInfo ->
-            convertToTransactionRecord(transactionInfo, token)
         }
     }
 

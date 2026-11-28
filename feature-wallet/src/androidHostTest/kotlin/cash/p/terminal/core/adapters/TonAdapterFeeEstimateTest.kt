@@ -9,6 +9,7 @@ import io.horizontalsystems.tonkit.core.TonKit.SendAmount
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -54,5 +55,22 @@ class TonAdapterFeeEstimateTest {
         )
 
         assertEquals(TonFeeEstimate(fee = BigDecimal("0.005"), requiredTon = BigDecimal("0.305")), estimate)
+    }
+
+    @Test
+    fun estimateFeeWithPayload_swapPayload_requestCarriesOneMessageAsGiven() = runTest {
+        val request = slot<SendRequestEntity>()
+        coEvery { tonKit.estimateFee(capture(request)) } returns kitEstimate
+
+        createAdapter().estimateFeeWithPayload(
+            amount = BigInteger("300000000"),
+            address = "EQDestination",
+            payload = "te6ccgEBAQEAAgAAAA==",
+        )
+
+        val message = request.captured.messages.single()
+        assertEquals("EQDestination", message.addressValue)
+        assertEquals(300_000_000L, message.amount)
+        assertEquals("te6ccgEBAQEAAgAAAA==", message.payloadValue)
     }
 }

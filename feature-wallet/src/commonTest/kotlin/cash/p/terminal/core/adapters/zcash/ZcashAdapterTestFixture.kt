@@ -84,6 +84,9 @@ abstract class ZcashAdapterTestFixture {
     protected val accountManager = mockk<IAccountManager>(relaxed = true)
     protected val restoreSettingsManager = mockk<RestoreSettingsManager>(relaxed = true)
     protected val serverManager = mockk<ZcashServerManager>(relaxed = true)
+    protected val transparentIndexStore = mockk<ZcashTransparentIndexStore>(relaxed = true) {
+        coEvery { recreatedThrough(any()) } returns null
+    }
     private val serverSelector = mockk<ZcashServerSelector> { every { statusRows() } returns emptyMap() }
 
     /** In-memory stand-in for the persisted set, so a restart can be simulated. */
@@ -116,6 +119,7 @@ abstract class ZcashAdapterTestFixture {
                 single { restoreSettingsManager }
                 single { serverManager }
                 single { serverSelector }
+                single { transparentIndexStore }
                 single<UptimeProvider> { mockk { every { uptime } returns 0L } }
             })
         }
@@ -168,16 +172,7 @@ abstract class ZcashAdapterTestFixture {
             firmwareVersion = storedFirmwareVersion,
             walletPublicKey = "xpub-test",
         )
-        val account = mockk<Account>(relaxed = true) {
-            every { id } returns ACCOUNT_ID
-            every { name } returns "Test"
-            every { type } returns liveAccountType
-            every { origin } returns AccountOrigin.Created
-        }
-        every { wallet.account } returns account
-        every { wallet.hardwarePublicKey } returns mockk<HardwarePublicKey>(relaxed = true) {
-            every { key } returns SecretString("trezor-viewing-key")
-        }
+        stubDeviceAccount(liveAccountType, "trezor-viewing-key")
         val storedAccount = storedModel?.let {
             mockk<Account>(relaxed = true) {
                 every { type } returns AccountType.TrezorDevice(
@@ -189,6 +184,24 @@ abstract class ZcashAdapterTestFixture {
             }
         }
         every { accountManager.account(ACCOUNT_ID) } returns storedAccount
+    }
+
+    /** Switches [wallet] to a Ledger account, which keeps the device's unified viewing key. */
+    protected fun stubLedgerAccount() {
+        stubDeviceAccount(AccountType.LedgerDevice("device-1", "nanoSP", "wallet-key"), "ledger-viewing-key")
+    }
+
+    private fun stubDeviceAccount(accountType: AccountType, viewingKey: String) {
+        val account = mockk<Account>(relaxed = true) {
+            every { id } returns ACCOUNT_ID
+            every { name } returns "Test"
+            every { type } returns accountType
+            every { origin } returns AccountOrigin.Created
+        }
+        every { wallet.account } returns account
+        every { wallet.hardwarePublicKey } returns mockk<HardwarePublicKey>(relaxed = true) {
+            every { key } returns SecretString(viewingKey)
+        }
     }
 
     private fun stubLocalStorage() {
@@ -239,7 +252,7 @@ abstract class ZcashAdapterTestFixture {
                 ZcashSessionResult.Success(firstArg<suspend (ZcashWallet) -> Any?>()(zcashWallet))
             }
             // The reservation is the session's own concern; the adapter only sees the node's verdict.
-            coEvery { broadcastReserved(any(), any(), any()) } coAnswers {
+            coEvery { broadcastReserved(any(), any(), any(), any()) } coAnswers {
                 ZcashSessionResult.Success(
                     zcashWallet.broadcast(DB_ACCOUNT_ID, firstArg(), secondArg(), thirdArg())
                 )
