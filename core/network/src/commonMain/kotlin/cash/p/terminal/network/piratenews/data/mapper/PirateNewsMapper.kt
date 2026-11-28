@@ -13,7 +13,7 @@ internal class PirateNewsMapper {
 
     private fun mapPiratePostItemDto(piratePostItemDto: PiratePostItemDto): PiratePostItem? {
         val date = try {
-            LocalDateTime.parse(piratePostItemDto.date, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            LocalDateTime.parse(piratePostItemDto.dateGmt, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
                 .toInstant(
                     ZoneOffset.UTC
                 )

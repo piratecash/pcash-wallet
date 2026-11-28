@@ -71,6 +71,17 @@ class DateHelperTest {
     }
 
     @Test
+    fun formatUtcDate_utcMidnightWestOfUtc_keepsUtcDay() {
+        TimeZone.setDefault(TimeZone.getTimeZone("America/New_York"))
+        val utcMidnight = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+            clear()
+            set(2020, Calendar.JANUARY, 5)
+        }.time
+
+        assertEquals("Jan 5, 2020", DateHelper.formatUtcDate(utcMidnight, "MMM d, yyyy"))
+    }
+
+    @Test
     fun formatDate_longDatePatternRuLocale_genitiveMonth() {
         Locale.setDefault(Locale.forLanguageTag("ru"))
         val renewUntil = Calendar.getInstance().apply {

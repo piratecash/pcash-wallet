@@ -277,7 +277,8 @@ fun ChartEtf(loading: Boolean, etfPoints: List<EtfPoint>, currency: Currency) {
     val dailyInflow = etfPoint?.dailyInflow
     val totalAssets = etfPoint?.totalAssets
     val dateStr = if (isSelected) {
-        etfPoint?.date?.let { DateHelper.getFullDate(it) }
+        // The trading day is parsed as UTC midnight.
+        etfPoint?.date?.let { DateHelper.formatUtcDate(it, "MMM d, yyyy") }
     } else {
         null
     }
