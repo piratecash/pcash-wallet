@@ -141,6 +141,30 @@ fun targetNativeFileName(target: String, library: String) = packagedNativeFileNa
     },
 )
 
+val macOsImportCommands = setOf(
+    "LC_LOAD_DYLIB", "LC_LOAD_WEAK_DYLIB", "LC_REEXPORT_DYLIB", "LC_LAZY_LOAD_DYLIB", "LC_LOAD_UPWARD_DYLIB",
+)
+
+// A user's Mac has only the OS libraries: an absolute import elsewhere (Homebrew, /usr/local) fails to load.
+fun macOsImportsOutsideSystem(native: File): List<String> {
+    val process = ProcessBuilder("otool", "-arch", "all", "-l", native.path).redirectErrorStream(true).start()
+    val loadCommands = process.inputStream.bufferedReader().readLines().map(String::trim)
+    check(process.waitFor() == 0) { "otool failed on $native: $loadCommands" }
+    val imports = buildList {
+        var isImport = false
+        loadCommands.forEach { line ->
+            if (line.startsWith("cmd ")) isImport = line.removePrefix("cmd ") in macOsImportCommands
+            else if (isImport && line.startsWith("name ")) add(line.removePrefix("name ").substringBeforeLast(" (offset "))
+        }
+    }
+    return imports.filter { it.startsWith("/") && !isMacOsSystemLibrary(it) }.distinct()
+}
+
+// Only a canonical spelling counts: `..` cannot be resolved against the user's filesystem.
+fun isMacOsSystemLibrary(path: String) =
+    (path.startsWith("/usr/lib/") || path.startsWith("/System/Library/")) &&
+        path.split("/").drop(1).none { it in setOf("", ".", "..") }
+
 val verifyNativeResources = tasks.register("verifyNativeResources") {
     val prepareAppResources = tasks.named<Sync>("prepareAppResources")
     dependsOn(prepareAppResources, stageNativeResources)
@@ -158,6 +182,13 @@ val verifyNativeResources = tasks.register("verifyNativeResources") {
                 packagedNativeFileName(library, System.mapLibraryName(library)),
             )
             check(native.isFile) { "Native library is missing from the app resources: $native" }
+        }
+        // otool exists only on macOS; the merged dir is exactly what this host packages.
+        if (isMacOs) {
+            prepareAppResources.get().destinationDir.walk().filter(File::isFile).forEach { native ->
+                val foreign = macOsImportsOutsideSystem(native)
+                check(foreign.isEmpty()) { "$native imports libraries a user's Mac does not have: $foreign" }
+            }
         }
     }
 }
