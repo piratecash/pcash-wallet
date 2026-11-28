@@ -242,6 +242,7 @@ open class WalletBackupProvider(
 
         // Resolved before the account is persisted so a failing lookup can't leave an orphan account.
         val enabledWalletBackups = backup.enabledWallets ?: listOf()
+        requireValidSettings(enabledWalletBackups)
         val curation = trustedEnabledWallets(account.id, enabledWalletBackups, source, approved ?: emptySet())
 
         if (approved == null && curation.declined.isNotEmpty()) {
@@ -250,9 +251,9 @@ open class WalletBackupProvider(
             )
         }
 
-        accountManager.save(account)
-        walletManager.saveEnabledWallets(curation.enabled)
-
+        // Settings before the wallets: publishing them starts the Zcash session, which reads the
+        // issue index. The store is prepared first, as desktop has none for a new account yet.
+        restoreSettingsManager.prepareForNewAccount(account)
         enabledWalletBackups.forEach { enabledWalletBackup ->
             TokenQuery.fromId(enabledWalletBackup.tokenQueryId)?.let { tokenQuery ->
                 val restoreSettings = enabledWalletBackup.restoreSettings(tokenQuery)
@@ -267,6 +268,9 @@ open class WalletBackupProvider(
             }
         }
 
+        accountManager.save(account)
+        walletManager.saveEnabledWallets(curation.enabled)
+
         return RestoreOutcome.Restored
     }
 
@@ -275,6 +279,7 @@ open class WalletBackupProvider(
         walletBackupItems: List<WalletBackupItem>,
         approved: Map<String, Set<String>>?,
     ): List<Pair<WalletBackupItem, CurationResult>> = walletBackupItems.map { item ->
+        requireValidSettings(item.enabledWallets)
         item to trustedEnabledWallets(
             item.account.id,
             item.enabledWallets,
@@ -401,7 +406,7 @@ open class WalletBackupProvider(
 
             // Skip hardware wallets - they cannot be restored from backup
             // (private keys are stored on hardware device, not in backup)
-            if (type is AccountType.HardwareCard || type is AccountType.TrezorDevice) {
+            if (type is AccountType.HardwareCard || type is AccountType.HardwareDevice) {
                 return@forEach
             }
 
@@ -910,7 +915,7 @@ open class WalletBackupProvider(
     private fun BackupLocalModule.EnabledWalletBackup.restoreSettings(
         tokenQuery: TokenQuery
     ): RestoreSettings? {
-        val allowedTypes = tokenQuery.restoreSettingTypes.toSet()
+        val allowedTypes = tokenQuery.backupSettingTypes
         if (allowedTypes.isEmpty()) return null
 
         val filteredSettings = settings
@@ -929,7 +934,7 @@ open class WalletBackupProvider(
         account: Account,
         tokenQuery: TokenQuery
     ): Map<RestoreSettingType, String>? {
-        val allowedTypes = tokenQuery.restoreSettingTypes.toSet()
+        val allowedTypes = tokenQuery.backupSettingTypes
         if (allowedTypes.isEmpty()) return null
 
         return settingsManager.settings(account, tokenQuery.blockchainType)
@@ -939,6 +944,33 @@ open class WalletBackupProvider(
     }
 
 }
+
+/** The issue index travels with the backup but never prompts, so it is not a restore setting type. */
+private val TokenQuery.backupSettingTypes: Set<RestoreSettingType>
+    get() {
+        val types = restoreSettingTypes.toSet()
+        return if (blockchainType == BlockchainType.Zcash) {
+            types + RestoreSettingType.ZcashTransparentIssueIndex
+        } else {
+            types
+        }
+    }
+
+/** Checked before anything is written, so a corrupt file restores nothing. */
+private fun requireValidSettings(enabledWallets: List<BackupLocalModule.EnabledWalletBackup>) {
+    enabledWallets.forEach { backup ->
+        val settings = backup.settings ?: return@forEach
+        if (RestoreSettingType.ZcashTransparentIssueIndex !in settings) return@forEach
+        // A present null comes from a hand-edited file; the setter would reject it after the writes.
+        val issueIndex: String? = settings[RestoreSettingType.ZcashTransparentIssueIndex]
+        require(issueIndex?.toIntOrNull() in 0..MAX_RESTORED_ISSUE_INDEX) {
+            "Invalid backup: Zcash transparent issue index"
+        }
+    }
+}
+
+/** One address per swap: anything above it is a corrupt file, not a real wallet. */
+private const val MAX_RESTORED_ISSUE_INDEX = 100_000
 
 fun decryptedBackupCrypto(crypto: BackupLocalModule.BackupCrypto, passphrase: String): ByteArray {
     val kdfParams = crypto.kdfparams

@@ -364,6 +364,20 @@ class ZcashSendFeeQuoteTest {
     }
 
     @Test
+    fun quote_paymentRefused_carriesTheReasonWithTheAdapterFeeAndDoesNotRetry() = runTest(dispatcher) {
+        coEvery { adapter.estimateFee(any(), any(), any()) } returns ZcashFeeEstimate.Refused(REFUSAL)
+        val quote = startedQuote()
+        quote.send(AMOUNT, ADDRESS)
+        settle()
+
+        advanceTimeBy(2 * RETRY_MS)
+        runCurrent()
+
+        assertEquals(ZcashSendFeeQuote.Quote(ADAPTER_FEE, isCurrent = true, refusal = REFUSAL), quote.quote.value)
+        coVerify(exactly = 1) { adapter.estimateFee(any(), any(), any()) }
+    }
+
+    @Test
     fun availableBalance_planningFailsThenRecovers_updatesTheMaximumForTheUnchangedInput() = runTest(dispatcher) {
         coEvery { adapter.maxSendable(any(), any()) } returns null
         val quote = startedQuote()
@@ -448,5 +462,6 @@ class ZcashSendFeeQuoteTest {
         val OTHER_ESTIMATE = BigDecimal("0.00002")
         val LOWER_ESTIMATE = BigDecimal("0.00045")
         val MAX_SENDABLE = BigDecimal("0.00065")
+        val REFUSAL = IllegalStateException("too large for the device")
     }
 }

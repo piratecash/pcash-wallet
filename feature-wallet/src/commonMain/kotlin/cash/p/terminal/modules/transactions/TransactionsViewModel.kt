@@ -35,6 +35,7 @@ import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.badge
 import cash.p.terminal.wallet.managers.TransactionDisplayLevel
 import io.horizontalsystems.core.DispatcherProvider
+import io.horizontalsystems.core.IAppNumberFormatter
 import io.horizontalsystems.core.ViewModelUiState
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
@@ -101,8 +102,9 @@ class TransactionsViewModel(
     private val adapterManager: IAdapterManager,
     private val swapProviderTransactionsStorage: SwapProviderTransactionsStorage,
     private val contactsRepository: ContactsRepository,
+    private val numberFormatter: IAppNumberFormatter,
     private val dispatcherProvider: DispatcherProvider,
-) : ViewModelUiState<TransactionsUiState>(), TransactionSearchController.Host {
+) : ViewModelUiState<TransactionsUiState>(), TransactionSearchController.Host, TransactionCalendarController.Host {
 
     private val poisonAddressManager: PoisonAddressManager = getKoinInstance()
     private val addressLabelManager: AddressLabelManager = getKoinInstance()
@@ -122,6 +124,7 @@ class TransactionsViewModel(
     private var viewState: ViewState = ViewState.Loading
     private var syncing = service.syncingFlow.value
     private var hasHiddenTransactions: Boolean = false
+    private var historyExhausted = false
 
     @Volatile
     private var filterVersion = 0
@@ -140,10 +143,11 @@ class TransactionsViewModel(
     private var currentBlockchain: Blockchain? = null
     private var currentContact: Contact? = null
     private var appliedSearchQuery = ""
-    private var searchScanning = false
+    private var searchScanState: SearchScanState = SearchScanState.Idle
     private var amlPromoAlertEnabled = premiumSettings.getAmlCheckShowAlert()
 
     private val searchController = TransactionSearchController(viewModelScope, this)
+    private val calendarController = TransactionCalendarController(viewModelScope, this)
 
     // Maps transaction record UID to SwapProviderTransaction for reactive updates
     private val swapStatusMap = MutableStateFlow(emptyMap<String, SwapProviderTransaction>())
@@ -206,7 +210,7 @@ class TransactionsViewModel(
                         cachedConvertedItems = emptyList()
                         viewState = ViewState.Loading
                         transactions = null
-                        searchScanning = false
+                        searchScanState = SearchScanState.Idle
                         transactionListBaseId = null
                         awaitingAdaptersAfterSwitch = true
                         service.cancelPendingLoads()
@@ -244,16 +248,8 @@ class TransactionsViewModel(
 
                 resetTransactionListIfNeeded(newTransactionListBaseId)
 
-                withContext(dispatcherProvider.io) {
-                    service.set(
-                        currentTransactionWallets,
-                        selectedTransactionWallet,
-                        state.selectedTransactionType,
-                        state.selectedBlockchain,
-                        state.contact,
-                        appliedSearchQuery.ifBlank { null },
-                    )
-                }
+                setServiceSelection()
+                calendarController.onSelectionChanged()
 
                 filterResetEnabled.value = state.resetEnabled
 
@@ -287,6 +283,13 @@ class TransactionsViewModel(
         viewModelScope.launch {
             service.syncingFlow.collect {
                 syncing = it
+                emitState()
+            }
+        }
+
+        viewModelScope.launch {
+            service.historyExhaustedFlow.collect {
+                historyExhausted = it
                 emitState()
             }
         }
@@ -339,6 +342,17 @@ class TransactionsViewModel(
         }
 
         viewModelScope.launch {
+            transactionHiddenManager.transactionHiddenFlow.hiddenFlagChanges().collect { hidden ->
+                // A re-hidden screen must not keep showing the revealed history through a period or search.
+                if (hidden) {
+                    calendarController.onLeave()
+                    searchController.onSearchClose()
+                }
+                emitState()
+            }
+        }
+
+        viewModelScope.launch {
             amlStatusManager.statusUpdates.collect { update ->
                 updateTransactionAmlStatus(update.uid, update.status)
             }
@@ -361,7 +375,7 @@ class TransactionsViewModel(
     }
 
     private fun resetTransactionListIfNeeded(baseId: String?) {
-        val newTransactionListId = transactionListId(baseId, appliedSearchQuery)
+        val newTransactionListId = transactionListId(baseId)
         if (transactionListBaseId == baseId && transactionListId == newTransactionListId) {
             return
         }
@@ -370,14 +384,14 @@ class TransactionsViewModel(
         transactionListId = newTransactionListId
         filterVersion++
         cachedConvertedItems = emptyList()
-        searchScanning = appliedSearchQuery.isNotEmpty()
+        searchScanState = SearchScanState.Scanning.forQuery(appliedSearchQuery)
         viewState = if (appliedSearchQuery.isEmpty()) ViewState.Loading else ViewState.Success
         transactions = if (appliedSearchQuery.isEmpty()) null else emptyMap()
         emitState()
     }
 
-    private fun transactionListId(baseId: String?, query: String): String? {
-        return baseId?.let { "$it|search=$query" }
+    private fun transactionListId(baseId: String?): String? {
+        return baseId?.let { "$it|search=$appliedSearchQuery|period=${calendarController.period}" }
     }
 
     override fun onSearchStateChanged() = emitState()
@@ -387,16 +401,29 @@ class TransactionsViewModel(
 
         appliedSearchQuery = query
         resetTransactionListIfNeeded(transactionListBaseId)
-        withContext(dispatcherProvider.io) {
-            service.set(
-                transactionWallets = currentTransactionWallets,
-                transactionWallet = currentTransactionWallet,
-                filterTransactionType = currentFilterType,
-                blockchain = currentBlockchain,
-                contact = currentContact,
-                searchQuery = appliedSearchQuery.ifBlank { null },
-            )
-        }
+        setServiceSelection()
+    }
+
+    override fun onCalendarStateChanged() = emitState()
+
+    override suspend fun applyPeriod(period: TransactionPeriod?) {
+        resetTransactionListIfNeeded(transactionListBaseId)
+        setServiceSelection()
+    }
+
+    override suspend fun oldestTimestamp(): Long? = service.oldestTimestamp()
+
+    // Reads the selection inside the IO block, so the last of concurrent calls applies the latest one.
+    private suspend fun setServiceSelection() = withContext(dispatcherProvider.io) {
+        service.set(
+            transactionWallets = currentTransactionWallets,
+            transactionWallet = currentTransactionWallet,
+            filterTransactionType = currentFilterType,
+            blockchain = currentBlockchain,
+            contact = currentContact,
+            searchQuery = appliedSearchQuery.ifBlank { null },
+            period = calendarController.period,
+        )
     }
 
     fun showAllTransactions(show: Boolean) = transactionHiddenManager.showAllTransactions(show)
@@ -416,13 +443,11 @@ class TransactionsViewModel(
             awaitingAdaptersAfterSwitch = false
         }
 
-        // While a search scan runs, show only the spinner — never stale/intermediate items.
-        // Search has a single terminal emission (Finished); there is nothing to show before it.
-        if (appliedSearchQuery.isNotEmpty() && scanState == SearchScanState.Scanning) {
+        if (scanState.showsOnlySpinner(appliedSearchQuery, transactions)) {
             refreshViewItemsJob?.cancel()
             cachedConvertedItems = emptyList()
             transactions = emptyMap()
-            searchScanning = true
+            searchScanState = SearchScanState.Scanning
             viewState = ViewState.Success
             emitState()
             return
@@ -474,7 +499,7 @@ class TransactionsViewModel(
 
         transactions = filtered.groupBy { it.formattedDate }
         if (scanState != null) {
-            searchScanning = appliedSearchQuery.isNotEmpty() && scanState == SearchScanState.Scanning
+            searchScanState = scanState.forQuery(appliedSearchQuery)
         }
         viewState = ViewState.Success
         emitState()
@@ -526,7 +551,10 @@ class TransactionsViewModel(
         balanceHidden = balanceHiddenManager.balanceHidden,
         searchActive = searchController.searchActive,
         searchQuery = searchController.searchQuery,
-        searchScanning = searchScanning,
+        searchScanning = searchScanState == SearchScanState.Scanning,
+        searchPausedCount = searchScanState.pausedCountText(numberFormatter),
+        period = calendarController.uiState(historyExhausted),
+        transactionsHidden = transactionHiddenManager.transactionHiddenFlow.value.transactionHidden,
     )
 
     private suspend fun handleUpdatedWallets(wallets: List<Wallet>) {
@@ -559,9 +587,22 @@ class TransactionsViewModel(
 
     fun onSearchClose() = searchController.onSearchClose()
 
+    fun onCalendarClick() = calendarController.onCalendarClick()
+
+    fun onCalendarDismiss() = calendarController.onSheetDismiss()
+
+    fun onPeriodSelect(period: TransactionPeriod) = calendarController.apply(period)
+
+    fun onBackToLatest() = calendarController.clear()
+
+    /** The Transactions tab was left: the period does not outlive it. */
+    fun onLeave() = calendarController.onLeave()
+
     fun onBottomReached() {
         service.loadNext()
     }
+
+    fun searchFurther() = service.searchFurther()
 
     fun willShow(viewItem: TransactionViewItem) {
         service.fetchRateIfNeeded(viewItem.uid)

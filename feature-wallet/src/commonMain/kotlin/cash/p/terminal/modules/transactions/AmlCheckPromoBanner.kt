@@ -2,8 +2,6 @@ package cash.p.terminal.modules.transactions
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,9 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material.Text
-import androidx.compose.material.ripple
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,10 +23,10 @@ import cash.p.terminal.ui_compose.components.HsIconButton
 import cash.p.terminal.ui_compose.components.HsSwitch
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.ui_compose.components.Subhead1
+import cash.p.terminal.ui_compose.components.InfoIconButton
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.alpha_aml_title
 import cash.p.terminal.resources.ic_close_24
-import cash.p.terminal.resources.ic_info_20
 import cash.p.terminal.resources.ic_star_filled_20
 import cash.p.terminal.resources.premium_title
 
@@ -92,18 +88,7 @@ fun AmlCheckPromoBanner(
                 color = ComposeAppTheme.colors.textPrimary,
                 style = ComposeAppTheme.typography.body
             )
-            Icon(
-                painter = painterResource(Res.drawable.ic_info_20),
-                contentDescription = null,
-                tint = ComposeAppTheme.colors.iconSecondary,
-                modifier = Modifier
-                    .size(20.dp)
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = ripple(bounded = false, radius = 20.dp),
-                        onClick = onInfoClick
-                    )
-            )
+            InfoIconButton(onClick = onInfoClick)
             Spacer(Modifier.weight(1f))
             HsSwitch(
                 checked = amlCheckEnabled,

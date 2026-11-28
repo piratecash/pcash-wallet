@@ -1,10 +1,15 @@
 package cash.p.terminal.modules.multiswap.providers
 
+import cash.p.terminal.core.TestDispatcherProvider
+import cash.p.terminal.core.adapters.zcash.ZcashSingleUseAddressManager
+import cash.p.terminal.core.storage.StorageRouter
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
+import cash.p.terminal.core.storage.ZcashSingleUseAddressDao
+import cash.p.terminal.core.storage.ZcashSingleUseAddressStorage
+import cash.p.terminal.entities.ZcashSingleUseAddress
 import cash.p.terminal.entities.SwapProviderTransaction
 import cash.p.terminal.network.changenow.domain.entity.TransactionStatusEnum
 import cash.p.terminal.network.swaprepository.SwapProvider
-import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
@@ -18,6 +23,8 @@ import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import org.ton.block.AddrStd
 import org.ton.cell.Cell
 import org.ton.cell.CellSlice
@@ -51,10 +58,6 @@ internal fun buildSwapProviderTransaction(
     accountId = "test-account",
 )
 
-internal fun TranslatableString?.formatArgFirst(): String? =
-    (this as? TranslatableString.ResString)
-        ?.formatArgs?.firstOrNull() as? String
-
 internal fun nativeTestToken(blockchainType: BlockchainType, code: String) = Token(
     coin = Coin(uid = code.lowercase(), name = code, code = code),
     blockchain = Blockchain(blockchainType, code, null),
@@ -79,14 +82,70 @@ internal fun buildOffChainSwapProviderSupport(
     accountManager: IAccountManager,
     storage: SwapProviderTransactionsStorage,
     marketKit: MarketKitWrapper,
+    refundAddressReservation: ZcashRefundAddressReservation =
+        buildZcashRefundAddressReservation(walletUseCase, accountManager, marketKit),
 ) = OffChainSwapProviderSupport(
     walletUseCase = walletUseCase,
-    accountManager = accountManager,
     swapProviderTransactionsStorage = storage,
-    marketKit = marketKit,
     adapterManager = mockk(relaxed = true),
     swapProviderTransactionFactory = SwapProviderTransactionFactory(walletUseCase, accountManager),
+    refundAddressReservation = refundAddressReservation,
 )
+
+internal fun buildZcashRefundAddressReservation(
+    walletUseCase: WalletUseCase,
+    accountManager: IAccountManager,
+    marketKit: MarketKitWrapper,
+    dao: InMemoryZcashSingleUseAddressDao = InMemoryZcashSingleUseAddressDao(),
+) = ZcashRefundAddressReservation(
+    walletUseCase = walletUseCase,
+    accountManager = accountManager,
+    marketKit = marketKit,
+    issuedAddresses = buildZcashSingleUseAddressStorage(dao),
+)
+
+internal fun buildZcashSingleUseAddressStorage(dao: ZcashSingleUseAddressDao) = ZcashSingleUseAddressStorage(
+    router = mockk<StorageRouter> {
+        every { account(any()) } returns mockk { every { zcashSingleUseAddressDao() } returns dao }
+    },
+    dispatcherProvider = TestDispatcherProvider(Dispatchers.Unconfined, CoroutineScope(Dispatchers.Unconfined)),
+)
+
+/** The row ZcashAdapter.generateOneTimeAddress writes on success. */
+internal suspend fun InMemoryZcashSingleUseAddressDao.saveIssued(accountId: String, address: String) =
+    ZcashSingleUseAddressManager(buildZcashSingleUseAddressStorage(this), accountId).saveNewAddress(address)
+
+/** Stands in for the Room table, so a new reservation over the same instance sees what the last one wrote. */
+internal class InMemoryZcashSingleUseAddressDao : ZcashSingleUseAddressDao {
+    val rows = mutableListOf<ZcashSingleUseAddress>()
+
+    override suspend fun getUnsentAddress(accountId: String) =
+        rows.firstOrNull { it.accountId == accountId && it.useCount == 0 && !it.hadBalance }
+
+    override suspend fun getAddressesWithoutBalance(accountId: String) =
+        rows.filter { it.accountId == accountId && !it.hadBalance }
+
+    override suspend fun getAllAddresses(accountId: String) = rows.filter { it.accountId == accountId }
+
+    override suspend fun insert(address: ZcashSingleUseAddress) {
+        rows.removeAll { it.accountId == address.accountId && it.address == address.address }
+        rows += address
+    }
+
+    override suspend fun incrementUseCount(accountId: String, address: String) =
+        update(accountId, address) { it.copy(useCount = it.useCount + 1) }
+
+    override suspend fun updateHadBalance(accountId: String, address: String, hadBalance: Boolean) =
+        update(accountId, address) { it.copy(hadBalance = hadBalance) }
+
+    override suspend fun deleteByAccount(accountId: String) {
+        rows.removeAll { it.accountId == accountId }
+    }
+
+    private fun update(accountId: String, address: String, change: (ZcashSingleUseAddress) -> ZcashSingleUseAddress) {
+        rows.replaceAll { if (it.accountId == accountId && it.address == address) change(it) else it }
+    }
+}
 
 internal fun MarketKitWrapper.stubZcashTransparentToken(token: Token) {
     every {

@@ -15,10 +15,12 @@ import io.horizontalsystems.core.IBackgroundManager
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -28,6 +30,8 @@ import org.junit.Test
 import java.io.IOException
 
 private const val TIP = 3_000_000
+/** What a backend re-syncing from genesis answers to `GetLatestBlock`. */
+private const val STALE_TIP = 805_800
 private const val MINUTE_MS = 60_000L
 private const val EVALUATION_INTERVAL_MS = 30 * MINUTE_MS
 private const val CUSTOM_URL = "https://my.node.io:443"
@@ -43,6 +47,7 @@ private fun probe(
     branchIdMatches: Boolean = true,
     estimatedHeight: Int = blockHeight,
     rangeBlocksReceived: Int = 10,
+    latestHeight: Int = blockHeight,
 ) = ServerProbe(
     chainName = chainName,
     saplingActivationHeight = saplingActivationHeight,
@@ -53,15 +58,30 @@ private fun probe(
     infoMs = infoMs,
     rangeMs = rangeMs,
     rangeBlocksReceived = rangeBlocksReceived,
+    latestHeight = latestHeight,
 )
 
 /** Answers by URL; an unknown URL behaves like an unreachable server. */
 private class FakeProber : ZcashServerProber {
-    private val answers = mutableMapOf<String, Pair<ServerProbe, ArrayDeque<Long>>>()
-    val probed = mutableListOf<Pair<String, Transport>>()
+    private class Answer(
+        val probe: ServerProbe,
+        val infoSamples: ArrayDeque<Long>,
+        val latestSamples: ArrayDeque<Int>,
+        val blockSamples: ArrayDeque<Int>,
+    )
 
-    fun answer(url: String, probe: ServerProbe, infoSamples: List<Long> = emptyList()) {
-        answers[url] = probe to ArrayDeque(infoSamples)
+    private val answers = mutableMapOf<String, Answer>()
+    val probed = mutableListOf<Pair<String, Transport>>()
+    var probeDurationMs = 0L
+
+    fun answer(
+        url: String,
+        probe: ServerProbe,
+        infoSamples: List<Long> = emptyList(),
+        latestSamples: List<Int> = emptyList(),
+        blockSamples: List<Int> = emptyList(),
+    ) {
+        answers[url] = Answer(probe, ArrayDeque(infoSamples), ArrayDeque(latestSamples), ArrayDeque(blockSamples))
     }
 
     fun unreachable(url: String) {
@@ -70,8 +90,13 @@ private class FakeProber : ZcashServerProber {
 
     override suspend fun probe(url: String, transport: Transport, rangeBlocks: Int): ServerProbe {
         probed += url to transport
-        val (probe, samples) = answers[url] ?: throw ZcashException("connection refused")
-        return probe.copy(infoMs = samples.removeFirstOrNull() ?: probe.infoMs)
+        delay(probeDurationMs)
+        val answer = answers[url] ?: throw ZcashException("connection refused")
+        return answer.probe.copy(
+            infoMs = answer.infoSamples.removeFirstOrNull() ?: answer.probe.infoMs,
+            latestHeight = answer.latestSamples.removeFirstOrNull() ?: answer.probe.latestHeight,
+            blockHeight = answer.blockSamples.removeFirstOrNull() ?: answer.probe.blockHeight,
+        )
     }
 
     override fun streamBreaks(): Long = 0
@@ -239,6 +264,102 @@ class ZcashServerSelectorTest {
 
         assertEquals(urls[1], current())
         assertTrue(selector.healthOf(urls[0]), "rejected: range 3/10" in selector.healthOf(urls[0]))
+    }
+
+    @Test
+    fun evaluate_latestBlockFarBelowInfoHeight_rejectsServer() = runTest {
+        prober.answer(urls[0], probe(infoMs = 10, latestHeight = STALE_TIP))
+        prober.answer(urls[1], probe(infoMs = 100))
+        val selector = selector()
+
+        evaluate(selector)
+
+        assertEquals(urls[1], current())
+        assertTrue(selector.healthOf(urls[0]), "rejected: stale tip $STALE_TIP" in selector.healthOf(urls[0]))
+    }
+
+    @Test
+    fun evaluate_slowServer_samplesItsProbesAtOnce() = runTest {
+        allHealthy()
+        prober.probeDurationMs = 1_000
+        val selector = selector()
+        val started = currentTime
+
+        evaluate(selector)
+
+        assertEquals(1_000, currentTime - started)
+    }
+
+    @Test
+    fun evaluate_oneOfThreeProbesStale_losesToACleanServer() = runTest {
+        prober.answer(urls[0], probe(infoMs = 10), latestSamples = listOf(TIP, STALE_TIP, TIP))
+        prober.answer(urls[1], probe(infoMs = 100))
+        val selector = selector()
+
+        evaluate(selector)
+
+        assertEquals(urls[1], current())
+        assertTrue(selector.healthOf(urls[0]), "stale 1/3" in selector.healthOf(urls[0]))
+        assertFalse(selector.healthOf(urls[0]), "rejected" in selector.healthOf(urls[0]))
+    }
+
+    @Test
+    fun evaluate_twoProbesBehindInBothHeights_losesToACleanServer() = runTest {
+        prober.answer(
+            urls[0],
+            probe(infoMs = 10),
+            blockSamples = listOf(TIP, TIP - 100, TIP - 100),
+            latestSamples = listOf(TIP, TIP - 100, TIP - 100),
+        )
+        prober.answer(urls[1], probe(infoMs = 100))
+        val selector = selector()
+
+        evaluate(selector)
+
+        assertEquals(urls[1], current())
+        assertTrue(selector.healthOf(urls[0]), "stale 2/3" in selector.healthOf(urls[0]))
+    }
+
+    @Test
+    fun evaluate_everyProbeStaleWhileTheTipAdvances_rejectsServer() = runTest {
+        prober.answer(
+            urls[0],
+            probe(infoMs = 10),
+            blockSamples = listOf(TIP, TIP + 1, TIP + 1),
+            latestSamples = listOf(TIP - 10, TIP - 9, TIP - 9),
+        )
+        prober.answer(urls[1], probe(infoMs = 100))
+        val selector = selector()
+
+        evaluate(selector)
+
+        assertEquals(urls[1], current())
+        assertTrue(selector.healthOf(urls[0]), "rejected: stale tip" in selector.healthOf(urls[0]))
+    }
+
+    @Test
+    fun evaluate_currentTurnsPartiallyStale_switchesToACleanSlowServer() = runTest {
+        prober.answer(urls[0], probe(infoMs = 10))
+        prober.answer(urls[1], probe(infoMs = 100))
+        val selector = selector()
+        evaluate(selector)
+        prober.answer(urls[0], probe(infoMs = 100, rangeMs = 0), latestSamples = listOf(TIP, STALE_TIP, TIP))
+        prober.answer(urls[1], probe(rangeMs = 6_000), infoSamples = listOf(100, 6_000, 6_000))
+
+        reevaluate(selector)
+
+        assertEquals(urls[1], current())
+    }
+
+    @Test
+    fun evaluate_latestHeightWithinLag_admitsServer() = runTest {
+        prober.answer(urls[0], probe(infoMs = 10, latestHeight = TIP - 9))
+        prober.answer(urls[1], probe(infoMs = 100))
+        val selector = selector()
+
+        evaluate(selector)
+
+        assertEquals(urls[0], current())
     }
 
     @Test
@@ -509,6 +630,31 @@ class ZcashServerSelectorTest {
         assertEquals(urls[0], current())
         assertFalse(selector.healthOf(urls[0]), "quarantined" in selector.healthOf(urls[0]))
         assertEquals("auto: no network", selector.selection())
+    }
+
+    @Test
+    fun onPassFinished_currentFailsAndAlternativeOneOfThreeStale_switchesToIt() = runTest {
+        prober.answer(urls[0], probe(infoMs = 10))
+        val selector = selector()
+        evaluate(selector)
+        prober.answer(urls[1], probe(), latestSamples = listOf(TIP, STALE_TIP, TIP))
+
+        fail(selector, urls[0])
+
+        assertEquals(urls[1], current())
+    }
+
+    @Test
+    fun onPassFinished_currentFailsAndAlternativeEveryProbeStale_keepsTheCurrentServer() = runTest {
+        prober.answer(urls[0], probe(infoMs = 10))
+        val selector = selector()
+        evaluate(selector)
+        prober.answer(urls[1], probe(latestHeight = STALE_TIP))
+
+        fail(selector, urls[0])
+
+        assertEquals(urls[0], current())
+        assertEquals("auto: no alternative", selector.selection())
     }
 
     @Test

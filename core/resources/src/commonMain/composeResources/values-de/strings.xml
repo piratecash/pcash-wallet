@@ -55,6 +55,38 @@
     <string name="trezor_wallet">Trezor Wallet</string>
     <string name="connect_trezor">Trezor verbinden</string>
     <string name="trezor_setup_description">Verbinden Sie Ihren Trezor per USB-Kabel und bestätigen Sie auf dem Gerät.</string>
+    <string name="ledger_wallet">Ledger Wallet</string>
+    <string name="connect_ledger">Ledger verbinden</string>
+    <string name="ledger_setup_description">Verbinden Sie Ihren Ledger per USB-Kabel, entsperren Sie ihn und bestätigen Sie das Öffnen jeder App auf dem Gerät.</string>
+    <string name="ledger_usb_permission">Erlauben Sie den Zugriff auf den Ledger im Systemdialog</string>
+    <string name="ledger_opening_app">%1$d von %2$d: Bestätigen Sie das Öffnen der App %3$s auf dem Ledger</string>
+    <string name="ledger_not_added_title">Nicht hinzugefügt</string>
+    <string name="ledger_not_added_description">%1$s: Die App fehlt, ist veraltet oder das Öffnen wurde abgelehnt. Installieren oder aktualisieren Sie sie über Ledger Live und fügen Sie das Netzwerk dann in der Coin-Verwaltung hinzu.</string>
+    <string name="ledger_identity_mismatch">Ein anderer Ledger oder eine andere Passphrase ist verbunden</string>
+    <string name="ledger_update_app">Aktualisieren Sie die App %1$s über Ledger Live</string>
+    <string name="ledger_install_app">Installieren Sie die App %1$s über Ledger Live</string>
+    <string name="ledger_install_identity_app">Um zu bestätigen, dass es derselbe Ledger ist, installieren Sie eine dieser Apps über Ledger Live: %1$s</string>
+    <string name="ledger_not_found">Ledger nicht gefunden. Verbinden Sie ihn per USB-Kabel und entsperren Sie ihn.</string>
+    <string name="ledger_usb_permission_denied">USB-Zugriff auf den Ledger wurde verweigert</string>
+    <string name="ledger_device_locked">Entsperren Sie Ihren Ledger</string>
+    <string name="ledger_device_not_set_up">Ledger ist noch nicht eingerichtet. Richten Sie ihn ein und installieren Sie Apps über Ledger Live, dann verbinden Sie ihn erneut</string>
+    <string name="ledger_no_supported_apps">Von diesem Ledger wurden keine unterstützten Netzwerke hinzugefügt</string>
+    <string name="ledger_connect_failed">Ledger konnte nicht verbunden werden</string>
+    <string name="ledger_rejected">Auf dem Ledger abgelehnt</string>
+    <string name="ledger_signing_failed">Der Ledger konnte die Transaktion nicht signieren</string>
+    <string name="ledger_blind_signing_required">Aktivieren Sie Blind signing in den Einstellungen der App %1$s auf Ihrem Ledger und versuchen Sie es erneut</string>
+    <string name="ledger_data_too_large">Die Nachricht ist zu groß für den Ledger</string>
+    <string name="ledger_zcash_reopen_app">Schließen Sie die Zcash-App auf Ihrem Ledger, öffnen Sie sie erneut und versuchen Sie es noch einmal</string>
+    <string name="ledger_ton_single_message">Ledger kann nur eine Nachricht pro TON-Transaktion signieren</string>
+    <string name="ledger_tron_settings_required">Aktivieren Sie Transactions data (für ein Memo) oder Custom contracts (für andere Vertragsaufrufe) in den Einstellungen der App Tron auf Ihrem Ledger und versuchen Sie es erneut</string>
+    <string name="ledger_ton_blind_signing_required">Aktivieren Sie Allow blind sign in den Einstellungen der App TON auf Ihrem Ledger und versuchen Sie es erneut</string>
+    <string name="ledger_verify_address">Adresse auf dem Ledger prüfen</string>
+    <string name="ledger_monero_confirm_view_key">Erlauben Sie den Export des View-Keys in der Monero-App auf Ihrem Ledger</string>
+    <string name="ledger_waiting_for_device">Warten auf Ledger…</string>
+    <string name="ledger_sync_paused_open_app">Synchronisierung von %1$s pausiert. Öffnen Sie die %1$s-App auf Ihrem Ledger, um fortzufahren.</string>
+    <string name="ledger_sync_finishing_wait">Ledger schließt die Synchronisierung von %1$s ab. Ihr Vorgang wird automatisch fortgesetzt.</string>
+    <string name="ledger_device_request_wait">Bestätigen Sie die %1$s-Anfrage auf Ihrem Ledger. Ihr Vorgang wird automatisch fortgesetzt.</string>
+    <string name="ledger_confirm_opening_app">Bestätigen Sie das Öffnen der App %1$s auf Ihrem Ledger</string>
     <string name="trezor_not_initialized_title">Gerät nicht eingerichtet</string>
     <string name="trezor_not_initialized_description">Dieser Trezor ist noch nicht eingerichtet. Schließen Sie die Einrichtung auf dem Gerät ab und verbinden Sie es erneut.</string>
     <string name="trezor_not_initialized_cta">Einrichtungsanleitung</string>
@@ -247,6 +279,33 @@
     <!--Market Search-->
     <string name="EmptyResults">Keine Ergebnisse gefunden</string>
     <string name="transactions_empty_search_results">Keine Transaktionen gefunden</string>
+    <string name="transactions_search_not_found_in_last">Nicht gefunden unter den letzten %1$s Transaktionen</string>
+    <string name="transactions_search_no_more_in_last">Keine weiteren Treffer unter den letzten %1$s Transaktionen</string>
+    <string name="transactions_search_continue">Weiter suchen</string>
+    <string name="transactions_calendar_title">Kalender</string>
+    <string name="transactions_calendar_mode_to_date">Bis Datum</string>
+    <string name="transactions_calendar_mode_period">Zeitraum</string>
+    <string name="transactions_calendar_show_up_to">Anzeigen bis</string>
+    <string name="transactions_calendar_to_date_hint">Die Liste beginnt mit der letzten Transaktion dieses Tages. Gab es an diesem Tag keine, mit der nächsten früheren.</string>
+    <string name="transactions_calendar_from">Von</string>
+    <string name="transactions_calendar_to">Bis</string>
+    <string name="transactions_calendar_show">Transaktionen anzeigen</string>
+    <string name="transactions_calendar_back_to_latest">Zu den neuesten</string>
+    <string name="transactions_calendar_period_range">Von %1$s\nbis %2$s</string>
+    <string name="transactions_calendar_period_day">Am %1$s</string>
+    <string name="transactions_calendar_period_up_to">Bis %1$s</string>
+    <string name="transactions_calendar_period_end">Das sind alle Transaktionen des gewählten Zeitraums</string>
+    <string name="transactions_calendar_period_empty_all">Keine Transaktionen im gewählten Zeitraum</string>
+    <string name="transactions_calendar_period_empty_incoming">Keine erhaltenen Transaktionen im gewählten Zeitraum</string>
+    <string name="transactions_calendar_period_empty_outgoing">Keine gesendeten Transaktionen im gewählten Zeitraum</string>
+    <string name="transactions_calendar_period_empty_swap">Keine Tausche im gewählten Zeitraum</string>
+    <string name="transactions_calendar_period_empty_approve">Keine Bestätigungen im gewählten Zeitraum</string>
+    <string name="transactions_calendar_change_period">Zeitraum ändern</string>
+    <string name="transactions_calendar_previous_month">Vorheriger Monat</string>
+    <string name="transactions_calendar_next_month">Nächster Monat</string>
+    <string name="transactions_calendar_period_selected">Kalender, Zeitraum gewählt</string>
+    <string name="transactions_search_not_found_in_period">Nicht gefunden unter %1$s Transaktionen des gewählten Zeitraums</string>
+    <string name="transactions_search_no_more_in_period">Keine weiteren Treffer unter %1$s Transaktionen des gewählten Zeitraums</string>
     <string name="Market_Filters">Filter</string>
     <string name="Market_AdvancedSearch_Results">Ergebnisse</string>
     <string name="Market_Search_Hint">Suchen</string>
@@ -598,6 +657,7 @@
 
     <string name="connect">Verbinden</string>
     <string name="connect_trezor_to_add_message">Sie müssen Trezor verbinden, um Token hinzuzufügen</string>
+    <string name="connect_ledger_to_add_message">Sie müssen Ledger verbinden, um Token hinzuzufügen</string>
     <!--EthereumTransaction-->
     <string name="EthereumTransaction_Warning_Title">Warnung</string>
     <string name="EthereumTransaction_Error_Title">Fehler</string>
@@ -675,7 +735,35 @@
     <string name="unsupported_address">Nicht unterstützte Adresse</string>
     <string name="unexpected_error">Unexpected error</string>
     <string name="unsupported_token">Nicht unterstützter Token</string>
-    <string name="zec_transparent_used">Beim Erstellen des Austauschs wird eine temporäre t-Adresse verwendet: %s. Sie wird an den Austauschdienst übermittelt und ist erforderlich für eine Rückerstattung, falls der Austausch nicht abgeschlossen wird. Die Verwendung einer t-Adresse kann zu einer teilweisen Deanonymisierung der Transaktion führen.</string>
+    <string name="zec_refund_plate">Für die Rückerstattung wird die temporäre t-Adresse %1$s verwendet.</string>
+    <string name="zec_refund_address_title">Temporäre Rückerstattungsadresse</string>
+    <string name="zec_refund_notice_direct">An diese Adresse sendet %1$s ZEC zurück, falls der Swap fehlschlägt. Die Adresse ist transparent: Sie ist in der Blockchain sichtbar.</string>
+    <string name="zec_refund_notice_via_pcash">An diese Adresse sendet %1$s über den P.CASH-Server ZEC zurück, falls der Swap fehlschlägt. Die Adresse ist transparent: Sie ist in der Blockchain sichtbar.</string>
+    <string name="zec_refund_notice_restore">Jeder Swap erhält eine neue Adresse. Nach einer Wiederherstellung nur mit der Seed-Phrase können sich Adressen wiederholen und eine Rückerstattung wird nicht von selbst gefunden. Um das zu vermeiden, erstellen Sie ein Backup. Eine fehlende Rückerstattung findet die Adresssuche in den ZEC-Einstellungen.</string>
+    <string name="zec_refund_address_copy">Adresse kopieren</string>
+    <string name="zec_refund_address_explorer">Im Explorer ansehen</string>
+    <string name="zec_refund_address_error">Rückerstattungsadresse konnte nicht abgerufen werden</string>
+    <string name="zec_address_search_title">Adresssuche</string>
+    <plurals name="zec_address_search_addresses">
+        <item quantity="one">%1$s Adresse</item>
+        <item quantity="other">%1$s Adressen</item>
+    </plurals>
+    <string name="zec_address_search_running">läuft · %1$d%</string>
+    <string name="zec_address_search_description">Findet Rückerstattungen von Swap-Anbietern an temporäre Adressen, die nach der Wiederherstellung aus der Seed-Phrase nicht sichtbar sind.</string>
+    <string name="zec_address_search_info">Findet Rückerstattungen von Swap-Anbietern an temporäre Adressen, die die Wallet nach einer Wiederherstellung nur aus der Seed-Phrase nicht sieht. Nach einer Wiederherstellung aus einem Backup ist die Suche nicht nötig.\n\nAdressen, auf denen etwas gefunden wurde, prüft die Wallet danach selbst. Leere Adressen werden nicht gespeichert. Ist eine Rückerstattung nach dem Prüfdatum eingegangen, tippen Sie auf „%1$s“.</string>
+    <string name="zec_address_search_checked">Geprüft</string>
+    <string name="zec_address_search_more">Weitere prüfen</string>
+    <plurals name="zec_address_search_total">
+        <item quantity="one">Insgesamt wird %1$s Adresse geprüft.</item>
+        <item quantity="other">Insgesamt werden %1$s Adressen geprüft.</item>
+    </plurals>
+    <string name="zec_address_search_long">Die Suche dauert etwa %1$d Min.</string>
+    <string name="zec_address_search_start">Suche starten</string>
+    <string name="zec_address_search_check_all_again">Alles erneut prüfen</string>
+    <string name="zec_address_search_progress">%1$s von %2$s geprüft</string>
+    <string name="zec_address_search_found">Gefundene Adressen mit Transaktionen</string>
+    <string name="zec_address_search_hint">Sie können schließen: Die Suche läuft weiter, auch nach einem Neustart der App.</string>
+    <string name="zec_address_search_stop">Stoppen</string>
     <string name="swap_yifi_memo_unsupported">Der Swap-Anbieter benötigt ein Einzahlungs-Memo, das aus diesem Netzwerk nicht gesendet werden kann. Wählen Sie einen anderen Anbieter.</string>
     <string name="swap_provider_order_failed">Der Anbieter konnte den Swap nicht erstellen. Aktualisieren Sie das Angebot oder gehen Sie zurück und wählen Sie einen anderen Anbieter.</string>
     <!-- Swap Settings -->
@@ -810,6 +898,7 @@
     <string name="Transactions_ContractCreation">Vertragserstellung</string>
     <string name="Transactions_ContractDeploy">Contract Deploy</string>
     <string name="Transactions_To">an %s</string>
+    <string name="transactions_to_self">an sich selbst</string>
     <string name="Transactions_From">von %s</string>
     <string name="Transaction_Unlimited_CoinCode">unbegrenzt %s</string>
     <string name="Transaction_Unlimited">unbegrenzt</string>
@@ -1276,6 +1365,7 @@
     <string name="transaction_error_invalid_derivation_path">Ungültiger Ableitungspfad</string>
     <!--Hud texts-->
     <string name="Hud_Text_NoInternet">Kein Internet</string>
+    <string name="zcash_server_unavailable">Server nicht erreichbar. Versuchen Sie es erneut.</string>
     <string name="Hud_Text_Copied">Kopiert</string>
     <string name="Hud_Text_Created">Erstellt</string>
     <string name="Hud_Text_Restored">Wiederherstellen</string>
@@ -1320,6 +1410,7 @@
     <string name="ManageAccounts_ImportWallet">Wiederherstellen</string>
     <string name="ManageAccounts_WatchAddress">Watch-Adresse</string>
     <string name="add_via_trezor">Über Trezor hinzufügen</string>
+    <string name="add_via_ledger">Über Ledger hinzufügen</string>
     <!-- Import Wallet -->
     <string name="ImportWallet_BackupFile">aus Datei</string>
     <string name="ImportWallet_BackupFile_Description">Aus Backup-Datei importieren.</string>
@@ -1526,7 +1617,7 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="Coin_Tab_Market">Märkte</string>
     <string name="Coin_Tab_Details">Analytik</string>
     <string name="Coin_Tab_Tweets">Tweets</string>
-    <string name="typical_fee"><![CDATA[Typische Gebühr < 0.001 ZEC]]></string>
+    <string name="typical_fee"><![CDATA[Typische Gebühr < 0.0001 ZEC]]></string>
     <string name="CoinPage_TimeDuration_Hour">1H</string>
     <string name="CoinPage_TimeDuration_Day">1T</string>
     <string name="CoinPage_TimeDuration_Week">7T</string>
@@ -2085,7 +2176,7 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="auth_info_successful">Erfolgreich</string>
     <string name="auth_info_unsuccessful">Nicht erfolgreich</string>
     <string name="auth_info_duress_mode">(Zwangsmodus)</string>
-    <string name="auth_info_entrance_to">Zugang zum %s</string>
+    <string name="auth_info_entrance_to">Zugang zum %1$s</string>
     <string name="auth_info_seconds_ago">(vor %d Sek)</string>
     <string name="auth_info_minutes_ago">(vor %d Min)</string>
     <string name="auth_info_hours_ago">(vor %d Std)</string>
@@ -2185,19 +2276,22 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="adding_tokens">Token werden hinzugefügt</string>
     <string name="scan_to_add_message">Sie müssen die Karte scannen, um Token hinzuzufügen</string>
     <string name="error_hardware_wallet_some_tokens_not_found">Einige Token konnten nicht hinzugefügt werden</string>
+    <string name="error_hardware_wallet_token_unavailable">Auf %1$s nicht verfügbar. Du kannst es in einer Wallet mit Seed-Phrase nutzen</string>
     <string name="send_error_address_unavailable">Adresse nicht verfügbar</string>
     <string name="send_error_amount_unavailable">Betrag nicht verfügbar</string>
     <string name="send_error_fee_rate_unavailable">Gebührensatz nicht verfügbar</string>
     <string name="send_error_balance_unavailable">Guthaben nicht verfügbar</string>
     <string name="litecoin_mweb_invalid_amount">Ungültiger Litecoin-MWEB-Betrag</string>
     <string name="litecoin_hardware_extended_public_key_required">Hardware-Litecoin-Wallet benötigt einen erweiterten öffentlichen Schlüssel</string>
-    <string name="send_trezor_mweb_not_supported">Trezor unterstützt MWEB nicht. Senden Sie Litecoin an eine reguläre (Nicht-MWEB-)Adresse.</string>
-    <string name="send_trezor_time_lock_not_supported">Trezor unterstützt zeitgesperrte Transaktionen nicht.</string>
+    <string name="send_hardware_mweb_not_supported">Diese Hardware-Wallet unterstützt MWEB nicht. Senden Sie Litecoin an eine reguläre (Nicht-MWEB-)Adresse.</string>
+    <string name="send_hardware_time_lock_not_supported">Diese Hardware-Wallet unterstützt keine zeitgesperrten Transaktionen.</string>
     <string name="send_trezor_zcash_memo_not_supported">Trezor kann einer Zcash-Transaktion kein Memo anhängen. Entfernen Sie das Memo, um fortzufahren.</string>
     <string name="send_memo_too_long">Memo ist zu lang: %1$d von %2$d Bytes</string>
     <string name="send_trezor_zcash_transparent_only">Trezor kann Zcash nur an transparente Adressen senden.</string>
     <string name="send_trezor_zcash_unified_no_transparent_receiver">Diese Unified-Adresse enthält keinen transparenten Empfänger, daher kann Trezor keine Überweisung dorthin senden.</string>
     <string name="send_trezor_zcash_firmware_required">%1$s benötigt Firmware %2$s oder neuer, um an Zcash-Unified-Adressen zu senden. Aktualisieren Sie das Gerät und versuchen Sie es erneut — die Firmware-Version wird bei der nächsten Zcash-Transaktion erneut geprüft.</string>
+    <string name="send_ledger_zcash_sapling_not_supported">Ledger sendet keine Zcash an Sapling-Adressen. Verwenden Sie eine Unified-Adresse oder eine transparente Adresse.</string>
+    <string name="send_ledger_zcash_transaction_too_large">Diese Transaktion ist zu groß für den Ledger. Senden Sie einen kleineren Betrag.</string>
     <string name="send_failed_offline_prompt_title">Transaktion nicht gesendet</string>
     <string name="send_failed_offline_prompt_message">Transaktion offline signieren und später senden?</string>
 
@@ -2628,6 +2722,19 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="desktop_password_save_failed">Das Passwort konnte nicht gespeichert werden. Bitte versuchen Sie es erneut</string>
     <string name="tron_controlled_by_others_title">Andere können dieses Konto kontrollieren</string>
     <string name="tron_controlled_by_others_warning">Die Berechtigungen für dieses Konto wurden geändert: Andere Schlüssel können es möglicherweise kontrollieren. Gelder, die Sie dorthin senden, können ohne Ihr Zutun abgehoben werden. Laden Sie es nur auf, wenn Sie wissen, wem diese Schlüssel gehören.</string>
+    <string name="login_logging_selfie_unsuccessful_shared">Dieser Schalter gilt für alle Wallets auf diesem Computer</string>
+    <string name="desktop_journal_password_title">Journal-Passwort</string>
+    <string name="desktop_journal_password_set_description">Legen Sie ein Passwort fest, das das Anmeldejournal schützt. Es muss sich von den Passwörtern unterscheiden, mit denen Ihre Wallets entsperrt werden</string>
+    <string name="desktop_journal_password_access_description">Geben Sie das Journal-Passwort ein, um das Anmeldejournal zu öffnen</string>
+    <string name="desktop_journal_password_disable_description">Geben Sie das Journal-Passwort ein, um es auszuschalten</string>
+    <string name="desktop_delete_contacts_password_title">Passwort zum Löschen der Kontakte</string>
+    <string name="desktop_delete_contacts_password_set_description">Die Eingabe dieses Passworts auf dem Entsperrbildschirm löscht Ihr Adressbuch sofort von diesem Computer. Es muss sich von Ihren anderen Passwörtern unterscheiden</string>
+    <string name="desktop_delete_contacts_password_disable_description">Geben Sie das Passwort zum Löschen der Kontakte ein, um es auszuschalten</string>
+    <string name="desktop_delete_contacts_terms_warning">Mit dem Festlegen dieses Passworts bestätigen Sie, dass Sie seinen Zweck verstehen: den Schutz Ihrer Privatsphäre. Die Eingabe auf dem Entsperrbildschirm löscht das auf diesem Computer gespeicherte Krypto-Adressbuch sofort und unwiderruflich. Das Adressbuch wird nur lokal gespeichert und kann ohne Backup nicht wiederhergestellt werden.</string>
+    <string-array name="desktop_delete_contacts_terms">
+        <item>Ich verstehe, dass dieses Passwort dazu dient, das Krypto-Adressbuch sofort zu löschen.</item>
+        <item>Ich verstehe, dass das Adressbuch nach Eingabe dieses Passworts gelöscht wird und ohne Backup nicht wiederhergestellt werden kann.</item>
+    </string-array>
     <string name="sign_message_title">Nachricht signieren</string>
     <string name="sign_message_intro">Die Signatur beweist, dass die Adresse Ihnen gehört. Börsen verlangen sie, wenn Sie eine Auszahlungsadresse hinzufügen. Zugriff auf Ihr Guthaben gibt sie nicht.</string>
     <string name="sign_message_message">Nachricht</string>
@@ -2638,7 +2745,7 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="sign_message_format_bip322_description">Neuer Standard, funktioniert auch für Taproot</string>
     <string name="sign_message_format_info">Standard ist die klassische signierte Bitcoin-Nachricht, die fast alle Börsen und Wallets akzeptieren. BIP-322 ist ein neueres Format, das auch Taproot-Adressen unterstützt. Wählen Sie das Format, das die Börse verlangt.</string>
     <string name="sign_message_taproot_only">Für Taproot-Adressen ist nur BIP-322 verfügbar.</string>
-    <string name="sign_message_trezor_taproot">Trezor kann keine Nachrichten für Taproot-Adressen signieren. Verwenden Sie eine Bitcoin-Adresse eines anderen Typs, zum Beispiel Native SegWit.</string>
+    <string name="sign_message_hardware_taproot">Eine Hardware-Wallet kann keine Nachrichten für Taproot-Adressen signieren. Verwenden Sie eine Bitcoin-Adresse eines anderen Typs, zum Beispiel Native SegWit.</string>
     <string name="sign_message_select_address_hint">Wählen Sie die Adresse, die Sie bei der Börse angegeben haben.</string>
     <string name="sign_message_current_receive_address">Aktuelle Empfangsadresse</string>
     <string name="sign_message_used">Verwendet</string>

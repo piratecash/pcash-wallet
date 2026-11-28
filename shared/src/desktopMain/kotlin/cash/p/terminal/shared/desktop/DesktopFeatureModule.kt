@@ -15,6 +15,11 @@ import cash.p.terminal.modules.pin.core.LockoutUntilDateFactory
 import cash.p.terminal.modules.pin.core.UptimeProvider
 import cash.p.terminal.network.desktopAppDataDirectory
 import cash.p.terminal.network.desktopAppDataFile
+import cash.p.terminal.feature.logging.detail.LoggingDetailViewModel
+import cash.p.terminal.feature.logging.history.LoggingListViewModel
+import cash.p.terminal.feature.logging.settings.LoggingSettingsViewModel
+import cash.p.terminal.shared.desktop.journal.JournalSecretCheckViewModel
+import cash.p.terminal.shared.desktop.journal.JournalSecretPasswordViewModel
 import cash.p.terminal.shared.desktop.lock.ChangePasswordViewModel
 import cash.p.terminal.shared.desktop.lock.DuressPasswordViewModel
 import cash.p.terminal.shared.desktop.lock.HiddenWalletPasswordViewModel
@@ -45,6 +50,7 @@ import cash.p.terminal.shared.desktop.vault.NoStorageCheckpoints
 import cash.p.terminal.shared.desktop.vault.StorageCheckpoints
 import cash.p.terminal.shared.desktop.vault.DesktopVaultFiles
 import cash.p.terminal.shared.desktop.vault.SqlCipherDriverFactory
+import cash.p.terminal.shared.desktop.vault.VaultLoginEvents
 import cash.p.terminal.vault.PasswordVault
 import cash.p.terminal.shared.main.DesktopHudMessenger
 import cash.p.terminal.shared.main.ScreenCaptureProtection
@@ -117,7 +123,7 @@ val desktopFeatureModule = module {
     singleOf(::DefaultDispatcherProvider) bind DispatcherProvider::class
 
     single { DesktopVaultFiles(desktopAppDataDirectory()) }
-    single { PasswordVault(get<DesktopVaultFiles>().vaultFile) }
+    single { get<DesktopVaultFiles>().run { PasswordVault(vaultFile, eraseTagsFile = actionsFile) } }
     singleOf(::DesktopUptimeProvider) bind UptimeProvider::class
     singleOf(::CurrentDateProvider) bind ICurrentDateProvider::class
     singleOf(::LockoutUntilDateFactory) bind ILockoutUntilDateFactory::class
@@ -127,7 +133,11 @@ val desktopFeatureModule = module {
     single<StorageCheckpoints> { NoStorageCheckpoints }
     single {
         // Lazy: the wallet session is built over this vault.
-        DesktopVault(get(), get(), get(), get(), get(), get(), get(), lazy { get<DesktopWalletLayer>() })
+        DesktopVault(
+            get(), get(), get(), get(), get(), get(), get(),
+            lazy { get<DesktopWalletLayer>() },
+            lazy { get<VaultLoginEvents>() },
+        )
     }
     singleOf(::DesktopAppExit)
     singleOf(::ProcessAppRelauncher) bind DesktopAppRelauncher::class
@@ -149,6 +159,11 @@ val desktopFeatureModule = module {
     viewModel { (accountIds: List<String>) -> DuressPasswordViewModel(accountIds, get(), get(), get(), get()) }
     viewModelOf(::HiddenWalletPasswordViewModel)
     viewModelOf(::TransactionsHidePasswordViewModel)
+    viewModelOf(::LoggingSettingsViewModel)
+    viewModelOf(::LoggingListViewModel)
+    viewModelOf(::LoggingDetailViewModel)
+    viewModelOf(::JournalSecretCheckViewModel)
+    viewModelOf(::JournalSecretPasswordViewModel)
     viewModelOf(::DesktopAutoLockIntervalsViewModel)
     viewModelOf(::DesktopLanguageSettingsViewModel)
     viewModelOf(::DesktopQrScannerViewModel)

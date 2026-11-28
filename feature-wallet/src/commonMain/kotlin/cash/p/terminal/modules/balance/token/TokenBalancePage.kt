@@ -74,6 +74,14 @@ class TokenBalancePage(val input: Wallet) : HSPage() {
         val showAllTransactions = secretActionAuthorizer.rememberHiddenTransactionsAuthorization(navigation) {
             viewModel.showAllTransactions(true)
         }
+        val showAllThenCalendar = secretActionAuthorizer.rememberHiddenTransactionsAuthorization(navigation) {
+            viewModel.showAllTransactions(true)
+            viewModel.onCalendarClick()
+        }
+        val showAllThenSearch = secretActionAuthorizer.rememberHiddenTransactionsAuthorization(navigation) {
+            viewModel.showAllTransactions(true)
+            viewModel.onSearchClick()
+        }
 
         OfflineModeErrorEffect(offlineModeToggleViewModel)
 
@@ -102,6 +110,8 @@ class TokenBalancePage(val input: Wallet) : HSPage() {
             refreshing = viewModel.refreshing,
             onSettingsClick = { navigation.slideFromRight(AssetSettingsPage(input)) },
             onGoOnline = offlineModeToggleViewModel::goOnline,
+            onHiddenCalendarClick = showAllThenCalendar,
+            onHiddenSearchClick = showAllThenSearch,
             nftSection = nftViewModel?.let { { NftSection(it, navigation) } },
         )
     }
@@ -168,10 +178,10 @@ class AssetSettingsPage(val wallet: Wallet) : HSPage() {
         val setAmlCheckEnabled = navigation.rememberPremiumToggle(viewModel::setAmlCheckEnabled)
 
         // Zcash created-in-app wallets have no history before their creation checkpoint, so
-        // editing the birthday height is meaningful only for restored (imported) Zcash wallets.
+        // editing the birthday height is meaningful only for restored and hardware (existing) wallets.
         val creationBlockVisible = wallet.token.blockchainType == BlockchainType.Monero ||
             (wallet.token.blockchainType == BlockchainType.Zcash &&
-                wallet.account.origin == AccountOrigin.Restored)
+                (wallet.account.origin == AccountOrigin.Restored || wallet.account.isHardwareWalletAccount))
         val signMessageVisible = wallet.token.blockchainType == BlockchainType.Bitcoin && !wallet.account.isWatchAccount
         val getRestoreHeight = remember { getKoinInstance<GetRestoreHeightForWalletUseCase>() }
         val currentHeightText by produceState<String?>(null, wallet, creationBlockVisible) {
@@ -200,6 +210,17 @@ class AssetSettingsPage(val wallet: Wallet) : HSPage() {
             creationBlockVisible = creationBlockVisible,
             currentHeightText = currentHeightText,
             onCreationBlockClick = { navigation.slideFromRight(CreationBlockPage(wallet)) },
+            addressSearchRow = viewModel.addressSearchUiState?.takeIf { creationBlockVisible }?.let { state ->
+                {
+                    ZcashAddressSearchRow(
+                        uiState = state,
+                        onMoreChange = viewModel::onAddressSearchMoreChange,
+                        onStart = viewModel::startAddressSearch,
+                        onCheckAllAgain = viewModel::checkAllAddressesAgain,
+                        onStop = viewModel::stopAddressSearch,
+                    )
+                }
+            },
             onSignMessageClick = { navigation.slideFromRight(SignMessagePage(wallet)) }.takeIf { signMessageVisible },
         )
     }

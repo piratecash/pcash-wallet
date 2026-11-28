@@ -8,6 +8,7 @@ import cash.p.terminal.entities.OfflineTransactionOutpoint
 import cash.p.terminal.entities.TransactionDataSortMode
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.modules.transactions.FilterTransactionType
+import cash.p.terminal.modules.transactions.TimestampRange
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.IBalanceAdapter
 import cash.p.terminal.wallet.IReceiveAdapter
@@ -53,6 +54,8 @@ interface ISendZcashAdapter : IBalanceAdapter, OfflineTransactionAdapter<SignedO
     fun stop()
 
     suspend fun validate(address: String): ZcashAdapter.ZCashAddressType
+    /** The form of [address] the signing device will show, so the user can compare the two. */
+    fun addressShownOnDevice(address: String): String
     /** Returns the txid of the broadcast transaction. */
     suspend fun send(amount: BigDecimal, address: String, memo: String): String
     /** What [send] would charge. */
@@ -67,6 +70,9 @@ sealed interface ZcashFeeEstimate {
 
     /** No selection of notes covers the amount and its fee, so [ISendZcashAdapter.send] would refuse it too. */
     data object InsufficientBalance : ZcashFeeEstimate
+
+    /** [ISendZcashAdapter.send] would refuse this payment with [reason], e.g. too large for the signing device. */
+    data class Refused(val reason: Exception) : ZcashFeeEstimate
 
     /** The plan failed for another reason, e.g. no server. */
     data object Unavailable : ZcashFeeEstimate
@@ -87,7 +93,15 @@ interface ITransactionsAdapter {
         limit: Int,
         transactionType: FilterTransactionType,
         address: String?,
+        period: TimestampRange? = null,
     ): List<TransactionRecord>
+
+    /** Seconds; null when no record matches or the source cannot tell. */
+    suspend fun getOldestTransactionTimestamp(
+        token: Token?,
+        transactionType: FilterTransactionType,
+        address: String?,
+    ): Long?
 
     suspend fun getTransactionsAfter(
         fromTransactionId: String?

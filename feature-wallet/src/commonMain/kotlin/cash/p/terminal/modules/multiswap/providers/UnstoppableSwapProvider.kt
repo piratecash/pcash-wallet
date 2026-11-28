@@ -21,7 +21,6 @@ import cash.p.terminal.modules.multiswap.ui.DataFieldRecipientExtended
 import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.network.unstoppable.domain.entity.UnstoppableRoute
 import cash.p.terminal.network.unstoppable.domain.repository.UnstoppableRepository
-import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
@@ -225,6 +224,7 @@ class UnstoppableSwapProvider(
         val buyAsset: String,
         val sellAmount: String,
         val destinationAddress: String,
+        val refundAddress: String,
     )
 
     override suspend fun supports(tokenFrom: Token, tokenTo: Token) =
@@ -270,9 +270,9 @@ class UnstoppableSwapProvider(
     override fun getCreateTokenActionRequired(tokens: List<Token>): ActionCreate? =
         providerSupport.getCreateTokenActionRequired(tokens)
 
-    override suspend fun getWarningMessage(tokenIn: Token, tokenOut: Token): TranslatableString? =
+    override suspend fun temporaryRefundAddress(tokenIn: Token, tokenOut: Token): String? =
         withContext(dispatcherProvider.io) {
-            providerSupport.getWarningMessage(tokenIn)
+            providerSupport.temporaryRefundAddress(tokenIn)
         }
 
     override suspend fun fetchFinalQuote(
@@ -291,6 +291,8 @@ class UnstoppableSwapProvider(
                 buyAsset = assetOut.identifier,
                 sellAmount = amountIn.toPlainString(),
                 destinationAddress = walletUseCase.getReceiveAddress(tokenOut),
+                // In the key: a cached order must not be reused once the session has a new refund address.
+                refundAddress = providerSupport.refundAddressFor(tokenIn),
             )
 
             val route = commitSwap(tokenIn, request, assetIn.chainId)
@@ -348,6 +350,7 @@ class UnstoppableSwapProvider(
         ) {
             return cached.response
         }
+        providerSupport.onRefundAddressSent(tokenIn, request.refundAddress)
         return repository.swap(
             sellAsset = request.sellAsset,
             buyAsset = request.buyAsset,
@@ -355,7 +358,7 @@ class UnstoppableSwapProvider(
             slippage = SLIPPAGE,
             provider = descriptor.apiId,
             destinationAddress = request.destinationAddress,
-            refundAddress = providerSupport.getRefundAddress(tokenIn),
+            refundAddress = request.refundAddress,
             chainId = chainId,
         ).also { cachedRoute = CachedRoute(request, it, System.currentTimeMillis()) }
     }

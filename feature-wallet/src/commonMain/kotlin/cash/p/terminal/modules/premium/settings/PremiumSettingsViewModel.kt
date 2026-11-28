@@ -15,6 +15,7 @@ internal class PremiumSettingsViewModel(
 ) : ViewModelUiState<PremiumSettingsUiState>() {
     private var checkEnabled = localStorage.recipientAddressContractCheckEnabled
     private var showLoggingAlert = false
+    private val pushNotificationsAvailable = platformSettings?.pushNotificationsPage() != null
 
     init {
         checkLoggingAlert()
@@ -40,6 +41,7 @@ internal class PremiumSettingsViewModel(
             .isPremium(),
         showAlertIcon = showLoggingAlert,
         platformSettingsAvailable = platformSettings != null,
+        pushNotificationsAvailable = pushNotificationsAvailable,
     )
 
     fun setAddressContractChecking(enabled: Boolean) {
@@ -60,4 +62,5 @@ internal data class PremiumSettingsUiState(
     val amlCheckReceivedEnabled: Boolean = false,
     val showAlertIcon: Boolean = false,
     val platformSettingsAvailable: Boolean = true,
+    val pushNotificationsAvailable: Boolean = true,
 )

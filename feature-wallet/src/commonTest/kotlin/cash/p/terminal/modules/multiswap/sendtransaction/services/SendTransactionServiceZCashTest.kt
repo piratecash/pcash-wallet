@@ -209,6 +209,20 @@ class SendTransactionServiceZCashTest : KoinTest {
     }
 
     @Test
+    fun sendable_paymentRefused_isFalseWithTheRefusalReason() = runTest(dispatcher) {
+        coEvery { adapter.validate(any()) } returns ZcashAdapter.ZCashAddressType.Transparent
+        coEvery { adapter.estimateFee(any(), any(), any()) } returns
+            ZcashFeeEstimate.Refused(IllegalStateException("too large for the device"))
+
+        val service = startedService(address = "t1valid")
+
+        assertFalse(service.stateFlow.value.sendable)
+        val caution = service.stateFlow.value.cautions.single()
+        assertEquals(CautionViewItem.Type.Error, caution.type)
+        assertEquals("too large for the device", caution.title)
+    }
+
+    @Test
     fun sendable_otherPlanningFailure_staysOpenWithoutACaution() = runTest(dispatcher) {
         coEvery { adapter.validate(any()) } returns ZcashAdapter.ZCashAddressType.Transparent
 

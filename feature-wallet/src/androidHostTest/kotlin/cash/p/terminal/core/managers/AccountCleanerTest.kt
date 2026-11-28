@@ -75,7 +75,7 @@ class AccountCleanerTest {
         thorchainKitManagers = mockk(relaxed = true)
         evmBlockchainManager = mockk(relaxed = true)
 
-        coEvery { clearZCashWalletDataUseCase.invoke(any()) } returns ZcashEraseResult.ALL
+        coEvery { clearZCashWalletDataUseCase.invoke(any(), any()) } returns ZcashEraseResult.ALL
         coEvery { removeMoneroWalletFilesUseCase.invoke(any<Account>()) } returns true
         coEvery { adapterManager.stopAdapters(any()) } returns Unit
         coEvery { adapterManager.stopAdapters(any(), any()) } returns Unit
@@ -148,7 +148,7 @@ class AccountCleanerTest {
 
         accountCleaner.clearWalletForAccount(account.id, token)
 
-        coVerify(exactly = 0) { clearZCashWalletDataUseCase.invoke(any()) }
+        coVerify(exactly = 0) { clearZCashWalletDataUseCase.invoke(any(), any()) }
     }
 
     @Test
@@ -160,7 +160,7 @@ class AccountCleanerTest {
 
         accountCleaner.clearWalletForAccount(account.id, token)
 
-        coVerify(exactly = 1) { clearZCashWalletDataUseCase.invoke(account.id) }
+        coVerify(exactly = 1) { clearZCashWalletDataUseCase.invoke(account.id, eraseIssuedAddresses = false) }
         coVerify(exactly = 0) { removeMoneroWalletFilesUseCase.invoke(any<Account>()) }
     }
 
@@ -177,7 +177,30 @@ class AccountCleanerTest {
         verify(exactly = 1) { accountManager.account(account.id) }
         coVerify(exactly = 1) { removeMoneroWalletFilesUseCase.invoke(account) }
         coVerify(exactly = 1) { moneroFileDao.deleteAssociatedRecord(account.id) }
-        coVerify(exactly = 0) { clearZCashWalletDataUseCase.invoke(any()) }
+        coVerify(exactly = 0) { clearZCashWalletDataUseCase.invoke(any(), any()) }
+    }
+
+    @Test
+    fun clearWalletForAccount_hardwareMoneroInactive_keepsFilesAndAssociation() = runTest {
+        listOf(LEDGER, TREZOR).forEach { type ->
+            val account = account("acc-${type.javaClass.simpleName}").copy(type = type)
+            every { accountManager.account(account.id) } returns account
+
+            accountCleaner.clearWalletForAccount(account.id, token(BlockchainType.Monero))
+        }
+
+        coVerify(exactly = 0) { removeMoneroWalletFilesUseCase.invoke(any<Account>()) }
+        coVerify(exactly = 0) { moneroFileDao.deleteAssociatedRecord(any()) }
+    }
+
+    @Test
+    fun clearWalletForAccount_hardwareZcashInactive_clearsZcashData() = runTest {
+        val account = account("acc-ledger-zcash").copy(type = LEDGER)
+        every { accountManager.account(account.id) } returns account
+
+        accountCleaner.clearWalletForAccount(account.id, token(BlockchainType.Zcash))
+
+        coVerify(exactly = 1) { clearZCashWalletDataUseCase.invoke(account.id, eraseIssuedAddresses = false) }
     }
 
     @Test
@@ -278,7 +301,7 @@ class AccountCleanerTest {
 
         accountCleaner.clearWalletForAccount(account.id, token)
 
-        coVerify(exactly = 0) { clearZCashWalletDataUseCase.invoke(any()) }
+        coVerify(exactly = 0) { clearZCashWalletDataUseCase.invoke(any(), any()) }
         coVerify(exactly = 0) { removeMoneroWalletFilesUseCase.invoke(any<Account>()) }
     }
 
@@ -295,7 +318,7 @@ class AccountCleanerTest {
         verifyAdapterClears(accountId)
 
         coVerify(exactly = 1) { removeMoneroWalletFilesUseCase.invoke(account) }
-        coVerify(exactly = 1) { clearZCashWalletDataUseCase.invoke(accountId) }
+        coVerify(exactly = 1) { clearZCashWalletDataUseCase.invoke(accountId, eraseIssuedAddresses = true) }
     }
 
     @Test
@@ -323,7 +346,7 @@ class AccountCleanerTest {
         }
 
         coVerify(exactly = 1) { bitcoinKitDatabaseManager.clear(accountId) }
-        coVerify(exactly = 1) { clearZCashWalletDataUseCase.invoke(accountId) }
+        coVerify(exactly = 1) { clearZCashWalletDataUseCase.invoke(accountId, eraseIssuedAddresses = true) }
         assertNotNull(thrown)
     }
 
@@ -395,4 +418,9 @@ class AccountCleanerTest {
         type = tokenType,
         decimals = 8
     )
+
+    private companion object {
+        val LEDGER = AccountType.LedgerDevice("device-id", "NanoSPlus", "wallet-key")
+        val TREZOR = AccountType.TrezorDevice("device-id", "T3T1", "2.8.10", "wallet-key")
+    }
 }

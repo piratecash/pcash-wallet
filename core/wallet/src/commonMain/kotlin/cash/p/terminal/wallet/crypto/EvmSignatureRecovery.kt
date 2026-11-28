@@ -11,7 +11,7 @@ import io.horizontalsystems.hdwalletkit.ECKey
 import java.math.BigInteger
 
 /**
- * EVM signature recovery shared by hardware-wallet signers (Trezor, Tangem). Hardware devices
+ * EVM signature recovery shared by hardware-wallet signers (Trezor, Tangem, Ledger). Hardware devices
  * return only the raw `(r, s)` (and sometimes `v`) of a signature, so we have to rebuild the
  * signing hash ourselves and recover the public key / sender address from it — either to find the
  * recovery id (Tangem returns no `v`) or to verify the device signed with the expected account.
@@ -29,10 +29,14 @@ object EvmSignatureRecovery {
         16,
     )
 
-    /** Keccak-256 of the transaction's signing preimage (EIP-155 for legacy, typed for EIP-1559). */
+    /** Keccak-256 of the transaction's signing preimage. */
     fun signingHash(rawTransaction: RawTransaction, chainId: Int): ByteArray =
+        CryptoUtils.sha3(unsignedTransaction(rawTransaction, chainId))
+
+    /** The unsigned transaction a device signs: EIP-155 for legacy, typed for EIP-1559. */
+    fun unsignedTransaction(rawTransaction: RawTransaction, chainId: Int): ByteArray =
         when (val gasPrice = rawTransaction.gasPrice) {
-            is GasPrice.Legacy -> CryptoUtils.sha3(
+            is GasPrice.Legacy ->
                 RLP.encodeList(
                     RLP.encodeLong(rawTransaction.nonce),
                     RLP.encodeLong(gasPrice.legacyGasPrice),
@@ -44,9 +48,8 @@ object EvmSignatureRecovery {
                     RLP.encodeElement(ByteArray(0)),
                     RLP.encodeElement(ByteArray(0))
                 )
-            )
 
-            is GasPrice.Eip1559 -> CryptoUtils.sha3(
+            is GasPrice.Eip1559 ->
                 EIP1559_TX_TYPE + RLP.encodeList(
                     RLP.encodeInt(chainId),
                     RLP.encodeLong(rawTransaction.nonce),
@@ -58,8 +61,13 @@ object EvmSignatureRecovery {
                     RLP.encodeElement(rawTransaction.data),
                     RLP.encode(arrayOf<Any>())
                 )
-            )
         }
+
+    /** The `v` a signed transaction carries for recovery id [recId]: EIP-155 for legacy, the parity for typed. */
+    fun transactionV(recId: Int, gasPrice: GasPrice, chainId: Int): Int = when (gasPrice) {
+        is GasPrice.Legacy -> recId + if (chainId == 0) PRE_EIP155_V_OFFSET else EIP155_V_OFFSET + 2 * chainId
+        is GasPrice.Eip1559 -> recId
+    }
 
     /** Recovers the sender address of a signed transaction, or null if it cannot be recovered. */
     fun recoverSenderAddress(
@@ -99,6 +107,15 @@ object EvmSignatureRecovery {
             compressed = false
         ) ?: return null
         return pubKeyToAddress(publicKey)
+    }
+
+    /** `r‖s‖recId` with the recovery id that recovers [expected], or null when none does. */
+    fun messageSignature(messageHash: ByteArray, r: ByteArray, s: ByteArray, expected: Address): ByteArray? {
+        val rInt = BigInteger(1, r)
+        val sInt = BigInteger(1, s)
+        val recId = (0..1).firstOrNull { recoverMessageAddress(messageHash, rInt, sInt, it) == expected }
+            ?: return null
+        return r + s + byteArrayOf(recId.toByte())
     }
 
     private fun pubKeyToAddress(publicKey: ByteArray): Address {

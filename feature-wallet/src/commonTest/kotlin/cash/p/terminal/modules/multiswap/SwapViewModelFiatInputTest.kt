@@ -8,7 +8,12 @@ import io.horizontalsystems.core.entities.BlockchainType
 import androidx.lifecycle.ViewModelStore
 import cash.p.terminal.core.ServiceStateFlow
 import cash.p.terminal.entities.Address
+import cash.p.terminal.modules.multiswap.action.ActionCreate
+import cash.p.terminal.modules.multiswap.action.ISwapProviderAction
 import cash.p.terminal.modules.multiswap.exchange.ButtonState
+import cash.p.terminal.modules.multiswap.providers.IMultiSwapProvider
+import cash.p.terminal.modules.multiswap.providers.ZcashRefundAddressReservation
+import cash.p.terminal.modules.multiswap.providers.ZcashRefundAddressUnavailable
 import cash.p.terminal.modules.multiswap.settings.ISwapSetting
 import cash.p.terminal.modules.multiswap.settings.SwapSettingRecipient
 import cash.p.terminal.modules.send.register
@@ -18,6 +23,8 @@ import cash.p.terminal.wallet.useCases.WalletUseCase
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.entities.Currency
 import io.mockk.clearMocks
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
@@ -122,6 +129,7 @@ class SwapViewModelFiatInputTest {
     private val balanceHiddenManager = mockk<IBalanceHiddenManager>(relaxed = true) {
         every { anyWalletVisibilityChangedFlow } returns MutableSharedFlow()
     }
+    private val refundAddressReservation = mockk<ZcashRefundAddressReservation>(relaxed = true)
     private val viewModelStore = ViewModelStore()
 
     @Before
@@ -133,6 +141,7 @@ class SwapViewModelFiatInputTest {
                 module {
                     single<IBalanceHiddenManager> { balanceHiddenManager }
                     single<WalletUseCase> { mockk(relaxed = true) }
+                    single<ZcashRefundAddressReservation> { refundAddressReservation }
                 }
             )
         }
@@ -478,6 +487,78 @@ class SwapViewModelFiatInputTest {
 
             verify(exactly = 0) { tronAccountWarningService.setTarget(any(), customRecipient = true) }
         }
+
+    @Test
+    fun init_newVisit_startsRefundAddressSession() = runTest(dispatcher) {
+        createViewModel()
+
+        verify(exactly = 1) { refundAddressReservation.startSession() }
+    }
+
+    @Test
+    fun refundNotice_reservationFails_showsErrorAndBlocksProceed() = runTest(dispatcher) {
+        val provider = refundAddressProvider()
+        coEvery { provider.temporaryRefundAddress(any(), any()) } throws ZcashRefundAddressUnavailable()
+        val viewModel = createViewModel()
+
+        quoteStateFlow.value = quoteStateFlow.value.copy(quote = quoteFrom(provider))
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.refundAddressError)
+        assertFalse(viewModel.uiState.canProceed)
+        assertNull(viewModel.uiState.refundNotice)
+    }
+
+    @Test
+    fun onRetryRefundAddress_afterFailure_showsNotice() = runTest(dispatcher) {
+        val provider = refundAddressProvider()
+        coEvery { provider.temporaryRefundAddress(any(), any()) } throws
+            ZcashRefundAddressUnavailable() andThen "t1temp"
+        val viewModel = createViewModel()
+        quoteStateFlow.value = quoteStateFlow.value.copy(quote = quoteFrom(provider))
+        advanceUntilIdle()
+
+        viewModel.onRetryRefundAddress()
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.refundAddressError)
+        assertTrue(viewModel.uiState.canProceed)
+        assertEquals(ZcashRefundNotice("t1temp", "Backend", viaPcashServer = true), viewModel.uiState.refundNotice)
+    }
+
+    @Test
+    fun refundNotice_quoteRequiresWalletCreation_notFetched() = runTest(dispatcher) {
+        val provider = refundAddressProvider()
+        coEvery { provider.temporaryRefundAddress(any(), any()) } throws ZcashRefundAddressUnavailable()
+        val viewModel = createViewModel()
+
+        quoteStateFlow.value = quoteStateFlow.value.copy(
+            quote = quoteFrom(provider, actionRequired = mockk<ActionCreate>(relaxed = true)),
+        )
+        advanceUntilIdle()
+
+        coVerify(exactly = 0) { provider.temporaryRefundAddress(any(), any()) }
+        assertFalse(viewModel.uiState.refundAddressError)
+        assertNull(viewModel.uiState.refundNotice)
+    }
+
+    private fun refundAddressProvider() = mockk<IMultiSwapProvider>(relaxed = true) {
+        every { title } returns "Backend"
+        every { createsOrderThroughPcashServer } returns true
+    }
+
+    private fun quoteFrom(
+        provider: IMultiSwapProvider,
+        actionRequired: ISwapProviderAction? = null,
+    ): SwapProviderQuote {
+        val token = tokenOut
+        return mockk<SwapProviderQuote>(relaxed = true) {
+            every { this@mockk.provider } returns provider
+            every { this@mockk.actionRequired } returns actionRequired
+            every { tokenIn } returns token
+            every { tokenOut } returns token
+        }
+    }
 
     private val recipientSettings = mapOf("recipient" to Address("recipient-address"))
 

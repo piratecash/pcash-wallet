@@ -82,8 +82,8 @@ android {
         compileSdk compile_sdk_version
         minSdkVersion min_sdk_version
         targetSdkVersion target_sdk_version
-        versionCode 264
-        versionName "1.3.264"
+        versionCode 265
+        versionName "2.0.265"
         buildConfigField "String", "GIT_HASH", "\"${getGitVersionSuffix()}\""
         buildConfigField "String", "GIT_BRANCH", "\"${gitBranchProvider.getOrElse("unknown")}\""
         // True only for the disposable baseline-profile generation build type (see baselinegen).
@@ -225,6 +225,13 @@ android {
             buildConfigField "boolean", "BASELINE_PROFILE_MODE", "true"
         }
 
+    }
+
+    // Debug-only code (speculos Ledger transport) has a no-op twin here, so release builds never contain it.
+    sourceSets {
+        release.kotlin.srcDir 'src/nonDebug/java'
+        qa.kotlin.srcDir 'src/nonDebug/java'
+        baselinegen.kotlin.srcDir 'src/nonDebug/java'
     }
 
     compileOptions {
@@ -485,6 +492,7 @@ dependencies {
     implementation project(':feature-stacking')
     implementation project(':feature-tangem')
     implementation project(':feature-trezor')
+    implementation project(':feature-ledger')
     implementation project(':feature-premium')
     implementation project(':feature-logging')
     implementation project(':feature-mini-app')

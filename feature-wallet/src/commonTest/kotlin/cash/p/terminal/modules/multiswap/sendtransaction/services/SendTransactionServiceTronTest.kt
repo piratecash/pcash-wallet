@@ -1,6 +1,7 @@
 package cash.p.terminal.modules.multiswap.sendtransaction.services
 
 import cash.p.terminal.core.ISendTronAdapter
+import cash.p.terminal.core.cancelAndAwait
 import cash.p.terminal.core.ethereum.CautionViewItem
 import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionData
@@ -37,7 +38,6 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
@@ -115,7 +115,7 @@ class SendTransactionServiceTronTest : KoinTest {
 
     @After
     fun tearDown() {
-        scope.cancel()
+        scope.cancelAndAwait()
         unmockkAll()
         stopKoin()
     }

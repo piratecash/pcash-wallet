@@ -9,6 +9,7 @@ import cash.p.terminal.data.repository.EvmTransactionRepository
 import cash.p.terminal.entities.LastBlockInfo
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.modules.transactions.FilterTransactionType
+import cash.p.terminal.modules.transactions.TimestampRange
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.TokenQuery
@@ -70,17 +71,27 @@ class EvmTransactionsAdapter(
             TokenQuery.eip20(evmTransactionRepository.getBlockchainType(), address)
         }
 
+    override suspend fun getOldestTransactionTimestamp(
+        token: Token?,
+        transactionType: FilterTransactionType,
+        address: String?,
+    ): Long? = evmTransactionRepository.getOldestTransactionTimestamp(
+        getFilters(token, transactionType, address?.lowercase())
+    )
+
     override suspend fun getTransactions(
         from: TransactionRecord?,
         token: Token?,
         limit: Int,
         transactionType: FilterTransactionType,
         address: String?,
+        period: TimestampRange?,
     ): List<TransactionRecord> {
         return evmTransactionRepository.getFullTransactionsAsync(
             getFilters(token, transactionType, address?.lowercase()),
             from?.transactionHash?.hexStringToByteArray(),
-            limit
+            limit,
+            period,
         ).map { tx ->
             transactionConverter.transactionRecord(tx)
         }

@@ -9,6 +9,9 @@ import cash.p.terminal.entities.TransactionValue
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.thorchain.ThorchainTransactionRecord
 import cash.p.terminal.modules.transactions.FilterTransactionType
+import cash.p.terminal.modules.transactions.TimestampRange
+import cash.p.terminal.modules.transactions.filterInPeriod
+import cash.p.terminal.modules.transactions.oldestDatedTimestamp
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.Token
 import io.horizontalsystems.thorchainkit.models.Transaction
@@ -47,12 +50,20 @@ class ThorchainTransactionsAdapter(
         limit: Int,
         transactionType: FilterTransactionType,
         address: String?,
+        period: TimestampRange?,
     ): List<TransactionRecord> {
         val records = kit.getTransactions(fromTimestamp = from?.timestamp?.plus(1))
             .toRecords(token, transactionType, address)
+            .filterInPeriod(period) { it.timestamp }
         val resumeIndex = records.indexOfFirst { it.uid == from?.uid } + 1
         return records.drop(resumeIndex).take(limit)
     }
+
+    override suspend fun getOldestTransactionTimestamp(
+        token: Token?,
+        transactionType: FilterTransactionType,
+        address: String?,
+    ): Long? = kit.getTransactions().toRecords(token, transactionType, address).oldestDatedTimestamp { it.timestamp }
 
     override fun getTransactionRecordsFlow(
         token: Token?,

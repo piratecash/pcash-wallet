@@ -117,6 +117,9 @@ class DesktopMainPage : HSPage() {
             selectedDestination = selectedDestination,
             onDestinationSelect = {
                 rememberedMainTab(it)?.let { tab -> mainTabStorage.mainTab = tab }
+                if (selectedDestination == MainDestination.Transactions && it != MainDestination.Transactions) {
+                    transactionsViewModel.onLeave()
+                }
                 selected = it
             },
             modifier = Modifier.fillMaxSize(),
@@ -153,12 +156,22 @@ private fun BalancePane(navigation: HSNavigation) {
 @Composable
 private fun TransactionsPane(navigation: HSNavigation) {
     val viewModel = rememberMainPageTransactionsViewModel(navigation)
+    val authorizer = koinInject<SecretActionAuthorizer>()
     TransactionsScreen(
         navigation = navigation,
         paddingValues = PaddingValues(),
         viewModel = viewModel,
-        onShowAllTransactionsClicked = koinInject<SecretActionAuthorizer>()
-            .rememberHiddenTransactionsAuthorization(navigation) { viewModel.showAllTransactions(true) },
+        onShowAllTransactionsClicked = authorizer.rememberHiddenTransactionsAuthorization(navigation) {
+            viewModel.showAllTransactions(true)
+        },
+        onHiddenCalendarClick = authorizer.rememberHiddenTransactionsAuthorization(navigation) {
+            viewModel.showAllTransactions(true)
+            viewModel.onCalendarClick()
+        },
+        onHiddenSearchClick = authorizer.rememberHiddenTransactionsAuthorization(navigation) {
+            viewModel.showAllTransactions(true)
+            viewModel.onSearchClick()
+        },
     )
 }
 

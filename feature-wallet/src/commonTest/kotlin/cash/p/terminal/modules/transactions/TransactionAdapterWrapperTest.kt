@@ -37,10 +37,13 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlin.test.assertFailsWith
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
@@ -49,6 +52,8 @@ import java.math.BigDecimal
 @OptIn(ExperimentalCoroutinesApi::class)
 class TransactionAdapterWrapperTest {
     private companion object {
+        val PERIOD = TimestampRange(since = 1_000, until = 2_000)
+        val OTHER_PERIOD = TimestampRange(since = 2_000, until = 3_000)
         const val MWEB_ADDRESS =
             "ltcmweb1qq2nlqa567pq3hwgch23a9fhuvgfe96erem3v00gph7pjkmwrz09nkq5" +
                 "fuwudw8gjmw59n6uv268r3ky23epxkr9fejdf9m6gxlkjy6lne5l82w3k"
@@ -822,6 +827,284 @@ class TransactionAdapterWrapperTest {
     }
 
     @Test
+    fun search_pendingMatchAcrossChunks_appearsOnce() = runTest {
+        val token = createToken()
+        val source = createSource(blockchain = token.blockchain)
+        val realRecords = (0 until 150).map { searchRecord(token, source, "real-$it", 1_715_000_000L - it) }
+        val pendingRecord = createPendingRecord(
+            token = token,
+            source = source,
+            uid = "pending-1",
+            transactionHash = "",
+            timestamp = 1_715_000_100,
+            amount = BigDecimal("0.00001"),
+            toAddress = "bc1needle",
+        )
+        val wrapper = createWrapper(
+            transactionWallet = TransactionWallet(token = token, source = source, badge = null),
+            realRecords = realRecords,
+            pendingRecords = listOf(pendingRecord),
+            realRecordPages = listOf(realRecords.take(100), realRecords.drop(100)),
+        )
+        val search = sourceSearch("needle")
+
+        val firstChunk = wrapper.search(20, 100, FilterTransactionType.All, null, search)
+        val secondChunk = wrapper.search(20, 200, FilterTransactionType.All, null, search)
+
+        assertEquals(listOf("pending-1"), firstChunk.records.map { it.uid })
+        assertEquals(listOf("pending-1"), secondChunk.records.map { it.uid })
+        assertTrue(secondChunk.exhausted)
+    }
+
+    @Test
+    fun search_adapterUpdateDuringMultiChunkSearch_keepsDepthAndAddsNewRecords() = runTest {
+        val token = createToken()
+        val source = createSource(blockchain = token.blockchain)
+        val oldHistory = (0 until 200).map { searchRecord(token, source, "old-$it", 2_000L - it, needle = it == 150) }
+        val newRecords = (0 until 3).map { searchRecord(token, source, "new-$it", 3_000L - it, needle = it == 1) }
+        val scenario = updateDuringSecondRead(token, source, oldHistory) { newRecords + it }
+
+        scenario.wrapper.search(20, 100, FilterTransactionType.All, null, scenario.search)
+        val page = scenario.wrapper.search(20, 200, FilterTransactionType.All, null, scenario.search)
+
+        assertEquals(listOf(null, "old-99", null), scenario.requestedFrom)
+        assertEquals(listOf("new-1", "old-150"), page.records.map { it.uid })
+        assertEquals(203, page.scannedCount)
+    }
+
+    @Test
+    fun search_recentRecordRemovedAfterDeepScan_dropsItsMatch() = runTest {
+        val token = createToken()
+        val source = createSource(blockchain = token.blockchain)
+        val history = (0 until 200).map { searchRecord(token, source, "old-$it", 2_000L - it, needle = it % 150 == 0) }
+        val scenario = updateDuringSecondRead(token, source, history) { it.drop(1) }
+
+        scenario.wrapper.search(20, 100, FilterTransactionType.All, null, scenario.search)
+        val page = scenario.wrapper.search(20, 200, FilterTransactionType.All, null, scenario.search)
+
+        assertEquals(listOf(null, "old-99", null), scenario.requestedFrom)
+        assertEquals(listOf("old-150"), page.records.map { it.uid })
+    }
+
+    @Test
+    fun search_updateDuringEveryRead_returnsAfterBoundedReads() = runTest {
+        val token = createToken()
+        val source = createSource(blockchain = token.blockchain)
+        var history = (0 until 50).map { searchRecord(token, source, "old-$it", 2_000L - it, needle = false) }
+        var reads = 0
+        val updates = MutableSharedFlow<List<TransactionRecord>>(extraBufferCapacity = 1)
+        val adapter = mockk<ITransactionsAdapter> {
+            coEvery { getTransactions(any(), any(), any(), any(), any()) } coAnswers {
+                val readHistory = history
+                // Stops after 30 reads only so an unbounded search still ends the test.
+                if (++reads < 30) {
+                    history = listOf(searchRecord(token, source, "new-$reads", 3_000L + reads, needle = false)) + history
+                    updates.tryEmit(history)
+                    delay(1)
+                }
+                val from = firstArg<TransactionRecord?>()
+                val start = from?.let { readHistory.indexOfFirst { it.uid == from.uid } + 1 } ?: 0
+                readHistory.drop(start).take(thirdArg())
+            }
+            every { getTransactionRecordsFlow(any(), any(), any()) } returns updates
+            every { getTransactionsReloadSignalFlow() } returns emptyFlow()
+        }
+        val wrapper = createWrapper(TransactionWallet(token = token, source = source, badge = null), adapter)
+        runCurrent()
+
+        val page = wrapper.search(20, 100, FilterTransactionType.All, null, sourceSearch("needle"))
+
+        assertTrue("reads=$reads", reads < 10)
+        assertTrue(page.scannedCount > 0)
+    }
+
+    private class UpdateDuringRead(
+        val wrapper: TransactionAdapterWrapper,
+        val search: SourceSearch,
+        val requestedFrom: List<String?>,
+    )
+
+    // The wallet update lands while the second chunk is being read.
+    private fun TestScope.updateDuringSecondRead(
+        token: Token,
+        source: TransactionSource,
+        initialHistory: List<TransactionRecord>,
+        update: (List<TransactionRecord>) -> List<TransactionRecord>,
+    ): UpdateDuringRead {
+        var history = initialHistory
+        val requestedFrom = mutableListOf<String?>()
+        val updates = MutableSharedFlow<List<TransactionRecord>>(extraBufferCapacity = 1)
+        val adapter = mockk<ITransactionsAdapter> {
+            coEvery { getTransactions(any(), any(), any(), any(), any()) } coAnswers {
+                val from = firstArg<TransactionRecord?>()
+                val readHistory = history
+                requestedFrom += from?.uid
+                if (requestedFrom.size == 2) {
+                    history = update(history)
+                    updates.tryEmit(history)
+                    delay(1)
+                }
+                val start = from?.let { readHistory.indexOfFirst { it.uid == from.uid } + 1 } ?: 0
+                readHistory.drop(start).take(thirdArg())
+            }
+            every { getTransactionRecordsFlow(any(), any(), any()) } returns updates
+            every { getTransactionsReloadSignalFlow() } returns emptyFlow()
+        }
+        val wrapper = createWrapper(TransactionWallet(token = token, source = source, badge = null), adapter)
+        runCurrent()
+        return UpdateDuringRead(wrapper, sourceSearch("needle"), requestedFrom)
+    }
+
+    @Test
+    fun get_periodSet_passesPeriodToAdapter() = runTest {
+        val scenario = periodScenario { _, _ -> emptyList() }
+        scenario.wrapper.setPeriod(PERIOD)
+
+        scenario.wrapper.get(20, FilterTransactionType.All, null, PERIOD)
+
+        assertEquals(listOf<TimestampRange?>(PERIOD), scenario.requestedPeriods)
+    }
+
+    @Test
+    fun get_requestedPeriodDiffersFromCurrent_returnsEmptyWithoutRead() = runTest {
+        val scenario = periodScenario { scenario, _ -> listOf(searchRecord(scenario.token, scenario.source, "r", 1_500)) }
+        scenario.wrapper.setPeriod(PERIOD)
+
+        val records = scenario.wrapper.get(20, FilterTransactionType.All, null, OTHER_PERIOD)
+
+        assertTrue(records.isEmpty())
+        assertTrue(scenario.requestedPeriods.isEmpty())
+    }
+
+    @Test
+    fun get_pendingOutsidePeriod_isDropped() = runTest {
+        val token = createToken()
+        val source = createSource(blockchain = token.blockchain)
+        val realRecord = searchRecord(token, source, "real", 1_500)
+        val pendingRecord = createPendingRecord(
+            token = token,
+            source = source,
+            uid = "pending-now",
+            transactionHash = "",
+            timestamp = 1_715_000_000,
+            amount = BigDecimal("0.00001"),
+            toAddress = "bc1pending",
+        )
+        val wrapper = createWrapper(
+            transactionWallet = TransactionWallet(token = token, source = source, badge = null),
+            realRecords = listOf(realRecord),
+            pendingRecords = listOf(pendingRecord),
+        )
+        wrapper.setPeriod(PERIOD)
+
+        val records = wrapper.get(20, FilterTransactionType.All, null, PERIOD)
+
+        assertEquals(listOf("real"), records.map { it.uid })
+    }
+
+    @Test
+    fun setPeriod_afterLoadedPage_readsTheNewPeriodInsteadOfCache() = runTest {
+        val scenario = periodScenario { scenario, period ->
+            val uid = if (period == null) "unbounded" else "in-period"
+            listOf(searchRecord(scenario.token, scenario.source, uid, 1_500))
+        }
+        scenario.wrapper.get(20, FilterTransactionType.All, null)
+
+        scenario.wrapper.setPeriod(PERIOD)
+        val records = scenario.wrapper.get(20, FilterTransactionType.All, null, PERIOD)
+
+        assertEquals(listOf("in-period"), records.map { it.uid })
+    }
+
+    @Test
+    fun get_periodChangedDuringRead_failsStaleAndDoesNotCacheOldPeriod() = runTest {
+        lateinit var wrapper: TransactionAdapterWrapper
+        val scenario = periodScenario { scenario, period ->
+            if (period == PERIOD) {
+                wrapper.setPeriod(OTHER_PERIOD)
+                listOf(searchRecord(scenario.token, scenario.source, "old-period", 1_500))
+            } else {
+                listOf(searchRecord(scenario.token, scenario.source, "new-period", 2_500))
+            }
+        }
+        wrapper = scenario.wrapper
+        wrapper.setPeriod(PERIOD)
+
+        assertFailsWith<StaleTransactionReadException> {
+            wrapper.get(20, FilterTransactionType.All, null, PERIOD)
+        }
+        val records = wrapper.get(20, FilterTransactionType.All, null, OTHER_PERIOD)
+
+        assertEquals(listOf("new-period"), records.map { it.uid })
+    }
+
+    @Test
+    fun search_periodSet_passesPeriodToChunksAndHead() = runTest {
+        val updates = MutableSharedFlow<List<TransactionRecord>>(extraBufferCapacity = 1)
+        val scenario = periodScenario(updates) { scenario, _ ->
+            (0 until 150).map { searchRecord(scenario.token, scenario.source, "r-$it", 1_900L - it) }
+        }
+        scenario.wrapper.setPeriod(PERIOD)
+        runCurrent()
+        val search = sourceSearch("needle", PERIOD)
+
+        scenario.wrapper.search(20, 100, FilterTransactionType.All, null, search)
+        updates.tryEmit(emptyList())
+        runCurrent()
+        scenario.wrapper.search(20, 200, FilterTransactionType.All, null, search)
+
+        // First chunk, the head re-read after the update, then the continuation.
+        assertEquals(3, scenario.requestedPeriods.size)
+        assertTrue(scenario.requestedPeriods.all { it == PERIOD })
+    }
+
+    @Test
+    fun search_periodChanged_startsNewCursorWithoutOldPeriodMatches() = runTest {
+        val scenario = periodScenario { scenario, period ->
+            if (period == PERIOD) {
+                (0 until 150).map { searchRecord(scenario.token, scenario.source, "p1-$it", 1_900L - it, it == 50) }
+            } else {
+                (0 until 150).map { searchRecord(scenario.token, scenario.source, "p2-$it", 2_900L - it, it == 10) }
+            }
+        }
+        scenario.wrapper.setPeriod(PERIOD)
+        scenario.wrapper.search(20, 100, FilterTransactionType.All, null, sourceSearch("needle", PERIOD))
+
+        scenario.wrapper.setPeriod(OTHER_PERIOD)
+        val page = scenario.wrapper.search(20, 100, FilterTransactionType.All, null, sourceSearch("needle", OTHER_PERIOD))
+
+        assertEquals(listOf("p2-10"), page.records.map { it.uid })
+    }
+
+    private class PeriodScenario(val token: Token, val source: TransactionSource) {
+        lateinit var wrapper: TransactionAdapterWrapper
+        val requestedPeriods = mutableListOf<TimestampRange?>()
+    }
+
+    // The adapter pages [history] by `from` like a real source and records the period of every read.
+    private fun TestScope.periodScenario(
+        updates: MutableSharedFlow<List<TransactionRecord>>? = null,
+        history: suspend (PeriodScenario, TimestampRange?) -> List<TransactionRecord>,
+    ): PeriodScenario {
+        val token = createToken()
+        val scenario = PeriodScenario(token, createSource(blockchain = token.blockchain))
+        val adapter = mockk<ITransactionsAdapter> {
+            coEvery { getTransactions(any(), any(), any(), any(), any(), any()) } coAnswers {
+                val period = arg<TimestampRange?>(5)
+                scenario.requestedPeriods += period
+                val records = history(scenario, period)
+                val from = firstArg<TransactionRecord?>()
+                val start = from?.let { records.indexOfFirst { it.uid == from.uid } + 1 } ?: 0
+                records.drop(start).take(thirdArg())
+            }
+            every { getTransactionRecordsFlow(any(), any(), any()) } returns (updates ?: emptyFlow())
+            every { getTransactionsReloadSignalFlow() } returns emptyFlow()
+        }
+        scenario.wrapper = createWrapper(TransactionWallet(token = token, source = scenario.source, badge = null), adapter)
+        return scenario
+    }
+
+    @Test
     fun get_twoMatchingPendingRecordsOnlyClosestOneIsFilteredOut() = runTest {
         val token = createToken()
         val source = createSource(blockchain = token.blockchain)
@@ -1068,6 +1351,49 @@ class TransactionAdapterWrapperTest {
 
     private fun TestScope.createWrapper(
         transactionWallet: TransactionWallet,
+        transactionsAdapter: ITransactionsAdapter,
+        pendingRepository: PendingTransactionRepository = createPendingRepository(emptyList()),
+        pendingConverter: PendingTransactionConverter = mockk(),
+        locallyCreatedTransactionRepository: LocallyCreatedTransactionRepository = mockk(relaxed = true),
+    ) = TransactionAdapterWrapper(
+        transactionsAdapter = transactionsAdapter,
+        transactionWallet = transactionWallet,
+        transactionType = FilterTransactionType.All,
+        contact = null,
+        pendingRepository = pendingRepository,
+        pendingConverter = pendingConverter,
+        pendingTransactionMatcher = PendingTransactionMatcher(),
+        locallyCreatedTransactionRepository = locallyCreatedTransactionRepository,
+        dispatcherProvider = TestDispatcherProvider(StandardTestDispatcher(testScheduler), this),
+    )
+
+    private fun sourceSearch(query: String, period: TimestampRange? = null): SourceSearch {
+        val matcher = testSearchMatcher()
+        val key = SourceSearch.Key(
+            matcher.prepare(query), FilterTransactionType.All, false, hideSuspiciousTx = true, sessionId = 1,
+            period = period,
+        )
+        return SourceSearch(key, matcher, testSearchVisibility())
+    }
+
+    private fun searchRecord(
+        token: Token,
+        source: TransactionSource,
+        uid: String,
+        timestamp: Long,
+        needle: Boolean = false,
+    ) = createBitcoinOutgoingRecord(
+        token = token,
+        source = source,
+        uid = uid,
+        transactionHash = uid,
+        timestamp = timestamp,
+        amount = BigDecimal("-0.00000563"),
+        toAddress = if (needle) "bc1needle" else "bc1other",
+    )
+
+    private fun TestScope.createWrapper(
+        transactionWallet: TransactionWallet,
         realRecords: List<TransactionRecord>,
         pendingRecords: List<PendingTransactionRecord>,
         realRecordPages: List<List<TransactionRecord>> = listOf(realRecords),
@@ -1077,7 +1403,7 @@ class TransactionAdapterWrapperTest {
         val adapterPages = realRecordPages.ifEmpty { listOf(realRecords) }
         var requestIndex = 0
         val transactionsAdapter = mockk<ITransactionsAdapter> {
-            coEvery { getTransactions(any(), any(), any(), any(), any()) } coAnswers {
+            coEvery { getTransactions(any(), any(), any(), any(), any(), any()) } coAnswers {
                 val responseIndex = requestIndex.coerceAtMost(adapterPages.lastIndex)
                 requestIndex++
                 adapterPages[responseIndex]
@@ -1091,16 +1417,12 @@ class TransactionAdapterWrapperTest {
             }
         }
 
-        return TransactionAdapterWrapper(
-            transactionsAdapter = transactionsAdapter,
-            transactionWallet = transactionWallet,
-            transactionType = FilterTransactionType.All,
-            contact = null,
-            pendingRepository = pendingRepository,
-            pendingConverter = pendingConverter,
-            pendingTransactionMatcher = PendingTransactionMatcher(),
-            locallyCreatedTransactionRepository = locallyCreatedTransactionRepository,
-            dispatcherProvider = TestDispatcherProvider(StandardTestDispatcher(testScheduler), this),
+        return createWrapper(
+            transactionWallet,
+            transactionsAdapter,
+            pendingRepository,
+            pendingConverter,
+            locallyCreatedTransactionRepository,
         )
     }
 

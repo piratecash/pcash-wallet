@@ -139,7 +139,7 @@ class VaultFilesShapeTest {
         const val STACK_TRACE_EVERY = 20
         const val STACK_TRACE_LINES = 25
         const val STACK_TRACE_LINE = "\n    at cash.p.terminal.core.adapters.zcash.session.ZcashSession.run(ZcashSession.kt:120)"
-        // 24 slots x (app, prem) + shared, each with its Room lock file.
-        const val EXPECTED_FILES = (PasswordVault.SLOT_COUNT * 2 + 1) * 2
+        // 24 slots x (app, prem, log) + shared, each with its Room lock file, then the inbox and the erase tags.
+        const val EXPECTED_FILES = (PasswordVault.SLOT_COUNT * 3 + 1) * 2 + 2
     }
 }

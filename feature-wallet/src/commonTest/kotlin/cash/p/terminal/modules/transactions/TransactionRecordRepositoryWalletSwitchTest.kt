@@ -7,12 +7,14 @@ import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
 import cash.p.terminal.core.managers.PendingTransactionMatcher
 import cash.p.terminal.core.managers.PendingTransactionRepository
 import cash.p.terminal.core.managers.TransactionAdapterManager
+import cash.p.terminal.core.managers.SpamManager
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
 import cash.p.terminal.entities.SwapProviderTransaction
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
 import cash.p.terminal.modules.contacts.model.Contact
+import cash.p.terminal.network.changenow.domain.entity.TransactionStatusEnum
 import cash.p.terminal.modules.contacts.model.ContactAddress
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
@@ -27,6 +29,8 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
+import io.mockk.unmockkAll
 import io.mockk.verify
 import java.math.BigDecimal
 import java.util.concurrent.atomic.AtomicReference
@@ -36,6 +40,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.joinAll
@@ -45,11 +50,14 @@ import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.runCurrent
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
@@ -68,9 +76,13 @@ import org.koin.dsl.module
 @OptIn(ExperimentalCoroutinesApi::class)
 class TransactionRecordRepositoryWalletSwitchTest {
 
+    private val searchToken = createToken()
+    private val searchSource = createSource("account-1", searchToken.blockchain)
+
     @After
     fun tearDown() {
         stopKoin()
+        unmockkAll()
     }
 
     @Test
@@ -146,6 +158,8 @@ class TransactionRecordRepositoryWalletSwitchTest {
             pendingRepository = pendingRepository,
             pendingConverter = mockk(relaxed = true),
             pendingTransactionMatcher = PendingTransactionMatcher(),
+            searchMatcher = testSearchMatcher(),
+            searchVisibility = testSearchVisibility(),
             locallyCreatedTransactionRepository = relaxedLocallyCreatedRepository(),
             dispatcherProvider = TestDispatcherProvider(testDispatcher, this)
         )
@@ -266,6 +280,8 @@ class TransactionRecordRepositoryWalletSwitchTest {
             pendingRepository = pendingRepository,
             pendingConverter = mockk(relaxed = true),
             pendingTransactionMatcher = PendingTransactionMatcher(),
+            searchMatcher = testSearchMatcher(swapProviderTransactionsStorage),
+            searchVisibility = testSearchVisibility(swapProviderTransactionsStorage),
             locallyCreatedTransactionRepository = relaxedLocallyCreatedRepository(),
             dispatcherProvider = TestDispatcherProvider(testDispatcher, this)
         )
@@ -383,6 +399,63 @@ class TransactionRecordRepositoryWalletSwitchTest {
         advanceUntilIdle()
 
         assertEquals(listOf(fixture.record.uid), emissions.last())
+
+        collectorJob.cancel()
+        repository.clear()
+    }
+
+    @Test
+    fun searchQuery_providerStatusChangesOnAllTab_reloadsMatchingRecord() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+        mockRussianTitles()
+
+        val fixture = providerSearchFixture()
+        val repository = createRepository(
+            adapterManager = adapterManager(fixture.source, pagedAdapter(listOf(fixture.record))),
+            dispatcher = testDispatcher,
+            scope = this,
+            swapProviderTransactionsStorage = fixture.storage,
+        )
+        val (emissions, collectorJob) = collectRecordUids(repository, testDispatcher)
+
+        repository.searchAllTab(fixture.wallet, searchQuery = "процесс обмена")
+        advanceUntilIdle()
+        assertTrue(
+            "a waiting swap must not match the exchanging title, but got: $emissions",
+            emissions.none { it.contains(fixture.record.uid) }
+        )
+
+        fixture.storedSwap = testProviderSwap(TransactionStatusEnum.EXCHANGING, fixture.record.uid)
+        fixture.updates.emit(listOf(fixture.storedSwap))
+        advanceUntilIdle()
+
+        assertEquals(listOf(fixture.record.uid), emissions.last())
+
+        collectorJob.cancel()
+        repository.clear()
+    }
+
+    @Test
+    fun searchQuery_notInProviderTitleOnAllTab_doesNotObserveProviderStorage() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+        mockRussianTitles()
+
+        val fixture = providerSearchFixture()
+        val repository = createRepository(
+            adapterManager = adapterManager(fixture.source, pagedAdapter(listOf(fixture.record))),
+            dispatcher = testDispatcher,
+            scope = this,
+            swapProviderTransactionsStorage = fixture.storage,
+        )
+        val (emissions, collectorJob) = collectRecordUids(repository, testDispatcher)
+
+        repository.searchAllTab(fixture.wallet, searchQuery = "provider-deposit")
+        advanceUntilIdle()
+
+        assertEquals(listOf(fixture.record.uid), emissions.last())
+        verify(exactly = 0) { fixture.storage.observeAll() }
 
         collectorJob.cancel()
         repository.clear()
@@ -671,6 +744,484 @@ class TransactionRecordRepositoryWalletSwitchTest {
     }
 
     @Test
+    fun searchQuery_matchBeyond1000RecordsSingleSource_isFound() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+        val search = deepSearch(testDispatcher, noiseCount = 1500, withMatch = true)
+        val (batches, collectorJob) = collectBatches(search.repository, testDispatcher)
+
+        search.start("needle")
+
+        assertEquals(listOf("deep-match"), batches.last().records.map { it.uid })
+
+        collectorJob.cancel()
+        search.repository.clear()
+    }
+
+    @Test
+    fun searchQuery_matchBeyondPageScanBudget_foundAfterLoadNext() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+        val search = deepSearch(testDispatcher, noiseCount = 6000, withMatch = true)
+        val (batches, collectorJob) = collectBatches(search.repository, testDispatcher)
+
+        search.start("needle")
+
+        val firstPage = batches.last()
+        assertTrue(firstPage.searchCompleted)
+        assertTrue(firstPage.records.isEmpty())
+        assertFalse(firstPage.searchExhausted)
+
+        search.repository.loadNext()
+        advanceUntilIdle()
+
+        assertEquals(listOf("deep-match"), batches.last().records.map { it.uid })
+        collectorJob.cancel()
+        search.repository.clear()
+    }
+
+    @Test
+    fun searchQuery_absentQuery_pagesUntilHistoryExhausted() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+        val search = deepSearch(testDispatcher, noiseCount = 7000, withMatch = false)
+        val (batches, collectorJob) = collectBatches(search.repository, testDispatcher)
+
+        search.start("needle")
+        search.pageUntilExhausted(batches)
+
+        assertTrue(batches.last().searchExhausted)
+        assertTrue(batches.last().records.isEmpty())
+        assertEquals(search.records.map { it.uid }, search.served)
+
+        collectorJob.cancel()
+        search.repository.clear()
+    }
+
+    @Test
+    fun searchQuery_closeAndReopenDeepQuery_stillFindsOtherSourceMatch() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+        val noiseSource = createSource("account-noise", searchToken.blockchain)
+        val noiseWallet = walletFor(searchToken, noiseSource)
+        val matchWallet = walletFor(searchToken, searchSource)
+        val noise = (0 until 25_000).map {
+            searchRecord(searchToken, noiseSource, "noise-$it", 2_000_000L - it, "plain")
+        }
+        val match = searchRecord(searchToken, searchSource, "match", 1_000L, "needle-address")
+        val adapterManager = mockk<TransactionAdapterManager>(relaxed = true) {
+            every { getAdapter(noiseSource) } returns pagedAdapter(noise)
+            every { getAdapter(searchSource) } returns pagedAdapter(listOf(match))
+        }
+        val repository = createRepository(adapterManager, testDispatcher, this)
+        val (batches, collectorJob) = collectBatches(repository, testDispatcher)
+        val wallets = listOf(noiseWallet, matchWallet)
+        val search = { query: String? ->
+            repository.setAndReload(wallets, null, FilterTransactionType.All, null, null, query)
+            advanceUntilIdle()
+        }
+
+        search("needle")
+        repeat(2) { repository.loadNext(); advanceUntilIdle() }
+        assertEquals(15_000, batches.last().searchScannedCount)
+        search(null)
+        search("needle")
+
+        val reopened = batches.last { it.searchCompleted }
+        assertEquals(listOf("match"), reopened.records.map { it.uid })
+        assertEquals(5_000, reopened.searchScannedCount)
+        collectorJob.cancel()
+        repository.clear()
+    }
+
+    @Test
+    fun reload_activeSearch_startsNewSearchSession() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+        val search = deepSearch(testDispatcher, noiseCount = 25_000, withMatch = false)
+        val (batches, collectorJob) = collectBatches(search.repository, testDispatcher)
+
+        search.start("needle")
+        search.repository.loadNext()
+        advanceUntilIdle()
+        val pagedSession = batches.last().searchSessionId
+        search.repository.reload()
+        advanceUntilIdle()
+
+        assertEquals(10_000, batches[batches.size - 2].searchScannedCount)
+        assertEquals(pagedSession, batches[batches.size - 2].searchSessionId)
+        assertEquals(5_000, batches.last().searchScannedCount)
+        assertTrue(batches.last().searchSessionId != pagedSession)
+        collectorJob.cancel()
+        search.repository.clear()
+    }
+
+    @Test
+    fun searchQuery_absentQuery_reportsScannedCountPerPage() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+        val search = deepSearch(testDispatcher, noiseCount = 25_000, withMatch = false)
+        val (batches, collectorJob) = collectBatches(search.repository, testDispatcher)
+
+        search.start("needle")
+        search.pageUntilExhausted(batches)
+
+        val scannedCounts = batches.filter { it.searchCompleted }.map { it.searchScannedCount }
+        assertEquals(listOf(5_000, 10_000, 15_000, 20_000, 25_000), scannedCounts.distinct())
+        assertTrue(batches.last().searchExhausted)
+        collectorJob.cancel()
+        search.repository.clear()
+    }
+
+    @Test
+    fun loadNext_firstPageFilledEarly_readsOneBudgetBeyondReachedDepth() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+        val matches = (0 until 20).map {
+            searchRecord(searchToken, searchSource, "match-$it", 2_000_000L - it, "needle-address")
+        }
+        val noise = (0 until 12_000).map { fixtureRecord("noise-$it", 1_000_000L - it) }
+        val search = searchFixture(testDispatcher, matches + noise)
+        val (batches, collectorJob) = collectBatches(search.repository, testDispatcher)
+
+        search.start("needle")
+        assertEquals(100, batches.last().searchScannedCount)
+        search.repository.loadNext()
+        advanceUntilIdle()
+
+        assertEquals(5_100, batches.last().searchScannedCount)
+        assertTrue(search.served.size <= 5_100)
+        collectorJob.cancel()
+        search.repository.clear()
+    }
+
+    @Test
+    fun handleUpdates_pausedSourceCachedAndOtherSourceGetsMatch_publishesMatch() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+        val otherSource = createSource("account-2", searchToken.blockchain)
+        val noise = (0 until 6_000).map { fixtureRecord("noise-$it", 1_000_000L - it) }
+        val otherRecords = mutableListOf<TransactionRecord>()
+        val otherUpdates = MutableSharedFlow<List<TransactionRecord>>(extraBufferCapacity = 1)
+        val adapterManager = mockk<TransactionAdapterManager>(relaxed = true) {
+            every { getAdapter(searchSource) } returns pagedAdapter(noise)
+            every { getAdapter(otherSource) } returns pagedAdapter(otherRecords, updates = otherUpdates)
+        }
+        val repository = createRepository(adapterManager, testDispatcher, this)
+        val (batches, collectorJob) = collectBatches(repository, testDispatcher)
+        val wallets = listOf(walletFor(searchToken, searchSource), walletFor(searchToken, otherSource))
+        repository.setAndReload(wallets, null, FilterTransactionType.All, null, null, "needle")
+        advanceUntilIdle()
+        assertEquals(5_000, batches.last().searchScannedCount)
+
+        otherRecords += searchRecord(searchToken, otherSource, "new-match", 2_000_000L, "needle-address")
+        otherUpdates.emit(otherRecords.toList())
+        advanceUntilIdle()
+
+        assertEquals(listOf("new-match"), batches.last().records.map { it.uid })
+        collectorJob.cancel()
+        repository.clear()
+    }
+
+    @Test
+    fun handleUpdates_pausedSearchUnrelatedUpdate_doesNotScanDeeper() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+        val refresh = refreshFixture(testDispatcher, noise(7_000))
+
+        refresh.start(pages = 1)
+        assertEquals(5_000, refresh.batches.last().searchScannedCount)
+        refresh.emitUpdate()
+
+        assertEquals(5_000, refresh.batches.last().searchScannedCount)
+        assertEquals(5_000, refresh.served.toSet().size)
+        refresh.close()
+    }
+
+    @Test
+    fun handleUpdates_invalidatedDeepCursor_restoresReachedDepthOnly() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+        val refresh = refreshFixture(testDispatcher, noise(12_000))
+
+        refresh.start(pages = 2)
+        assertEquals(10_000, refresh.batches.last().searchScannedCount)
+        refresh.emitUpdate()
+
+        assertEquals(10_000, refresh.batches.last().searchScannedCount)
+        assertEquals(10_000, refresh.served.toSet().size)
+        refresh.close()
+    }
+
+    @Test
+    fun handleUpdates_exhaustedSourceGrows_readsOneBudgetOfGrowth() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+        val records = mutableListOf<TransactionRecord>()
+        val refresh = refreshFixture(testDispatcher, records)
+
+        refresh.start(pages = 1)
+        assertTrue(refresh.batches.last().searchExhausted)
+        records += noise(12_000)
+        refresh.emitUpdate()
+
+        assertEquals(5_000, refresh.batches.last().searchScannedCount)
+        assertEquals(5_000, refresh.served.toSet().size)
+        assertFalse(refresh.batches.last().searchExhausted)
+        refresh.close()
+    }
+
+    @Test
+    fun searchQuery_slowSource_stopsStepOnTimeLimit() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+        val adapter = pagedAdapter(noise(20_000), onRead = { delay(100) })
+        val repository = createRepository(adapterManager(searchSource, adapter), testDispatcher, this)
+        val (batches, collectorJob) = collectBatches(repository, testDispatcher)
+
+        repository.setAndReload(
+            listOf(walletFor(searchToken, searchSource)), null, FilterTransactionType.All, null, null, "needle",
+        )
+        advanceUntilIdle()
+
+        val batch = batches.last()
+        assertTrue(batch.searchTimedOut)
+        assertFalse(batch.searchExhausted)
+        assertTrue(batch.searchScannedCount in 1 until 5_000)
+        assertTrue(currentTime <= 3_500)
+        collectorJob.cancel()
+        repository.clear()
+    }
+
+    @Test
+    fun searchQuery_firstSourceHangs_matchInOtherSourceFound() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+        val otherSource = createSource("account-2", searchToken.blockchain)
+        val match = searchRecord(searchToken, otherSource, "match", 2_000_000L, "needle-address")
+        val adapterManager = mockk<TransactionAdapterManager>(relaxed = true) {
+            every { getAdapter(searchSource) } returns pagedAdapter(noise(100), onRead = { delay(10_000) })
+            every { getAdapter(otherSource) } returns pagedAdapter(listOf(match))
+        }
+        val repository = createRepository(adapterManager, testDispatcher, this)
+        val (batches, collectorJob) = collectBatches(repository, testDispatcher)
+        val wallets = listOf(walletFor(searchToken, searchSource), walletFor(searchToken, otherSource))
+
+        repository.setAndReload(wallets, null, FilterTransactionType.All, null, null, "needle")
+        advanceUntilIdle()
+
+        assertEquals(listOf("match"), batches.last().records.map { it.uid })
+        assertTrue(batches.last().searchTimedOut)
+        assertFalse(batches.last().searchExhausted)
+        collectorJob.cancel()
+        repository.clear()
+    }
+
+    @Test
+    fun searchQuery_walletUpdatesFasterThanScanStep_stepStillCompletes() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+        val served = mutableListOf<String>()
+        val updates = MutableSharedFlow<List<TransactionRecord>>(extraBufferCapacity = 64)
+        // A full step needs 500 ms of reads while the busy address updates every 50 ms.
+        val adapter = pagedAdapter(noise(7_000), served, updates, onRead = { delay(10) })
+        val repository = createRepository(adapterManager(searchSource, adapter), testDispatcher, this)
+        val (batches, collectorJob) = collectBatches(repository, testDispatcher)
+        val ticker = backgroundScope.launch(testDispatcher) {
+            while (true) {
+                delay(50)
+                updates.tryEmit(emptyList())
+            }
+        }
+
+        repository.setAndReload(
+            listOf(walletFor(searchToken, searchSource)), null, FilterTransactionType.All, null, null, "needle",
+        )
+        advanceTimeBy(2_000)
+        ticker.cancel()
+
+        assertEquals(5_000, batches.last { it.searchCompleted }.searchScannedCount)
+        assertEquals(1, served.count { it == "noise-4000" })
+        collectorJob.cancel()
+        repository.clear()
+    }
+
+    @Test
+    fun searchQuery_longHistoryAbsentQuery_streamsEachRecordOnceWithoutDisplayCache() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+        val matcher = spyk(testSearchMatcher())
+        val search = deepSearch(testDispatcher, noiseCount = 20_000, withMatch = false, matcher = matcher)
+        val (batches, collectorJob) = collectBatches(search.repository, testDispatcher)
+
+        search.start("needle")
+        search.pageUntilExhausted(batches)
+
+        assertTrue(batches.last().searchExhausted)
+        assertEquals(search.records.map { it.uid }, search.served)
+        verify(exactly = 20_000) { matcher.match(any(), any()) }
+
+        // A display cache filled by the search would answer the regular page without reading.
+        search.start(query = null)
+        assertEquals(search.records.take(20).map { it.uid }, search.served.drop(20_000))
+
+        collectorJob.cancel()
+        search.repository.clear()
+    }
+
+    @Test
+    fun searchQuery_swapsTabProviderSwapsBehindPlainSends_pagesOnlyEligibleRecords() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+        mockRussianTitles()
+        val plainSends = (0 until 100).map { fixtureRecord("plain-$it", 10_000L - it) }
+        val linkedSends = (0 until 25).map { fixtureRecord("linked-$it", 5_000L - it) }
+        val storage = providerStorage(linkedSends.map { it.uid }.toSet())
+        val search = searchFixture(testDispatcher, plainSends + linkedSends, storage)
+        val (batches, collectorJob) = collectBatches(search.repository, testDispatcher)
+
+        search.start("Отправлено", FilterTransactionType.Swap)
+
+        assertEquals(linkedSends.take(20).map { it.uid }, batches.last().records.map { it.uid })
+        assertFalse(batches.last().searchExhausted)
+
+        search.repository.loadNext()
+        advanceUntilIdle()
+
+        assertEquals(linkedSends.map { it.uid }, batches.last().records.map { it.uid })
+        assertTrue(batches.last().searchExhausted)
+        (plainSends + linkedSends).forEach { verify(exactly = 1) { storage.getByOutgoingRecordUid(it.uid) } }
+        collectorJob.cancel()
+        search.repository.clear()
+    }
+
+    @Test
+    fun searchQuery_swapsTabLongHistoryWithoutProviderSwaps_exhaustsNotFound() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+        mockRussianTitles()
+        val sends = (0 until 20_000).map { fixtureRecord("send-$it", 1_000_000L - it) }
+        val search = searchFixture(testDispatcher, sends, providerStorage(emptySet()))
+        val (batches, collectorJob) = collectBatches(search.repository, testDispatcher)
+
+        search.start("Отправлено", FilterTransactionType.Swap)
+        search.pageUntilExhausted(batches)
+
+        assertTrue(batches.last().searchExhausted)
+        assertTrue(batches.last().records.isEmpty())
+        assertEquals(sends.map { it.uid }, search.served)
+        collectorJob.cancel()
+        search.repository.clear()
+    }
+
+    @Test
+    fun searchQuery_allTabIncomingAllSpam_exhaustsNotFound() = runTest {
+        assertAllSpamIncomingNotFound(tokenScreen = false)
+    }
+
+    @Test
+    fun searchQuery_tokenScreenIncomingAllSpam_exhaustsNotFound() = runTest {
+        assertAllSpamIncomingNotFound(tokenScreen = true)
+    }
+
+    @Test
+    fun searchQuery_sentTabTransferBehindProviderSwapRows_showsTransferOnFirstPage() = runTest {
+        assertSentTabSkipsProviderSwapRows(tokenScreen = false)
+    }
+
+    @Test
+    fun searchQuery_tokenScreenSentTabTransferBehindProviderSwapRows_showsTransferOnFirstPage() = runTest {
+        assertSentTabSkipsProviderSwapRows(tokenScreen = true)
+    }
+
+    @Test
+    fun searchQuery_providerTitleMatchOnSentTab_resolvesSwapOnceAndHidesRow() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+        mockRussianTitles()
+        val storage = providerStorage(setOf("swap-row"))
+        val search = searchFixture(testDispatcher, listOf(fixtureRecord("swap-row", 10_000L)), storage)
+        val (batches, collectorJob) = collectBatches(search.repository, testDispatcher)
+
+        search.start("обмен", FilterTransactionType.Outgoing)
+
+        assertTrue(batches.last().searchExhausted)
+        assertTrue(batches.last().records.isEmpty())
+        verify(exactly = 1) { storage.getByOutgoingRecordUid("swap-row") }
+        collectorJob.cancel()
+        search.repository.clear()
+    }
+
+    @Test
+    fun searchQuery_spamSettingToggledDuringSearch_restartsWithNewSetting() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+        mockRussianTitles()
+        var hideSpam = true
+        val spamManager = mockk<SpamManager> {
+            every { shouldHide(any()) } answers { hideSpam }
+            every { hideSuspiciousTx } answers { hideSpam }
+        }
+        val incoming = incomingRecords(6_000)
+        val visibility = testSearchVisibility(spamManager = spamManager)
+        val search = searchFixture(testDispatcher, incoming, visibility = visibility)
+        val (batches, collectorJob) = collectBatches(search.repository, testDispatcher)
+
+        search.start("Получено")
+        assertTrue(batches.last().records.isEmpty())
+        assertFalse(batches.last().searchExhausted)
+
+        hideSpam = false
+        search.repository.loadNext()
+        advanceUntilIdle()
+
+        assertEquals(incoming.take(40).map { it.uid }, batches.last().records.map { it.uid })
+        assertEquals("the scan restarts from the newest record", "in-0", search.served[5_000])
+        collectorJob.cancel()
+        search.repository.clear()
+    }
+
+    private fun TestScope.assertAllSpamIncomingNotFound(tokenScreen: Boolean) {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+        mockRussianTitles()
+        val spamManager = mockk<SpamManager> {
+            every { shouldHide(any()) } returns true
+            every { hideSuspiciousTx } returns true
+        }
+        val incoming = incomingRecords(20_000)
+        val visibility = testSearchVisibility(spamManager = spamManager)
+        val search = searchFixture(testDispatcher, incoming, visibility = visibility)
+        val (batches, collectorJob) = collectBatches(search.repository, testDispatcher)
+
+        search.start("Получено", tokenScreen = tokenScreen)
+        search.pageUntilExhausted(batches)
+
+        assertTrue(batches.last().searchExhausted)
+        assertTrue(batches.last().records.isEmpty())
+        assertEquals(incoming.map { it.uid }, search.served)
+        collectorJob.cancel()
+        search.repository.clear()
+    }
+
+    private fun TestScope.assertSentTabSkipsProviderSwapRows(tokenScreen: Boolean) {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+        mockRussianTitles()
+        val swapRows = (0 until 20).map { fixtureRecord("swap-$it", 10_000L - it) }
+        val transfer = fixtureRecord("transfer", 5_000L)
+        val storage = providerStorage(swapRows.map { it.uid }.toSet())
+        val search = searchFixture(testDispatcher, swapRows + transfer, storage)
+        val (batches, collectorJob) = collectBatches(search.repository, testDispatcher)
+
+        search.start("отпр", FilterTransactionType.Outgoing, tokenScreen)
+
+        assertEquals(listOf("transfer"), batches.last().records.map { it.uid })
+        collectorJob.cancel()
+        search.repository.clear()
+    }
+
+    @Test
     fun reload_invokesAdapterGetTransactionsAgainForEachAdapter() = runTest {
         val testDispatcher = UnconfinedTestDispatcher(testScheduler)
         startKoinForTests()
@@ -832,6 +1383,8 @@ class TransactionRecordRepositoryWalletSwitchTest {
             pendingRepository = emptyPendingRepository(),
             pendingConverter = mockk(relaxed = true),
             pendingTransactionMatcher = PendingTransactionMatcher(),
+            searchMatcher = testSearchMatcher(),
+            searchVisibility = testSearchVisibility(),
             locallyCreatedTransactionRepository = relaxedLocallyCreatedRepository(),
             dispatcherProvider = dispatcherProvider
         )
@@ -1398,14 +1951,138 @@ class TransactionRecordRepositoryWalletSwitchTest {
         assertEquals(2, scenario.readCount)
         scenario.releaseFreshRead.complete(Unit)
         runCurrent()
-        val batch = emissions.single()
-        if (scenario.snapshot.isEmpty()) {
-            assertTrue(batch.records.isEmpty())
-        } else {
-            assertSame(scenario.updated, batch.records.single())
+        // A search re-publishes its page once more for the update it already applied; no read repeats.
+        assertTrue(emissions.isNotEmpty())
+        emissions.forEach { batch ->
+            if (scenario.snapshot.isEmpty()) {
+                assertTrue(batch.records.isEmpty())
+            } else {
+                assertSame(scenario.updated, batch.records.single())
+            }
+            assertEquals(searchQuery != null, batch.searchCompleted)
         }
-        assertEquals(searchQuery != null, batch.searchCompleted)
         assertEquals(2, scenario.readCount)
+    }
+
+    @Test
+    fun set_periodApplied_reloadsOnlyRecordsOfThePeriod() = runTest {
+        startKoinForTests()
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val wallet = walletFor(searchToken, searchSource)
+        val adapter = pagedAdapter(
+            listOf(fixtureRecord("newer", 2_500), fixtureRecord("inside", 1_500), fixtureRecord("older", 500)),
+        )
+        val repository = createRepository(adapterManager(searchSource, adapter), dispatcher, this)
+        val (batches, collectorJob) = collectBatches(repository, dispatcher)
+        repository.setAndReload(listOf(wallet), wallet, FilterTransactionType.All, null, null, null)
+        advanceUntilIdle()
+
+        val changed = repository.set(listOf(wallet), wallet, FilterTransactionType.All, null, null, null, PERIOD)
+        repository.reloadItems()
+        advanceUntilIdle()
+
+        assertTrue(changed)
+        assertFalse(repository.set(listOf(wallet), wallet, FilterTransactionType.All, null, null, null, PERIOD))
+        assertEquals(listOf("inside"), batches.last().records.map { it.uid })
+        collectorJob.cancel()
+        repository.clear()
+    }
+
+    @Test
+    fun loadSearchPage_periodChangedDuringScan_dropsTheOldPeriodResult() = runTest {
+        startKoinForTests()
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val wallet = walletFor(searchToken, searchSource)
+        val gate = CompletableDeferred<Unit>()
+        val adapter = pagedAdapter(
+            listOf(
+                searchRecord(searchToken, searchSource, "match-new", 2_500, "needle-address"),
+                searchRecord(searchToken, searchSource, "match-old", 1_500, "needle-address"),
+            ),
+            onRead = { gate.await() },
+        )
+        val repository = createRepository(adapterManager(searchSource, adapter), dispatcher, this)
+        val (batches, collectorJob) = collectBatches(repository, dispatcher)
+        repository.set(listOf(wallet), wallet, FilterTransactionType.All, null, null, "needle", PERIOD)
+        repository.reloadItems()
+        runCurrent()
+
+        repository.set(listOf(wallet), wallet, FilterTransactionType.All, null, null, "needle", OTHER_PERIOD)
+        gate.complete(Unit)
+        advanceUntilIdle()
+        val publishedBeforeReload = batches.toList()
+        repository.reloadItems()
+        advanceUntilIdle()
+
+        assertTrue(publishedBeforeReload.none { batch -> batch.records.any { it.uid == "match-old" } })
+        assertEquals(listOf("match-new"), batches.last { it.searchCompleted }.records.map { it.uid })
+        collectorJob.cancel()
+        repository.clear()
+    }
+
+    @Test
+    fun loadRegularPage_shortCompletePage_reportsHistoryExhausted() = runTest {
+        val batch = firstRegularBatch(pagedAdapter(incomingRecords(3)))
+
+        assertTrue(batch.historyExhausted)
+    }
+
+    @Test
+    fun loadRegularPage_fullPage_reportsHistoryNotExhausted() = runTest {
+        val batch = firstRegularBatch(pagedAdapter(incomingRecords(TransactionRecordRepository.itemsPerPage + 5)))
+
+        assertFalse(batch.historyExhausted)
+    }
+
+    @Test
+    fun loadRegularPage_sourceFailed_reportsHistoryNotExhausted() = runTest {
+        val failingSource = createSource("account-2", searchToken.blockchain)
+
+        val batch = firstRegularBatch(pagedAdapter(incomingRecords(3)), failingSource to throwingAdapter())
+
+        assertFalse(batch.historyExhausted)
+    }
+
+    @Test
+    fun oldestTimestamp_severalSources_returnsMinimumSkippingFailingSource() = runTest {
+        startKoinForTests()
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val sources = (1..3).map { createSource("account-$it", searchToken.blockchain) }
+        val oldest = listOf<suspend () -> Long?>({ 500L }, { 300L }, { error("source failure") })
+        val adapters = sources.zip(oldest).associate { (source, answer) ->
+            source to pagedAdapter(emptyList()).apply {
+                coEvery { getOldestTransactionTimestamp(any(), any(), any()) } coAnswers { answer() }
+            }
+        }
+        val adapterManager = mockk<TransactionAdapterManager>(relaxed = true) {
+            every { getAdapter(any()) } answers { adapters[firstArg()] }
+        }
+        val repository = createRepository(adapterManager, dispatcher, this)
+        repository.set(sources.map { walletFor(searchToken, it) }, null, FilterTransactionType.All, null, null)
+
+        assertEquals(300L, repository.oldestTimestamp())
+        repository.clear()
+    }
+
+    // The first page of [mainAdapter]'s wallet, read together with every [otherSources] wallet.
+    private fun TestScope.firstRegularBatch(
+        mainAdapter: ITransactionsAdapter,
+        vararg otherSources: Pair<TransactionSource, ITransactionsAdapter>,
+    ): RecordsBatch {
+        startKoinForTests()
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val adapters = mapOf(searchSource to mainAdapter) + otherSources
+        val adapterManager = mockk<TransactionAdapterManager>(relaxed = true) {
+            every { getAdapter(any()) } answers { adapters[firstArg()] }
+        }
+        val repository = createRepository(adapterManager, dispatcher, this)
+        val (batches, collectorJob) = collectBatches(repository, dispatcher)
+        val wallets = adapters.keys.map { walletFor(searchToken, it) }
+        repository.setAndReload(wallets, null, FilterTransactionType.All, null, null, null)
+        advanceUntilIdle()
+        collectorJob.cancel()
+        repository.clear()
+        return batches.last()
     }
 
     private fun startKoinForTests() {
@@ -1432,17 +2109,26 @@ class TransactionRecordRepositoryWalletSwitchTest {
             every { getTransactionUrl(any()) } returns ""
         }
 
-    private fun pagedAdapter(records: List<TransactionRecord>) =
-        mockk<ITransactionsAdapter>(relaxed = true) {
-            coEvery { getTransactions(any(), any(), any(), any(), any()) } coAnswers {
+    private fun pagedAdapter(
+        records: List<TransactionRecord>,
+        served: MutableList<String>? = null,
+        updates: Flow<List<TransactionRecord>> = emptyFlow(),
+        onRead: suspend () -> Unit = {},
+    ) = mockk<ITransactionsAdapter>(relaxed = true) {
+            coEvery { getTransactions(any(), any(), any(), any(), any(), any()) } coAnswers {
+                onRead()
                 val from = invocation.args[0] as? TransactionRecord
                 val limit = invocation.args[2] as Int
+                val periodRecords = records.filterInPeriod(invocation.args[5] as? TimestampRange) { it.timestamp }
                 val startIndex = from
-                    ?.let { fromRecord -> records.indexOfFirst { it.uid == fromRecord.uid } + 1 }
+                    ?.let { fromRecord -> periodRecords.indexOfFirst { it.uid == fromRecord.uid } + 1 }
                     ?: 0
-                records.drop(startIndex.coerceAtLeast(0)).take(limit)
+                periodRecords.drop(startIndex.coerceAtLeast(0)).take(limit)
+                    .also { page -> served?.addAll(page.map { it.uid }) }
             }
-            every { getTransactionRecordsFlow(any(), any(), any()) } returns emptyFlow()
+            // The Swaps tab reaches these records only through its extra All-type source.
+            coEvery { getTransactions(any(), any(), any(), FilterTransactionType.Swap, any(), any()) } returns emptyList()
+            every { getTransactionRecordsFlow(any(), any(), any()) } returns updates
             every { getTransactionUrl(any()) } returns ""
         }
 
@@ -1481,12 +2167,16 @@ class TransactionRecordRepositoryWalletSwitchTest {
         dispatcher: TestDispatcher,
         scope: TestScope,
         swapProviderTransactionsStorage: SwapProviderTransactionsStorage = mockk(relaxed = true),
+        searchMatcher: TransactionRecordSearchMatcher = testSearchMatcher(swapProviderTransactionsStorage),
+        searchVisibility: TransactionSearchVisibility = testSearchVisibility(swapProviderTransactionsStorage),
     ) = TransactionRecordRepository(
         adapterManager = adapterManager,
         swapProviderTransactionsStorage = swapProviderTransactionsStorage,
         pendingRepository = emptyPendingRepository(),
         pendingConverter = mockk(relaxed = true),
         pendingTransactionMatcher = PendingTransactionMatcher(),
+        searchMatcher = searchMatcher,
+        searchVisibility = searchVisibility,
         locallyCreatedTransactionRepository = relaxedLocallyCreatedRepository(),
         dispatcherProvider = TestDispatcherProvider(dispatcher, scope)
     )
@@ -1552,6 +2242,45 @@ class TransactionRecordRepositoryWalletSwitchTest {
 
     // Mirrors the production contract: TransactionsService calls set() and only reloads
     // when it reports a change. set() no longer triggers the reload itself.
+    private class ProviderSearchFixture(
+        val source: TransactionSource,
+        val wallet: TransactionWallet,
+        val record: TransactionRecord,
+    ) {
+        var storedSwap = testProviderSwap(TransactionStatusEnum.WAITING, record.uid)
+        val updates = MutableSharedFlow<List<SwapProviderTransaction>>(extraBufferCapacity = 1)
+        val storage = mockk<SwapProviderTransactionsStorage>(relaxed = true) {
+            every { getAllAcrossAccounts() } answers { listOf(storedSwap) }
+            every { getByOutgoingRecordUid(record.uid) } answers { storedSwap }
+            every { getByTokenIn(any(), any(), any()) } returns null
+            every { observeAll() } returns updates
+        }
+    }
+
+    private fun providerSearchFixture(): ProviderSearchFixture {
+        val token = createToken()
+        val source = createSource(accountId = "account-1", blockchain = token.blockchain)
+        val record = createBitcoinOutgoingRecord(
+            token = token,
+            source = source,
+            uid = "provider-payment",
+            timestamp = 1_715_000_000L,
+            amount = BigDecimal("-0.001"),
+            toAddress = "provider-deposit",
+        )
+        return ProviderSearchFixture(source, TransactionWallet(token = token, source = source, badge = null), record)
+    }
+
+    private fun TransactionRecordRepository.searchAllTab(wallet: TransactionWallet, searchQuery: String) =
+        setAndReload(
+            transactionWallets = listOf(wallet),
+            wallet = null,
+            transactionType = FilterTransactionType.All,
+            blockchain = null,
+            contact = null,
+            searchQuery = searchQuery,
+        )
+
     private fun TransactionRecordRepository.setAndReload(
         transactionWallets: List<TransactionWallet>,
         wallet: TransactionWallet?,
@@ -1606,12 +2335,132 @@ class TransactionRecordRepositoryWalletSwitchTest {
         return pagedAdapter(noise + match)
     }
 
+    private inner class SearchFixture(
+        val repository: TransactionRecordRepository,
+        val records: List<TransactionRecord>,
+        val served: List<String>,
+        private val scope: TestScope,
+    ) {
+        private val wallet = walletFor(searchToken, searchSource)
+
+        // The TokenBalance screen selects its single wallet; the Transactions tab selects none.
+        fun start(
+            query: String?,
+            tab: FilterTransactionType = FilterTransactionType.All,
+            tokenScreen: Boolean = false,
+        ) {
+            repository.setAndReload(listOf(wallet), wallet.takeIf { tokenScreen }, tab, null, null, query)
+            scope.advanceUntilIdle()
+        }
+
+        fun pageUntilExhausted(batches: List<RecordsBatch>) {
+            repeat(MAX_TEST_PAGES) {
+                if (batches.last().searchExhausted) return
+                repository.loadNext()
+                scope.advanceUntilIdle()
+            }
+        }
+    }
+
+    private fun TestScope.searchFixture(
+        dispatcher: TestDispatcher,
+        records: List<TransactionRecord>,
+        storage: SwapProviderTransactionsStorage = mockk(relaxed = true),
+        matcher: TransactionRecordSearchMatcher = testSearchMatcher(storage),
+        visibility: TransactionSearchVisibility = testSearchVisibility(storage),
+    ): SearchFixture {
+        val served = mutableListOf<String>()
+        val repository = createRepository(
+            adapterManager(searchSource, pagedAdapter(records, served)),
+            dispatcher,
+            this,
+            swapProviderTransactionsStorage = storage,
+            searchMatcher = matcher,
+            searchVisibility = visibility,
+        )
+        return SearchFixture(repository, records, served, this)
+    }
+
+    // One non-matching source that reports an update after the search reached its depth.
+    private inner class RefreshFixture(
+        val repository: TransactionRecordRepository,
+        val served: List<String>,
+        private val updates: MutableSharedFlow<List<TransactionRecord>>,
+        private val dispatcher: TestDispatcher,
+        private val scope: TestScope,
+    ) {
+        lateinit var batches: List<RecordsBatch>
+        private var collectorJob: Job? = null
+
+        fun start(pages: Int) {
+            val (collected, job) = scope.collectBatches(repository, dispatcher)
+            batches = collected
+            collectorJob = job
+            val wallets = listOf(walletFor(searchToken, searchSource))
+            repository.setAndReload(wallets, null, FilterTransactionType.All, null, null, "needle")
+            scope.advanceUntilIdle()
+            repeat(pages - 1) { repository.loadNext(); scope.advanceUntilIdle() }
+        }
+
+        fun emitUpdate() {
+            check(updates.tryEmit(emptyList()))
+            scope.advanceUntilIdle()
+        }
+
+        fun close() {
+            collectorJob?.cancel()
+            repository.clear()
+        }
+    }
+
+    private fun noise(count: Int) = (0 until count).map { fixtureRecord("noise-$it", 1_000_000L - it) }
+
+    private fun TestScope.refreshFixture(dispatcher: TestDispatcher, records: List<TransactionRecord>): RefreshFixture {
+        val served = mutableListOf<String>()
+        val updates = MutableSharedFlow<List<TransactionRecord>>(extraBufferCapacity = 1)
+        val adapter = pagedAdapter(records, served, updates)
+        val repository = createRepository(adapterManager(searchSource, adapter), dispatcher, this)
+        return RefreshFixture(repository, served, updates, dispatcher, this)
+    }
+
+    // noiseCount newer non-matching records, optionally followed by one match.
+    private fun TestScope.deepSearch(
+        dispatcher: TestDispatcher,
+        noiseCount: Int,
+        withMatch: Boolean,
+        matcher: TransactionRecordSearchMatcher = testSearchMatcher(),
+    ): SearchFixture {
+        val noise = (0 until noiseCount).map { fixtureRecord("noise-$it", 1_000_000L - it) }
+        val match = searchRecord(searchToken, searchSource, "deep-match", 1_000_000L - noiseCount, "needle-address")
+        return searchFixture(dispatcher, if (withMatch) noise + match else noise, matcher = matcher)
+    }
+
+    private fun fixtureRecord(
+        uid: String,
+        timestamp: Long,
+        type: TransactionRecordType = TransactionRecordType.BITCOIN_OUTGOING,
+    ) = searchRecord(searchToken, searchSource, uid, timestamp, "plain", type)
+
+    private fun incomingRecords(count: Int) =
+        (0 until count).map { fixtureRecord("in-$it", 1_000_000L - it, TransactionRecordType.BITCOIN_INCOMING) }
+
+    // Every given uid is the outgoing record of a finished provider swap.
+    private fun providerStorage(linkedUids: Set<String>) = mockk<SwapProviderTransactionsStorage>(relaxed = true) {
+        every { getByOutgoingRecordUid(any()) } answers {
+            firstArg<String>().takeIf { it in linkedUids }?.let { testProviderSwap(TransactionStatusEnum.FINISHED, it) }
+        }
+        every { getByTokenIn(any(), any(), any()) } returns null
+        every { getAllAcrossAccounts() } returns linkedUids.map { testProviderSwap(TransactionStatusEnum.FINISHED, it) }
+        every { observeAll() } returns emptyFlow()
+    }
+
     private fun searchRecord(
         token: Token,
         source: TransactionSource,
         uid: String,
         timestamp: Long,
         toAddress: String,
+        type: TransactionRecordType = TransactionRecordType.BITCOIN_OUTGOING,
     ) = createBitcoinOutgoingRecord(
         token = token,
         source = source,
@@ -1619,6 +2468,7 @@ class TransactionRecordRepositoryWalletSwitchTest {
         timestamp = timestamp,
         amount = BigDecimal("-0.00000563"),
         toAddress = toAddress,
+        type = type,
     )
 
     // A long-history source whose records are all older than the page cutoff: it settles after the
@@ -1649,6 +2499,7 @@ class TransactionRecordRepositoryWalletSwitchTest {
         timestamp: Long,
         amount: BigDecimal,
         toAddress: String,
+        type: TransactionRecordType = TransactionRecordType.BITCOIN_OUTGOING,
     ) = BitcoinTransactionRecord(
         token = token,
         amount = amount,
@@ -1665,11 +2516,17 @@ class TransactionRecordRepositoryWalletSwitchTest {
         memo = null,
         source = source,
         sentToSelf = false,
-        transactionRecordType = TransactionRecordType.BITCOIN_OUTGOING,
+        transactionRecordType = type,
         fee = null,
         lockInfo = null,
         conflictingHash = null,
         showRawTransaction = true,
         replaceable = false,
     )
+
+    private companion object {
+        const val MAX_TEST_PAGES = 50
+        val PERIOD = TimestampRange(since = 1_000, until = 2_000)
+        val OTHER_PERIOD = TimestampRange(since = 2_000, until = 3_000)
+    }
 }

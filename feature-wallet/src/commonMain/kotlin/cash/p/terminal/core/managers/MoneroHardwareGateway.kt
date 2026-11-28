@@ -9,13 +9,19 @@ import kotlinx.coroutines.job
 
 /** Runs a Monero kit call with the account's hardware wallet registered as the kit's external signer. */
 interface MoneroHardwareGateway {
-    /** [block] receives the device's wallet public key. */
+    /** Verifies the device belongs to [account]; [block] receives the live wallet public key. */
     suspend fun <T> execute(account: Account, block: (String) -> T): T
 
-    /** [execute] for work nobody asked for: it must never prompt the user, on the phone or on the device. */
+    /**
+     * [execute] for work nobody asked for: it must never prompt the user, on the phone or on the device.
+     * Ledger: it never reaches the device while the app is in the background.
+     */
     suspend fun <T> executeUnattended(account: Account, block: (String) -> T): T = execute(account, block)
 
-    /** [executeUnattended] whose caller gives the device up when [isUserOperationWaiting]. */
+    /**
+     * [executeUnattended] whose caller gives the device up when [isUserOperationWaiting].
+     * Ledger: gives the device up to a user operation by throwing LedgerSessionYieldedException.
+     */
     suspend fun <T> executeYielding(account: Account, block: (String) -> T): T = executeUnattended(account, block)
 
     /** A user operation is waiting for the device that a running [executeYielding] block holds. */

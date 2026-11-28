@@ -43,7 +43,7 @@ class ConfirmPasswordPage(private val check: Check = Check.APP_PASSWORD) : HSPag
         }
         ConfirmPasswordContent(
             uiState = viewModel.uiState,
-            description = stringResource(check.description),
+            description = check.description,
             onPasswordChange = viewModel::onPasswordChange,
             onConfirmClick = viewModel::onSubmitClick,
             onBack = navigation::navigateUpSafely,
@@ -61,10 +61,10 @@ class ConfirmPasswordPage(private val check: Check = Check.APP_PASSWORD) : HSPag
 @Composable
 internal fun ConfirmPasswordContent(
     uiState: PasswordCheckUiState,
-    description: String,
     onPasswordChange: (String) -> Unit,
     onConfirmClick: () -> Unit,
     onBack: () -> Unit,
+    description: StringResource = Res.string.desktop_unlock_title,
 ) {
     Scaffold(
         containerColor = ComposeAppTheme.colors.backgroundBase,
@@ -81,7 +81,7 @@ internal fun ConfirmPasswordContent(
                 .centeredForm(rememberScrollState()),
         ) {
             VSpacer(24.dp)
-            subhead2_grey(text = description)
+            subhead2_grey(text = stringResource(description))
             VSpacer(16.dp)
             PasswordCheckForm(
                 uiState = uiState,
@@ -103,7 +103,7 @@ private fun ConfirmPasswordContentPreview() {
                 password = "secret",
                 outcome = UnlockOutcome.WrongPassword(attemptsLeft = 3),
             ),
-            description = stringResource(Res.string.desktop_transactions_hide_password_enter),
+            description = Res.string.desktop_transactions_hide_password_enter,
             onPasswordChange = {},
             onConfirmClick = {},
             onBack = {},

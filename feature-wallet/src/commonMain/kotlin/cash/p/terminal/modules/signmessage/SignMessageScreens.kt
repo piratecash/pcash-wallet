@@ -44,6 +44,7 @@ import cash.p.terminal.resources.sign_message_format_bip322_description
 import cash.p.terminal.resources.sign_message_format_info
 import cash.p.terminal.resources.sign_message_format_standard
 import cash.p.terminal.resources.sign_message_format_standard_description
+import cash.p.terminal.resources.sign_message_hardware_taproot
 import cash.p.terminal.resources.sign_message_hint
 import cash.p.terminal.resources.sign_message_intro
 import cash.p.terminal.resources.sign_message_message
@@ -52,7 +53,6 @@ import cash.p.terminal.resources.sign_message_select_address_hint
 import cash.p.terminal.resources.sign_message_signature
 import cash.p.terminal.resources.sign_message_taproot_only
 import cash.p.terminal.resources.sign_message_title
-import cash.p.terminal.resources.sign_message_trezor_taproot
 import cash.p.terminal.resources.sign_message_used
 import cash.p.terminal.strings.helpers.shorten
 import cash.p.terminal.ui.compose.components.FormsInputMultiline
@@ -160,7 +160,7 @@ private fun FormatSection(uiState: SignMessageUiState, onFormatSelect: (MessageS
     if (uiState.formats.isEmpty()) {
         TextImportantWarning(
             modifier = Modifier.padding(horizontal = 16.dp),
-            text = stringResource(Res.string.sign_message_trezor_taproot),
+            text = stringResource(Res.string.sign_message_hardware_taproot),
         )
         return
     }
@@ -474,7 +474,7 @@ private fun SignMessageScreenTaprootPreview() {
 
 @Preview
 @Composable
-private fun SignMessageScreenTrezorTaprootPreview() {
+private fun SignMessageScreenHardwareTaprootPreview() {
     SignMessageFormPreview(
         SignMessageUiState(address = PreviewTaprootAddress, formats = emptyList(), selectedFormat = null)
     )
