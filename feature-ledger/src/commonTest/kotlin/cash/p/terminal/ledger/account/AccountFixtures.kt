@@ -76,8 +76,9 @@ object AccountFixtures {
     const val SPL_DESTINATION = "FGETo8T8wMcN2wCjav8VK6eh3dLk63evNDPxzLSJra8B"
 
     /** A USDC TransferChecked as solana-kit builds it, creating the recipient's account when [newRecipient]. */
-    fun splTransferMessage(newRecipient: Boolean = false): ByteArray {
+    fun splTransferMessage(newRecipient: Boolean = false, programId: PublicKey = TokenProgram.PROGRAM_ID): ByteArray {
         val createAccount = AssociatedTokenProgram.createAssociatedTokenAccountInstruction(
+            programId = programId,
             mint = PublicKey(SPL_MINT),
             associatedAccount = PublicKey(SPL_DESTINATION),
             owner = PublicKey(SPL_RECIPIENT),
@@ -85,7 +86,7 @@ object AccountFixtures {
         )
         val transfer = TokenProgram.transferChecked(
             PublicKey(SPL_SOURCE), PublicKey(SPL_DESTINATION), 1_500_000, 6, PublicKey(SPL_OWNER), PublicKey(SPL_MINT),
-        )
+        ).copy(programId = programId)
         return solanaMessage(*listOfNotNull(createAccount.takeIf { newRecipient }, transfer).toTypedArray())
     }
 
