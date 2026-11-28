@@ -26,6 +26,7 @@ class WCRequestViewModel(
     private var finish: Boolean = false
     private var errorText: String? = null
     private var verifyAlert: WCVerifyAlert? = null
+    private var verifyChecked = false
 
     private var actionState = wcAction.stateFlow.value
 
@@ -40,6 +41,7 @@ class WCRequestViewModel(
 
         viewModelScope.launch {
             verifyAlert = wcManager.getRequestVerifyAlert(sessionRequest.request.id)
+            verifyChecked = true
             emitState()
         }
 
@@ -49,7 +51,8 @@ class WCRequestViewModel(
     override fun createState() = WCRequestUiState(
         title = wcAction.getTitle(),
         finish = finish,
-        runnable = !approveInProgress && actionState.runnable,
+        // Approve waits for the Verify result so a fast tap cannot beat a phishing alert.
+        runnable = verifyChecked && !approveInProgress && actionState.runnable,
         approveButtonTitle = wcAction.getApproveButtonTitle(),
         contentItems = actionState.items,
         errorText = errorText,
