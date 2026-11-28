@@ -61,6 +61,18 @@ import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import cash.p.terminal.feature.wallet.SecretActionAuthorizer
+import cash.p.terminal.modules.settings.displaytransactions.DisplayTransactionsPage
+import cash.p.terminal.modules.settings.security.ui.TransactionAutoHideBlock
+import cash.p.terminal.modules.settings.security.ui.TransactionAutoHideTexts
+import cash.p.terminal.resources.desktop_transactions_hide_delete_password
+import cash.p.terminal.resources.desktop_transactions_hide_description
+import cash.p.terminal.resources.desktop_transactions_hide_edit_password
+import cash.p.terminal.resources.desktop_transactions_hide_set_password
+import cash.p.terminal.shared.desktop.lock.TransactionsHidePasswordPage
+import cash.p.terminal.wallet.managers.TransactionDisplayLevel
+import cash.p.terminal.wallet.managers.TransactionHiddenState
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 class DesktopSecurityPage : HSPage() {
@@ -86,6 +98,7 @@ class DesktopSecurityPage : HSPage() {
         val openHiddenWalletTerms = navigation.rememberPremiumAction {
             navigation.slideFromRight(HiddenWalletTermsPage())
         }
+        val transactionsHideActions = rememberTransactionsHideActions(navigation, viewModel)
         // The interval and the duress state are changed on other pages, so they are re-read when this one comes back.
         PageResumeEffect(
             onResume = {
@@ -99,6 +112,7 @@ class DesktopSecurityPage : HSPage() {
             duressState = duressViewModel.uiState,
             actions = DesktopSecurityActions(
                 onBalanceAutoHideChange = viewModel::onBalanceAutoHideChange,
+                transactionsHide = transactionsHideActions,
                 onTransferPasswordChange = viewModel::onTransferPasswordChange,
                 onAutoLockClick = { navigation.slideFromRight(DesktopAutoLockIntervalsPage()) },
                 onChangePasswordClick = { navigation.slideFromRight(ChangePasswordPage()) },
@@ -113,8 +127,43 @@ class DesktopSecurityPage : HSPage() {
     }
 }
 
+/** As Android: only turning auto-hide on, and setting the first separate password, skip its own check. */
+@Composable
+private fun rememberTransactionsHideActions(
+    navigation: HSNavigation,
+    viewModel: DesktopSecurityViewModel,
+): TransactionsHideActions {
+    val authorizer = koinInject<SecretActionAuthorizer>()
+    val disable = authorizer.rememberHiddenTransactionsAuthorization(navigation) {
+        viewModel.onTransactionAutoHideChange(false)
+    }
+    val openDisplay = authorizer.rememberHiddenTransactionsAuthorization(navigation) {
+        navigation.slideFromRight(DisplayTransactionsPage())
+    }
+    val setPassword = navigation.rememberSecretAction { navigation.slideFromRight(TransactionsHidePasswordPage()) }
+    val editPassword = authorizer.rememberHiddenTransactionsAuthorization(navigation) {
+        navigation.slideFromRight(TransactionsHidePasswordPage())
+    }
+    val deletePassword =
+        authorizer.rememberHiddenTransactionsAuthorization(navigation, viewModel::onDeleteSeparatePassword)
+    return TransactionsHideActions(
+        onEnabledChange = { enabled -> if (enabled) viewModel.onTransactionAutoHideChange(true) else disable() },
+        onDisplayClick = openDisplay,
+        onPasswordClick = { if (viewModel.uiState.separatePasswordExists) editPassword() else setPassword() },
+        onDeletePasswordClick = deletePassword,
+    )
+}
+
+internal class TransactionsHideActions(
+    val onEnabledChange: (Boolean) -> Unit,
+    val onDisplayClick: () -> Unit,
+    val onPasswordClick: () -> Unit,
+    val onDeletePasswordClick: () -> Unit,
+)
+
 internal class DesktopSecurityActions(
     val onBalanceAutoHideChange: (Boolean) -> Unit,
+    val transactionsHide: TransactionsHideActions,
     val onTransferPasswordChange: (Boolean) -> Unit,
     val onAutoLockClick: () -> Unit,
     val onChangePasswordClick: () -> Unit,
@@ -152,6 +201,16 @@ internal fun DesktopSecurityContent(
                 onCheckedChange = actions.onBalanceAutoHideChange,
             )
             VSpacer(20.dp)
+            TransactionAutoHideBlock(
+                transactionAutoHideEnabled = uiState.transactionAutoHideEnabled,
+                displayLevel = uiState.displayLevel,
+                transactionAutoHideSeparatePinExists = uiState.separatePasswordExists,
+                onTransactionAutoHideEnabledChange = actions.transactionsHide.onEnabledChange,
+                onPinClick = actions.transactionsHide.onPasswordClick,
+                onDisablePinClick = actions.transactionsHide.onDeletePasswordClick,
+                onChangeDisplayClick = actions.transactionsHide.onDisplayClick,
+                texts = DESKTOP_TRANSACTION_AUTO_HIDE_TEXTS,
+            )
             SwitchSection(
                 title = stringResource(Res.string.desktop_transfer_password),
                 description = stringResource(Res.string.desktop_transfer_password_description),
@@ -176,6 +235,13 @@ internal fun DesktopSecurityContent(
         }
     }
 }
+
+private val DESKTOP_TRANSACTION_AUTO_HIDE_TEXTS = TransactionAutoHideTexts(
+    setCode = Res.string.desktop_transactions_hide_set_password,
+    editCode = Res.string.desktop_transactions_hide_edit_password,
+    deleteCode = Res.string.desktop_transactions_hide_delete_password,
+    description = Res.string.desktop_transactions_hide_description,
+)
 
 @Composable
 private fun AccessSection(uiState: DesktopSecurityUiState, actions: DesktopSecurityActions) {
@@ -277,9 +343,15 @@ private fun DesktopSecurityContentPreview() {
                 autoLockInterval = AutoLockInterval.AFTER_1_MIN,
                 balanceAutoHideEnabled = true,
                 transferPasswordEnabled = false,
+                transactionHidden = TransactionHiddenState(
+                    transactionHidden = true,
+                    transactionHideEnabled = true,
+                    transactionDisplayLevel = TransactionDisplayLevel.LAST_2_TRANSACTIONS,
+                    transactionAutoHidePinExists = true,
+                ),
             ),
             duressState = DuressSectionUiState(available = true, set = true),
-            actions = DesktopSecurityActions({}, {}, {}, {}, {}, {}, {}, {}),
+            actions = DesktopSecurityActions({}, TransactionsHideActions({}, {}, {}, {}), {}, {}, {}, {}, {}, {}, {}),
             torSection = {},
             onBack = {},
         )

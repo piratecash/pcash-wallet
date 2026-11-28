@@ -9,10 +9,14 @@ import cash.p.terminal.shared.desktop.vault.DesktopVault
 import cash.p.terminal.shared.desktop.vault.OpenSafe
 import cash.p.terminal.shared.desktop.vault.VaultLevelsFixture
 import cash.p.terminal.shared.desktop.vault.VaultLoginEvents
+import cash.p.terminal.wallet.managers.ITransactionHiddenManager
+import cash.p.terminal.wallet.managers.TransactionDisplayLevel
+import cash.p.terminal.wallet.managers.TransactionHiddenState
 import io.horizontalsystems.core.DesktopSettingsStore
 import io.horizontalsystems.core.ICurrentDateProvider
 import io.horizontalsystems.sqlcipher.SqlCipherDriver
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -20,6 +24,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.runBlocking
 import java.io.File
@@ -58,6 +63,15 @@ internal class JournalFixture(val levels: VaultLevelsFixture) {
     val nonPremiumSlots = mutableSetOf<Int>()
     var premiumCheckFails = false
     val contacts = mockk<ContactsRepository>(relaxed = true)
+    var transactionsHidePassword: String? = null
+    private val transactionHiddenManager = mockk<ITransactionHiddenManager> {
+        every { transactionHiddenFlow } answers {
+            MutableStateFlow(
+                TransactionHiddenState(false, false, TransactionDisplayLevel.NOTHING, transactionsHidePassword != null)
+            )
+        }
+        every { isPinMatches(any()) } answers { firstArg<String>() == transactionsHidePassword }
+    }
     val dateProvider = SteppingDateProvider()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val dispatcherProvider = TestDispatcherProvider(Dispatchers.IO, scope)
@@ -87,7 +101,9 @@ internal class JournalFixture(val levels: VaultLevelsFixture) {
         private val queue = JournalQueue(dispatcherProvider)
         val records = DesktopLoginRecordRepository(vault, dateProvider, dispatcherProvider)
         val settings = DesktopLoggingSettings(vault, settingsStore)
-        val secrets = DesktopLoginJournalSecrets(vault, levels.passwordVault, levels.lockoutManager, dispatcherProvider)
+        val secrets = DesktopLoginJournalSecrets(
+            vault, levels.passwordVault, levels.lockoutManager, dispatcherProvider, transactionHiddenManager,
+        )
         val journal = DesktopLoginJournal(
             vault, camera, lazyOf(premium), lazyOf(contacts),
             FailedAttemptRecorder(vault, camera, settingsStore, dateProvider, queue),

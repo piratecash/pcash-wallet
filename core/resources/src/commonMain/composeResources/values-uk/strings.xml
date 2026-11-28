@@ -2892,6 +2892,12 @@
     <string name="desktop_duress_password_edit_description">Введіть новий пароль для режиму Duress</string>
     <string name="desktop_hidden_wallet_password_title">Пароль прихованого гаманця</string>
     <string name="desktop_hidden_wallet_password_description">Створіть пароль для прихованого гаманця</string>
+    <string name="desktop_transactions_hide_set_password">Встановити окремий пароль</string>
+    <string name="desktop_transactions_hide_edit_password">Змінити пароль</string>
+    <string name="desktop_transactions_hide_delete_password">Видалити окремий пароль</string>
+    <string name="desktop_transactions_hide_description">Режим безпеки: приховує транзакції та дозволяє встановити окремий пароль для їх розблокування.</string>
+    <string name="desktop_transactions_hide_password_description">Задайте пароль для режиму «Автоприховування транзакцій»</string>
+    <string name="desktop_transactions_hide_password_enter">Введіть пароль для «Автоприховування транзакцій»</string>
     <string name="desktop_hidden_wallet_password_terms_warning">Глобальний гаманець не бачитиме цей гаманець, а якщо ви забудете його пароль, доступ до гаманця можна відновити за seed-фразою.</string>
     <string-array name="desktop_hidden_wallet_password_terms">
         <item>Користувач розуміє, що гаманець не буде видно серед інших гаманців.</item>

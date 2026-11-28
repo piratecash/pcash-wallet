@@ -457,6 +457,9 @@ class OfflineTransactionPayloadEncoder {
 
         fun isRawTransactionHex(text: String): Boolean = RawTransactionHex.isValid(text)
 
+        fun isOfflineTransaction(text: String): Boolean =
+            isOfflineTransactionPayload(text) || isRawTransactionHex(text)
+
         private fun isHex(value: String): Boolean = RawTransactionHex.isHex(value)
 
         private const val VERSION_INT = 1

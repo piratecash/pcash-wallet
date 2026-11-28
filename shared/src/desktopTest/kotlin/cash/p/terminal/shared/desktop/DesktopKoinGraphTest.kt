@@ -324,7 +324,9 @@ import cash.p.terminal.shared.desktop.journal.JournalSecretCheckViewModel
 import cash.p.terminal.shared.desktop.journal.JournalSecretKind
 import cash.p.terminal.shared.desktop.journal.JournalSecretPasswordViewModel
 import cash.p.terminal.shared.desktop.lock.DuressPasswordViewModel
+import cash.p.terminal.shared.desktop.lock.ConfirmPasswordPage
 import cash.p.terminal.shared.desktop.lock.ConfirmPasswordViewModel
+import cash.p.terminal.shared.desktop.lock.TransactionsHidePasswordViewModel
 import cash.p.terminal.shared.desktop.lock.CreatePasswordViewModel
 import cash.p.terminal.shared.desktop.lock.ForgotPasswordViewModel
 import cash.p.terminal.shared.desktop.lock.UnlockViewModel
@@ -334,6 +336,7 @@ import cash.p.terminal.shared.desktop.settings.DesktopLanguageSettingsViewModel
 import cash.p.terminal.shared.desktop.qrscanner.DesktopQrScannerViewModel
 import cash.p.terminal.modules.qrscanner.QRScannerViewModel
 import cash.p.terminal.shared.desktop.settings.DesktopSecurityViewModel
+import cash.p.terminal.modules.settings.displaytransactions.DisplayTransactionsViewModel
 import com.google.gson.Gson
 import kotlin.io.path.createTempDirectory
 import kotlin.reflect.KClass
@@ -410,6 +413,7 @@ class DesktopKoinGraphTest {
                 definition<PassphraseTermsViewModel>(Array<String>::class),
                 definition<HiddenWalletTermsViewModel>(Array<String>::class),
                 definition<DuressPasswordViewModel>(List::class),
+                definition<ConfirmPasswordViewModel>(ConfirmPasswordPage.Check::class),
                 definition<LoggingDetailViewModel>(Long::class),
                 definition<JournalSecretCheckViewModel>(JournalSecretKind::class),
                 definition<JournalSecretPasswordViewModel>(JournalSecretKind::class),
@@ -683,7 +687,9 @@ class DesktopKoinGraphTest {
             UnlockViewModel::class to null,
             ForgotPasswordViewModel::class to null,
             ChangePasswordViewModel::class to null,
-            ConfirmPasswordViewModel::class to null,
+            ConfirmPasswordViewModel::class to { parametersOf(ConfirmPasswordPage.Check.TRANSACTIONS_HIDE) },
+            TransactionsHidePasswordViewModel::class to null,
+            DisplayTransactionsViewModel::class to null,
             JournalSecretCheckViewModel::class to { parametersOf(JournalSecretKind.JOURNAL_PASSWORD) },
             JournalSecretPasswordViewModel::class to { parametersOf(JournalSecretKind.DELETE_CONTACTS) },
             DesktopSecurityViewModel::class to null,

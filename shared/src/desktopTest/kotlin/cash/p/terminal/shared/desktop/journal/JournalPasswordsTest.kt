@@ -56,6 +56,16 @@ class JournalPasswordsTest {
     }
 
     @Test
+    fun journalSetters_transactionsHidePassword_refuseItAsInUse() = journalScenario { fixture ->
+        fixture.levels.create()
+        fixture.transactionsHidePassword = FREE_PASSWORD
+        val secrets = fixture.parts.secrets
+
+        assertEquals(JournalSecretOutcome.PASSWORD_IN_USE, secrets.setDeleteContactsPassword(password(FREE_PASSWORD)))
+        assertEquals(JournalSecretOutcome.PASSWORD_IN_USE, secrets.setJournalPassword(password(FREE_PASSWORD)))
+    }
+
+    @Test
     fun everySetter_freePasswordOrTheCurrentOne_stillSucceeds() = journalScenario { fixture ->
         fixture.levels.create()
         assertEquals(JournalSecretOutcome.SUCCESS, fixture.parts.secrets.setJournalPassword(password(JOURNAL_PASSWORD)))

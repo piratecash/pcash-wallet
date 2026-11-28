@@ -23,6 +23,8 @@ import cash.p.terminal.shared.desktop.journal.JournalSecretPasswordViewModel
 import cash.p.terminal.shared.desktop.lock.ChangePasswordViewModel
 import cash.p.terminal.shared.desktop.lock.DuressPasswordViewModel
 import cash.p.terminal.shared.desktop.lock.HiddenWalletPasswordViewModel
+import cash.p.terminal.shared.desktop.lock.TransactionsHidePasswordViewModel
+import cash.p.terminal.shared.desktop.lock.ConfirmPasswordPage
 import cash.p.terminal.shared.desktop.lock.ConfirmPasswordViewModel
 import cash.p.terminal.shared.desktop.lock.CreatePasswordViewModel
 import cash.p.terminal.shared.desktop.lock.DesktopInactivityLock
@@ -172,12 +174,13 @@ val desktopFeatureModule = module {
     viewModelOf(::UnlockViewModel)
     viewModelOf(::ForgotPasswordViewModel)
     viewModelOf(::ChangePasswordViewModel)
-    viewModelOf(::ConfirmPasswordViewModel)
+    viewModel { (check: ConfirmPasswordPage.Check) -> ConfirmPasswordViewModel(check, get(), get(), get()) }
     viewModelOf(::DesktopSecurityViewModel)
     viewModelOf(::SecurityTorSettingsViewModel)
     viewModelOf(::DesktopDuressSectionViewModel)
     viewModel { (accountIds: List<String>) -> DuressPasswordViewModel(accountIds, get(), get(), get(), get()) }
     viewModelOf(::HiddenWalletPasswordViewModel)
+    viewModelOf(::TransactionsHidePasswordViewModel)
     viewModelOf(::LoggingSettingsViewModel)
     viewModelOf(::LoggingListViewModel)
     viewModelOf(::LoggingDetailViewModel)

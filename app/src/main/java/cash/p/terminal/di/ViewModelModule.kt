@@ -20,7 +20,6 @@ import cash.p.terminal.modules.calculator.pinsettings.CalculatorPinSettingsViewM
 import cash.p.terminal.modules.settings.advancedsecurity.AdvancedSecurityViewModel
 import cash.p.terminal.modules.settings.advancedsecurity.terms.DeleteContactsTermsViewModel
 import cash.p.terminal.modules.settings.advancedsecurity.securereset.SecureResetTermsViewModel
-import cash.p.terminal.modules.settings.displaytransactions.DisplayTransactionsViewModel
 import cash.p.terminal.modules.settings.guides.GuidesViewModel
 import cash.p.terminal.modules.walletconnect.request.WCRequestEvmViewModel
 import cash.p.terminal.modules.settings.main.MainSettingsViewModel
@@ -46,7 +45,6 @@ val viewModelModule = module {
     viewModelOf(::SoftwareUpdateViewModel)
     viewModelOf(::VersionHistoryViewModel)
     viewModel { params -> VersionChangelogViewModel(params.get(), get(), get()) }
-    viewModelOf(::DisplayTransactionsViewModel)
     viewModelOf(::GuidesViewModel)
     viewModelOf(::WCRequestEvmViewModel)
     viewModelOf(::PrivacyViewModel)

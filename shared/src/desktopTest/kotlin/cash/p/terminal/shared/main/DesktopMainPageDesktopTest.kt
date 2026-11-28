@@ -1,6 +1,10 @@
 package cash.p.terminal.shared.main
 
 import androidx.compose.runtime.remember
+import kotlinx.coroutines.flow.emptyFlow
+import cash.p.terminal.core.managers.TransactionHiddenManager
+import cash.p.terminal.core.ITermsManager
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.test.ComposeUiTest
@@ -295,6 +299,36 @@ class DesktopMainPageDesktopTest {
     }
 
     @Test
+    fun settingsTab_accountWithoutBackup_showsAlertDot() = runDesktopComposeUiTest {
+        val termsManager = mockk<ITermsManager>(relaxed = true) {
+            every { allTermsAccepted } returns true
+            every { termsAcceptedSignalFlow } returns emptyFlow()
+        }
+        loadKoinModules(module { single<ITermsManager> { termsManager } })
+        accountList.value = listOf(mnemonicAccount(isBackedUp = true))
+        showApp()
+        onNodeWithTag(MAIN_DESTINATION_ALERT_TAG, useUnmergedTree = true).assertDoesNotExist()
+
+        runOnIdle { accountList.value = listOf(mnemonicAccount(isBackedUp = false)) }
+
+        onNodeWithTag(MAIN_DESTINATION_ALERT_TAG, useUnmergedTree = true).assertExists()
+    }
+
+    @Test
+    fun transactionsTab_leftAfterShowingAll_hidesTheTransactionsAgain() = runDesktopComposeUiTest {
+        val hiddenManager = transactionHiddenManager().apply { setTransactionHideEnabled(true) }
+        showApp()
+        onNodeWithContentDescription(TRANSACTIONS).performClick()
+        runOnIdle { hiddenManager.showAllTransactions(true) }
+        assertFalse(hiddenManager.transactionHiddenFlow.value.transactionHidden)
+
+        onNodeWithContentDescription(BALANCE).performClick()
+        waitForIdle()
+
+        assertTrue(hiddenManager.transactionHiddenFlow.value.transactionHidden)
+    }
+
+    @Test
     fun mainPage_changelogDue_opensReleaseNotesOnce() = runDesktopComposeUiTest {
         val releaseNotesManager = mockk<ReleaseNotesManager> { every { shouldShowChangeLog() } returns true }
         loadKoinModules(module { single { releaseNotesManager } })
@@ -351,6 +385,8 @@ class DesktopMainPageDesktopTest {
 
     private fun appearanceStore() = GlobalContext.get().get<AppearanceSettingsStore>()
 
+    private fun transactionHiddenManager() = GlobalContext.get().get<TransactionHiddenManager>()
+
     private fun ComposeUiTest.showApp() = setContent {
         TestWindowHost {
             ComposeAppTheme {
@@ -368,6 +404,8 @@ class DesktopMainPageDesktopTest {
     private companion object {
         const val NEW_WALLET = "New Wallet"
         const val SETTINGS = "Settings"
+        const val BALANCE = "Balance"
+        const val TRANSACTIONS = "Transactions"
         const val MARKETS = "Markets"
         const val APPEARANCE = "Appearance"
         const val BLOCKCHAIN_SETTINGS = "Blockchain Settings"

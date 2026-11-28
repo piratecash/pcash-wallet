@@ -15,6 +15,7 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.navigation3.runtime.NavBackStack
 import cash.p.terminal.core.TransactionSettingsStorage
+import cash.p.terminal.core.managers.TransactionHiddenManager
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.shared.TestWindowHost
@@ -39,7 +40,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
-import org.koin.core.module.dsl.viewModelOf
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 import java.util.Date
 import java.util.Locale
@@ -113,15 +114,15 @@ class DesktopSecretActionAuthorizerTest {
     }
 
     /** Hosts a caller that remembers the authorization and launches it with [ARGUMENT]. */
-    private fun ComposeUiTest.rememberAuthorizationAndLaunch(transfer: Boolean = false): ConfirmPasswordPage {
-        launchAuthorization(transfer)
+    private fun ComposeUiTest.rememberAuthorizationAndLaunch(kind: Kind = Kind.SECRET): ConfirmPasswordPage {
+        launchAuthorization(kind)
         assertEquals(emptyList(), arguments)
         return assertIs<ConfirmPasswordPage>(navigation.lastOrNull())
     }
 
-    private fun ComposeUiTest.launchAuthorization(transfer: Boolean) {
+    private fun ComposeUiTest.launchAuthorization(kind: Kind) {
         startConfirmPasswordGraph(CompletableDeferred())
-        val caller = AuthorizationCallerPage(transfer)
+        val caller = AuthorizationCallerPage(kind)
         navigation.slideFromRight(caller)
         setContent {
             TestWindowHost {
@@ -134,16 +135,20 @@ class DesktopSecretActionAuthorizerTest {
         waitForIdle()
     }
 
-    private inner class AuthorizationCallerPage(private val transfer: Boolean = false) : HSPage() {
+    private enum class Kind { SECRET, TRANSFER, HIDDEN_TRANSACTIONS }
+
+    private inner class AuthorizationCallerPage(private val kind: Kind = Kind.SECRET) : HSPage() {
         lateinit var authorize: (String) -> Unit
 
         @Composable
         override fun GetContent(navigation: HSNavigation) {
             val record: (String) -> Unit = { arguments += it }
-            val authorization = if (transfer) {
-                authorizer.rememberTransferAuthorization(navigation, record)
-            } else {
-                authorizer.rememberAuthorization(navigation, record)
+            val authorization = when (kind) {
+                Kind.SECRET -> authorizer.rememberAuthorization(navigation, record)
+                Kind.TRANSFER -> authorizer.rememberTransferAuthorization(navigation, record)
+                Kind.HIDDEN_TRANSACTIONS -> authorizer.rememberHiddenTransactionsAuthorization(navigation) {
+                    record(ARGUMENT)
+                }.let { show -> { _: String -> show() } }
             }
             SideEffect { authorize = authorization }
         }
@@ -156,7 +161,7 @@ class DesktopSecretActionAuthorizerTest {
     @Test
     fun rememberTransferAuthorization_passwordNotRequired_runsTheActionWithoutThePasswordPage() =
         runDesktopComposeUiTest {
-            launchAuthorization(transfer = true)
+            launchAuthorization(Kind.TRANSFER)
 
             assertEquals(listOf(ARGUMENT), arguments)
             assertIs<AuthorizationCallerPage>(navigation.lastOrNull())
@@ -165,7 +170,7 @@ class DesktopSecretActionAuthorizerTest {
     @Test
     fun rememberTransferAuthorization_passwordRequiredAndConfirmed_runsTheActionOnce() = runDesktopComposeUiTest {
         transferPasswordEnabled = true
-        val page = rememberAuthorizationAndLaunch(transfer = true)
+        val page = rememberAuthorizationAndLaunch(Kind.TRANSFER)
 
         runOnIdle {
             navigation.setResult(page, ConfirmPasswordPage.Result(success = true))
@@ -179,13 +184,28 @@ class DesktopSecretActionAuthorizerTest {
     @Test
     fun rememberTransferAuthorization_passwordRequiredAndCancelled_doesNotRunTheAction() = runDesktopComposeUiTest {
         transferPasswordEnabled = true
-        rememberAuthorizationAndLaunch(transfer = true)
+        rememberAuthorizationAndLaunch(Kind.TRANSFER)
 
         runOnIdle { navigation.navigateUp() }
         waitForIdle()
 
         assertEquals(emptyList(), arguments)
     }
+
+    @Test
+    fun rememberHiddenTransactionsAuthorization_launched_asksTheTransactionsHidePasswordAndRunsOnConfirm() =
+        runDesktopComposeUiTest {
+            val page = rememberAuthorizationAndLaunch(Kind.HIDDEN_TRANSACTIONS)
+            onNodeWithText(TRANSACTIONS_HIDE_PROMPT).assertExists()
+
+            runOnIdle {
+                navigation.setResult(page, ConfirmPasswordPage.Result(success = true))
+                navigation.navigateUp()
+            }
+            waitForIdle()
+
+            assertEquals(listOf(ARGUMENT), arguments)
+        }
 
     /** Leaves the check pending until the returned deferred completes. */
     private fun ComposeUiTest.submitPasswordOnThePage(): CompletableDeferred<UnlockOutcome> {
@@ -226,12 +246,15 @@ class DesktopSecretActionAuthorizerTest {
                 connectedWithoutTorModule,
                 module {
                     single { vault }
+                    single<TransactionHiddenManager> { mockk(relaxed = true) }
                     single<ICurrentDateProvider> {
                         object : ICurrentDateProvider {
                             override val currentDate: Date get() = Date()
                         }
                     }
-                    viewModelOf(::ConfirmPasswordViewModel)
+                    viewModel { (check: ConfirmPasswordPage.Check) ->
+                        ConfirmPasswordViewModel(check, get(), get(), get())
+                    }
                 }
             )
         }
@@ -241,5 +264,6 @@ class DesktopSecretActionAuthorizerTest {
         const val PASSWORD = "Correct-horse1"
         const val CONFIRM = "Confirm"
         const val ARGUMENT = "argument"
+        const val TRANSACTIONS_HIDE_PROMPT = "Enter the password for “Transaction Auto Hide”"
     }
 }

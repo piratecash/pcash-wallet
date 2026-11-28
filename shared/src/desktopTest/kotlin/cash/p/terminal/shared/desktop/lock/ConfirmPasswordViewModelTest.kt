@@ -1,13 +1,18 @@
 package cash.p.terminal.shared.desktop.lock
 
+import cash.p.terminal.core.managers.TransactionHiddenManager
 import cash.p.terminal.shared.desktop.vault.DesktopVault
 import cash.p.terminal.shared.desktop.vault.UnlockOutcome
+import cash.p.terminal.wallet.managers.TransactionDisplayLevel
+import cash.p.terminal.wallet.managers.TransactionHiddenState
 import io.horizontalsystems.core.ICurrentDateProvider
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.resetMain
@@ -31,6 +36,18 @@ class ConfirmPasswordViewModelTest {
     }
     private val now get() = currentDateProvider.currentDate
     private val vault = mockk<DesktopVault>()
+    private val hiddenState = MutableStateFlow(
+        TransactionHiddenState(
+            transactionHidden = true,
+            transactionHideEnabled = true,
+            transactionDisplayLevel = TransactionDisplayLevel.NOTHING,
+            transactionAutoHidePinExists = false,
+        )
+    )
+    private val transactionHiddenManager = mockk<TransactionHiddenManager> {
+        every { transactionHiddenFlow } returns hiddenState
+        every { isPinMatches(any()) } answers { firstArg<String>() == SEPARATE_PASSWORD }
+    }
 
     @BeforeTest
     fun setUp() {
@@ -46,7 +63,7 @@ class ConfirmPasswordViewModelTest {
     @Test
     fun onSubmitClick_correctPassword_confirmsAndClearsThePassword() = runTest(dispatcher) {
         coEvery { vault.verifyPassword(any()) } returns UnlockOutcome.Success
-        val viewModel = ConfirmPasswordViewModel(vault, currentDateProvider)
+        val viewModel = createViewModel()
         viewModel.onPasswordChange(PASSWORD)
 
         viewModel.onSubmitClick()
@@ -59,7 +76,7 @@ class ConfirmPasswordViewModelTest {
     @Test
     fun onSubmitClick_wrongPassword_showsAttemptsLeftAndAllowsAnotherTry() = runTest(dispatcher) {
         coEvery { vault.verifyPassword(any()) } returns UnlockOutcome.WrongPassword(attemptsLeft = 4)
-        val viewModel = ConfirmPasswordViewModel(vault, currentDateProvider)
+        val viewModel = createViewModel()
         viewModel.onPasswordChange(PASSWORD)
 
         viewModel.onSubmitClick()
@@ -74,7 +91,7 @@ class ConfirmPasswordViewModelTest {
     fun onSubmitClick_lockedOut_blocksUntilTheLockoutEnds() = runTest(dispatcher) {
         coEvery { vault.verifyPassword(any()) } returns
             UnlockOutcome.LockedOut(Date(now.time + LOCKOUT_MS)) andThen UnlockOutcome.Success
-        val viewModel = ConfirmPasswordViewModel(vault, currentDateProvider)
+        val viewModel = createViewModel()
         viewModel.onPasswordChange(PASSWORD)
         viewModel.onSubmitClick()
         runCurrent()
@@ -95,7 +112,7 @@ class ConfirmPasswordViewModelTest {
     @Test
     fun init_persistedLockout_keepsConfirmDisabledUntilItExpires() = runTest(dispatcher) {
         coEvery { vault.lockedOutUntil() } returns Date(now.time + LOCKOUT_MS)
-        val viewModel = ConfirmPasswordViewModel(vault, currentDateProvider)
+        val viewModel = createViewModel()
         viewModel.onPasswordChange(PASSWORD)
         runCurrent()
         assertFalse(viewModel.uiState.canSubmit)
@@ -106,9 +123,60 @@ class ConfirmPasswordViewModelTest {
         assertTrue(viewModel.uiState.canSubmit)
     }
 
+    @Test
+    fun onSubmitClick_transactionsHideWithSeparatePassword_acceptsOnlyTheSeparatePassword() = runTest(dispatcher) {
+        hiddenState.value = hiddenState.value.copy(transactionAutoHidePinExists = true)
+        coEvery { vault.verifyPassword(any(), isNull(inverse = true)) } answers {
+            if (secondArg<(CharArray) -> Boolean>().invoke(firstArg())) UnlockOutcome.Success else UnlockOutcome.WrongPassword(4)
+        }
+        val viewModel = createViewModel(ConfirmPasswordPage.Check.TRANSACTIONS_HIDE)
+
+        viewModel.onPasswordChange(PASSWORD)
+        viewModel.onSubmitClick()
+        runCurrent()
+        assertFalse(viewModel.confirmed)
+
+        viewModel.onPasswordChange(SEPARATE_PASSWORD)
+        viewModel.onSubmitClick()
+        runCurrent()
+        assertTrue(viewModel.confirmed)
+        coVerify(exactly = 0) { vault.verifyPassword(any()) }
+    }
+
+    @Test
+    fun onSubmitClick_transactionsHideWithoutSeparatePassword_checksTheAppPassword() = runTest(dispatcher) {
+        coEvery { vault.verifyPassword(any()) } returns UnlockOutcome.Success
+        val viewModel = createViewModel(ConfirmPasswordPage.Check.TRANSACTIONS_HIDE)
+        viewModel.onPasswordChange(PASSWORD)
+
+        viewModel.onSubmitClick()
+        runCurrent()
+
+        assertTrue(viewModel.confirmed)
+        coVerify(exactly = 0) { vault.verifyPassword(any(), isNull(inverse = true)) }
+    }
+
+    @Test
+    fun onSubmitClick_appPasswordWithSeparatePasswordSet_checksTheAppPassword() = runTest(dispatcher) {
+        hiddenState.value = hiddenState.value.copy(transactionAutoHidePinExists = true)
+        coEvery { vault.verifyPassword(any()) } returns UnlockOutcome.Success
+        val viewModel = createViewModel()
+        viewModel.onPasswordChange(PASSWORD)
+
+        viewModel.onSubmitClick()
+        runCurrent()
+
+        assertTrue(viewModel.confirmed)
+        coVerify(exactly = 0) { vault.verifyPassword(any(), isNull(inverse = true)) }
+    }
+
+    private fun createViewModel(check: ConfirmPasswordPage.Check = ConfirmPasswordPage.Check.APP_PASSWORD) =
+        ConfirmPasswordViewModel(check, vault, transactionHiddenManager, currentDateProvider)
+
     private companion object {
         const val START = 1_700_000_000_000L
         const val PASSWORD = "Correct-horse1"
+        const val SEPARATE_PASSWORD = "Separate-secret3"
         const val LOCKOUT_MS = 60_000L
     }
 }

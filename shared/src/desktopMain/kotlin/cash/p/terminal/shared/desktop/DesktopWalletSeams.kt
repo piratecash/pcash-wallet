@@ -116,7 +116,6 @@ class DesktopBalancePlatformActions(private val tonConnectManager: TonConnectMan
         onPairingResult: (paired: Boolean) -> Unit,
     ) = tonConnectManager.openConnectionLink(text, scope)
 
-    override fun isOfflineTransaction(text: String) = false
     override fun onBalancePageActive() = Unit
     override fun onBalancePageInactive() = Unit
 }

@@ -15,11 +15,11 @@ class DisplayTransactionsPage : HSPage() {
         val viewModel: DisplayTransactionsViewModel = koinViewModel()
         DisplayTransactionsScreen(
             selectedItem = viewModel.uiState.collectAsStateWithLifecycle(TransactionDisplayLevel.NOTHING).value,
-            onItemSelected = {
+            onItemSelect = {
                 viewModel.onItemSelected(it)
                 navigation.navigateUpSafely()
             },
-            onBackPressed = {
+            onBackPress = {
                 navigation.navigateUpSafely()
             }
         )

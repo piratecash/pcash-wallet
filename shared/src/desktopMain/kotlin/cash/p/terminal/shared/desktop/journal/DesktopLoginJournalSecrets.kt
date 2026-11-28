@@ -6,6 +6,7 @@ import cash.p.terminal.modules.pin.core.LockoutState
 import cash.p.terminal.shared.desktop.vault.DesktopStorageSession
 import cash.p.terminal.shared.desktop.vault.DesktopVault
 import cash.p.terminal.vault.PasswordVault
+import cash.p.terminal.wallet.managers.ITransactionHiddenManager
 import co.touchlab.kermit.Logger
 import io.horizontalsystems.core.DispatcherProvider
 import kotlinx.coroutines.CancellationException
@@ -24,6 +25,7 @@ class DesktopLoginJournalSecrets(
     private val passwordVault: PasswordVault,
     private val lockoutManager: ILockoutManager,
     private val dispatcherProvider: DispatcherProvider,
+    private val transactionHiddenManager: ITransactionHiddenManager,
 ) : LoginJournalSecrets {
     private val changed = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
@@ -94,12 +96,19 @@ class DesktopLoginJournalSecrets(
         // A level that did not open could hold a verifier of the password.
         if (!session.chain.isComplete) return JournalSecretOutcome.FAILED
         val eraseOwner = session.chain.root.takeIf { eraseSetter }
-        if (passwordVault.opensAny(password) || session.levels.matchesStoredVerifier(password, eraseOwner)) {
+        if (passwordVault.opensAny(password) ||
+            session.levels.matchesStoredVerifier(password, eraseOwner) ||
+            isTransactionsHidePassword(password)
+        ) {
             return JournalSecretOutcome.PASSWORD_IN_USE
         }
         apply()
         return JournalSecretOutcome.SUCCESS
     }
+
+    private fun isTransactionsHidePassword(password: CharArray): Boolean =
+        transactionHiddenManager.transactionHiddenFlow.value.transactionAutoHidePinExists &&
+            transactionHiddenManager.isPinMatches(password.concatToString())
 
     /** Null when [matches]; otherwise the lock screen's lockout answers. */
     private inline fun checked(matches: () -> Boolean): JournalSecretOutcome? {

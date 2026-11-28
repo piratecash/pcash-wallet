@@ -2717,6 +2717,12 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="desktop_duress_password_edit_description">Baskı Modu için yeni bir şifre girin</string>
     <string name="desktop_hidden_wallet_password_title">Gizli Cüzdan Şifresi</string>
     <string name="desktop_hidden_wallet_password_description">Gizli cüzdan için bir şifre oluşturun</string>
+    <string name="desktop_transactions_hide_set_password">Ayrı şifre belirle</string>
+    <string name="desktop_transactions_hide_edit_password">Şifreyi değiştir</string>
+    <string name="desktop_transactions_hide_delete_password">Ayrı şifreyi sil</string>
+    <string name="desktop_transactions_hide_description">Güvenlik modu: işlemleri gizler ve bunları göstermek için ayrı bir şifre belirlemenizi sağlar.</string>
+    <string name="desktop_transactions_hide_password_description">“Transaction Auto Hide” modu için bir şifre belirleyin</string>
+    <string name="desktop_transactions_hide_password_enter">“Transaction Auto Hide” şifresini girin</string>
     <string name="desktop_hidden_wallet_password_terms_warning">Genel cüzdan bu cüzdanı görmez; şifresini unutursanız cüzdana erişimi kurtarma ifadesiyle geri alabilirsiniz.</string>
     <string-array name="desktop_hidden_wallet_password_terms">
         <item>Kullanıcı, cüzdanın diğer cüzdanlar arasında görünmeyeceğini anlar.</item>

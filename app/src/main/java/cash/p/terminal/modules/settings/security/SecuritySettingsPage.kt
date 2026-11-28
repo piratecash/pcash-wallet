@@ -338,9 +338,9 @@ private fun SecurityCenterScreen(
                 displayLevel = uiState.displayLevel,
                 transactionAutoHideSeparatePinExists = uiState.transactionAutoHideSeparatePinExists,
                 onTransactionAutoHideEnabledChange = onTransactionAutoHideEnabledChange,
-                onPinClicked = onSetTransactionAutoHidePinClicked,
-                onDisablePinClicked = onDisableTransactionAutoHidePinClicked,
-                onChangeDisplayClicked = onChangeDisplayClicked
+                onPinClick = onSetTransactionAutoHidePinClicked,
+                onDisablePinClick = onDisableTransactionAutoHidePinClicked,
+                onChangeDisplayClick = onChangeDisplayClicked
             )
 
             TransferPasscodeBlock(

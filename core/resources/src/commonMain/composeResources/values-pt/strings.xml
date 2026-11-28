@@ -2729,6 +2729,12 @@
     <string name="desktop_duress_password_edit_description">Introduza uma nova senha para o modo Duress</string>
     <string name="desktop_hidden_wallet_password_title">Senha da carteira oculta</string>
     <string name="desktop_hidden_wallet_password_description">Crie uma senha para a carteira oculta</string>
+    <string name="desktop_transactions_hide_set_password">Definir uma senha separada</string>
+    <string name="desktop_transactions_hide_edit_password">Alterar a senha</string>
+    <string name="desktop_transactions_hide_delete_password">Eliminar a senha separada</string>
+    <string name="desktop_transactions_hide_description">Modo de segurança: oculta as transações e permite definir uma senha separada para as desbloquear.</string>
+    <string name="desktop_transactions_hide_password_description">Defina uma senha para o modo “Transaction Auto Hide”</string>
+    <string name="desktop_transactions_hide_password_enter">Introduza a senha do “Transaction Auto Hide”</string>
     <string name="desktop_hidden_wallet_password_terms_warning">A carteira global não verá esta carteira e, se esquecer a respetiva senha, pode recuperar o acesso com a frase semente.</string>
     <string-array name="desktop_hidden_wallet_password_terms">
         <item>O utilizador compreende que a carteira não ficará visível entre as outras carteiras.</item>

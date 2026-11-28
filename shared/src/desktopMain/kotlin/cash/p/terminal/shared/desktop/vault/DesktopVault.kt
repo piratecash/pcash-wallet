@@ -88,9 +88,13 @@ class DesktopVault(
         return outcome
     }
 
-    /** Re-asks the password inside the app, of this level only; failures count into the same lockout as unlock. */
-    suspend fun verifyPassword(password: CharArray): UnlockOutcome =
+    /**
+     * Re-asks the password inside the app, of this level only, or, with [matches], a secret kept outside the vault.
+     * Failures count into the same lockout as unlock.
+     */
+    suspend fun verifyPassword(password: CharArray, matches: ((CharArray) -> Boolean)? = null): UnlockOutcome =
         operation("verifyPassword", UnlockOutcome.Failed, password) {
+            if (matches != null) return@operation checkSecret(password, matches)
             when (val check = checkPassword(password, ::opensCurrentLevel)) {
                 is PasswordCheck.Correct -> {
                     check.vaultSession.close()
@@ -335,6 +339,13 @@ class DesktopVault(
             UnlockResult.Corrupted -> PasswordCheck.Corrupted
             UnlockResult.LegacyFormat -> PasswordCheck.LegacyFormat
         }
+    }
+
+    private fun checkSecret(secret: CharArray, matches: (CharArray) -> Boolean): UnlockOutcome {
+        (lockoutManager.currentState as? LockoutState.Locked)?.let { return UnlockOutcome.LockedOut(it.until) }
+        if (!matches(secret)) return failedAttempt().outcome()
+        lockoutManager.dropFailedAttempts()
+        return UnlockOutcome.Success
     }
 
     /** The delete-contacts password erases and then looks like any wrong password, lockout included. */
