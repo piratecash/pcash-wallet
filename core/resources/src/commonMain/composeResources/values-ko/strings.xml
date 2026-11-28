@@ -2702,6 +2702,12 @@
     <string name="desktop_duress_password_edit_description">긴급 상황 모드의 새 비밀번호를 입력하세요</string>
     <string name="desktop_hidden_wallet_password_title">숨겨진 지갑 비밀번호</string>
     <string name="desktop_hidden_wallet_password_description">숨겨진 지갑의 비밀번호를 만드세요</string>
+    <string name="desktop_transactions_hide_set_password">별도 비밀번호 설정</string>
+    <string name="desktop_transactions_hide_edit_password">비밀번호 변경</string>
+    <string name="desktop_transactions_hide_delete_password">별도 비밀번호 삭제</string>
+    <string name="desktop_transactions_hide_description">보안 모드: 거래 내역을 숨기고, 이를 표시할 별도 비밀번호를 설정할 수 있습니다.</string>
+    <string name="desktop_transactions_hide_password_description">“Transaction Auto Hide” 모드의 비밀번호를 설정하세요</string>
+    <string name="desktop_transactions_hide_password_enter">“Transaction Auto Hide” 비밀번호를 입력하세요</string>
     <string name="desktop_hidden_wallet_password_terms_warning">전체 지갑에서는 이 지갑이 보이지 않으며, 비밀번호를 잊어버려도 시드 문구로 지갑에 다시 접근할 수 있습니다.</string>
     <string-array name="desktop_hidden_wallet_password_terms">
         <item>사용자는 이 지갑이 다른 지갑 목록에 표시되지 않는다는 점을 이해합니다.</item>

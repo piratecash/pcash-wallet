@@ -3143,6 +3143,12 @@ Proceed only if you\u0027re sure.</string>
     <string name="desktop_duress_password_edit_description">Enter a new password for Duress Mode</string>
     <string name="desktop_hidden_wallet_password_title">Hidden Wallet Password</string>
     <string name="desktop_hidden_wallet_password_description">Create a password for the Hidden Wallet</string>
+    <string name="desktop_transactions_hide_set_password">Set a Separate Password</string>
+    <string name="desktop_transactions_hide_edit_password">Edit Password</string>
+    <string name="desktop_transactions_hide_delete_password">Delete a Separate Password</string>
+    <string name="desktop_transactions_hide_description">Security Mode: hides transactions and allows you to set a separate password for unlocking them.</string>
+    <string name="desktop_transactions_hide_password_description">Set a password for the “Transaction Auto Hide” mode</string>
+    <string name="desktop_transactions_hide_password_enter">Enter the password for “Transaction Auto Hide”</string>
     <string name="desktop_hidden_wallet_password_terms_warning">The global wallet will not see this wallet, and if you forget its password, you can restore access to the wallet using the seed phrase.</string>
     <string-array name="desktop_hidden_wallet_password_terms">
         <item>The user understands that the wallet will not be visible among other wallets.</item>

@@ -2693,6 +2693,12 @@
     <string name="desktop_duress_password_edit_description">为压力模式输入新密码</string>
     <string name="desktop_hidden_wallet_password_title">隐藏钱包密码</string>
     <string name="desktop_hidden_wallet_password_description">为隐藏钱包创建密码</string>
+    <string name="desktop_transactions_hide_set_password">设置单独密码</string>
+    <string name="desktop_transactions_hide_edit_password">修改密码</string>
+    <string name="desktop_transactions_hide_delete_password">删除单独密码</string>
+    <string name="desktop_transactions_hide_description">安全模式：隐藏交易，并可设置单独的密码来解锁显示。</string>
+    <string name="desktop_transactions_hide_password_description">为“Transaction Auto Hide”模式设置密码</string>
+    <string name="desktop_transactions_hide_password_enter">输入“Transaction Auto Hide”的密码</string>
     <string name="desktop_hidden_wallet_password_terms_warning">全局钱包将看不到此钱包，如果您忘记其密码，可以使用助记词恢复对该钱包的访问。</string>
     <string-array name="desktop_hidden_wallet_password_terms">
         <item>用户明白该钱包不会显示在其他钱包之中。</item>

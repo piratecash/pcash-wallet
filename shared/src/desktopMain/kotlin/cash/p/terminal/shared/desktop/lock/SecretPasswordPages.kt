@@ -16,6 +16,7 @@ import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpFrom
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.resources.Appearance_TransactionAutoHide
 import cash.p.terminal.resources.Button_Create
 import cash.p.terminal.resources.Button_Save
 import cash.p.terminal.resources.Hud_Text_Created
@@ -31,6 +32,7 @@ import cash.p.terminal.resources.desktop_levels_limit_reached
 import cash.p.terminal.resources.desktop_password_mismatch
 import cash.p.terminal.resources.desktop_password_repeat_hint
 import cash.p.terminal.resources.desktop_password_save_failed
+import cash.p.terminal.resources.desktop_transactions_hide_password_description
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui_compose.components.HsBackButton
@@ -107,6 +109,30 @@ class HiddenWalletPasswordPage : HSPage() {
                 Res.string.desktop_hidden_wallet_password_title,
                 Res.string.desktop_hidden_wallet_password_description,
                 Res.string.Button_Create,
+            ),
+            uiState = viewModel.uiState,
+            onPasswordChange = viewModel::onPasswordChange,
+            onConfirmationChange = viewModel::onConfirmationChange,
+            onSubmitClick = viewModel::onSubmitClick,
+            onBack = navigation::navigateUpSafely,
+        )
+    }
+}
+
+/** Sets or replaces the separate password of transaction auto-hide. */
+class TransactionsHidePasswordPage : HSPage(screenshotEnabled = false) {
+
+    @Composable
+    override fun GetContent(navigation: HSNavigation) {
+        val viewModel: TransactionsHidePasswordViewModel = koinViewModel()
+        LaunchedEffect(viewModel.uiState.finished) {
+            if (viewModel.uiState.finished) navigation.navigateUpFrom(this@TransactionsHidePasswordPage)
+        }
+        SecretPasswordContent(
+            texts = SecretPasswordTexts(
+                Res.string.Appearance_TransactionAutoHide,
+                Res.string.desktop_transactions_hide_password_description,
+                Res.string.Button_Save,
             ),
             uiState = viewModel.uiState,
             onPasswordChange = viewModel::onPasswordChange,

@@ -16,6 +16,7 @@ import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.resources.Button_Confirm
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.Unlock_Title
+import cash.p.terminal.resources.desktop_transactions_hide_password_enter
 import cash.p.terminal.resources.desktop_unlock_title
 import cash.p.terminal.shared.desktop.vault.UnlockOutcome
 import cash.p.terminal.ui_compose.components.AppBar
@@ -26,13 +27,14 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 /** The desktop counterpart of Android's ConfirmPinPage: the app password again, under the unlock lockout. */
-class ConfirmPasswordPage : HSPage(screenshotEnabled = false) {
+class ConfirmPasswordPage(private val check: Check = Check.APP_PASSWORD) : HSPage(screenshotEnabled = false) {
 
     @Composable
     override fun GetContent(navigation: HSNavigation) {
-        val viewModel: ConfirmPasswordViewModel = koinViewModel()
+        val viewModel: ConfirmPasswordViewModel = koinViewModel { parametersOf(check) }
         LaunchedEffect(viewModel.confirmed) {
             // A page already popped by Back was cancelled, even if the check finishes while it animates out.
             if (viewModel.confirmed && navigation.navigateUpFrom(this@ConfirmPasswordPage)) {
@@ -41,6 +43,7 @@ class ConfirmPasswordPage : HSPage(screenshotEnabled = false) {
         }
         ConfirmPasswordContent(
             uiState = viewModel.uiState,
+            description = check.description,
             onPasswordChange = viewModel::onPasswordChange,
             onConfirmClick = viewModel::onSubmitClick,
             onBack = navigation::navigateUpSafely,
@@ -48,6 +51,11 @@ class ConfirmPasswordPage : HSPage(screenshotEnabled = false) {
     }
 
     data class Result(val success: Boolean)
+
+    enum class Check(val description: StringResource) {
+        APP_PASSWORD(Res.string.desktop_unlock_title),
+        TRANSACTIONS_HIDE(Res.string.desktop_transactions_hide_password_enter),
+    }
 }
 
 @Composable
@@ -95,6 +103,7 @@ private fun ConfirmPasswordContentPreview() {
                 password = "secret",
                 outcome = UnlockOutcome.WrongPassword(attemptsLeft = 3),
             ),
+            description = Res.string.desktop_transactions_hide_password_enter,
             onPasswordChange = {},
             onConfirmClick = {},
             onBack = {},

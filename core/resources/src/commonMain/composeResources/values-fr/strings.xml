@@ -2735,6 +2735,12 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="desktop_duress_password_edit_description">Saisissez un nouveau mot de passe pour le mode Duress</string>
     <string name="desktop_hidden_wallet_password_title">Mot de passe du portefeuille caché</string>
     <string name="desktop_hidden_wallet_password_description">Créez un mot de passe pour le portefeuille caché</string>
+    <string name="desktop_transactions_hide_set_password">Définir un mot de passe distinct</string>
+    <string name="desktop_transactions_hide_edit_password">Modifier le mot de passe</string>
+    <string name="desktop_transactions_hide_delete_password">Supprimer le mot de passe distinct</string>
+    <string name="desktop_transactions_hide_description">Mode sécurité : masque les transactions et permet de définir un mot de passe distinct pour les afficher.</string>
+    <string name="desktop_transactions_hide_password_description">Définissez un mot de passe pour le mode « Transaction Auto Hide »</string>
+    <string name="desktop_transactions_hide_password_enter">Saisissez le mot de passe de « Transaction Auto Hide »</string>
     <string name="desktop_hidden_wallet_password_terms_warning">Le portefeuille global ne verra pas ce portefeuille, et si vous oubliez son mot de passe, vous pourrez restaurer l\u0027accès au portefeuille avec la phrase de récupération.</string>
     <string-array name="desktop_hidden_wallet_password_terms">
         <item>L\u0027utilisateur comprend que le portefeuille ne sera pas visible parmi les autres portefeuilles.</item>
