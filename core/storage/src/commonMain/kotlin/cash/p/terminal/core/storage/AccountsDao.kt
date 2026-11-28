@@ -27,6 +27,9 @@ interface AccountsDao {
     @Query("SELECT * FROM AccountRecord WHERE id = :id")
     fun loadAccount(id: String): AccountRecord?
 
+    @Query("SELECT * FROM AccountRecord WHERE id = :id AND deleted = 0 AND level >= :accountsMinLevel")
+    fun loadVisibleAccount(id: String, accountsMinLevel: Int): AccountRecord?
+
     @Query("UPDATE AccountRecord SET deleted = 1 WHERE id = :id")
     fun delete(id: String)
 

@@ -6,6 +6,8 @@ import kotlinx.coroutines.flow.StateFlow
 interface IWalletManager {
     val activeWallets: List<Wallet>
     val activeWalletsFlow: StateFlow<List<Wallet>>
+    /** Id of the account [activeWallets] were loaded for; lags behind an account switch until the reload ends. */
+    val activeWalletsAccountIdFlow: StateFlow<String?>
 
     fun save(wallets: List<Wallet>)
     suspend fun saveSuspended(wallets: List<Wallet>)

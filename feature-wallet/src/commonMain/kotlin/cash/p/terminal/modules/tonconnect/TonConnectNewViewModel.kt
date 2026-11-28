@@ -8,7 +8,6 @@ import cash.p.terminal.core.managers.toTonWalletFullAccess
 import cash.p.terminal.wallet.entities.TonWalletVersion
 import cash.p.terminal.wallet.IHardwarePublicKeyStorage
 import cash.p.terminal.wallet.Account
-import cash.p.terminal.wallet.ActiveAccountState
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IEnabledWalletStorage
 import cash.p.terminal.wallet.entities.TokenQuery
@@ -69,7 +68,7 @@ class TonConnectNewViewModel(
 
     init {
         viewModelScope.launch {
-            accountManager.activeAccountStateFlow.first { it is ActiveAccountState.ActiveAccount }
+            accountManager.accountsLoadedFlow.first { it }
             selectAccount()
             // The manifest is read through the selected account's kit.
             val account = account ?: return@launch

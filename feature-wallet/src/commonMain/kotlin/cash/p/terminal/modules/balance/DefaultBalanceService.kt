@@ -70,7 +70,7 @@ class DefaultBalanceService private constructor(
     private var started: Boolean = false
 
     // Replace CopyOnWriteArrayList with StateFlow
-    private val _balanceItemsState = MutableStateFlow<List<BalanceItem>>(emptyList())
+    private val _balanceItemsState = MutableStateFlow<List<BalanceItem>?>(null)
     override val balanceItemsFlow = _balanceItemsState.asStateFlow()
 
     private val walletsLoaded = CompletableDeferred<Unit>()
@@ -109,14 +109,15 @@ class DefaultBalanceService private constructor(
     private fun updateBalanceItems(
         transform: (current: List<BalanceItem>) -> List<BalanceItem>
     ) {
-        _balanceItemsState.update { currentItems ->
-            val updatedItems = transform(currentItems)
-            // First deduplicate by contract address (for virtual + real tokens like USDT/BSC-USD)
-            val contractDeduped = deduplicateByContract(updatedItems)
-            val uniqueItems = contractDeduped.distinctBy { it.wallet.token.tokenQuery.id }
-            val sortedItems = balanceSorter.sort(uniqueItems, sortType)
-            getFilteredItems(sortedItems)
-        }
+        _balanceItemsState.update { currentItems -> currentItems?.let { normalized(transform(it)) } }
+    }
+
+    private fun normalized(items: List<BalanceItem>): List<BalanceItem> {
+        // First deduplicate by contract address (for virtual + real tokens like USDT/BSC-USD)
+        val contractDeduped = deduplicateByContract(items)
+        val uniqueItems = contractDeduped.distinctBy { it.wallet.token.tokenQuery.id }
+        val sortedItems = balanceSorter.sort(uniqueItems, sortType)
+        return getFilteredItems(sortedItems)
     }
 
     /**
@@ -199,17 +200,19 @@ class DefaultBalanceService private constructor(
         val latestRates = xRateRepository.getLatestRates()
 
         // Complete replacement of balance list
-        updateBalanceItems { _ ->
-            wallets.map { wallet ->
-                BalanceItem(
-                    wallet = wallet,
-                    balanceData = adapterRepository.balanceData(wallet),
-                    state = adapterRepository.state(wallet),
-                    sendAllowed = adapterRepository.sendAllowed(wallet),
-                    coinPrice = latestRates[wallet.coin.uid],
-                    transactionsSyncState = adapterRepository.transactionsSyncState(wallet),
-                )
-            }
+        _balanceItemsState.update {
+            normalized(
+                wallets.map { wallet ->
+                    BalanceItem(
+                        wallet = wallet,
+                        balanceData = adapterRepository.balanceData(wallet),
+                        state = adapterRepository.state(wallet),
+                        sendAllowed = adapterRepository.sendAllowed(wallet),
+                        coinPrice = latestRates[wallet.coin.uid],
+                        transactionsSyncState = adapterRepository.transactionsSyncState(wallet),
+                    )
+                }
+            )
         }
         walletsLoaded.complete(Unit)
     }
@@ -268,6 +271,7 @@ class DefaultBalanceService private constructor(
         fun getInstance(tag: String): DefaultBalanceService {
             return DefaultBalanceService(
                 BalanceActiveWalletRepository(
+                    getKoinInstance(),
                     getKoinInstance(),
                     getKoinInstance(),
                     getKoinInstance(),

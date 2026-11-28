@@ -88,6 +88,26 @@ class TonConnectNewViewModelTest {
     }
 
     @Test
+    fun init_activeAccountAnnouncedBeforeAccountsLoad_selectsItOnceTheListIsLoaded() = runTest(dispatcher) {
+        val tonAccount = tonAccount("ton-ahead")
+        val accountsLoaded = MutableStateFlow(false)
+        every { accountManager.accounts } returns emptyList()
+        every { accountManager.activeAccount } returns tonAccount
+        every { accountManager.activeAccountStateFlow } returns
+            MutableStateFlow<ActiveAccountState>(ActiveAccountState.ActiveAccount(tonAccount))
+        every { accountManager.accountsLoadedFlow } returns accountsLoaded
+
+        val viewModel = createViewModel(URI)
+        advanceUntilIdle()
+        every { accountManager.accounts } returns listOf(tonAccount)
+        accountsLoaded.value = true
+        advanceUntilIdle()
+
+        assertEquals(tonAccount, viewModel.uiState.account)
+        assertEquals(listOf(tonAccount), viewModel.uiState.accounts)
+    }
+
+    @Test
     fun init_malformedUri_exposesInvalidRequestErrorWithoutLoadingManifest() = runTest(dispatcher) {
         val tonAccount = tonAccount("ton-malformed")
         setAccounts(listOf(tonAccount), tonAccount)
@@ -193,10 +213,10 @@ class TonConnectNewViewModelTest {
 
     @Test
     fun init_accountsNotLoadedYet_selectsAccountOnceLoaded() = runTest(dispatcher) {
-        val activeAccountStateFlow = MutableStateFlow<ActiveAccountState>(ActiveAccountState.NotLoaded)
+        val accountsLoaded = MutableStateFlow(false)
         every { accountManager.accounts } returns emptyList()
         every { accountManager.activeAccount } returns null
-        every { accountManager.activeAccountStateFlow } returns activeAccountStateFlow
+        every { accountManager.accountsLoadedFlow } returns accountsLoaded
         coEvery { tonConnectManager.getManifest(any(), request.payload.manifestUrl) } returns manifest()
 
         val viewModel = createViewModel(URI)
@@ -210,7 +230,7 @@ class TonConnectNewViewModelTest {
         val tonAccount = tonAccount("ton-late")
         every { accountManager.accounts } returns listOf(tonAccount)
         every { accountManager.activeAccount } returns tonAccount
-        activeAccountStateFlow.value = ActiveAccountState.ActiveAccount(tonAccount)
+        accountsLoaded.value = true
         advanceUntilIdle()
 
         state = viewModel.uiState
@@ -426,6 +446,7 @@ class TonConnectNewViewModelTest {
         every { accountManager.activeAccount } returns active
         every { accountManager.activeAccountStateFlow } returns
             MutableStateFlow<ActiveAccountState>(ActiveAccountState.ActiveAccount(active))
+        every { accountManager.accountsLoadedFlow } returns MutableStateFlow(true)
     }
 
     private fun tonAccount(id: String) = Account(

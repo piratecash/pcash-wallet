@@ -45,6 +45,9 @@ class AccountManager(
 
     override val activeAccountStateFlow = _activeAccountStateFlow
 
+    private val _accountsLoadedFlow = MutableStateFlow(false)
+    override val accountsLoadedFlow = _accountsLoadedFlow.asStateFlow()
+
     override val hasNonStandardAccount: Boolean
         get() = cache.get().accounts.any { it.value.nonStandard }
 
@@ -256,6 +259,7 @@ class AccountManager(
     }
 
     override fun setLevel(level: Int) {
+        if (level >= 0 && activeAccount == null) announceActiveAccountAhead(level)
         val loaded = replaceCache(level, storage.allAccounts(level))
         // The alert carries the whole account, seed included: it must not outlive the account's visibility.
         _newAccountBackupRequiredFlow.update { pending -> pending?.takeIf { it.id in loaded } }
@@ -267,16 +271,25 @@ class AccountManager(
         }
         currentLevel = level
 
-        if (activeAccount == null || activeAccount?.id != activeAccountIdForLevel) {
+        if (activeAccount?.id != activeAccountIdForLevel || activeAccount?.id !in loaded) {
             activeAccount = loaded[activeAccountIdForLevel] ?: loaded.values.firstOrNull()
             _activeAccountStateFlow.update {
                 ActiveAccountState.ActiveAccount(activeAccount)
             }
         }
         _accountsSharedFlow.tryEmit(accounts)
+        _accountsLoadedFlow.value = true
+    }
+
+    /** Every account costs Keystore round trips to decrypt; the balance screen needs only the active one. */
+    private fun announceActiveAccountAhead(level: Int) {
+        val account = storage.activeAccount(level) ?: return
+        activeAccount = account
+        _activeAccountStateFlow.update { ActiveAccountState.ActiveAccount(account) }
     }
 
     override fun unload() {
+        _accountsLoadedFlow.value = false
         replaceCache(LEVEL_NOT_SET, emptyList())
         currentLevel = LEVEL_NOT_SET
         activeAccount = null

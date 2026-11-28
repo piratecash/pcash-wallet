@@ -57,6 +57,7 @@ import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.hdwalletkit.Language
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
@@ -125,10 +126,19 @@ class BalanceViewModel(
     private var displayDiffOptionType = localStorage.displayDiffOptionType
 
     private var refreshViewItemsJob: Job? = null
+    // A rebuild is never cancelled by newer data: under a burst of updates that would starve the list.
+    private val viewItemsRequests = Channel<List<BalanceItem>?>(Channel.CONFLATED)
     private var addressScanJob: Job? = null
 
     init {
         addCloseable(service)
+
+        viewModelScope.launch {
+            for (items in viewItemsRequests) {
+                refreshViewItemsJob = launch { rebuildViewItems(items) }
+                refreshViewItemsJob?.join()
+            }
+        }
 
         viewModelScope.launch(dispatcherProvider.default) {
             accountManager.activeAccountStateFlow.collect {
@@ -142,7 +152,7 @@ class BalanceViewModel(
         viewModelScope.launch(dispatcherProvider.default) {
             service.balanceItemsFlow
                 .collect { items ->
-                    totalBalance.setTotalServiceItems(items.map(BalanceItem::toTotalServiceItem))
+                    totalBalance.setTotalServiceItems(items.orEmpty().map(BalanceItem::toTotalServiceItem))
                     detectPirateAndCosanta(items)
                     checkZcashMigrationRequired(items)
                     refreshViewItems(items)
@@ -260,21 +270,23 @@ class BalanceViewModel(
     }
 
     private fun refreshViewItems(balanceItems: List<BalanceItem>?) {
-        viewModelScope.launch {
-            refreshViewItemsJob?.cancel()
-            refreshViewItemsJob = launch {
-                val refreshedItems = withContext(dispatcherProvider.default) {
-                    balanceItems?.map { balanceItem ->
-                        ensureActive()
-                        createViewItem(balanceItem)
-                    }.orEmpty()
-                }
+        viewItemsRequests.trySend(balanceItems)
+    }
 
-                viewState = if (balanceItems == null) null else ViewState.Success
-                balanceViewItems = refreshedItems
-                emitState()
-            }
+    private suspend fun rebuildViewItems(balanceItems: List<BalanceItem>?) {
+        val refreshedItems = withContext(dispatcherProvider.default) {
+            balanceItems?.map { balanceItem ->
+                ensureActive()
+                createViewItem(balanceItem)
+            }.orEmpty()
         }
+        // The account may have switched while this list was being built.
+        val listAccountId = balanceItems?.firstOrNull()?.wallet?.account?.id
+        if (listAccountId != null && listAccountId != accountManager.activeAccount?.id) return
+
+        viewState = if (balanceItems == null) null else ViewState.Success
+        balanceViewItems = refreshedItems
+        emitState()
     }
 
     private fun createViewItem(balanceItem: BalanceItem): BalanceViewItem2 {

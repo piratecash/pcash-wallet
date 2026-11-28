@@ -3,6 +3,7 @@ package cash.p.terminal.modules.balance
 import cash.p.terminal.core.managers.EvmSyncSourceManager
 import cash.p.terminal.core.managers.UserDeletedWalletManager
 import cash.p.terminal.core.usecase.OfflineModeUseCase
+import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
@@ -21,11 +22,13 @@ import io.reactivex.Observable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
+import kotlin.test.assertEquals
 
-/** Pins the wiring that drops a chain's offline row once its wallet leaves the balance list. */
 class BalanceActiveWalletRepositoryTest {
 
     private val walletManager = mockk<IWalletManager>(relaxed = true)
+    private val accountManager = mockk<IAccountManager>(relaxed = true)
+    private val walletsAccountId = MutableStateFlow<String?>(null)
     private val userDeletedWalletManager = mockk<UserDeletedWalletManager>(relaxed = true)
     private val offlineModeUseCase = mockk<OfflineModeUseCase>(relaxed = true)
     private val evmSyncSourceManager = mockk<EvmSyncSourceManager>()
@@ -34,13 +37,46 @@ class BalanceActiveWalletRepositoryTest {
 
     private fun createRepository(): BalanceActiveWalletRepository {
         every { walletManager.activeWalletsFlow } returns MutableStateFlow(emptyList())
+        every { walletManager.activeWalletsAccountIdFlow } returns walletsAccountId
         every { evmSyncSourceManager.syncSourceObservable } returns Observable.never()
         return BalanceActiveWalletRepository(
             walletManager,
+            accountManager,
             userDeletedWalletManager,
             offlineModeUseCase,
             evmSyncSourceManager,
         )
+    }
+
+    @Test
+    fun itemsObservable_walletsOfAnotherAccount_emitsNothing() {
+        every { accountManager.activeAccount } returns account
+        walletsAccountId.value = "previous"
+
+        createRepository().itemsObservable.test().assertNoValues()
+    }
+
+    @Test
+    fun itemsObservable_activeAccountWalletsLoaded_emitsThem() {
+        val wallet = bitcoinWallet()
+        every { accountManager.activeAccount } returns account
+        every { walletManager.activeWallets } returns listOf(wallet)
+        val items = createRepository().itemsObservable.test()
+
+        walletsAccountId.value = account.id
+
+        assertEquals(listOf(wallet), items.values().last())
+    }
+
+    @Test
+    fun itemsObservable_activeAccountHasNoWallets_emitsEmptyList() {
+        every { accountManager.activeAccount } returns account
+        every { walletManager.activeWallets } returns emptyList()
+        walletsAccountId.value = account.id
+
+        val emitted = createRepository().itemsObservable.test().values()
+
+        assertEquals(listOf(emptyList<Wallet>()), emitted.distinct())
     }
 
     @Test

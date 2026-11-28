@@ -1,8 +1,8 @@
 package cash.p.terminal.modules.balance.ui
 
-import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -161,17 +161,15 @@ fun BalanceForAccount(
             navigation.slideFromRight(TokenBalancePage(item.wallet))
         }
 
-        Crossfade(
-            targetState = uiState.viewState,
+        Box(
             modifier = Modifier
                 .padding(
                     top = paddingValues.calculateTopPadding(),
                     bottom = paddingValuesParent.calculateBottomPadding()
                 )
-                .fillMaxSize(),
-            label = ""
-        ) { viewState ->
-            when (viewState) {
+                .fillMaxSize()
+        ) {
+            when (uiState.viewState) {
                 ViewState.Success -> {
                     val balanceViewItems = uiState.balanceViewItems
                     BalanceItems(

@@ -180,6 +180,11 @@ class AccountsStorage(private val router: StorageRouter) : IAccountsStorage {
 
     override fun loadAccount(id: String): Account? = toAccount(router.account(id)?.accountsDao()?.loadAccount(id))
 
+    override fun activeAccount(accountsMinLevel: Int): Account? {
+        val id = getActiveAccountId(accountsMinLevel) ?: return null
+        return toAccount(router.account(id)?.accountsDao()?.loadVisibleAccount(id, accountsMinLevel))
+    }
+
     override fun delete(id: String) {
         router.account(id)?.accountsDao()?.delete(id)
     }

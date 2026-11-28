@@ -65,6 +65,28 @@ class WalletManagerTest {
         manager.awaitWallets(listOf(next))
     }
 
+    @Test
+    fun activeWalletsAccountIdFlow_afterReload_isPublishedTogetherWithThatAccountsWallets() = runBlocking {
+        val manager = WalletManager(accountManager, storage)
+        val wallet = mockk<Wallet>()
+        coEvery { storage.wallets(account("a")) } returns listOf(wallet)
+
+        accountStates.value = ActiveAccountState.ActiveAccount(account("a"))
+        withTimeout(TIMEOUT) { manager.activeWalletsAccountIdFlow.first { it == "a" } }
+
+        assertEquals(listOf(wallet), manager.activeWallets)
+    }
+
+    @Test
+    fun activeWalletsAccountIdFlow_accountWithoutWallets_isStillPublished() = runBlocking<Unit> {
+        val manager = WalletManager(accountManager, storage)
+        coEvery { storage.wallets(account("empty")) } returns emptyList()
+
+        accountStates.value = ActiveAccountState.ActiveAccount(account("empty"))
+
+        withTimeout(TIMEOUT) { manager.activeWalletsAccountIdFlow.first { it == "empty" } }
+    }
+
     private suspend fun WalletManager.awaitWallets(expected: List<Wallet>) {
         val actual = withTimeout(TIMEOUT) { activeWalletsFlow.first { it == expected } }
         assertEquals(expected, actual)
