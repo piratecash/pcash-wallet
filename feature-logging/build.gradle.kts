@@ -1,83 +1,111 @@
-plugins {
-    id(libs.plugins.android.library.get().pluginId)
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
+plugins {
+    kotlin("multiplatform")
+    id("com.android.kotlin.multiplatform.library")
+    alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.compose.compiler)
     id(libs.plugins.devtools.ksp.get().pluginId)
 }
 
-android {
-    namespace = "cash.p.terminal.feature.logging"
-
-    compileSdk = rootProject.ext.get("compile_sdk_version") as Int
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-    defaultConfig {
-        minSdk = 27
-        buildFeatures {
-            compose = true
-        }
-    }
-    buildFeatures {
-        buildConfig = true
-    }
+// KMP source directories must be configured explicitly or Detekt reports NO-SOURCE.
+detekt {
+    source.setFrom("src/commonMain/kotlin", "src/androidMain/kotlin", "src/desktopMain/kotlin")
 }
 
 kotlin {
-    compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    android {
+        namespace = "cash.p.terminal.feature.logging"
+        compileSdk = rootProject.ext.get("compile_sdk_version") as Int
+        minSdk = rootProject.ext.get("min_sdk_version") as Int
+
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
+
+        withHostTest { }
+    }
+
+    jvm("desktop") {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
+    }
+
+    sourceSets {
+        commonMain {
+            dependencies {
+                api(project(":core:common"))
+                api(libs.paging.common)
+                implementation(project(":core:ui-compose"))
+                implementation(project(":core:resources"))
+                implementation(project(":core:wallet"))
+                implementation(project(":feature-premium"))
+
+                implementation(libs.compose.multiplatform.runtime)
+                implementation(libs.compose.multiplatform.ui)
+                implementation(libs.compose.multiplatform.foundation)
+                implementation(libs.compose.multiplatform.material3)
+                implementation(libs.compose.multiplatform.resources)
+                implementation(libs.compose.multiplatform.ui.tooling.preview)
+                implementation(libs.jetbrains.lifecycle.viewmodel)
+                implementation(libs.jetbrains.lifecycle.viewmodel.compose)
+                implementation(libs.jetbrains.lifecycle.runtime.compose)
+
+                implementation(project.dependencies.platform(libs.koin.bom))
+                implementation(libs.koin.core)
+                implementation(libs.koin.compose.viewmodel)
+
+                implementation(libs.paging.compose)
+                implementation(libs.coil.compose)
+                implementation(libs.kotlinx.coroutines.core)
+                implementation(libs.kermit)
+            }
+        }
+
+        androidMain {
+            dependencies {
+                implementation(project(":core:core"))
+
+                implementation(libs.koin.android)
+
+                implementation(libs.room.runtime)
+                implementation(libs.room.ktx)
+                implementation(libs.room.paging)
+
+                implementation(libs.accompanist.permissions)
+                implementation(libs.kotlinx.coroutines.rx2)
+                implementation(libs.timber)
+            }
+        }
+
+        getByName("desktopMain") {
+            dependencies {
+                implementation(libs.room.runtime)
+            }
+        }
+
+        getByName("desktopTest") {
+            dependencies {
+                implementation(libs.sqlite.bundled)
+                implementation(libs.mockk)
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.kotlin.test.junit)
+            }
+        }
+
+        getByName("androidHostTest") {
+            dependencies {
+                implementation(libs.junit)
+                implementation(libs.mockk)
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.kotlin.test.junit)
+            }
+        }
     }
 }
 
 dependencies {
-    implementation(project(":core:ui-compose"))
-    implementation(project(":core:strings"))
-    implementation(project(":core:core"))
-    implementation(project(":core:resources"))
-    implementation(project(":core:wallet"))
-    implementation(project(":core:navigation"))
-    implementation(project(":components:icons"))
-    implementation(project(":feature-premium"))
-
-    // DI
-    implementation(project.dependencies.platform(libs.koin.bom))
-    implementation(libs.koin.core)
-    implementation(libs.koin.android)
-    implementation(libs.koin.compose)
-
-    // Compose
-    implementation(platform(libs.compose.bom))
-    implementation(libs.compose.material)
-    implementation(libs.androidx.material3.android)
-    debugImplementation(libs.androidx.ui.tooling)
-    implementation(libs.androidx.ui.tooling.preview)
-
-    // Room
-    implementation(libs.room.runtime)
-    implementation(libs.room.ktx)
-    implementation(libs.room.paging)
-    ksp(libs.room.compiler)
-
-    // Paging
-    implementation(libs.paging.runtime)
-    implementation(libs.paging.compose)
-
-    // Image loading
-    implementation(libs.coil.compose)
-
-    // Permissions
-    implementation(libs.accompanist.permissions)
-
-    // Coroutines
-    implementation(libs.kotlinx.coroutines.rx2)
-
-    // Logging
-    implementation(libs.timber)
-
-    // Testing
-    testImplementation(libs.junit)
-    testImplementation(libs.mockk)
-    testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(libs.kotlin.test.junit)
+    add("kspAndroid", libs.room.compiler)
+    add("kspDesktop", libs.room.compiler)
 }

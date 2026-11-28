@@ -58,6 +58,7 @@ import cash.p.terminal.resources.ic_migrate_24
 import cash.p.terminal.resources.transactions_account_delegated_to
 import cash.p.terminal.resources.transactions_account_delegation_warning_short
 import cash.p.terminal.resources.transactions_migrate_to_ironwood
+import cash.p.terminal.resources.transactions_to_self
 
 class TransactionViewItemFactory(
     private val addressMetadataManager: AddressMetadataManager,
@@ -1412,6 +1413,8 @@ class TransactionViewItemFactory(
                 Res.string.Transactions_To,
                 mapped(recipient, record.blockchainType)
             )
+
+            record.sentToSelf -> Translator.getString(Res.string.transactions_to_self)
 
             else -> "---"
         }

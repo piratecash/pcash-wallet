@@ -283,6 +283,30 @@
     <string name="transactions_search_not_found_in_last">Introuvable parmi les %1$s dernières transactions</string>
     <string name="transactions_search_no_more_in_last">Aucune autre correspondance parmi les %1$s dernières transactions</string>
     <string name="transactions_search_continue">Chercher plus loin</string>
+    <string name="transactions_calendar_title">Calendrier</string>
+    <string name="transactions_calendar_mode_to_date">Jusqu\'à une date</string>
+    <string name="transactions_calendar_mode_period">Période</string>
+    <string name="transactions_calendar_show_up_to">Afficher jusqu\'au</string>
+    <string name="transactions_calendar_to_date_hint">La liste commence par la dernière transaction de ce jour. S\'il n\'y en a pas eu ce jour-là, par la plus proche antérieure.</string>
+    <string name="transactions_calendar_from">Du</string>
+    <string name="transactions_calendar_to">Au</string>
+    <string name="transactions_calendar_show">Afficher les transactions</string>
+    <string name="transactions_calendar_back_to_latest">Retour aux dernières</string>
+    <string name="transactions_calendar_period_range">Du %1$s\nau %2$s</string>
+    <string name="transactions_calendar_period_day">Le %1$s</string>
+    <string name="transactions_calendar_period_up_to">Jusqu\'au %1$s</string>
+    <string name="transactions_calendar_period_end">Ce sont toutes les transactions de la période sélectionnée</string>
+    <string name="transactions_calendar_period_empty_all">Aucune transaction sur la période sélectionnée</string>
+    <string name="transactions_calendar_period_empty_incoming">Aucune transaction reçue sur la période sélectionnée</string>
+    <string name="transactions_calendar_period_empty_outgoing">Aucune transaction envoyée sur la période sélectionnée</string>
+    <string name="transactions_calendar_period_empty_swap">Aucun échange sur la période sélectionnée</string>
+    <string name="transactions_calendar_period_empty_approve">Aucune approbation sur la période sélectionnée</string>
+    <string name="transactions_calendar_change_period">Modifier la période</string>
+    <string name="transactions_calendar_previous_month">Mois précédent</string>
+    <string name="transactions_calendar_next_month">Mois suivant</string>
+    <string name="transactions_calendar_period_selected">Calendrier, période sélectionnée</string>
+    <string name="transactions_search_not_found_in_period">Introuvable parmi %1$s transactions de la période sélectionnée</string>
+    <string name="transactions_search_no_more_in_period">Aucune autre correspondance parmi %1$s transactions de la période sélectionnée</string>
     <string name="Market_Filters">Filtres</string>
     <string name="Market_AdvancedSearch_Results">Résultat</string>
     <string name="Market_Search_Hint">Chercher</string>
@@ -877,6 +901,7 @@
     <string name="Transactions_ContractCreation">Création du contrat</string>
     <string name="Transactions_ContractDeploy">Contract Deploy</string>
     <string name="Transactions_To">a %s</string>
+    <string name="transactions_to_self">à soi-même</string>
     <string name="Transactions_From">de %s</string>
     <string name="Transaction_Unlimited_CoinCode">%s illimité</string>
     <string name="Transaction_Unlimited">illimité</string>
@@ -1341,6 +1366,7 @@
     <string name="transaction_error_invalid_derivation_path">Chemin de dérivation invalide</string>
     <!--Hud texts-->
     <string name="Hud_Text_NoInternet">Aucune connexion Internet</string>
+    <string name="zcash_server_unavailable">Le serveur est indisponible. Réessayez.</string>
     <string name="Hud_Text_Copied">Copié</string>
     <string name="Hud_Text_Created">Établi</string>
     <string name="Hud_Text_Restored">Restauré </string>
@@ -1598,7 +1624,7 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="Coin_Tab_Market">Marchés</string>
     <string name="Coin_Tab_Details">Analyses</string>
     <string name="Coin_Tab_Tweets">Tweets</string>
-    <string name="typical_fee"><![CDATA[Frais typiques < 0.001 ZEC]]></string>
+    <string name="typical_fee"><![CDATA[Frais typiques < 0.0001 ZEC]]></string>
     <string name="CoinPage_TimeDuration_Hour">1H</string>
     <string name="CoinPage_TimeDuration_Day">1J</string>
     <string name="CoinPage_TimeDuration_Week">7J</string>
@@ -2156,7 +2182,7 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="auth_info_successful">Réussi</string>
     <string name="auth_info_unsuccessful">Échoué</string>
     <string name="auth_info_duress_mode">(Mode contrainte)</string>
-    <string name="auth_info_entrance_to">Entrée dans le %s</string>
+    <string name="auth_info_entrance_to">Entrée dans le %1$s</string>
     <string name="auth_info_seconds_ago">(il y a %d sec)</string>
     <string name="auth_info_minutes_ago">(il y a %d min)</string>
     <string name="auth_info_hours_ago">(il y a %d heures)</string>
@@ -2709,6 +2735,19 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="desktop_password_save_failed">Impossible d\u0027enregistrer le mot de passe. Veuillez réessayer</string>
     <string name="tron_controlled_by_others_title">D\'autres personnes peuvent contrôler ce compte</string>
     <string name="tron_controlled_by_others_warning">Les autorisations de ce compte ont été modifiées : d\'autres clés peuvent le contrôler. Les fonds que vous y envoyez peuvent être retirés sans votre intervention. N\'y déposez des fonds que si vous savez à qui appartiennent ces clés.</string>
+    <string name="login_logging_selfie_unsuccessful_shared">Ce commutateur est commun à tous les portefeuilles de cet ordinateur</string>
+    <string name="desktop_journal_password_title">Mot de passe du journal</string>
+    <string name="desktop_journal_password_set_description">Définissez un mot de passe qui protège le journal des connexions. Il doit être différent des mots de passe qui déverrouillent vos portefeuilles</string>
+    <string name="desktop_journal_password_access_description">Saisissez le mot de passe du journal pour ouvrir le journal des connexions</string>
+    <string name="desktop_journal_password_disable_description">Saisissez le mot de passe du journal pour le désactiver</string>
+    <string name="desktop_delete_contacts_password_title">Mot de passe de suppression des contacts</string>
+    <string name="desktop_delete_contacts_password_set_description">Saisir ce mot de passe sur l\'écran de déverrouillage supprime immédiatement votre carnet d\'adresses de cet ordinateur. Il doit être différent de vos autres mots de passe</string>
+    <string name="desktop_delete_contacts_password_disable_description">Saisissez le mot de passe de suppression des contacts pour le désactiver</string>
+    <string name="desktop_delete_contacts_terms_warning">En définissant ce mot de passe, vous confirmez comprendre son rôle : protéger votre vie privée. Le saisir sur l\'écran de déverrouillage supprime immédiatement et de façon irréversible le carnet d\'adresses crypto stocké sur cet ordinateur. Le carnet d\'adresses n\'est conservé qu\'en local et ne peut pas être restauré sans sauvegarde.</string>
+    <string-array name="desktop_delete_contacts_terms">
+        <item>Je comprends que ce mot de passe sert à supprimer immédiatement le carnet d\'adresses crypto.</item>
+        <item>Je comprends qu\'après la saisie de ce mot de passe, le carnet d\'adresses sera supprimé et ne pourra pas être restauré sans sauvegarde.</item>
+    </string-array>
     <string name="sign_message_title">Signer un message</string>
     <string name="sign_message_intro">La signature prouve que l\'adresse vous appartient. Les plateformes d\'échange la demandent lorsque vous ajoutez une adresse de retrait. Elle ne donne aucun accès à vos fonds.</string>
     <string name="sign_message_message">Message</string>

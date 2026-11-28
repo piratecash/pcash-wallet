@@ -283,6 +283,30 @@
     <string name="transactions_search_not_found_in_last">در میان %1$s تراکنش اخیر یافت نشد</string>
     <string name="transactions_search_no_more_in_last">در میان %1$s تراکنش اخیر مورد مشابه دیگری وجود ندارد</string>
     <string name="transactions_search_continue">ادامه جستجو</string>
+    <string name="transactions_calendar_title">تقویم</string>
+    <string name="transactions_calendar_mode_to_date">تا تاریخ</string>
+    <string name="transactions_calendar_mode_period">بازه زمانی</string>
+    <string name="transactions_calendar_show_up_to">نمایش تا</string>
+    <string name="transactions_calendar_to_date_hint">فهرست از آخرین تراکنش آن روز شروع می‌شود. اگر در آن روز تراکنشی نبود، از نزدیک‌ترین تراکنش قبلی.</string>
+    <string name="transactions_calendar_from">از</string>
+    <string name="transactions_calendar_to">تا</string>
+    <string name="transactions_calendar_show">نمایش تراکنش‌ها</string>
+    <string name="transactions_calendar_back_to_latest">بازگشت به آخرین‌ها</string>
+    <string name="transactions_calendar_period_range">از %1$s\nتا %2$s</string>
+    <string name="transactions_calendar_period_day">در %1$s</string>
+    <string name="transactions_calendar_period_up_to">تا %1$s</string>
+    <string name="transactions_calendar_period_end">این همه تراکنش‌های بازه انتخاب‌شده است</string>
+    <string name="transactions_calendar_period_empty_all">در بازه انتخاب‌شده تراکنشی وجود ندارد</string>
+    <string name="transactions_calendar_period_empty_incoming">در بازه انتخاب‌شده تراکنش دریافتی وجود ندارد</string>
+    <string name="transactions_calendar_period_empty_outgoing">در بازه انتخاب‌شده تراکنش ارسالی وجود ندارد</string>
+    <string name="transactions_calendar_period_empty_swap">در بازه انتخاب‌شده تبادلی وجود ندارد</string>
+    <string name="transactions_calendar_period_empty_approve">در بازه انتخاب‌شده تأییدی وجود ندارد</string>
+    <string name="transactions_calendar_change_period">تغییر بازه</string>
+    <string name="transactions_calendar_previous_month">ماه قبل</string>
+    <string name="transactions_calendar_next_month">ماه بعد</string>
+    <string name="transactions_calendar_period_selected">تقویم، بازه انتخاب شده</string>
+    <string name="transactions_search_not_found_in_period">در میان %1$s تراکنش بازه انتخاب‌شده یافت نشد</string>
+    <string name="transactions_search_no_more_in_period">مورد دیگری در میان %1$s تراکنش بازه انتخاب‌شده یافت نشد</string>
     <string name="Market_Filters">Filters</string>
     <string name="Market_AdvancedSearch_Results">Results</string>
     <string name="Market_Search_Hint">Search</string>
@@ -881,6 +905,7 @@
     <string name="Transactions_ContractCreation">ایجاد قرارداد</string>
     <string name="Transactions_ContractDeploy">Contract Deploy</string>
     <string name="Transactions_To">به %s</string>
+    <string name="transactions_to_self">به خود</string>
     <string name="Transactions_From">از %s</string>
     <string name="Transaction_Unlimited_CoinCode">unlimited %s</string>
     <string name="Transaction_Unlimited">unlimited</string>
@@ -1347,6 +1372,7 @@
     <string name="transaction_error_invalid_derivation_path">مسیر مشتق‌سازی نامعتبر</string>
     <!--Hud texts-->
     <string name="Hud_Text_NoInternet">اینترنت ندارید</string>
+    <string name="zcash_server_unavailable">سرور در دسترس نیست. دوباره تلاش کنید.</string>
     <string name="Hud_Text_Copied">کپی شد</string>
     <string name="Hud_Text_Created">ایجاد شد</string>
     <string name="Hud_Text_Restored">بازگرداني</string>
@@ -1604,7 +1630,7 @@
     <string name="Coin_Tab_Market">Markets</string>
     <string name="Coin_Tab_Details">Analytics</string>
     <string name="Coin_Tab_Tweets">Tweets</string>
-    <string name="typical_fee"><![CDATA[کارمزد معمول < 0.001 ZEC]]></string>
+    <string name="typical_fee"><![CDATA[کارمزد معمول < 0.0001 ZEC]]></string>
     <string name="CoinPage_TimeDuration_Hour">1H</string>
     <string name="CoinPage_TimeDuration_Day">1D</string>
     <string name="CoinPage_TimeDuration_Week">7D</string>
@@ -2161,7 +2187,7 @@
     <string name="auth_info_successful">موفق</string>
     <string name="auth_info_unsuccessful">ناموفق</string>
     <string name="auth_info_duress_mode">(حالت اجبار)</string>
-    <string name="auth_info_entrance_to">ورود به %s</string>
+    <string name="auth_info_entrance_to">ورود به %1$s</string>
     <string name="auth_info_seconds_ago">(%d ثانیه قبل)</string>
     <string name="auth_info_minutes_ago">(%d دقیقه قبل)</string>
     <string name="auth_info_hours_ago">(%d ساعت قبل)</string>
@@ -2702,6 +2728,19 @@
     <string name="desktop_password_save_failed">ذخیره رمز عبور ممکن نشد. لطفاً دوباره تلاش کنید</string>
     <string name="tron_controlled_by_others_title">ممکن است دیگران این حساب را کنترل کنند</string>
     <string name="tron_controlled_by_others_warning">مجوزهای این حساب تغییر کرده است: ممکن است کلیدهای دیگری آن را کنترل کنند. وجوهی که به آن ارسال می‌کنید ممکن است بدون دخالت شما برداشت شوند. فقط در صورتی آن را شارژ کنید که بدانید این کلیدها متعلق به چه کسی است.</string>
+    <string name="login_logging_selfie_unsuccessful_shared">این کلید برای همه کیف‌پول‌های این رایانه مشترک است</string>
+    <string name="desktop_journal_password_title">گذرواژه گزارش</string>
+    <string name="desktop_journal_password_set_description">گذرواژه‌ای تعیین کنید که از گزارش ورودها محافظت می‌کند. این گذرواژه باید با گذرواژه‌هایی که کیف‌پول‌های شما را باز می‌کنند متفاوت باشد</string>
+    <string name="desktop_journal_password_access_description">برای باز کردن گزارش ورودها، گذرواژه گزارش را وارد کنید</string>
+    <string name="desktop_journal_password_disable_description">برای خاموش کردن آن، گذرواژه گزارش را وارد کنید</string>
+    <string name="desktop_delete_contacts_password_title">گذرواژه حذف مخاطبین</string>
+    <string name="desktop_delete_contacts_password_set_description">وارد کردن این گذرواژه در صفحه قفل‌گشایی، دفترچه آدرس شما را فوراً از این رایانه حذف می‌کند. این گذرواژه باید با گذرواژه‌های دیگر شما متفاوت باشد</string>
+    <string name="desktop_delete_contacts_password_disable_description">برای خاموش کردن آن، گذرواژه حذف مخاطبین را وارد کنید</string>
+    <string name="desktop_delete_contacts_terms_warning">با تعیین این گذرواژه تأیید می‌کنید که هدف آن را می‌دانید: محافظت از حریم خصوصی شما. وارد کردن آن در صفحه قفل‌گشایی، دفترچه آدرس رمزارز ذخیره‌شده در این رایانه را فوراً و بازگشت‌ناپذیر حذف می‌کند. دفترچه آدرس فقط به‌صورت محلی ذخیره می‌شود و بدون نسخه پشتیبان قابل بازیابی نیست.</string>
+    <string-array name="desktop_delete_contacts_terms">
+        <item>می‌دانم که این گذرواژه برای حذف فوری دفترچه آدرس رمزارز استفاده می‌شود.</item>
+        <item>می‌دانم که پس از وارد کردن این گذرواژه، دفترچه آدرس حذف می‌شود و بدون نسخه پشتیبان قابل بازیابی نیست.</item>
+    </string-array>
     <string name="sign_message_title">امضای پیام</string>
     <string name="sign_message_intro">امضا ثابت می‌کند که آدرس متعلق به شماست. صرافی‌ها هنگام افزودن آدرس برداشت آن را درخواست می‌کنند. امضا هیچ دسترسی به دارایی‌های شما نمی‌دهد.</string>
     <string name="sign_message_message">پیام</string>

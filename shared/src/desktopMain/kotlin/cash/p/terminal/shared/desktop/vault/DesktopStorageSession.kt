@@ -14,6 +14,7 @@ import cash.p.terminal.vault.CreateResult
 import cash.p.terminal.vault.EnvelopePayload
 import cash.p.terminal.vault.Hkdf
 import cash.p.terminal.vault.VaultSession
+import co.touchlab.kermit.Logger
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -24,7 +25,11 @@ class DesktopStorageSession private constructor(
     private val environment: StorageEnvironment,
     private val parts: Parts,
     private val keys: SessionKeys,
+    private val journalPrepared: Boolean,
 ) {
+    /** Reused warm only when so: a journal step that failed gets another try on a full switch. */
+    internal val journalReady: Boolean get() = journalPrepared && parts.chain.journalsOpen
+
     @Volatile
     private var closed = false
 
@@ -173,10 +178,11 @@ class DesktopStorageSession private constructor(
 
     companion object {
         private const val KEY_SIZE = 32
+        private val logger = Logger.withTag("DesktopStorageSession")
 
         /** Throws when the storage does not open; whatever it had opened is closed, the vault session too. */
         internal fun open(vaultSession: VaultSession, environment: StorageEnvironment): DesktopStorageSession =
-            assemble(vaultSession, environment) { opener, link -> opener.open(link) }
+            assemble(vaultSession, environment) { opener, link -> opener.open(link, withJournal = true) }
 
         /** A new vault: every slot but the root's starts out as noise. */
         internal fun create(created: CreateResult.Created, environment: StorageEnvironment): DesktopStorageSession {
@@ -197,6 +203,7 @@ class DesktopStorageSession private constructor(
             val payload = checkNotNull(vaultSession.payload()) { "The vault session is closed" }
             val opened = ArrayDeque<AutoCloseable>()
             try {
+                val filesReady = journalStep("Preparing the journal files", environment::ensureJournalFiles)
                 val opener = SafeOpener(environment)
                 val shared = openShared(environment, payload).also(opened::addFirst)
                 val collapse = CollapseOperation(environment, opener)
@@ -205,7 +212,7 @@ class DesktopStorageSession private constructor(
                 chain.open(openRoot(opener, rootLink))
                 val stores = AccountStores(environment, chain).also(opened::addFirst)
                 stores.openAll()
-                val levels = LevelProvisioner(environment, opener, chain, vaultSession)
+                val levels = LevelProvisioner(environment, opener, chain, vaultSession).also { it.linkEntryKeys() }
                 val keys = SessionKeys(
                     secretFields = checkNotNull(vaultSession.secretFieldsKey()),
                     sharedNames = checkNotNull(vaultSession.sharedNamesKey()),
@@ -215,6 +222,7 @@ class DesktopStorageSession private constructor(
                     environment,
                     Parts(shared, chain, collapse, stores, levels),
                     keys,
+                    journalPrepared = filesReady,
                 )
             } catch (e: Throwable) {
                 // An Error from the SQLCipher native load must not leak an open database either.
@@ -224,6 +232,15 @@ class DesktopStorageSession private constructor(
             } finally {
                 payload.close()
             }
+        }
+
+        /** The login journal is an extra: when its upgrade fails, the level still opens. */
+        private inline fun journalStep(name: String, step: () -> Unit): Boolean = try {
+            step()
+            true
+        } catch (e: Exception) {
+            logger.w(e) { "$name failed" }
+            false
         }
 
         private fun openShared(

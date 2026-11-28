@@ -29,6 +29,9 @@ import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
 import cash.p.terminal.modules.transactions.FilterTransactionType
+import cash.p.terminal.modules.transactions.TimestampRange
+import cash.p.terminal.modules.transactions.filterInPeriod
+import cash.p.terminal.modules.transactions.oldestDatedTimestamp
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.litecoin_hardware_extended_public_key_required
 import cash.p.terminal.resources.litecoin_mweb_invalid_amount
@@ -378,23 +381,34 @@ class LitecoinAdapter(
         limit: Int,
         transactionType: FilterTransactionType,
         address: String?,
+        period: TimestampRange?,
     ): List<TransactionRecord> {
         if (!mwebMode) {
             return withContext(dispatcherProvider.io) {
                 adjustPublicMwebPegInRecords(
-                    super.getTransactions(from, token, limit, transactionType, address)
+                    super.getTransactions(from, token, limit, transactionType, address, period)
                 )
             }
         }
         if (address != null) return emptyList()
 
-        val records = mwebTransactionRecords(transactionType)
+        val records = mwebTransactionRecords(transactionType).filterInPeriod(period) { it.timestamp }
         val startIndex = from?.let { record ->
             records.indexOfFirst { it.uid == record.uid }
                 .takeIf { it >= 0 }
                 ?.plus(1)
         } ?: 0
         return records.drop(startIndex).take(limit)
+    }
+
+    override suspend fun getOldestTransactionTimestamp(
+        token: Token?,
+        transactionType: FilterTransactionType,
+        address: String?,
+    ): Long? = when {
+        !mwebMode -> super.getOldestTransactionTimestamp(token, transactionType, address)
+        address != null -> null
+        else -> mwebTransactionRecords(transactionType).oldestDatedTimestamp { it.timestamp }
     }
 
     private fun adjustPublicMwebPegInRecords(records: List<TransactionRecord>): List<TransactionRecord> {

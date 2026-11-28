@@ -283,6 +283,30 @@
     <string name="transactions_search_not_found_in_last">在最近的 %1$s 笔交易中未找到</string>
     <string name="transactions_search_no_more_in_last">在最近的 %1$s 笔交易中没有其他匹配项</string>
     <string name="transactions_search_continue">继续搜索</string>
+    <string name="transactions_calendar_title">日历</string>
+    <string name="transactions_calendar_mode_to_date">截至日期</string>
+    <string name="transactions_calendar_mode_period">时间段</string>
+    <string name="transactions_calendar_show_up_to">显示至</string>
+    <string name="transactions_calendar_to_date_hint">列表从当天的最后一笔交易开始。若当天没有交易，则从之前最近的一笔开始。</string>
+    <string name="transactions_calendar_from">从</string>
+    <string name="transactions_calendar_to">至</string>
+    <string name="transactions_calendar_show">显示交易</string>
+    <string name="transactions_calendar_back_to_latest">返回最新</string>
+    <string name="transactions_calendar_period_range">从 %1$s\n至 %2$s</string>
+    <string name="transactions_calendar_period_day">在 %1$s</string>
+    <string name="transactions_calendar_period_up_to">截至 %1$s</string>
+    <string name="transactions_calendar_period_end">这是所选时间段内的全部交易</string>
+    <string name="transactions_calendar_period_empty_all">所选时间段内没有交易</string>
+    <string name="transactions_calendar_period_empty_incoming">所选时间段内没有收到的交易</string>
+    <string name="transactions_calendar_period_empty_outgoing">所选时间段内没有发送的交易</string>
+    <string name="transactions_calendar_period_empty_swap">所选时间段内没有兑换</string>
+    <string name="transactions_calendar_period_empty_approve">所选时间段内没有授权</string>
+    <string name="transactions_calendar_change_period">更改时间段</string>
+    <string name="transactions_calendar_previous_month">上个月</string>
+    <string name="transactions_calendar_next_month">下个月</string>
+    <string name="transactions_calendar_period_selected">日历，已选择时间段</string>
+    <string name="transactions_search_not_found_in_period">在所选时间段的 %1$s 笔交易中未找到</string>
+    <string name="transactions_search_no_more_in_period">在所选时间段的 %1$s 笔交易中没有其他匹配项</string>
     <string name="Market_Filters">高级搜索</string>
     <string name="Market_AdvancedSearch_Results">搜索结果</string>
     <string name="Market_Search_Hint">搜索</string>
@@ -875,6 +899,7 @@
     <string name="Transactions_ContractCreation">合约创建</string>
     <string name="Transactions_ContractDeploy">Contract Deploy</string>
     <string name="Transactions_To">接收人%s</string>
+    <string name="transactions_to_self">给自己</string>
     <string name="Transactions_From">发送人%s</string>
     <string name="Transaction_Unlimited_CoinCode">无限%s</string>
     <string name="Transaction_Unlimited">无限</string>
@@ -1339,6 +1364,7 @@
     <string name="transaction_error_invalid_derivation_path">派生路径无效</string>
     <!--Hud texts-->
     <string name="Hud_Text_NoInternet">没有网络</string>
+    <string name="zcash_server_unavailable">服务器不可用，请重试。</string>
     <string name="Hud_Text_Copied">已复制</string>
     <string name="Hud_Text_Created">已创建</string>
     <string name="Hud_Text_Restored">已恢复</string>
@@ -1589,7 +1615,7 @@
     <string name="Coin_Tab_Market">市场</string>
     <string name="Coin_Tab_Details">分析</string>
     <string name="Coin_Tab_Tweets">推文</string>
-    <string name="typical_fee"><![CDATA[典型费用 < 0.001 ZEC]]></string>
+    <string name="typical_fee"><![CDATA[典型费用 < 0.0001 ZEC]]></string>
     <string name="CoinPage_TimeDuration_Hour">1H</string>
     <string name="CoinPage_TimeDuration_Day">1天</string>
     <string name="CoinPage_TimeDuration_Week">7天</string>
@@ -2141,7 +2167,7 @@
     <string name="auth_info_successful">成功</string>
     <string name="auth_info_unsuccessful">失败</string>
     <string name="auth_info_duress_mode">(胁迫模式)</string>
-    <string name="auth_info_entrance_to">进入 %s</string>
+    <string name="auth_info_entrance_to">进入 %1$s</string>
     <string name="auth_info_seconds_ago">(%d秒前)</string>
     <string name="auth_info_minutes_ago">(%d分钟前)</string>
     <string name="auth_info_hours_ago">(%d小时前)</string>
@@ -2667,6 +2693,19 @@
     <string name="desktop_password_save_failed">无法保存密码，请重试</string>
     <string name="tron_controlled_by_others_title">其他人可能控制此账户</string>
     <string name="tron_controlled_by_others_warning">此账户的权限已被更改：其他密钥可能控制该账户。您转入的资金可能在未经您同意的情况下被提取。仅当您知道这些密钥属于谁时才向其充值。</string>
+    <string name="login_logging_selfie_unsuccessful_shared">此开关对这台电脑上的所有钱包通用</string>
+    <string name="desktop_journal_password_title">日志密码</string>
+    <string name="desktop_journal_password_set_description">设置一个用于保护登录日志的密码。它必须与用于解锁钱包的密码不同</string>
+    <string name="desktop_journal_password_access_description">输入日志密码以打开登录日志</string>
+    <string name="desktop_journal_password_disable_description">输入日志密码以将其关闭</string>
+    <string name="desktop_delete_contacts_password_title">删除联系人密码</string>
+    <string name="desktop_delete_contacts_password_set_description">在解锁界面输入此密码会立即从这台电脑上删除您的地址簿。它必须与您的其他密码不同</string>
+    <string name="desktop_delete_contacts_password_disable_description">输入删除联系人密码以将其关闭</string>
+    <string name="desktop_delete_contacts_terms_warning">设置此密码即表示您明白其用途：保护您的隐私。在解锁界面输入它会立即且不可恢复地删除这台电脑上保存的加密地址簿。地址簿仅保存在本地，没有备份就无法恢复。</string>
+    <string-array name="desktop_delete_contacts_terms">
+        <item>我明白此密码用于立即删除加密地址簿。</item>
+        <item>我明白输入此密码后地址簿将被删除，没有备份就无法恢复。</item>
+    </string-array>
     <string name="sign_message_title">签名消息</string>
     <string name="sign_message_intro">签名可以证明该地址属于您。交易所在您添加提现地址时会要求提供签名。签名不会授予对您资金的任何访问权限。</string>
     <string name="sign_message_message">消息</string>

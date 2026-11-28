@@ -211,7 +211,7 @@ compose.desktop {
                 infoPlist {
                     extraKeysRawXml = """
                         <key>NSCameraUsageDescription</key>
-                        <string>P.CASH uses the camera to scan QR codes.</string>
+                        <string>P.CASH uses the camera to scan QR codes and to take the login photo you turned on in the login journal.</string>
                     """.trimIndent()
                 }
             }

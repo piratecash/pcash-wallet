@@ -10,6 +10,9 @@ import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.monero.MoneroTransactionRecord
 import cash.p.terminal.modules.transactions.FilterTransactionType
+import cash.p.terminal.modules.transactions.TimestampRange
+import cash.p.terminal.modules.transactions.filterInPeriod
+import cash.p.terminal.modules.transactions.oldestDatedTimestamp
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.transaction.TransactionSource
@@ -60,9 +63,39 @@ class MoneroTransactionsAdapter(
         limit: Int,
         transactionType: FilterTransactionType,
         address: String?,
+        period: TimestampRange?,
     ): List<TransactionRecord> {
         val token = token ?: return emptyList()
 
+        val sortedTransactions = matchingTransactions(transactionType, address)
+            .filterInPeriod(period) { it.timestamp }
+            .sortedByDescending { it.timestamp }
+
+        val startIndex = if (from != null) {
+            val fromIndex = sortedTransactions.indexOfFirst { it.hash == from.transactionHash }
+            if (fromIndex >= 0) fromIndex + 1 else 0
+        } else {
+            0
+        }
+
+        val endIndex = minOf(startIndex + limit, sortedTransactions.size)
+        val pagedTransactions = sortedTransactions.subList(startIndex, endIndex)
+
+        return pagedTransactions.map { transactionInfo ->
+            convertToTransactionRecord(transactionInfo, token)
+        }
+    }
+
+    override suspend fun getOldestTransactionTimestamp(
+        token: Token?,
+        transactionType: FilterTransactionType,
+        address: String?,
+    ): Long? = token?.let { matchingTransactions(transactionType, address).oldestDatedTimestamp { it.timestamp } }
+
+    private fun matchingTransactions(
+        transactionType: FilterTransactionType,
+        address: String?,
+    ): List<TransactionInfo> {
         val moneroTransactions = moneroKitWrapper.getTransactions()
 
         val filteredByType = when (transactionType) {
@@ -80,29 +113,13 @@ class MoneroTransactionsAdapter(
             FilterTransactionType.Approve -> return emptyList()
         }
 
-        val filteredByAddress = if (address != null) {
+        return if (address != null) {
             filteredByType.filter { transactionInfo ->
                 transactionInfo.address == address ||
                         transactionInfo.transfers?.any { it.address == address } == true
             }
         } else {
             filteredByType
-        }
-
-        val sortedTransactions = filteredByAddress.sortedByDescending { it.timestamp }
-
-        val startIndex = if (from != null) {
-            val fromIndex = sortedTransactions.indexOfFirst { it.hash == from.transactionHash }
-            if (fromIndex >= 0) fromIndex + 1 else 0
-        } else {
-            0
-        }
-
-        val endIndex = minOf(startIndex + limit, sortedTransactions.size)
-        val pagedTransactions = sortedTransactions.subList(startIndex, endIndex)
-
-        return pagedTransactions.map { transactionInfo ->
-            convertToTransactionRecord(transactionInfo, token)
         }
     }
 

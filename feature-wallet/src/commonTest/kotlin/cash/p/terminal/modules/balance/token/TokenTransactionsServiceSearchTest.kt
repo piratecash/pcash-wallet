@@ -9,18 +9,23 @@ import cash.p.terminal.modules.transactions.ITransactionRecordRepository
 import cash.p.terminal.modules.transactions.RecordsBatch
 import cash.p.terminal.modules.transactions.SearchPaging
 import cash.p.terminal.modules.transactions.SearchScanState
+import cash.p.terminal.modules.transactions.TimestampRange
+import cash.p.terminal.modules.transactions.TransactionPeriod
 import cash.p.terminal.modules.transactions.TransactionSyncStateRepository
 import cash.p.terminal.modules.transactions.TransactionsRateRepository
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.transaction.TransactionSource
+import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
+import io.mockk.verify
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -29,6 +34,8 @@ import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.Collections
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -470,6 +477,60 @@ class TokenTransactionsServiceSearchTest : KoinTest {
             false
         }
         return queries
+    }
+
+    @Test
+    fun setPeriod_activeSearch_clearsListAndReloadsWithPeriodAndQuery() = runBlocking {
+        val source = mockk<TransactionSource>(relaxed = true)
+        val calls = Collections.synchronizedList(mutableListOf<Pair<String?, TimestampRange?>>())
+        every { repository.set(any(), any(), any(), any(), any(), any(), any()) } answers {
+            calls.add(arg<String?>(5) to arg<TimestampRange?>(6))
+            false
+        }
+        val period = TransactionPeriod(null, LocalDate.of(2024, 5, 3))
+        val service = readyService(source)
+        service.setSearchQuery("needle")
+        repositoryItemsFlow.emit(RecordsBatch(listOf(mockRecord("m1", source)), searchCompleted = true, searchExhausted = true))
+        waitUntil { service.searchScanStateFlow.value == SearchScanState.Finished }
+
+        service.setPeriod(period)
+
+        assertEquals(SearchScanState.Scanning, service.searchScanStateFlow.value)
+        assertTrue(service.transactionItemsFlow.value.isEmpty())
+        assertTrue(waitUntilTrue { calls.contains("needle" to period.timestampRange(ZoneId.systemDefault())) })
+        service.clear()
+    }
+
+    @Test
+    fun setPeriod_samePeriodAgain_keepsListAndDoesNotReload() = runBlocking {
+        val source = mockk<TransactionSource>(relaxed = true)
+        val period = TransactionPeriod(null, LocalDate.of(2024, 5, 3))
+        val service = readyService(source)
+        service.setPeriod(period)
+        repositoryItemsFlow.emit(RecordsBatch(listOf(mockRecord("r1", source))))
+        waitUntil { service.transactionItemsFlow.value.isNotEmpty() }
+        clearMocks(repository, answers = false, recordedCalls = true, childMocks = false, verificationMarks = true, exclusionRules = false)
+
+        service.setPeriod(period)
+
+        assertEquals(1, service.transactionItemsFlow.value.size)
+        verify(exactly = 0) { repository.set(any(), any(), any(), any(), any(), any(), any()) }
+        service.clear()
+    }
+
+    @Test
+    fun handleUpdatedRecords_historyExhaustedBatch_exposesFlagUntilPeriodChanges() = runBlocking {
+        val source = mockk<TransactionSource>(relaxed = true)
+        val service = readyService(source)
+
+        repositoryItemsFlow.emit(RecordsBatch(listOf(mockRecord("r1", source)), historyExhausted = true))
+        waitUntil { service.historyExhaustedFlow.value }
+        val exhaustedAfterBatch = service.historyExhaustedFlow.value
+        service.setPeriod(TransactionPeriod(null, LocalDate.of(2024, 5, 3)))
+
+        assertTrue(exhaustedAfterBatch)
+        assertFalse(service.historyExhaustedFlow.value)
+        service.clear()
     }
 
     private fun waitUntilTrue(timeoutMs: Long = 5_000, condition: () -> Boolean): Boolean {

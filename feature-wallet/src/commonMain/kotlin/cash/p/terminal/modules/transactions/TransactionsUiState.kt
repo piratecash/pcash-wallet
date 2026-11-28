@@ -15,4 +15,6 @@ data class TransactionsUiState(
     val searchQuery: String = "",
     val searchScanning: Boolean = false,
     val searchPausedCount: String? = null,
+    val period: TransactionPeriodUiState = TransactionPeriodUiState(),
+    val transactionsHidden: Boolean = false,
 )
