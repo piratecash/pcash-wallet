@@ -64,7 +64,10 @@ import cash.p.terminal.modules.transactions.forQuery
 import cash.p.terminal.modules.transactions.pausedCountText
 import cash.p.terminal.modules.transactions.showsOnlySpinner
 import cash.p.terminal.modules.transactions.TransactionItem
+import cash.p.terminal.modules.transactions.TransactionCalendarController
+import cash.p.terminal.modules.transactions.TransactionPeriod
 import cash.p.terminal.modules.transactions.TransactionSearchController
+import cash.p.terminal.modules.transactions.hiddenFlagChanges
 import cash.p.terminal.modules.transactions.TransactionViewItem
 import cash.p.terminal.modules.transactions.TransactionViewItemFactory
 import cash.p.terminal.modules.transactions.addressMetadataChangesFlow
@@ -149,7 +152,7 @@ class TokenBalanceViewModel(
     private val numberFormatter: IAppNumberFormatter,
     private val contactsRepository: ContactsRepository,
     private val offlineModeManager: OfflineModeManager,
-) : ViewModelUiState<TokenBalanceUiState>(), TransactionSearchController.Host {
+) : ViewModelUiState<TokenBalanceUiState>(), TransactionSearchController.Host, TransactionCalendarController.Host {
 
     private val logger = AppLogger("TokenBalanceViewModel-${wallet.coin.code}")
     private val stackingType: StackingType? = when {
@@ -171,7 +174,9 @@ class TokenBalanceViewModel(
     private val title = wallet.token.coin.name
 
     private val searchController = TransactionSearchController(viewModelScope, this)
+    private val calendarController = TransactionCalendarController(viewModelScope, this)
     private var appliedSearchQuery = ""
+    private var historyExhausted = false
     private var searchScanState: SearchScanState = SearchScanState.Idle
 
     private var balanceViewItem: BalanceViewItem? = null
@@ -378,6 +383,24 @@ class TokenBalanceViewModel(
         }
 
         viewModelScope.launch {
+            transactionHiddenManager.transactionHiddenFlow.hiddenFlagChanges().collect { hidden ->
+                // A re-hidden screen must not keep showing the revealed history through a period or search.
+                if (hidden) {
+                    calendarController.onLeave()
+                    searchController.onSearchClose()
+                }
+                emitState()
+            }
+        }
+
+        viewModelScope.launch {
+            transactionsService.historyExhaustedFlow.collect {
+                historyExhausted = it
+                emitState()
+            }
+        }
+
+        viewModelScope.launch {
             totalBalance.stateFlow.collectLatest { totalBalanceValue ->
                 updateSecondaryValue(totalBalanceValue)
             }
@@ -489,12 +512,30 @@ class TokenBalanceViewModel(
         if (appliedSearchQuery == query) return
 
         appliedSearchQuery = query
+        openReloadWindow()
+        transactionsService.setSearchQuery(appliedSearchQuery.ifBlank { null })
+    }
+
+    fun onCalendarClick() = calendarController.onCalendarClick()
+    fun onCalendarDismiss() = calendarController.onSheetDismiss()
+    fun onPeriodSelect(period: TransactionPeriod) = calendarController.apply(period)
+    fun onBackToLatest() = calendarController.clear()
+
+    override fun onCalendarStateChanged() = emitState()
+
+    override suspend fun applyPeriod(period: TransactionPeriod?) {
+        openReloadWindow()
+        transactionsService.setPeriod(period)
+    }
+
+    override suspend fun oldestTimestamp(): Long? = transactionsService.oldestTimestamp()
+
+    private fun openReloadWindow() {
         transactions = if (appliedSearchQuery.isEmpty()) null else emptyMap()
         searchScanState = SearchScanState.Scanning.forQuery(appliedSearchQuery)
         // Reopen the "please wait" window (see updateTransactions()) so the reload to the full list can't flash empty.
         if (appliedSearchQuery.isEmpty()) syncing = true
         emitState()
-        transactionsService.setSearchQuery(appliedSearchQuery.ifBlank { null })
     }
 
     private suspend fun refreshTransactionsFromCache() {
@@ -581,6 +622,8 @@ class TokenBalanceViewModel(
         searchScanning = searchScanState == SearchScanState.Scanning,
         searchPausedCount = searchScanState.pausedCountText(numberFormatter),
         searchEmptyResult = isFinalSearchEmptyResult(),
+        period = calendarController.uiState(historyExhausted),
+        transactionsHidden = transactionHiddenManager.transactionHiddenFlow.value.transactionHidden,
         offlineSince = offlineSince,
         moneroHardwareWallet = moneroHardwareWallet,
         moneroLedgerWallet = wallet.account.type is AccountType.LedgerDevice,
@@ -1172,6 +1215,7 @@ class TokenBalanceViewModel(
             walletHasTransactions = false
         }
         transactionsService.setTransactionType(type)
+        calendarController.onSelectionChanged()
         emitState()
     }
 

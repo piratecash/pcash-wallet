@@ -1,6 +1,8 @@
 package cash.p.terminal.core.adapters.zcash
 
 import cash.p.terminal.modules.transactions.FilterTransactionType
+import cash.p.terminal.modules.transactions.TimestampRange
+import cash.p.terminal.modules.transactions.oldestDatedTimestamp
 import cash.p.zcash.Transaction
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
@@ -81,6 +83,7 @@ class ZcashTransactionsProvider {
     private fun getFilters(
         transactionType: FilterTransactionType,
         address: String?,
+        period: TimestampRange? = null,
     ) = buildList<(Transaction) -> Boolean> {
         when (transactionType) {
             FilterTransactionType.All -> Unit
@@ -97,6 +100,22 @@ class ZcashTransactionsProvider {
                 it.recipient.equals(address, ignoreCase = true)
             }
         }
+
+        if (period != null) {
+            add { it.time in period }
+        }
+    }
+
+    private fun filteredTransactions(
+        transactionType: FilterTransactionType,
+        address: String?,
+        period: TimestampRange?,
+    ): List<Transaction> {
+        val filters = getFilters(transactionType, address, period)
+        return when {
+            filters.isEmpty() -> transactions
+            else -> transactions.filter { tx -> filters.all { it.invoke(tx) } }
+        }
     }
 
     fun getTransactions(
@@ -104,12 +123,9 @@ class ZcashTransactionsProvider {
         transactionType: FilterTransactionType,
         address: String?,
         limit: Int,
+        period: TimestampRange? = null,
     ): List<Transaction> = try {
-        val filters = getFilters(transactionType, address)
-        val filtered = when {
-            filters.isEmpty() -> transactions
-            else -> transactions.filter { tx -> filters.all { it.invoke(tx) } }
-        }
+        val filtered = filteredTransactions(transactionType, address, period)
 
         val fromIndex = from?.let { (txid, time, id) ->
             filtered.indexOfFirst { it.txid == txid && it.time == time && it.id == id } + 1
@@ -119,6 +135,9 @@ class ZcashTransactionsProvider {
     } catch (error: Throwable) {
         emptyList()
     }
+
+    fun oldestTimestamp(transactionType: FilterTransactionType, address: String?): Long? =
+        filteredTransactions(transactionType, address, null).oldestDatedTimestamp { it.time }
 
     private companion object {
         val ORDER = compareByDescending<Transaction> { it.time }.thenByDescending { it.id }

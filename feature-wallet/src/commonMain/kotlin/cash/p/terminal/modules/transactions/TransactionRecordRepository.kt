@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import co.touchlab.kermit.Logger
 import kotlin.coroutines.cancellation.CancellationException
@@ -54,6 +55,7 @@ class TransactionRecordRepository(
     private var selectedBlockchain: Blockchain? = null
     private var contact: Contact? = null
     private var selectedSearchQuery: String? = null
+    private var selectedPeriod: TimestampRange? = null
     private val searchScanner = TransactionSearchScanner(searchMatcher, searchVisibility)
 
     // replay = 1: the load can finish before the screen's collector subscribes (both are
@@ -129,6 +131,7 @@ class TransactionRecordRepository(
         blockchain = selectedBlockchain,
         contact = contact,
         searchQuery = selectedSearchQuery,
+        period = selectedPeriod,
         walletSetVersion = walletSetVersion,
         searchSessionId = searchSessionId,
     )
@@ -186,6 +189,7 @@ class TransactionRecordRepository(
         blockchain: Blockchain?,
         contact: Contact?,
         searchQuery: String?,
+        period: TimestampRange?,
     ): Boolean {
         val walletsChanged = updateWalletAdapters(transactionWallets, contact)
         val filtersChanged = updateSelectedFilters(
@@ -194,6 +198,7 @@ class TransactionRecordRepository(
             transactionType = transactionType,
             contact = contact,
             searchQuery = searchQuery,
+            period = period,
         )
 
         return walletsChanged || filtersChanged
@@ -228,12 +233,14 @@ class TransactionRecordRepository(
         transactionType: FilterTransactionType,
         contact: Contact?,
         searchQuery: String?,
+        period: TimestampRange?,
     ): Boolean {
         var changed = updateSelectedWallet(wallet)
         changed = updateSelectedBlockchain(blockchain) || changed
         changed = updateSelectedTransactionType(transactionType) || changed
         changed = updateSelectedContact(contact) || changed
         changed = updateSelectedSearchQuery(searchQuery) || changed
+        changed = updateSelectedPeriod(period) || changed
         return changed
     }
 
@@ -270,6 +277,14 @@ class TransactionRecordRepository(
         return true
     }
 
+    private fun updateSelectedPeriod(period: TimestampRange?): Boolean {
+        if (selectedPeriod == period) return false
+        selectedPeriod = period
+        adaptersMap.values.forEach { it.setPeriod(period) }
+        extraSwapAdaptersMap.values.forEach { it.setPeriod(period) }
+        return true
+    }
+
     private fun rebuildAdapters(
         previousAdapters: Map<TransactionWallet, TransactionAdapterWrapper>,
         transactionType: FilterTransactionType,
@@ -302,6 +317,7 @@ class TransactionRecordRepository(
                 pendingTransactionMatcher = pendingTransactionMatcher,
                 locallyCreatedTransactionRepository = locallyCreatedTransactionRepository,
                 dispatcherProvider = dispatcherProvider,
+                period = selectedPeriod,
             )
         }
     }
@@ -335,10 +351,30 @@ class TransactionRecordRepository(
     }
 
     override fun loadNext() {
-        if (allNormalLoaded.get() &&
-            (selectedFilterTransactionType != FilterTransactionType.Swap || allExtraLoaded.get())
-        ) return
+        if (isHistoryExhausted(selectedFilterTransactionType, allNormalLoaded.get(), allExtraLoaded.get())) return
         loadItems(loadedPageNumber + 1)
+    }
+
+    // True when a further loadNext would be a no-op.
+    private fun isHistoryExhausted(
+        transactionType: FilterTransactionType,
+        normalLoaded: Boolean,
+        extraLoaded: Boolean,
+    ): Boolean = normalLoaded && (transactionType != FilterTransactionType.Swap || extraLoaded)
+
+    override suspend fun oldestTimestamp(): Long? = withContext(dispatcherProvider.io) {
+        val requestContext = getCurrentFilterContext()
+        activeAdapters
+            .map { wrapper ->
+                async {
+                    adapterCallOrNull {
+                        wrapper.oldestTimestamp(requestContext.transactionType, requestContext.contact)
+                    }
+                }
+            }
+            .awaitAll()
+            .filterNotNull()
+            .minOrNull()
     }
 
     override fun reload() {
@@ -485,7 +521,7 @@ class TransactionRecordRepository(
             adapters = adapters,
             limit = itemsCount,
             transactionType = requestContext.transactionType,
-            contact = requestContext.contact,
+            requestContext = requestContext,
         )
         if (!isActive || requestContext.isStale(revisions)) return
 
@@ -509,6 +545,7 @@ class TransactionRecordRepository(
             page = page,
             complete = normalRecords.complete && !nothingWasRead,
             extraComplete = extraRecords.complete,
+            transactionType = requestContext.transactionType,
         )
     }
 
@@ -559,9 +596,8 @@ class TransactionRecordRepository(
         allNormalLoaded.set(result.normalLoaded)
         allExtraLoaded.set(result.extraLoaded)
 
-        // Mirrors loadNext's early-return guard: true when a further loadNext would be a no-op.
-        val searchExhausted = result.normalLoaded &&
-            (requestContext.transactionType != FilterTransactionType.Swap || result.extraLoaded)
+        val searchExhausted =
+            isHistoryExhausted(requestContext.transactionType, result.normalLoaded, result.extraLoaded)
         emitSearchRecords(result, page, searchExhausted, requestContext.searchSessionId, refresh)
     }
 
@@ -577,7 +613,7 @@ class TransactionRecordRepository(
             adapters = activeSwapExtraAdapters,
             limit = itemsCount,
             transactionType = FilterTransactionType.All,
-            contact = requestContext.contact,
+            requestContext = requestContext,
         )
         return ExtraRecordsResult(
             records = loaded.records.filter(searchVisibility::isExtraSwapRecord),
@@ -590,7 +626,7 @@ class TransactionRecordRepository(
         adapters: List<TransactionAdapterWrapper>,
         limit: Int,
         transactionType: FilterTransactionType,
-        contact: Contact?,
+        requestContext: FilterContext,
     ): AdapterRecords = coroutineScope {
         val pages = adapters
             .map { wrapper ->
@@ -599,7 +635,8 @@ class TransactionRecordRepository(
                         wrapper.get(
                             limit = limit,
                             requestedFilterType = transactionType,
-                            requestedContact = contact
+                            requestedContact = requestContext.contact,
+                            requestedPeriod = requestContext.period,
                         )
                     }
                 }
@@ -667,6 +704,7 @@ class TransactionRecordRepository(
         page: Int,
         complete: Boolean,
         extraComplete: Boolean,
+        transactionType: FilterTransactionType,
     ) {
         val expectedItemsCount = page * itemsPerPage
 
@@ -692,6 +730,8 @@ class TransactionRecordRepository(
             RecordsBatch(
                 records = sortedRecords,
                 loadFailed = sortedRecords.isEmpty() && !(complete && extraComplete),
+                historyExhausted = complete &&
+                    isHistoryExhausted(transactionType, allNormalLoaded.get(), allExtraLoaded.get()),
             )
         )
     }
@@ -744,6 +784,7 @@ private class TransactionSearchScanner(
             extraSource = false,
             hideSuspiciousTx = searchVisibility.hideSuspiciousTx,
             sessionId = requestContext.searchSessionId,
+            period = requestContext.period,
         )
         val normalSources = normalAdapters.searchSources(tab, key)
         val extraSources = extraAdapters.searchSources(FilterTransactionType.All, key.copy(extraSource = true))
@@ -991,6 +1032,7 @@ private data class FilterContext(
     val blockchain: Blockchain?,
     val contact: Contact?,
     val searchQuery: String?,
+    val period: TimestampRange?,
     val walletSetVersion: Int,
     val searchSessionId: Long,
 )

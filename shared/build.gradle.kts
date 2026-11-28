@@ -58,6 +58,8 @@ kotlin {
                 implementation(libs.compose.multiplatform.ui.tooling.preview)
                 implementation(project(":core:vault"))
                 implementation(project(":feature-premium"))
+                implementation(project(":feature-logging"))
+                implementation(libs.paging.compose)
                 implementation(libs.hd.wallet.kit)
                 implementation(libs.monero.kit)
                 implementation(libs.bitcoin.core)

@@ -43,6 +43,7 @@ import cash.p.terminal.modules.transactions.Filter
 import cash.p.terminal.modules.transactions.FilterTransactionType
 import cash.p.terminal.modules.transactions.SearchScanState
 import cash.p.terminal.modules.transactions.TransactionItem
+import cash.p.terminal.modules.transactions.TransactionPeriod
 import cash.p.terminal.modules.transactions.TransactionViewItem
 import cash.p.terminal.modules.transactions.TransactionViewItemFactory
 import cash.p.terminal.premium.domain.PremiumSettings
@@ -98,6 +99,7 @@ import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import io.mockk.verify
 import java.math.BigDecimal
+import java.time.LocalDate
 import java.util.Locale
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.awaitCancellation
@@ -250,6 +252,8 @@ class TokenBalanceViewModelTest : KoinTest {
         every { transactionsService.searchScanStateFlow } returns searchScanStateFlow
         every { transactionsService.setSearchQuery(any()) } returns Unit
         every { transactionsService.refreshList() } returns Unit
+        every { transactionsService.historyExhaustedFlow } returns MutableStateFlow(false)
+        coEvery { transactionsService.oldestTimestamp() } returns null
         every { balanceService.balanceItemFlow } returns balanceItemFlow
         every { balanceService.balanceItem } returns null
         every { balanceHiddenManager.walletBalanceHiddenFlow(any()) } returns walletBalanceHiddenFlow
@@ -1515,6 +1519,87 @@ class TokenBalanceViewModelTest : KoinTest {
         // Disabling resets the active filter back to All through the service
         verify(exactly = 1) { transactionsService.setTransactionType(FilterTransactionType.All) }
         assertEquals(false, viewModel.uiState.transactionFiltersEnabled)
+    }
+
+    // endregion
+
+    // region Calendar Tests
+
+    private val calendarRange = TransactionPeriod(from = LocalDate.of(2026, 8, 1), to = LocalDate.of(2026, 8, 28))
+
+    @Test
+    fun onPeriodSelect_range_serviceReceivesPeriod() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.onCalendarClick()
+        viewModel.onPeriodSelect(calendarRange)
+        advanceUntilIdle()
+
+        verify(exactly = 1) { transactionsService.setPeriod(calendarRange) }
+        assertEquals(calendarRange, viewModel.uiState.period.period)
+    }
+
+    @Test
+    fun onBackToLatest_appliedPeriod_serviceReceivesNoPeriod() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        viewModel.onCalendarClick()
+        viewModel.onPeriodSelect(calendarRange)
+        advanceUntilIdle()
+
+        viewModel.onBackToLatest()
+        advanceUntilIdle()
+
+        verify(exactly = 1) { transactionsService.setPeriod(null) }
+        assertEquals(null, viewModel.uiState.period.period)
+    }
+
+    @Test
+    fun setTransactionType_appliedPeriod_keepsPeriod() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        viewModel.onCalendarClick()
+        viewModel.onPeriodSelect(calendarRange)
+        advanceUntilIdle()
+
+        viewModel.setTransactionType(FilterTransactionType.Incoming)
+        advanceUntilIdle()
+
+        verify(exactly = 0) { transactionsService.setPeriod(null) }
+        assertEquals(calendarRange, viewModel.uiState.period.period)
+    }
+
+    @Test
+    fun transactionsHiddenAgain_periodAndSearch_clearsPeriodAndClosesSearch() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onSearchClick()
+        viewModel.onCalendarClick()
+        viewModel.onPeriodSelect(calendarRange)
+        advanceUntilIdle()
+
+        transactionHiddenFlow.value = createHiddenState(hidden = true)
+        advanceUntilIdle()
+
+        verify(exactly = 1) { transactionsService.setPeriod(null) }
+        assertEquals(null, viewModel.uiState.period.period)
+        assertEquals(false, viewModel.uiState.searchActive)
+        assertEquals(true, viewModel.uiState.transactionsHidden)
+    }
+
+    @Test
+    fun onPeriodSelect_toDatePeriod_requestsOldestOnce() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.onCalendarClick()
+        viewModel.onPeriodSelect(calendarRange)
+        advanceUntilIdle()
+        coVerify(exactly = 0) { transactionsService.oldestTimestamp() }
+
+        viewModel.onCalendarClick()
+        viewModel.onPeriodSelect(TransactionPeriod(from = null, to = calendarRange.to))
+        advanceUntilIdle()
+        coVerify(exactly = 1) { transactionsService.oldestTimestamp() }
     }
 
     // endregion

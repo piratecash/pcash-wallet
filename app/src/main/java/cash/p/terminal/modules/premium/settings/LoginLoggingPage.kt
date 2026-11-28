@@ -16,6 +16,7 @@ import cash.p.terminal.core.rememberEnsurePinSet
 import cash.p.terminal.core.rememberEnsurePinSetPremiumAction
 import cash.p.terminal.core.rememberPremiumAction
 import cash.p.terminal.core.slideToDeleteContactsTerms
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.confirm_pin_to_disable_login_logging_passcode
@@ -39,6 +40,7 @@ class LoginLoggingPage : HSPage() {
 
         LoggingSettingsScreen(
             uiState = loggingSettingsViewModel.uiState,
+            cameraAccess = koinInject(),
             onLogSuccessfulLoginsToggle = navigation.rememberLoginLoggingToggle(
                 loggingSettingsViewModel::setLogSuccessfulLoginsEnabled
             ),
