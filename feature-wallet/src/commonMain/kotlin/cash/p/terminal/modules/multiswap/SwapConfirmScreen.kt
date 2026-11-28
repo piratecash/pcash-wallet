@@ -236,7 +236,7 @@ private fun ColumnScope.SwapConfirmButtons(
     actions: SwapConfirmActions,
     hasFeeProblem: Boolean,
 ) {
-    val hasErrorCaution = uiState.cautions.any { it.type == CautionViewItem.Type.Error }
+    val hasErrorCaution = swapConfirmHasErrorCaution(uiState.cautions, uiState.feeCaution)
     val moneroSpendReadiness = uiState.moneroSpendReadiness
     when {
         uiState.loading -> SwapLoadingButton()
@@ -566,6 +566,10 @@ private data class SwapConfirmRuntime(
     val sendResult: SendResult?,
     val inlineFeeWarningData: NetworkFeeWarningData?,
 )
+
+// A fee shortage is shown in the fee section, so the generic "quote is invalid" must not hide it.
+internal fun swapConfirmHasErrorCaution(cautions: List<CautionViewItem>, feeCaution: CautionViewItem?): Boolean =
+    cautions.any { it.type == CautionViewItem.Type.Error } || feeCaution?.type == CautionViewItem.Type.Error
 
 internal fun hasSwapConfirmFeeProblem(
     hasInsufficientFeeBalance: Boolean,

@@ -1,5 +1,6 @@
 package cash.p.terminal.modules.multiswap
 
+import cash.p.terminal.core.ethereum.CautionViewItem
 import cash.p.terminal.modules.send.hasInsufficientFeeTokenBalance
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.Coin
@@ -37,6 +38,20 @@ class SwapConfirmScreenTest {
                 hasErrorCaution = false,
             )
         )
+    }
+
+    @Test
+    fun swapConfirmHasErrorCaution_feeShortageError_returnsTrue() {
+        val feeCaution = CautionViewItem("Insufficient TON", "0.301 TON required", CautionViewItem.Type.Error)
+
+        assertTrue(swapConfirmHasErrorCaution(cautions = emptyList(), feeCaution = feeCaution))
+    }
+
+    @Test
+    fun swapConfirmHasErrorCaution_feeWarningOnly_returnsFalse() {
+        val feeCaution = CautionViewItem("Low balance", "", CautionViewItem.Type.Warning)
+
+        assertFalse(swapConfirmHasErrorCaution(cautions = emptyList(), feeCaution = feeCaution))
     }
 
     @Test

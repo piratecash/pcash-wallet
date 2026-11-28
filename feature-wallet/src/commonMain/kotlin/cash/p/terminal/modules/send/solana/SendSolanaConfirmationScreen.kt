@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.LifecycleResumeEffect
+import cash.p.terminal.modules.fee.feeBalanceMayBeShortText
 import cash.p.terminal.modules.send.SendConfirmationScreen
 import cash.p.terminal.modules.send.offline.OfflineSignableConfirmationHost
 import cash.p.terminal.navigation.HSNavigation
@@ -78,13 +79,18 @@ private fun SolanaOnlineConfirmation(
         isSynced = sendViewModel.isSynced,
         hasAdapterError = sendViewModel.hasAdapterError,
         onRetrySync = sendViewModel::retryAdapterSync,
-        sendEnabled = sendViewModel.isEffectivelySynced,
+        sendEnabled = sendViewModel.isEffectivelySynced && !sendViewModel.uiState.insufficientFeeBalance,
         onSignOfflineOnFailure = onRequestOfflineSign,
         sendToken = sendViewModel.wallet.token,
         feeToken = sendViewModel.feeToken,
         feeCoinBalance = sendViewModel.feeCoinBalance,
         displayBalance = sendViewModel.displayBalance,
-        insufficientFeeBalance = sendViewModel.isInsufficientFeeBalance(confirmationData.fee),
+        insufficientFeeBalance = sendViewModel.uiState.insufficientFeeBalance,
+        feeWarningText = feeBalanceMayBeShortText(
+            sendViewModel.feeToken,
+            sendViewModel.uiState.feeBalanceRequired,
+            sendViewModel.balanceHidden,
+        ),
         balanceHidden = sendViewModel.balanceHidden,
         onBalanceClicked = rememberBalanceToggle(sendViewModel::toggleHideBalance),
     )

@@ -94,9 +94,11 @@ class SwapViewModelFiatInputTest {
                 displayBalance = null,
                 error = null,
                 fee = null,
+                feeLoading = false,
                 feeToken = null,
                 feeCoinBalance = null,
                 insufficientFeeBalance = false,
+                feeBalanceRequired = null,
             )
         )
     }
@@ -287,9 +289,11 @@ class SwapViewModelFiatInputTest {
                 displayBalance = BigDecimal("10"),
                 error = null,
                 fee = null,
+                feeLoading = false,
                 feeToken = null,
                 feeCoinBalance = null,
                 insufficientFeeBalance = false,
+                feeBalanceRequired = null,
             )
         )
         advanceUntilIdle()

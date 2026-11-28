@@ -1,5 +1,7 @@
 package cash.p.terminal.core.adapters
 
+import cash.p.terminal.core.tryOrNull
+import cash.p.terminal.modules.send.tron.toTronFeeBreakdown
 import cash.p.terminal.wallet.AdapterState
 import io.horizontalsystems.databasenaming.DatabaseNameResolver
 import io.horizontalsystems.tronkit.PlatformContext
@@ -9,8 +11,10 @@ import io.horizontalsystems.tronkit.TronKit
 import io.horizontalsystems.tronkit.models.Address
 import io.horizontalsystems.tronkit.models.Contract
 import io.horizontalsystems.tronkit.network.Network
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import java.math.BigDecimal
 
 class TronAdapter(kitWrapper: TronKitWrapper) : BaseTronAdapter(kitWrapper, decimal) {
@@ -18,9 +22,32 @@ class TronAdapter(kitWrapper: TronKitWrapper) : BaseTronAdapter(kitWrapper, deci
     override val maxSpendableBalance: BigDecimal
         get() = maxOf(balanceData.available - fee.value, BigDecimal.ZERO)
 
+    private var networkJob: Job? = null
+
     // IAdapter
 
     override fun attachLocalData() = Unit
+
+    override fun resumeNetwork() {
+        networkJob = coroutineScope.launch {
+            balanceUpdatedFlow.collect {
+                estimateFeeForMax()
+            }
+        }
+    }
+
+    override fun pauseNetwork() {
+        networkJob?.cancel()
+    }
+
+    // A failed estimate keeps the previous value.
+    private suspend fun estimateFeeForMax() {
+        tryOrNull {
+            val amount = maxOf(balanceData.available, BigDecimal.ONE.movePointLeft(decimal))
+            val breakdown = estimateFee(amount, tronKit.address).toTronFeeBreakdown(decimal)
+            mutableFee.value = breakdown.totalFee.stripTrailingZeros()
+        }
+    }
 
     override suspend fun refresh() {
         // refreshed via TronKitManager

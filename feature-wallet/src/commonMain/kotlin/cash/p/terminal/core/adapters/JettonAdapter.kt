@@ -3,9 +3,11 @@ package cash.p.terminal.core.adapters
 import cash.p.terminal.core.ICoinManager
 import cash.p.terminal.core.INativeBalanceProvider
 import cash.p.terminal.core.ISendTonAdapter
+import cash.p.terminal.core.ITokenTransferCostEstimator
 import cash.p.terminal.core.OfflineSignRequest
 import cash.p.terminal.core.OfflineTonSignRequest
 import cash.p.terminal.core.SignedOfflineTonTransaction
+import cash.p.terminal.core.TokenTransferCost
 import cash.p.terminal.core.TonFeeEstimate
 import cash.p.terminal.core.managers.TonKitWrapper
 import cash.p.terminal.core.managers.toAdapterState
@@ -28,15 +30,18 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
+import org.ton.block.AddrStd
 import java.math.BigDecimal
 import java.math.BigInteger
+import kotlin.random.Random
 
 class JettonAdapter(
     coinManager: ICoinManager,
     tonKitWrapper: TonKitWrapper,
     addressStr: String,
     wallet: Wallet,
-) : BaseTonAdapter(tonKitWrapper, wallet.decimal), ISendTonAdapter, INativeBalanceProvider {
+) : BaseTonAdapter(tonKitWrapper, wallet.decimal), ISendTonAdapter, INativeBalanceProvider,
+    ITokenTransferCostEstimator {
 
     private val address = Address.parse(addressStr)
     private var jettonBalance = tonKit.jettonBalanceMap[address]
@@ -97,6 +102,18 @@ class JettonAdapter(
 
     override val nativeBalanceUpdatedFlow: Flow<Unit>
         get() = tonKit.accountFlow.map { }
+
+    override val nativeBalanceLoaded: Boolean
+        get() = tonKit.account != null
+
+    // ITokenTransferCostEstimator
+
+    // A fresh recipient: its jetton wallet gets deployed, the most expensive transfer.
+    override suspend fun estimateTransferCost(): TokenTransferCost {
+        val recipient = FriendlyAddress(AddrStd(0, Random.nextBytes(32)), isBounceable = false)
+        val estimate = estimateFee(BigDecimal.ONE.movePointLeft(decimals), recipient, memo = null)
+        return TokenTransferCost(fee = estimate.fee, requiredBalance = estimate.requiredTon)
+    }
 
     override suspend fun send(amount: BigDecimal, address: FriendlyAddress, memo: String?) {
         tonKit.send(

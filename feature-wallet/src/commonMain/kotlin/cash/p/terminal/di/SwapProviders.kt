@@ -6,6 +6,7 @@ import cash.p.terminal.entities.UnstoppableProviderTitles
 import cash.p.terminal.modules.multiswap.AssetFiatRateService
 import cash.p.terminal.modules.multiswap.SwapSelectCoinViewModel
 import cash.p.terminal.modules.multiswap.TimerService
+import cash.p.terminal.modules.multiswap.TokenBalanceService
 import cash.p.terminal.modules.multiswap.exchange.MultiSwapExchangeViewModel
 import cash.p.terminal.modules.multiswap.exchanges.MultiSwapExchangesViewModel
 import cash.p.terminal.modules.multiswap.providers.AndroidUnstoppableProviderTitles
@@ -79,6 +80,7 @@ val swapProvidersModule = module {
     singleOf(::AndroidUnstoppableProviderTitles) bind UnstoppableProviderTitles::class
     singleOf(::AssetFiatRateService)
     factoryOf(::FetchSwapQuotesUseCase)
+    factoryOf(::TokenBalanceService)
     factoryOf(::IterativeExactOutSearch)
     viewModelOf(::MultiSwapExchangesViewModel)
     viewModelOf(::SwapProvidersSettingsViewModel)
@@ -96,7 +98,7 @@ val swapProvidersModule = module {
             syncPendingMultiSwapUseCase = get(),
             assetFiatRateService = get(),
             currencyManager = get(),
-            adapterManager = get(),
+            tokenBalanceService = get(),
             balanceHiddenManager = get(),
             walletManager = get(),
             walletUseCase = get(),

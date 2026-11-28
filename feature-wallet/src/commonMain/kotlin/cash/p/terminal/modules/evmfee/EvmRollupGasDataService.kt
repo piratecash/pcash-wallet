@@ -30,7 +30,12 @@ class EvmRollupGasDataService(
                 }
 
                 l1GasFee(stubTransactionData, gasPrice, gasLimit).map { l1Fee ->
-                    RollupGasData(gasLimit = gasLimit, gasPrice = gasPrice, l1Fee = l1Fee)
+                    RollupGasData(
+                        gasLimit = gasLimit,
+                        estimatedGasLimit = gasData.estimatedGasLimit,
+                        gasPrice = gasPrice,
+                        l1Fee = l1Fee
+                    )
                 }
             }
         }

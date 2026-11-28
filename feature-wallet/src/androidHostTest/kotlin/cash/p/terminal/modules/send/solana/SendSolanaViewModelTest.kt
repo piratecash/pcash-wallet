@@ -1,10 +1,13 @@
 package cash.p.terminal.modules.send.solana
 
+import cash.p.terminal.core.IBalanceFetchState
+import cash.p.terminal.core.INativeBalanceProvider
 import cash.p.terminal.core.ISendSolanaAdapter
 import cash.p.terminal.core.OfflineSolanaSignRequest
 import cash.p.terminal.core.OfflineTransactionAdapter
 import cash.p.terminal.core.SignedOfflineSolanaTransaction
 import cash.p.terminal.core.TestDispatcherProvider
+import cash.p.terminal.core.adapters.SplAdapter
 import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
 import cash.p.terminal.core.managers.OfflineSignedTransactionRepository
 import cash.p.terminal.core.managers.OfflineTransactionPayloadEncoder
@@ -18,20 +21,26 @@ import cash.p.terminal.manager.IConnectivityManager
 import cash.p.terminal.modules.amount.SendAmountService
 import cash.p.terminal.modules.contacts.ContactsRepository
 import cash.p.terminal.modules.pin.core.UptimeProvider
+import cash.p.terminal.modules.send.SendResult
 import cash.p.terminal.modules.send.mockConnectivityManager
 import cash.p.terminal.modules.send.offline.OfflineSignState
 import cash.p.terminal.modules.send.offline.OfflineTransactionFormat
 import cash.p.terminal.modules.xrate.XRateService
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.Swap_ErrorInsufficientBalance
+import cash.p.terminal.resources.swap_insufficient_fee_balance
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.trezor.domain.TrezorCancelledException
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAdapterManager
+import cash.p.terminal.wallet.IBalanceAdapter
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.WalletFactory
+import cash.p.terminal.wallet.entities.BalanceData
 import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
@@ -53,8 +62,12 @@ import java.math.BigDecimal
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -241,6 +254,102 @@ class SendSolanaViewModelTest : KoinTest {
     }
 
     @Test
+    fun uiState_splWithKnownZeroSol_blocksSend() = runTest(dispatcher) {
+        stubSolBalance(BigDecimal.ZERO)
+        val viewModel = splViewModelWithValidInput()
+
+        assertFalse(viewModel.uiState.canBeSend)
+        assertTrue(viewModel.uiState.insufficientFeeBalance)
+    }
+
+    @Test
+    fun uiState_splSolDustBelowFee_blocksSend() = runTest(dispatcher) {
+        stubSolBalance(BigDecimal("0.000000001"))
+        val viewModel = splViewModelWithValidInput()
+
+        assertFalse(viewModel.uiState.canBeSend)
+        assertTrue(viewModel.uiState.insufficientFeeBalance)
+    }
+
+    @Test
+    fun uiState_splSolBelowFeeAndRent_warnsWithoutBlocking() = runTest(dispatcher) {
+        stubSolBalance(BigDecimal("0.001"))
+        val viewModel = splViewModelWithValidInput()
+
+        assertTrue(viewModel.uiState.canBeSend)
+        assertEquals(SplAdapter.TRANSFER_REQUIRED_BALANCE, viewModel.uiState.feeBalanceRequired)
+    }
+
+    @Test
+    fun uiState_splSolZeroFetchedLater_blocksSend() = runTest(dispatcher) {
+        val fetched = stubSolBalance(BigDecimal.ZERO, fetched = false)
+        val viewModel = splViewModelWithValidInput()
+        assertTrue(viewModel.uiState.canBeSend)
+
+        fetched.value = true
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.canBeSend)
+    }
+
+    @Test
+    fun onClickSend_splBalanceSpentWhileConfirming_failsWithoutBroadcast() = runTest(dispatcher) {
+        stubSolBalance(BigDecimal.ONE)
+        every { connectivityManager.isConnected } returns MutableStateFlow(true)
+        val viewModel = splViewModelWithValidInput()
+        every { adapterManager.getAdjustedBalanceData(any<Wallet>()) } returns BalanceData(BigDecimal.ZERO)
+
+        viewModel.onClickSend()
+        advanceUntilIdle()
+
+        assertEquals(Res.string.Swap_ErrorInsufficientBalance, viewModel.sendResult.cautionResource())
+        coVerify(exactly = 0) { adapter.send(any(), any()) }
+    }
+
+    @Test
+    fun onClickSend_solSpentWhileConfirmingSpl_failsWithoutBroadcast() = runTest(dispatcher) {
+        stubSolBalance(BigDecimal.ONE)
+        every { connectivityManager.isConnected } returns MutableStateFlow(true)
+        every { adapterManager.getAdjustedBalanceData(any<Wallet>()) } returns BalanceData(BigDecimal.TEN)
+        val viewModel = splViewModelWithValidInput()
+        every { adapterManager.getAdjustedBalanceDataForToken(solanaToken) } returns BalanceData(BigDecimal.ZERO)
+
+        viewModel.onClickSend()
+        advanceUntilIdle()
+
+        assertEquals(Res.string.swap_insufficient_fee_balance, viewModel.sendResult.cautionResource())
+        coVerify(exactly = 0) { adapter.send(any(), any()) }
+    }
+
+    @Test
+    fun uiState_splSolToppedUp_unblocksSend() = runTest(dispatcher) {
+        val solBalanceUpdated = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+        stubSolBalance(BigDecimal.ZERO, balanceUpdated = solBalanceUpdated)
+        val viewModel = splViewModelWithValidInput()
+        assertFalse(viewModel.uiState.canBeSend)
+
+        every { adapterManager.getAdjustedBalanceDataForToken(solanaToken) } returns BalanceData(BigDecimal.ONE)
+        solBalanceUpdated.emit(Unit)
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.canBeSend)
+    }
+
+    @Test
+    fun uiState_splOnlyWalletKnownZeroSol_blocksSend() = runTest(dispatcher) {
+        val splAdapter = mockk<IBalanceAdapter>(relaxed = true, moreInterfaces = arrayOf(INativeBalanceProvider::class))
+        every { (splAdapter as INativeBalanceProvider).nativeBalanceData } returns BalanceData(BigDecimal.ZERO)
+        every { (splAdapter as INativeBalanceProvider).nativeBalanceLoaded } returns true
+        every { adapterManager.getAdapterForToken<IBalanceAdapter>(solanaToken) } returns null
+        every { adapterManager.getAdjustedBalanceDataForToken(solanaToken) } returns null
+        every { adapterManager.getAdapterForToken<IBalanceAdapter>(splToken()) } returns splAdapter
+
+        val viewModel = splViewModelWithValidInput()
+
+        assertFalse(viewModel.uiState.canBeSend)
+    }
+
+    @Test
     fun onClickSignOffline_userCancelled_resetsStateSilently() = runTest(dispatcher) {
         coEvery { adapter.signOffline(any()) } throws TrezorCancelledException()
         val viewModel = createViewModel()
@@ -280,6 +389,36 @@ class SendSolanaViewModelTest : KoinTest {
         val viewModel = createViewModel(wallet = watchWallet)
 
         assertFalse(viewModel.offlineSignSupported)
+    }
+
+    // An unconfined Main resumes the base fee collector before the subclass sets feeToken.
+    private fun TestScope.splViewModelWithValidInput(): SendSolanaViewModel {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val viewModel = createViewModel(wallet = createWallet(splToken()), feeToken = solanaToken)
+        viewModel.onEnterAddress(address)
+        viewModel.onEnterAmount(amount)
+        advanceUntilIdle()
+        return viewModel
+    }
+
+    private fun SendResult?.cautionResource() =
+        ((this as? SendResult.Failed)?.caution?.s as? TranslatableString.ResString)?.id
+
+    private fun stubSolBalance(
+        balance: BigDecimal,
+        fetched: Boolean = true,
+        balanceUpdated: MutableSharedFlow<Unit> = MutableSharedFlow(),
+    ): MutableStateFlow<Boolean> {
+        val fetchedFlow = MutableStateFlow(fetched)
+        val solAdapter = mockk<IBalanceAdapter>(relaxed = true, moreInterfaces = arrayOf(IBalanceFetchState::class)) {
+            every { balanceUpdatedFlow } returns balanceUpdated
+            every { balanceStateUpdatedFlow } returns fetchedFlow.map { }
+        }
+        every { (solAdapter as IBalanceFetchState).balanceFetched } answers { fetchedFlow.value }
+        every { adapterManager.getAdapterForToken<IBalanceAdapter>(solanaToken) } returns solAdapter
+        every { adapterManager.getAdapterForToken<IBalanceAdapter>(splToken()) } returns null
+        every { adapterManager.getAdjustedBalanceDataForToken(solanaToken) } returns BalanceData(balance)
+        return fetchedFlow
     }
 
     private fun createViewModel(

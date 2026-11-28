@@ -2,10 +2,13 @@ package cash.p.terminal.core.adapters
 
 import cash.p.terminal.core.ICoinManager
 import cash.p.terminal.core.INativeBalanceProvider
+import cash.p.terminal.core.ITokenTransferCostEstimator
+import cash.p.terminal.core.TokenTransferCost
 import cash.p.terminal.core.managers.EvmLabelManager
 import cash.p.terminal.core.managers.StackingManager
 import cash.p.terminal.data.repository.EvmTransactionRepository
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
+import cash.p.terminal.modules.evmfee.estimateGasData
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
@@ -31,6 +34,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
 import java.math.BigDecimal
 import java.math.BigInteger
+import kotlin.random.Random
 
 class Eip20Adapter(
     private val eip20Kit: Erc20Kit,
@@ -42,7 +46,8 @@ class Eip20Adapter(
     evmLabelManager: EvmLabelManager,
     private val stackingManager: StackingManager,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
-) : BaseEvmAdapter(evmTransactionRepository, wallet.decimal, coinManager), INativeBalanceProvider {
+) : BaseEvmAdapter(evmTransactionRepository, wallet.decimal, coinManager), INativeBalanceProvider,
+    ITokenTransferCostEstimator {
 
     private val transactionConverter = EvmTransactionConverter(
         coinManager = coinManager,
@@ -133,6 +138,24 @@ class Eip20Adapter(
 
     override val nativeBalanceUpdatedFlow: Flow<Unit>
         get() = evmTransactionRepository.accountStateFlowable.map { }.asFlow()
+
+    override val nativeBalanceLoaded: Boolean
+        get() = evmTransactionRepository.accountState != null
+
+    // ITokenTransferCostEstimator
+
+    // A fresh recipient: a transfer to an address without the token costs the most gas.
+    override suspend fun estimateTransferCost(): TokenTransferCost {
+        val gasData = estimateGasData(
+            evmKit = evmTransactionRepository.evmKitWrapper.evmKit,
+            blockchainType = evmTransactionRepository.getBlockchainType(),
+            transactionData = getTransactionData(BigDecimal.ONE.movePointLeft(decimal), Address(Random.nextBytes(20))),
+        )
+        return TokenTransferCost(
+            fee = gasData.estimatedFee.toBigDecimal().movePointLeft(EvmAdapter.decimal),
+            requiredBalance = gasData.fee.toBigDecimal().movePointLeft(EvmAdapter.decimal),
+        )
+    }
 
     override fun getTransactionData(amount: BigDecimal, address: Address): TransactionData {
         val amountBigInt = amount.movePointRight(decimal).toBigInteger()

@@ -1,5 +1,6 @@
 package cash.p.terminal.core.adapters
 
+import cash.p.terminal.core.IBalanceFetchState
 import cash.p.terminal.core.OfflineSignRequest
 import cash.p.terminal.core.OfflineSolanaSignRequest
 import cash.p.terminal.core.SignedOfflineSolanaTransaction
@@ -17,7 +18,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import java.math.BigDecimal
 
-class SolanaAdapter(private val kitWrapper: SolanaKitWrapper) :
+class SolanaAdapter(private val kitWrapper: SolanaKitWrapper) : IBalanceFetchState,
     BaseSolanaAdapter(kitWrapper, decimal) {
 
     // IAdapter
@@ -48,6 +49,9 @@ class SolanaAdapter(private val kitWrapper: SolanaKitWrapper) :
 
     override val balanceData: BalanceData
         get() = BalanceData(balanceInBigDecimal(solanaKit.balance, decimal))
+
+    override val balanceFetched: Boolean
+        get() = solanaKit.balance != null
 
     override val balanceUpdatedFlow: Flow<Unit>
         get() = solanaKit.balanceFlow.map {}

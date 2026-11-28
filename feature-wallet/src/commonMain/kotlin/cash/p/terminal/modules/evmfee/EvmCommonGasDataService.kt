@@ -95,17 +95,27 @@ open class EvmCommonGasDataService(
 
 /** Priced and estimated like the send confirmation's full-balance transfer, so "100%" passes its balance check. */
 suspend fun estimateNativeTransferFee(evmKit: EthereumKit, blockchainType: BlockchainType): BigInteger {
-    val gasPrice = if (evmKit.chain.isEIP1559Supported) {
+    val balance = evmKit.accountState?.balance ?: BigInteger.ZERO
+    val fullBalanceTransfer = TransactionData(evmKit.receiveAddress, balance, byteArrayOf())
+    return EvmCommonGasDataService.instance(evmKit, blockchainType)
+        .estimatedGasDataAsync(recommendedGasPrice(evmKit), fullBalanceTransfer, stubAmount = BigInteger.ONE)
+        .await()
+        .fee
+}
+
+suspend fun estimateGasData(
+    evmKit: EthereumKit,
+    blockchainType: BlockchainType,
+    transactionData: TransactionData,
+): GasData = EvmCommonGasDataService.instance(evmKit, blockchainType)
+    .estimatedGasDataAsync(recommendedGasPrice(evmKit), transactionData)
+    .await()
+
+private suspend fun recommendedGasPrice(evmKit: EthereumKit): GasPrice =
+    if (evmKit.chain.isEIP1559Supported) {
         val feeHistory = Eip1559GasPriceProvider(evmKit)
             .feeHistorySingle(BLOCKS_COUNT, DefaultBlockParameter.Latest, REWARD_PERCENTILE).await()
         Eip1559FeeHistory.recommendedGasPrice(feeHistory)
     } else {
         GasPrice.Legacy(LegacyGasPriceProvider(evmKit).gasPriceSingle().await())
     }
-    val balance = evmKit.accountState?.balance ?: BigInteger.ZERO
-    val fullBalanceTransfer = TransactionData(evmKit.receiveAddress, balance, byteArrayOf())
-    return EvmCommonGasDataService.instance(evmKit, blockchainType)
-        .estimatedGasDataAsync(gasPrice, fullBalanceTransfer, stubAmount = BigInteger.ONE)
-        .await()
-        .fee
-}

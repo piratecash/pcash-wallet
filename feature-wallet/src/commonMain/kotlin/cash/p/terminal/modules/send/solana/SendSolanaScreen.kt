@@ -22,6 +22,7 @@ import cash.p.terminal.modules.amount.AmountInputType
 import cash.p.terminal.modules.amount.AmountInputModeViewModel
 import cash.p.terminal.modules.amount.HSAmountInput
 import cash.p.terminal.modules.fee.FeeInfoSection
+import cash.p.terminal.modules.fee.feeBalanceMayBeShortText
 import cash.p.terminal.modules.send.SendConfirmationPage
 import cash.p.terminal.modules.send.SendPage.ProceedActionData
 import cash.p.terminal.modules.send.SendScreen
@@ -100,6 +101,7 @@ data class SendSolanaFeeState(
     val feePrimary: String,
     val feeSecondary: String,
     val insufficientFeeBalance: Boolean,
+    val balanceRequired: BigDecimal?,
 )
 
 data class SendSolanaScreenActions(
@@ -321,6 +323,7 @@ private fun SendSolanaFeeInfo(
         feeSecondary = state.fee.feeSecondary,
         insufficientFeeBalance = state.fee.insufficientFeeBalance,
         onBalanceClicked = actions.onBalanceClicked,
+        warningText = feeBalanceMayBeShortText(state.fee.token, state.fee.balanceRequired, state.balanceHidden),
     )
     Spacer(modifier = Modifier.height(12.dp))
 }
@@ -388,7 +391,8 @@ private fun SendSolanaViewModel.toScreenState(amountInputType: AmountInputType) 
             balance = feeCoinBalance,
             feePrimary = formatFeePrimary(SolanaKit.fee),
             feeSecondary = formatFeeSecondary(SolanaKit.fee, feeCoinRate),
-            insufficientFeeBalance = isInsufficientFeeBalance(SolanaKit.fee),
+            insufficientFeeBalance = uiState.insufficientFeeBalance,
+            balanceRequired = uiState.feeBalanceRequired,
         ),
         displayBalance = displayBalance,
         balanceHidden = balanceHidden,

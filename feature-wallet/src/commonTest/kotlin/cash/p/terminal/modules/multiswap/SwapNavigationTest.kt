@@ -52,8 +52,8 @@ class SwapNavigationTest {
     fun isMultiSwapRouteReady_requotingRoute_cannotContinue() {
         val routeState = stateWithRoute()
 
-        assertFalse(isMultiSwapRouteReady(true, false, routeState.multiSwapRoute, tokenOutAction = null))
-        assertTrue(isMultiSwapRouteReady(false, false, routeState.multiSwapRoute, tokenOutAction = null))
+        assertFalse(isMultiSwapRouteReady(true, false, routeState.multiSwapRoute, tokenOutAction = null, insufficientFeeBalance = false))
+        assertTrue(isMultiSwapRouteReady(false, false, routeState.multiSwapRoute, tokenOutAction = null, insufficientFeeBalance = false))
     }
 
     @Test
@@ -64,6 +64,20 @@ class SwapNavigationTest {
                 timeout = false,
                 route = multiSwapRouteFixture(),
                 tokenOutAction = mockk<ISwapProviderAction>(),
+                insufficientFeeBalance = false,
+            )
+        )
+    }
+
+    @Test
+    fun isMultiSwapRouteReady_insufficientFeeBalance_cannotContinue() {
+        assertFalse(
+            isMultiSwapRouteReady(
+                quoting = false,
+                timeout = false,
+                route = multiSwapRouteFixture(),
+                tokenOutAction = null,
+                insufficientFeeBalance = true,
             )
         )
     }
@@ -98,7 +112,7 @@ class SwapNavigationTest {
 
     @Test
     fun isMultiSwapRouteReady_expiredRoute_cannotContinue() {
-        assertFalse(isMultiSwapRouteReady(false, true, multiSwapRouteFixture(), tokenOutAction = null))
+        assertFalse(isMultiSwapRouteReady(false, true, multiSwapRouteFixture(), tokenOutAction = null, insufficientFeeBalance = false))
     }
 
     @Test
@@ -143,10 +157,12 @@ class SwapNavigationTest {
             availableBalance = null,
             displayBalance = null,
             networkFee = null,
+            networkFeeLoading = false,
             networkFeeFiatAmount = null,
             feeToken = null,
             feeCoinBalance = null,
             insufficientFeeBalance = false,
+            feeBalanceRequired = null,
             balanceHidden = false,
             refundNotice = null,
             refundAddressError = false,

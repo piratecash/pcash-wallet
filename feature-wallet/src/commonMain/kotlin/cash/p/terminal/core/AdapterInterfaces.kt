@@ -459,10 +459,31 @@ interface ISendMemoAdapter : IBalanceAdapter {
     suspend fun send(amount: BigDecimal, address: String, memo: String?): String?
 }
 
+/** A native coin adapter whose balance is a default zero until its kit holds a balance. */
+interface IBalanceFetchState {
+    val balanceFetched: Boolean
+}
+
 interface INativeBalanceProvider {
     val nativeBalanceData: BalanceData
     val nativeBalanceUpdatedFlow: Flow<Unit>
+
+    /** False while [nativeBalanceData] is a default zero: the native balance has not been fetched yet. */
+    val nativeBalanceLoaded: Boolean
+        get() = true
 }
+
+/** What sending this token costs in the chain's native coin. */
+interface ITokenTransferCostEstimator {
+    /** False where a transfer can be free (TRON: energy sponsored by the contract, free bandwidth). */
+    val transferAlwaysCostsNative: Boolean
+        get() = true
+
+    suspend fun estimateTransferCost(): TokenTransferCost
+}
+
+/** [fee] is kept by the network; [requiredBalance] must be on the native balance to send. */
+data class TokenTransferCost(val fee: BigDecimal, val requiredBalance: BigDecimal)
 
 /** Balance as last read from the wallet store; null until it has been read, which is not zero. */
 interface ILastKnownBalanceAdapter {

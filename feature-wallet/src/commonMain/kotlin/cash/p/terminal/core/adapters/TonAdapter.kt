@@ -1,5 +1,6 @@
 package cash.p.terminal.core.adapters
 
+import cash.p.terminal.core.IBalanceFetchState
 import cash.p.terminal.core.ISendTonAdapter
 import cash.p.terminal.core.OfflineSignRequest
 import cash.p.terminal.core.OfflineTonSignRequest
@@ -31,14 +32,24 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
 import java.math.BigDecimal
 import java.math.BigInteger
+import kotlin.concurrent.Volatile
 
-class TonAdapter(tonKitWrapper: TonKitWrapper) : BaseTonAdapter(tonKitWrapper, 9), ISendTonAdapter {
+class TonAdapter(tonKitWrapper: TonKitWrapper) : BaseTonAdapter(tonKitWrapper, 9), ISendTonAdapter, IBalanceFetchState {
 
     private val balanceUpdatedSubject: PublishSubject<Unit> = PublishSubject.create()
 
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
 
-    private var balance = getBalanceFromAccount(tonKit.account)
+    private var balance = BigDecimal.ZERO
+
+    // Written after [balance], so a reader that sees it set also sees the fetched amount.
+    @Volatile
+    override var balanceFetched = false
+        private set
+
+    init {
+        applyAccount(tonKit.account)
+    }
     private val _fee = MutableStateFlow(BigDecimal.ZERO)
     override val fee: StateFlow<BigDecimal> = _fee.asStateFlow()
     private var networkJob: Job? = null
@@ -50,7 +61,7 @@ class TonAdapter(tonKitWrapper: TonKitWrapper) : BaseTonAdapter(tonKitWrapper, 9
     override fun resumeNetwork() {
         networkJob = coroutineScope.launch {
             tonKit.accountFlow.collect { account ->
-                balance = getBalanceFromAccount(account)
+                applyAccount(account)
                 estimateFeeForMax()
                 balanceUpdatedSubject.onNext(Unit)
             }
@@ -59,6 +70,11 @@ class TonAdapter(tonKitWrapper: TonKitWrapper) : BaseTonAdapter(tonKitWrapper, 9
 
     override fun pauseNetwork() {
         networkJob?.cancel()
+    }
+
+    private fun applyAccount(account: Account?) {
+        balance = getBalanceFromAccount(account)
+        balanceFetched = account != null
     }
 
     private fun getBalanceFromAccount(account: Account?): BigDecimal {
@@ -120,6 +136,7 @@ class TonAdapter(tonKitWrapper: TonKitWrapper) : BaseTonAdapter(tonKitWrapper, 9
 
     override val balanceData: BalanceData
         get() = BalanceData(balance)
+
     override val balanceUpdatedFlow: Flow<Unit>
         get() = balanceUpdatedSubject.toFlowable(BackpressureStrategy.BUFFER).asFlow()
 

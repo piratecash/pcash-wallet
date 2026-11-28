@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
 import cash.p.terminal.core.INativeBalanceProvider
-import cash.p.terminal.core.getFeeTokenBalance
+import cash.p.terminal.core.feeTokenBalance
 import cash.p.terminal.core.isNative
 import io.horizontalsystems.core.entities.CurrencyValue
 import cash.p.terminal.modules.send.fee.NetworkFeeWarningData
@@ -32,6 +32,7 @@ import io.horizontalsystems.core.ViewModelUiState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 import org.koin.java.KoinJavaComponent.inject
@@ -137,6 +138,10 @@ abstract class BaseSendViewModel<T>(
     var feeCoinBalance: BigDecimal? by mutableStateOf(null)
         private set
 
+    /** False while [feeCoinBalance] is a zero shown before the native balance was fetched. */
+    protected var feeCoinBalanceLoaded: Boolean = false
+        private set
+
     var feeWarningData by mutableStateOf<NetworkFeeWarningData?>(null)
         private set
 
@@ -210,8 +215,11 @@ abstract class BaseSendViewModel<T>(
         return feeToken?.let { _adapterManager.getAdapterForToken<IBalanceAdapter>(it) }
     }
 
-    private fun resolveFeeCoinBalance(ft: Token): BigDecimal? {
-        return _adapterManager.getFeeTokenBalance(ft, wallet.token)
+    protected fun refreshFeeCoinBalance(ft: Token) {
+        val feeBalance = _adapterManager.feeTokenBalance(ft, wallet.token)
+        feeCoinBalance = feeBalance?.amount
+        feeCoinBalanceLoaded = feeBalance?.fetched == true
+        emitState()
     }
 
     fun isInsufficientFeeBalance(fee: BigDecimal?): Boolean {
@@ -282,13 +290,14 @@ abstract class BaseSendViewModel<T>(
             yield()
             val ft = feeToken
             if (!wallet.token.type.isNative && ft != null) {
-                feeCoinBalance = resolveFeeCoinBalance(ft)
+                refreshFeeCoinBalance(ft)
                 val feeAdapter = resolveFeeBalanceAdapter()
-                val updateFlow = feeAdapter?.balanceUpdatedFlow
+                // A sync confirming the same zero changes only the fee adapter's state.
+                val updateFlow = feeAdapter?.let { merge(it.balanceUpdatedFlow, it.balanceStateUpdatedFlow) }
                     ?: (_adapterManager.getBalanceAdapterForWallet(wallet) as? INativeBalanceProvider)
                         ?.nativeBalanceUpdatedFlow
                 updateFlow?.collect {
-                    feeCoinBalance = resolveFeeCoinBalance(ft)
+                    refreshFeeCoinBalance(ft)
                 }
                 return@launch
             }
