@@ -1555,7 +1555,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="Bip32RootKey">BIP32 Root Key</string>
     <!-- Account Extended Keys -->
     <string name="ExtendedKey_TapToShowPrivateKey">Özel anahtarı göstermek için dokunun</string>
-    <string name="ExtendedKey_AccountInfo">To do</string>
+    <string name="ExtendedKey_AccountInfo">Bir kurtarma cümlesi içindeki hesap numarası. Tek bir cümle, her biri kendi anahtarlarına ve adreslerine sahip birden fazla bağımsız hesap içerebilir. Çoğu cüzdan 0 numaralı hesabı kullanır. Yalnızca fonlarınız başka bir hesaptaysa farklı bir numara seçin.</string>
     <!-- Private Keys -->
     <string name="PrivateKeys_Title">Gizli Anahtar</string>
     <string name="PrivateKeys_EvmPrivateKey">EVM Özel anahtar</string>

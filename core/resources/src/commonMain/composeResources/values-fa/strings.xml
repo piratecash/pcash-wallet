@@ -1557,7 +1557,7 @@
     <string name="Bip32RootKey">BIP32 Root Key</string>
     <!-- Account Extended Keys -->
     <string name="ExtendedKey_TapToShowPrivateKey">Tap to show private key</string>
-    <string name="ExtendedKey_AccountInfo">To do</string>
+    <string name="ExtendedKey_AccountInfo">شماره حساب در یک عبارت بازیابی. یک عبارت می‌تواند چند حساب مستقل داشته باشد که هر کدام کلیدها و آدرس‌های خود را دارند. بیشتر کیف پول‌ها از حساب 0 استفاده می‌کنند. فقط اگر دارایی شما در حساب دیگری است، شماره دیگری انتخاب کنید.</string>
     <!-- Private Keys -->
     <string name="PrivateKeys_Title">Private Keys</string>
     <string name="PrivateKeys_EvmPrivateKey">EVM Private Key</string>

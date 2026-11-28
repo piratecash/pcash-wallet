@@ -1353,7 +1353,7 @@
     <string name="SettingsTerms_Bugs">У процесі роботи коду можуть виникнути проблеми з програмним забезпеченням, що може призвести до збоїв програми.</string>
     <!--Setting_Tell Friends-->
     <string name="SettingsShare_Title">Поділитися</string>
-    <string name="SettingsShare_Text">Продовжити</string>
+    <string name="SettingsShare_Text">Будь вільним</string>
     <!--Setting_Contact-->
     <string name="SettingsContact_Title">Зв\u0027яжіться з нами</string>
 
@@ -1556,7 +1556,7 @@
     <string name="Bip32RootKey">Кореневий ключ BIP32</string>
     <!-- Account Extended Keys -->
     <string name="ExtendedKey_TapToShowPrivateKey">Натисніть, щоб показати приватний ключ</string>
-    <string name="ExtendedKey_AccountInfo">Зробити</string>
+    <string name="ExtendedKey_AccountInfo">Номер акаунта всередині однієї фрази відновлення. Одна фраза може містити кілька незалежних акаунтів, кожен зі своїми ключами та адресами. Більшість гаманців використовують акаунт 0. Обирайте інший номер, лише якщо ваші кошти зберігаються в іншому акаунті.</string>
     <!-- Private Keys -->
     <string name="PrivateKeys_Title">Приватні ключі</string>
     <string name="PrivateKeys_EvmPrivateKey">Приватний ключ EVM</string>

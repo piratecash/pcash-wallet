@@ -1551,7 +1551,7 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="Bip32RootKey">BIP32 Root Key</string>
     <!-- Account Extended Keys -->
     <string name="ExtendedKey_TapToShowPrivateKey">Appuyez pour afficher la clé privée</string>
-    <string name="ExtendedKey_AccountInfo">To do</string>
+    <string name="ExtendedKey_AccountInfo">Le numéro de compte au sein d\u0027une phrase de récupération. Une même phrase peut contenir plusieurs comptes indépendants, chacun avec ses propres clés et adresses. La plupart des portefeuilles utilisent le compte 0. Choisissez un autre numéro uniquement si vos fonds se trouvent sur un autre compte.</string>
     <!-- Private Keys -->
     <string name="PrivateKeys_Title">Clés privées</string>
     <string name="PrivateKeys_EvmPrivateKey">Clé privée EVM</string>
