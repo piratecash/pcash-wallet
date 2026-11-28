@@ -11,7 +11,6 @@ import cash.p.terminal.core.getFeeTokenBalance
 import cash.p.terminal.core.ethereum.CautionViewItem
 import cash.p.terminal.core.ethereum.toCautionViewItem
 import cash.p.terminal.core.isNative
-import cash.p.terminal.wallet.getMaxSendableBalance
 import cash.p.terminal.core.providers.SharedAppConfig
 import cash.p.terminal.core.managers.PendingTransactionRegistrar
 import cash.p.terminal.entities.Address

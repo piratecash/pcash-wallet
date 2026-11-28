@@ -45,20 +45,24 @@ naming:
     functionPattern: '([a-z][a-zA-Z0-9]*)|([A-Z][a-zA-Z0-9]*)'
     # Defaults of detekt 1.23.8 plus androidHostTest, the unit-test source set of KMP modules,
     # which the defaults predate. Test names follow methodName_scenario_expectedOutcome.
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/androidHostTest/**', '**/jsTest/**', '**/iosTest/**']
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/androidHostTest/**', '**/desktopTest/**', '**/testDebug/**', '**/jsTest/**', '**/iosTest/**']
   TopLevelPropertyNaming:
     active: true
     constantPattern: '[A-Z][A-Za-z0-9_]*'
+  PackageNaming:
+    active: true
+    # Existing modules use underscores (cash.p.terminal.ui_compose).
+    packagePattern: '[a-z]+(\.[a-z][A-Za-z0-9_]*)*'
   MatchingDeclarationName:
     active: false  # multiple top-level declarations per file is common
 
 style:
-  ForbiddenImport:
-    active: true
-    imports: ['kotlinx.coroutines.runBlocking']
-    includes: ['**/commonMain/**']
   ForbiddenComment:
-    active: false  # we use TODO comments
+    active: true
+    # TODO comments stay allowed; only ticket references are banned (they go stale).
+    comments:
+      - value: 'MOBILE-\d+'
+        reason: 'Ticket numbers in comments go stale. Explain the reason instead.'
   MagicNumber:
     active: false  # too noisy for UI code with dp/sp values
   MaxLineLength:
@@ -85,6 +89,10 @@ style:
     methods:
       - 'kotlin.io.println'
       - 'kotlin.io.print'
+
+coroutines:
+  GlobalCoroutineUsage:
+    active: true
 
 potential-bugs:
   CastToNullableType:
@@ -179,3 +187,32 @@ custom-rules:
     active: true
   AppSingletonAccess:
     active: true
+  JvmApiInCommonMain:
+    active: true
+    includes: ['**/commonMain/**']
+  ForbiddenCall:
+    active: true
+  NotNullAssertion:
+    active: true
+    excludes: &testSources ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/androidHostTest/**', '**/desktopTest/**', '**/testDebug/**']
+  ViewModelContextParameter:
+    active: true
+  RunCatchingGetOrNull:
+    active: true
+  RawSharedPreferencesEditor:
+    active: true
+    excludes: *testSources
+  SynchronizedLock:
+    active: true
+    excludes: *testSources
+  NestedViewModelScopeLaunch:
+    active: true
+  DefaultParameterBeforeRequired:
+    active: true
+    excludes: *testSources
+  NestedFunctionType:
+    active: true
+    excludes: *testSources
+  ViewModelUiStateName:
+    active: true
+    excludes: *testSources

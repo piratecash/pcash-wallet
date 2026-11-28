@@ -6,14 +6,6 @@ plugins {
     id(libs.plugins.kotlin.parcelize.get().pluginId)
 }
 
-// KMP source directories must be configured explicitly or Detekt reports NO-SOURCE.
-detekt {
-    source.setFrom(
-        "src/commonMain/kotlin",
-        "src/androidMain/kotlin",
-    )
-}
-
 kotlin {
     android {
         namespace = "cash.p.terminal.wallet"

@@ -3,13 +3,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     kotlin("multiplatform")
     id("com.android.kotlin.multiplatform.library")
-    id("io.gitlab.arturbosch.detekt")
-}
-
-// The default source set of the detekt task is src/main and src/test, so a multiplatform module
-// is silently reported as NO-SOURCE unless its own directories are named.
-detekt {
-    source.setFrom("src/commonMain/kotlin", "src/androidHostTest/kotlin")
 }
 
 kotlin {

@@ -18,7 +18,7 @@ internal fun Scope.resendBitcoinViewModel(
     val adapter = get<TransactionAdapterManager>().getAdapter(source) as BitcoinBaseAdapter
     val replacementInfo = when (optionType) {
         SpeedUpCancelType.SpeedUp -> adapter.speedUpTransactionInfo(transactionRecord.transactionHash)
-        // SpeedUpCancelType.Cancel -> adapter.cancelTransactionInfo(transactionRecord.transactionHash) // MOBILE-593
+        // SpeedUpCancelType.Cancel -> adapter.cancelTransactionInfo(transactionRecord.transactionHash)
     }
 
     return ResendBitcoinViewModel(

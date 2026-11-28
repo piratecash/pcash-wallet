@@ -11,6 +11,17 @@ class CustomRuleSetProvider : RuleSetProvider {
         rules = listOf(
             UnnecessaryFullyQualifiedNameRule(config),
             AppSingletonAccessRule(config),
+            JvmApiInCommonMain(config),
+            NotNullAssertion(config),
+            ViewModelContextParameter(config),
+            RunCatchingGetOrNull(config),
+            RawSharedPreferencesEditor(config),
+            SynchronizedLock(config),
+            NestedViewModelScopeLaunch(config),
+            DefaultParameterBeforeRequired(config),
+            NestedFunctionType(config),
+            ViewModelUiStateName(config),
+            ForbiddenCall(config),
         )
     )
 }

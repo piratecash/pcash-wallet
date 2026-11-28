@@ -28,7 +28,7 @@ import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.TransactionInfoOptions_SpeedUp_Button
 import cash.p.terminal.resources.TransactionInfoOptions_SpeedUp_Title
 
-// import java.math.BigInteger // MOBILE-593
+// import java.math.BigInteger
 
 internal class TransactionSpeedUpCancelViewModel(
     val sendTransactionService: SendTransactionServiceEvm,
@@ -46,14 +46,14 @@ internal class TransactionSpeedUpCancelViewModel(
         SpeedUpCancelType.SpeedUp -> Translator.getString(
             Res.string.TransactionInfoOptions_SpeedUp_Title
         )
-        // SpeedUpCancelType.Cancel -> Translator.getString(Res.string.TransactionInfoOptions_Cancel_Title) // MOBILE-593
+        // SpeedUpCancelType.Cancel -> Translator.getString(Res.string.TransactionInfoOptions_Cancel_Title)
     }
 
     val buttonTitle: String = when (optionType) {
         SpeedUpCancelType.SpeedUp -> Translator.getString(
             Res.string.TransactionInfoOptions_SpeedUp_Button
         )
-        // SpeedUpCancelType.Cancel -> Translator.getString(Res.string.TransactionInfoOptions_Cancel_Button) // MOBILE-593
+        // SpeedUpCancelType.Cancel -> Translator.getString(Res.string.TransactionInfoOptions_Cancel_Button)
     }
 
     private var sendTransactionState: SendTransactionServiceState = sendTransactionService.stateFlow.value
@@ -91,7 +91,7 @@ internal class TransactionSpeedUpCancelViewModel(
                         TransactionData(transaction.to!!, transaction.value!!, transaction.input!!)
                     }
 
-                    // MOBILE-593
+                    // Cancel transaction is temporarily disabled.
                     /*SpeedUpCancelType.Cancel -> {
                         TransactionData(
                             evmKitWrapper.evmKit.receiveAddress,

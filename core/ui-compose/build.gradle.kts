@@ -14,10 +14,6 @@ androidComponents {
     }
 }
 
-detekt {
-    source.setFrom("src/commonMain/kotlin", "src/androidMain/kotlin", "src/main/java")
-}
-
 kotlin {
     android {
         namespace = "cash.p.terminal.ui_compose"

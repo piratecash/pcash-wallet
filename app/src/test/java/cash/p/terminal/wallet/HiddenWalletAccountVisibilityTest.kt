@@ -8,7 +8,6 @@ import cash.p.terminal.core.storage.ActiveAccountDao
 import cash.p.terminal.core.storage.AppDatabase
 import cash.p.terminal.core.storage.SingleDatabaseStorageRouter
 import cash.p.terminal.core.storage.StaticAppDatabaseProvider
-import cash.p.terminal.core.storage.UserDeletedWalletDao
 import cash.p.terminal.entities.ActiveAccount
 import cash.p.terminal.wallet.entities.AccountRecord
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager

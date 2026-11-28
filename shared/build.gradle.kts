@@ -5,12 +5,6 @@ plugins {
     id("com.android.kotlin.multiplatform.library")
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.compose.compiler)
-    id("io.gitlab.arturbosch.detekt")
-}
-
-// KMP source directories must be configured explicitly or Detekt reports NO-SOURCE.
-detekt {
-    source.setFrom("src/commonMain/kotlin", "src/commonTest/kotlin", "src/desktopMain/kotlin")
 }
 
 kotlin {

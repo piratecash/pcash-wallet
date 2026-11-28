@@ -7,7 +7,6 @@ import cash.p.beam.BeamLogLevel
 import cash.p.beam.BeamSdkConfig
 import cash.p.beam.BeamWalletSession
 import cash.p.beam.RestoreSource
-import cash.p.terminal.core.managers.IdentityKitStorageNaming
 import cash.p.terminal.entities.RestoreSettingRecord
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin

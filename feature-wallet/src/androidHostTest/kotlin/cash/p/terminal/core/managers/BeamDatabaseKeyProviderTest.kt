@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import android.security.keystore.UserNotAuthenticatedException
 import android.util.Base64
 import androidx.test.core.app.ApplicationProvider
-import cash.p.terminal.core.managers.IdentityKitStorageNaming
 import io.horizontalsystems.core.IEncryptionManager
 import io.mockk.every
 import io.mockk.mockk

@@ -1,7 +1,6 @@
 package cash.p.terminal.core.managers
 
 import cash.p.terminal.core.adapters.TronAdapter
-import cash.p.terminal.core.managers.IdentityKitStorageNaming
 import cash.p.terminal.core.providers.SharedAppConfig
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
@@ -14,7 +13,6 @@ import io.horizontalsystems.sqlcipher.room.DatabaseMigrationResult
 import io.horizontalsystems.tronkit.TronKit
 import io.horizontalsystems.tronkit.network.Network
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk

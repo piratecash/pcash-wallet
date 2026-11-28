@@ -19,7 +19,6 @@ import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.useCases.GetHardwarePublicKeyForWalletUseCase
-import cash.p.terminal.wallet.zcashAddressSpecTokenQueries
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.mockk.Runs

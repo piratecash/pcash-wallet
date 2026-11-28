@@ -10,12 +10,7 @@ import cash.p.terminal.core.managers.SeedPhraseQrCrypto
 import cash.p.terminal.core.managers.TimePasswordProvider
 import cash.p.terminal.core.utils.MoneroWalletSeedConverter
 import cash.p.terminal.wallet.Account
-import cash.p.terminal.core.managers.EvmBlockchains
-import cash.p.terminal.modules.manageaccount.privatekeys.PrivateKeysViewModel
-import cash.p.terminal.modules.manageaccount.publickeys.PublicKeysViewModel
 import cash.p.terminal.core.adapters.zcash.ZcashKeyExporter
-import io.horizontalsystems.ethereumkit.core.signer.Signer
-import io.horizontalsystems.ethereumkit.models.Chain
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.modules.restoreaccount.restoreshamir.Slip39TestShares

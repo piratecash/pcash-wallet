@@ -531,7 +531,7 @@ val managerModule = module {
     single(named(PREMIUM_API_BASE_URL_QUALIFIER)) { AppConfigProvider.premiumApiBaseUrl }
     single(named(PREMIUM_IS_DEBUG_QUALIFIER)) { AppConfigProvider.isDebug }
 
-    // Software update (MOBILE-378)
+    // Software update
     single {
         GithubApiConfig(
             apiBaseUrl = AppConfigProvider.githubApiBaseUrl,
