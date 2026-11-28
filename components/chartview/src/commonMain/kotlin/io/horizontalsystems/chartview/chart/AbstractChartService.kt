@@ -2,20 +2,27 @@ package io.horizontalsystems.chartview.chart
 
 import androidx.annotation.CallSuper
 import io.horizontalsystems.core.CurrencyManager
+import io.horizontalsystems.core.DefaultDispatcherProvider
+import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.entities.Currency
 import io.horizontalsystems.core.models.HsTimePeriod
 import io.horizontalsystems.chartview.ChartViewType
 import io.reactivex.subjects.BehaviorSubject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx2.asFlow
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.util.Optional
 
-abstract class AbstractChartService {
+abstract class AbstractChartService(
+    dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider(),
+) {
     open val hasVolumes = false
     abstract val chartIntervals: List<HsTimePeriod?>
     abstract val chartViewType: ChartViewType
@@ -43,8 +50,9 @@ abstract class AbstractChartService {
 
     val chartPointsWrapperObservable = BehaviorSubject.create<Result<ChartPointsWrapper>>()
 
-    protected val coroutineScope = CoroutineScope(Dispatchers.IO)
+    protected val coroutineScope = CoroutineScope(dispatcherProvider.io)
     private var fetchItemsJob: Job? = null
+    private val publishMutex = Mutex()
 
     open suspend fun start() {
         coroutineScope.launch {
@@ -87,13 +95,18 @@ abstract class AbstractChartService {
                     tmpChartInterval == null -> getAllItems(currency)
                     else -> getItems(tmpChartInterval, currency)
                 }
-                chartPointsWrapperObservable.onNext(Result.success(itemsSingle))
+                publish(Result.success(itemsSingle))
             } catch (e: CancellationException) {
                 // Do nothing
             } catch (e: Throwable) {
-                chartPointsWrapperObservable.onNext(Result.failure(e))
+                publish(Result.failure(e))
             }
         }
+    }
+
+    // A cancelled fetch can still finish after its replacement started; its result must not land on top.
+    private suspend fun publish(result: Result<ChartPointsWrapper>) = publishMutex.withLock {
+        if (currentCoroutineContext().isActive) chartPointsWrapperObservable.onNext(result)
     }
 }
 
